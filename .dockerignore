@@ -1,0 +1,15 @@
+.git
+__pycache__
+*.pyc
+sample
+output.jsonl
+*.tar.gz
+*.zip
+tests
+README.md
+SCORING.md
+score.py
+
+*.bundle
+validation.json
+VALIDATION.md

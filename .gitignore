@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+output.jsonl
+.pytest_cache/
+.venv/
+*.bundle
+*.zip
