@@ -5,6 +5,7 @@ import builtins
 from enum import Enum
 import importlib.machinery
 import operator
+import types
 from pathlib import Path
 
 OPS = {"Eq": operator.eq, "NotEq": operator.ne, "Lt": operator.lt, "LtE": operator.le,
@@ -16,6 +17,12 @@ NONE_SAFE = SCALARS | {tuple, list, dict, set, frozenset, range, object}
 def relation(left, right):
     """An abstract relation; never invoke user-defined comparisons to observe it."""
     a, b = type(left), type(right)
+    # None has no ordering. With exact builtin operands, equality here is
+    # identity, so no ordering operation or exception is needed.
+    if left is None and type(b) is type and b in NONE_SAFE:
+        return "e:9" if right is None else "e:0"
+    if right is None and type(a) is type and a in NONE_SAFE:
+        return "e:0"
     pure = a in SCALARS and b in SCALARS
     # String/int Enum subclasses may use builtin equality rather than identity.
     # Their operators are still pure; retain the actual observed relation.
@@ -62,9 +69,108 @@ def outcome(state, op):
     return None
 
 
+def visit_definition_arguments(visitor, node):
+    # Decorators and defaults execute outside the function. Leave annotations
+    # untouched because instrumentation must preserve deferred annotations.
+    node.decorator_list = [visitor.visit(n) for n in node.decorator_list]
+    node.args.defaults = [visitor.visit(n) for n in node.args.defaults]
+    node.args.kw_defaults = [visitor.visit(n) if n is not None else None for n in node.args.kw_defaults]
+
+
+class DictionaryReads(ast.NodeTransformer):
+    """Observe direct dictionary uses without wrapping or replacing the mapping.
+
+    Key expressions and receiver expressions are each evaluated exactly once.
+    Names shared by different classes are conservatively treated as aliases.
+    """
+    def __init__(self, names, declarations):
+        self.names = names
+        self.declarations = declarations
+        self.direct = set()
+
+    def field(self, node):
+        name = node.id if isinstance(node, ast.Name) else getattr(node, "attr", None)
+        return name if name in self.names else None
+
+    def call(self, helper, args, location):
+        return ast.copy_location(ast.Call(ast.Name(helper, ast.Load()), args, []), location)
+
+    def visit_Dict(self, node):
+        self.generic_visit(node)
+        symbol = self.declarations.get((node.lineno, node.col_offset))
+        if symbol is None:
+            return node
+        return self.call("_shrapnel_bind_dict", [node, ast.Constant(symbol)], node)
+
+    def visit_Subscript(self, node):
+        if (isinstance(node.ctx, ast.Load) and self.field(node.value)
+                and not isinstance(node.slice, (ast.Slice, ast.Tuple))):
+            self.direct.add(node.value)
+            self.generic_visit(node)
+            return self.call("_shrapnel_dict_item", [node.value, node.slice], node)
+        return self.generic_visit(node)
+
+    def visit_Call(self, node):
+        func = node.func
+        if (not isinstance(func, ast.Attribute) or func.attr not in ("get", "__getitem__", "__contains__")
+                or node.keywords or any(isinstance(arg, ast.Starred) for arg in node.args)):
+            return self.generic_visit(node)
+        allowed = (1, 2) if func.attr == "get" else (1,)
+        if self.field(func.value) and len(node.args) in allowed:
+            self.direct.add(func.value)
+            self.generic_visit(node)
+            return self.call("_shrapnel_dict_get", [node.func, *node.args], node)
+        if (isinstance(func.value, ast.Name) and func.value.id == "dict"
+                and len(node.args) - 1 in allowed and self.field(node.args[0])):
+            self.direct.add(node.args[0])
+            self.generic_visit(node)
+            return self.call("_shrapnel_dict_descriptor", [node.func, *node.args], node)
+        return self.generic_visit(node)
+
+    def visit_Compare(self, node):
+        if (len(node.ops) == 1 and isinstance(node.ops[0], (ast.In, ast.NotIn))
+                and self.field(node.comparators[0])):
+            self.direct.add(node.comparators[0])
+            self.generic_visit(node)
+            call = self.call("_shrapnel_dict_contains", [node.left, node.comparators[0]], node)
+            return ast.copy_location(ast.UnaryOp(ast.Not(), call), node) if isinstance(node.ops[0], ast.NotIn) else call
+        return self.generic_visit(node)
+
+    def reference(self, node):
+        name = self.field(node)
+        self.generic_visit(node)
+        if name and node not in self.direct and isinstance(node.ctx, ast.Load):
+            return self.call("_shrapnel_dict_whole", [node], node)
+        return node
+
+    visit_Name = reference
+    visit_Attribute = reference
+
+    def visit_match_case(self, node):
+        # Pattern grammar only permits specific AST forms.
+        if node.guard:
+            node.guard = self.visit(node.guard)
+        node.body = [self.visit(stmt) for stmt in node.body]
+        return node
+
+    # Use the existing transformer's rules for deferred annotations.
+    def visit_AnnAssign(self, node):
+        return Transformer.visit_AnnAssign(self, node)
+
+    def visit_FunctionDef(self, node):
+        node.body = [self.visit(n) for n in node.body]
+        visit_definition_arguments(self, node)
+        return node
+
+    visit_AsyncFunctionDef = visit_FunctionDef
+    def visit_TypeAlias(self, node):
+        return node
+
+
 class Transformer(ast.NodeTransformer):
     def __init__(self, path, fields):
         self.path, self.fields = path, fields
+        self.function_body = False
 
     def visit_Attribute(self, node):
         node = self.generic_visit(node)
@@ -94,6 +200,17 @@ class Transformer(ast.NodeTransformer):
             except (ValueError, TypeError):
                 return False
         observe = op in ("Is", "IsNot") or (op in ("Lt", "LtE", "Gt", "GtE") and (literal(node.left) or literal(node.comparators[0])))
+        if op in ("Eq", "NotEq"):
+            left, right = node.left, node.comparators[0]
+            call, bound = (right, left) if isinstance(left, ast.Constant) else (left, right)
+            observe = False
+            if (self.function_body and node.lineno == node.end_lineno and isinstance(call, ast.Call)
+                    and not call.keywords and isinstance(bound, ast.Constant)):
+                if type(bound.value) is int:
+                    observe = isinstance(call.func, ast.Name) and call.func.id == "len" and len(call.args) == 1
+                elif type(bound.value) is str:
+                    observe = (isinstance(call.func, ast.Attribute) and not call.args
+                               and call.func.attr in ("upper", "lower", "casefold"))
         if not observe:
             return node
         call = ast.Call(func=ast.Name(id="_shrapnel_comparison", ctx=ast.Load()),
@@ -107,11 +224,20 @@ class Transformer(ast.NodeTransformer):
             node.value = self.visit(node.value)
         return node
 
+    def visit_ClassDef(self, node):
+        enclosing = self.function_body
+        self.function_body = False
+        self.generic_visit(node)
+        self.function_body = enclosing
+        return node
+
     def visit_FunctionDef(self, node):
+        enclosing = self.function_body
+        self.function_body = not node.decorator_list and not node.name.startswith("__")
         node.body = [self.visit(n) for n in node.body]
-        node.decorator_list = [self.visit(n) for n in node.decorator_list]
-        node.args.defaults = [self.visit(n) for n in node.args.defaults]
-        node.args.kw_defaults = [self.visit(n) if n is not None else None for n in node.args.kw_defaults]
+        self.function_body = False
+        visit_definition_arguments(self, node)
+        self.function_body = enclosing
         return node
     visit_AsyncFunctionDef = visit_FunctionDef
 
@@ -136,23 +262,77 @@ class Instrumentation:
             value = target(*args, **kwargs)
             if target is original_getattr and recorder.current is not None and len(args) >= 2:
                 recorder.record_object_attr(args[0], args[1])
+            if target is original_getattr and type(value) is dict:
+                whole(value)
             return value
         def comparison(left, right, op, path, site):
-            value = OPS[op](left, right)
-            recorder.record_comparison(path, site, op, relation(left, right))
+            if op in ("Eq", "NotEq"):
+                # A custom comparison can raise and the test may catch it.
+                # Record uncertainty before dispatch, even if another call at
+                # this site already produced a known state in the same test.
+                kind = type(left)
+                if (kind is not int and kind is not str) or type(right) is not kind:
+                    recorder.record_comparison(path, site, op, None)
+                    return OPS[op](left, right)
+                value = OPS[op](left, right)
+                unequal = value if op == "NotEq" else not value
+                state = "p:1"
+                if unequal:
+                    state = "p:2" if left < right else "p:4"
+            else:
+                value = OPS[op](left, right)
+                state = relation(left, right)
+            recorder.record_comparison(path, site, op, state)
             return value
-        for name, value in (("_shrapnel_attribute", attribute), ("_shrapnel_dynamic_attribute", dynamic_attribute), ("_shrapnel_comparison", comparison)):
+        def whole(mapping):
+            if type(mapping) is dict:
+                recorder.record_dictionary(mapping, None)
+            return mapping
+
+        def bind(mapping, symbols):
+            recorder.bound_dictionaries[id(mapping)] = (mapping, symbols)
+            return mapping
+
+        def item(mapping, key):
+            if type(mapping) is dict:
+                recorder.record_dictionary(mapping, key)
+            return mapping[key]
+
+        def get(method, key, *default):
+            if type(method) in (types.BuiltinMethodType, types.MethodWrapperType) and type(method.__self__) is dict:
+                recorder.record_dictionary(method.__self__, key)
+            return method(key, *default)
+
+        def descriptor(method, mapping, key, *args):
+            if type(mapping) is dict:
+                known = any(method is op for op in (dict.get, dict.__getitem__, dict.__contains__))
+                recorder.record_dictionary(mapping, key if known else None)
+            return method(mapping, key, *args)
+
+        def contains(key, mapping):
+            if type(mapping) is dict:
+                recorder.record_dictionary(mapping, key)
+            return key in mapping
+
+        for name, value in (("_shrapnel_dict_whole", whole), ("_shrapnel_bind_dict", bind),
+                            ("_shrapnel_dict_item", item), ("_shrapnel_dict_get", get),
+                            ("_shrapnel_dict_contains", contains), ("_shrapnel_dict_descriptor", descriptor),
+                            ("_shrapnel_attribute", attribute), ("_shrapnel_dynamic_attribute", dynamic_attribute),
+                            ("_shrapnel_comparison", comparison)):
             self.saved[name] = getattr(builtins, name, None)
             setattr(builtins, name, value)
         self.original = importlib.machinery.SourceFileLoader.get_code
         original, root, fields = self.original, self.root, recorder.model.attr_names
         def get_code(loader, fullname):
             path = Path(loader.get_filename(fullname)).resolve()
-            if not path.is_relative_to(root / "sqlglot") or path.suffix != ".py":
+            if not any(path.is_relative_to(root / folder) for folder in ("sqlglot", "tests")) or path.suffix != ".py":
                 return original(loader, fullname)
             name = path.relative_to(root).as_posix()
             tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
-            tree = Transformer(name, fields).visit(tree)
+            declarations = getattr(recorder, "dict_declarations", {}).get(name, {})
+            tree = DictionaryReads(getattr(recorder, "dictionary_names", ()), declarations).visit(tree)
+            if path.is_relative_to(root / "sqlglot"):
+                tree = Transformer(name, fields).visit(tree)
             ast.fix_missing_locations(tree)
             return compile(tree, str(path), "exec", dont_inherit=True)
         importlib.machinery.SourceFileLoader.get_code = get_code
