@@ -13,7 +13,9 @@ This index records, for the pinned checkout:
   (each traced in a fresh interpreter);
 * ``import_time``: for every library or test module whose own import runs
   library functions (the "owner"), the library source lines those functions
-  executed and the uppercase names (settings, constants) referenced on them.
+  executed and the names (settings, constants, attributes) referenced on them;
+* ``class_setup``: the same for every test class's ``setUpClass``, since a
+  failing class setup errors every test of that class.
 
 The selector uses it to decide when a patch could break an import and which
 test files to re-import to find out.
@@ -32,6 +34,7 @@ from concurrent.futures import ThreadPoolExecutor
 REVISION = "eb11aec4be8cb2122afe713a4816662c3f0fb2fa"
 PACKAGE = "sqlglot"
 SETTING = re.compile(r"\b([A-Z][A-Z0-9_]{2,})\b")
+ATTRIBUTE = re.compile(r"\.([A-Za-z_][A-Za-z0-9_]*)\b")
 
 CLOSURE_CHILD = r"""
 import json, sys
@@ -96,6 +99,66 @@ print(json.dumps({"failed": failed, "executed": {m: {p: sorted(l) for p, l in fi
 """ % {"pkg": PACKAGE}
 
 
+SETUP_CHILD = r"""
+import json, os, sys, unittest
+sys.path.insert(0, ".")
+root = os.path.realpath(%(pkg)r) + os.sep
+executed, current = {}, [None]
+
+def tracer(frame, event, arg):
+    code = frame.f_code
+    if event != "call" or current[0] is None or not code.co_flags & 0x02:
+        return None
+    path = os.path.realpath(code.co_filename)
+    if not path.startswith(root):
+        return None
+    lines = executed.setdefault(current[0], {}).setdefault(path, set())
+    def local(frame, event, arg):
+        if event == "line":
+            lines.add(frame.f_lineno)
+        return local
+    lines.add(frame.f_lineno)
+    return local
+
+failed = []
+for module_name in json.loads(sys.argv[1]):
+    module = __import__(module_name, fromlist=["*"])
+    for name, cls in sorted(vars(module).items()):
+        if not (isinstance(cls, type) and issubclass(cls, unittest.TestCase) and cls.__module__ == module.__name__):
+            continue
+        if not any("setUpClass" in vars(base) for base in cls.__mro__ if base is not unittest.TestCase):
+            continue
+        current[0] = module_name.replace(".", "/") + ".py::" + name  # matches catalog test-id prefixes
+        sys.settrace(tracer)
+        try:
+            cls.setUpClass()
+        except BaseException:
+            failed.append(current[0])
+        finally:
+            sys.settrace(None)
+            current[0] = None
+            try:
+                cls.tearDownClass()
+            finally:
+                cls.doClassCleanups()
+print(json.dumps({"failed": failed, "executed": {c: {p: sorted(l) for p, l in files.items()} for c, files in executed.items()}}))
+""" % {"pkg": PACKAGE}
+
+
+def summarize(root, files):
+    """Repository-relative lines plus the names referenced on them."""
+    lines, attrs = {}, set()
+    for path, numbers in files.items():
+        rel = Path(path).relative_to(root).as_posix()
+        lines[rel] = numbers
+        source = Path(path).read_text(encoding="utf-8").splitlines()
+        for n in numbers:
+            if 0 < n <= len(source):
+                attrs.update(SETTING.findall(source[n - 1]))
+                attrs.update(ATTRIBUTE.findall(source[n - 1]))  # e.g. self.arg_types
+    return {"lines": lines, "attrs": sorted(attrs)}
+
+
 def test_modules(root):
     names = []
     for path in sorted((root / "tests").rglob("test_*.py")):
@@ -135,19 +198,15 @@ def build(root):
     traced = run(root, TRACE_CHILD, json.dumps(modules))
     if traced["failed"]:
         raise RuntimeError(f"baseline import failed while tracing: {traced['failed'][:3]}")
-    import_time = {}
-    for owner, files in traced["executed"].items():
-        owner_rel = Path(owner).relative_to(root).as_posix()
-        lines, attrs = {}, set()
-        for path, numbers in files.items():
-            rel = Path(path).relative_to(root).as_posix()
-            lines[rel] = numbers
-            source = Path(path).read_text(encoding="utf-8").splitlines()
-            for n in numbers:
-                if 0 < n <= len(source):
-                    attrs.update(SETTING.findall(source[n - 1]))
-        import_time[owner_rel] = {"lines": lines, "attrs": sorted(attrs)}
-    return {"revision": REVISION, "closures": closures, "import_time": import_time}
+    import_time = {Path(owner).relative_to(root).as_posix(): summarize(root, files)
+                   for owner, files in traced["executed"].items()}
+    # A class whose setUpClass fails errors every one of its tests, so record
+    # what each class setup runs as well.
+    setups = run(root, SETUP_CHILD, json.dumps(modules))
+    if setups["failed"]:
+        raise RuntimeError(f"baseline class setup failed while tracing: {setups['failed'][:3]}")
+    class_setup = {class_id: summarize(root, files) for class_id, files in setups["executed"].items()}
+    return {"revision": REVISION, "closures": closures, "import_time": import_time, "class_setup": class_setup}
 
 
 if __name__ == "__main__":
@@ -157,5 +216,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
     index = build(args.source)
     args.output.write_text(json.dumps(index, separators=(",", ":")))
-    print(f"wrote {args.output}: {len(index['closures'])} test files, {len(index['import_time'])} modules with import-time execution",
-          file=sys.stderr)
+    print(f"wrote {args.output}: {len(index['closures'])} test files, {len(index['import_time'])} modules with "
+          f"import-time execution, {len(index['class_setup'])} traced class setups", file=sys.stderr)

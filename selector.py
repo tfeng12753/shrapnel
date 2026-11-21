@@ -603,7 +603,7 @@ class Selector:
         return result
 
     def downstream_imports(self, patch, selected):
-        """Tests in files that fail collection because the patch breaks an import they depend on."""
+        """Tests that fail before running because the patch breaks an import or a class setup they depend on."""
         try:
             changes = parse_patch(patch)
             edits, overlays = [], {}
@@ -617,10 +617,14 @@ class Selector:
                     edits.append((c["old"], old, removed | inserted, lambda old=old: baseline_tree(old)))
         except (ValueError, OSError, UnicodeError):
             return self.all
-        owners = self.import_effects.owners(edits)
+        effects = self.import_effects
+        return (self._broken_imports(effects, effects.owners(edits), overlays, selected)
+                | self._broken_setups(effects, effects.setup_owners(edits), overlays, selected))
+
+    def _broken_imports(self, effects, owners, overlays, selected):
         if not owners:
             return 0
-        candidates = self.import_effects.tests_of(self.import_effects.dependents(owners))
+        candidates = effects.tests_of(effects.dependents(owners))
         if not candidates & ~selected:
             return 0  # Every test that could fail collection is already selected.
         from import_effects import module_name
@@ -634,7 +638,27 @@ class Selector:
         if failed is None:
             return candidates
         broken = [owner for owner, module in zip(owners, modules) if module in failed]
-        return self.import_effects.tests_of(self.import_effects.dependents(broken))
+        return effects.tests_of(effects.dependents(broken))
+
+    def _broken_setups(self, effects, classes, overlays, selected):
+        from import_effects import module_name
+        from native_probes import verify_setup
+        result = 0
+        for class_id in classes:
+            members = effects.class_tests([class_id])
+            if not members & ~selected:
+                continue  # The whole class is already selected.
+            module_path, class_name = class_id.split("::")[0], class_id.split("::")[-1]
+            module = module_name(module_path)
+            if module is None or self.downstream_import_budget < 1.0:
+                result |= members
+                continue
+            ok, cpu = verify_setup(self.source, overlays, module, class_name, wall_seconds=15.0,
+                                   cpu_seconds=min(8.0, self.downstream_import_budget))
+            self.downstream_import_budget -= cpu
+            if not ok:
+                result |= members
+        return result
 
     def _select_base(self, patch: str, trace=None) -> int:
         # The offline profiler supplies trace(mask, reason, path, location).

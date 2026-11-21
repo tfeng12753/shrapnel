@@ -27,24 +27,33 @@ def _tree(source):
 
 
 def assigned_names(source, lines, tree=None):
-    """Uppercase names assigned by statements that contain any of the given lines."""
+    """Names whose value a change to the given lines can alter.
+
+    Uppercase names (settings, constants) assigned anywhere, and any name
+    assigned directly in a class body (class attributes such as ``arg_types``),
+    for statements containing any of the given lines.
+    """
     names = set()
     try:
         tree = tree if tree is not None else _tree(source)
     except SyntaxError:
         return names
+    class_level = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ClassDef):
+            class_level.update(id(stmt) for stmt in node.body)
     for node in ast.walk(tree):
         if not isinstance(node, (ast.Assign, ast.AnnAssign, ast.AugAssign)):
             continue
         if not any(node.lineno <= line <= node.end_lineno for line in lines):
             continue
+        in_class = id(node) in class_level
         targets = node.targets if isinstance(node, ast.Assign) else [node.target]
         for target in targets:
             for sub in ast.walk(target):
-                if isinstance(sub, ast.Name) and NAME.fullmatch(sub.id):
-                    names.add(sub.id)
-                elif isinstance(sub, ast.Attribute) and NAME.fullmatch(sub.attr):
-                    names.add(sub.attr)
+                name = sub.id if isinstance(sub, ast.Name) else sub.attr if isinstance(sub, ast.Attribute) else None
+                if name and (NAME.fullmatch(name) or (in_class and isinstance(sub, ast.Name))):
+                    names.add(name)
     return names
 
 
@@ -60,19 +69,38 @@ def module_name(path):
 
 class ImportEffects:
     def __init__(self, index, tests):
-        self.import_time = {owner: ({name: set(lines) for name, lines in info["lines"].items()}, set(info["attrs"]))
-                            for owner, info in index["import_time"].items()}
+        def table(entries):
+            return {owner: ({name: set(lines) for name, lines in info["lines"].items()}, set(info["attrs"]))
+                    for owner, info in entries.items()}
+        self.import_time = table(index["import_time"])
+        self.class_setup = table(index.get("class_setup", {}))
         self.closures = {test_file: set(modules) for test_file, modules in index["closures"].items()}
-        self.file_tests = {}
+        self.file_tests, self.class_masks = {}, {}
         for test in tests:
             name = test.get("file") or test["id"].split("::", 1)[0]
             self.file_tests[name] = self.file_tests.get(name, 0) | (1 << test["number"])
+            class_id = test["id"].rsplit("::", 1)[0]
+            self.class_masks[class_id] = self.class_masks.get(class_id, 0) | (1 << test["number"])
 
     def owners(self, edits):
-        """Owners whose import uses a changed line or a changed uppercase name.
+        """Modules whose import uses a changed line or a changed name."""
+        return self._match(self.import_time, edits)
+
+    def setup_owners(self, edits):
+        """Test classes whose setUpClass uses a changed line or a changed name."""
+        return self._match(self.class_setup, edits)
+
+    def class_tests(self, class_ids):
+        mask = 0
+        for class_id in class_ids:
+            mask |= self.class_masks.get(class_id, 0)
+        return mask
+
+    def _match(self, table, edits):
+        """Entries of a trace table that ran a changed line or read a changed name.
 
         ``edits`` is a list of (path, old_source, changed_old_lines) or
-        (path, old_source, changed_old_lines, parsed_old_tree).
+        (path, old_source, changed_old_lines, parsed_old_tree or a function returning it).
         """
         changed, sources = {}, {}
         for edit in edits:
@@ -90,7 +118,7 @@ class ImportEffects:
             return names[path]
 
         found = set()
-        for owner, (owner_lines, owner_names) in self.import_time.items():
+        for owner, (owner_lines, owner_names) in table.items():
             for path in changed:
                 ran = owner_lines.get(path)
                 if not ran:
