@@ -56,6 +56,18 @@ def _import_child(source, overlays, module):
     return True
 
 
+def _imports_child(source, overlays, modules):
+    """Import each module on the patched files; return the ones that fail."""
+    _install_overlays(source, overlays)
+    failed = []
+    for module in modules:
+        try:
+            importlib.import_module(module)
+        except BaseException:
+            failed.append(module)
+    return failed
+
+
 def _setup_child(source, overlays, module, class_name):
     """Run one test class's setUpClass (and class teardown) on the patched files."""
     _install_overlays(source, overlays)
@@ -154,6 +166,15 @@ def verify(source, overlays, tests, wall_seconds=1.5, cpu_seconds=1.0, *, strict
     if not isinstance(passed, list) or any(item not in allowed for item in passed):
         return [], cpu
     return passed, cpu
+
+
+def verify_imports(source, overlays, modules, wall_seconds=10.0, cpu_seconds=4.0):
+    """Return (modules that fail to import on the patched files, or None if unknown; child CPU)."""
+    failed, cpu = _forked(lambda: _imports_child(source.resolve(), overlays, list(modules)), None,
+                          wall_seconds, cpu_seconds)
+    if not isinstance(failed, list) or any(m not in modules for m in failed):
+        return None, cpu
+    return failed, cpu
 
 
 def verify_import(source, overlays, module, wall_seconds=4.0, cpu_seconds=2.0):

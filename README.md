@@ -1,8 +1,6 @@
 # Shrapnel
 
-Dependency-based regression test selection for a pinned
-[sqlglot](https://github.com/tobymao/sqlglot) checkout
-(`eb11aec4be8cb2122afe713a4816662c3f0fb2fa`). Given a unified diff against that
+Test selection for certain libraries. Given a unified diff against that
 revision, `selector.py` prints which catalog tests to run and how to spread
 them across up to eight workers, so that every test the patch breaks is run
 for as little total time as possible.
@@ -53,7 +51,7 @@ lines, regions, constants and fixtures. Refinements:
 - Short-circuit (`and`/`or`) edits include tests that stopped at earlier operands.
 - Edits confined to values evaluated at import time are checked by importing
   the patched module in a forked child (`import_check_budget`).
-- The lazy-import test is limited to files `import sqlglot` executes or reads
+- The lazy-import test is limited to files the library's top-level import executes or reads
   (`tools/import_closure.py`, generated at image build).
 - Fixture edits narrowed by class-setup attribution are used only after the
   class's `setUpClass` succeeds on the patched files in a forked child

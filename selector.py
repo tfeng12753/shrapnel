@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+import copy
 import gzip
 import json
 import math
@@ -272,10 +273,13 @@ def import_hazard(old: str, new: str) -> bool:
     return import_hazard_kind(old, new) is not None
 
 
-def import_hazard_kind(old: str, new: str):
-    """None, "initializer" (only assignment values evaluated at import changed), or "structural"."""
-    def scaffold(source):
-        tree = ast.parse(source, type_comments=True)
+def import_hazard_kind(old: str, new: str, old_tree=None, new_tree=None):
+    """None, "initializer" (only assignment values evaluated at import changed), or "structural".
+
+    Pass already-parsed trees to avoid parsing again; they are not modified.
+    """
+    def scaffold(source, tree):
+        tree = tree if tree is not None else ast.parse(source, type_comments=True)
         imports, other = [], []
         def walk(body):
             for node in body:
@@ -299,7 +303,8 @@ def import_hazard_kind(old: str, new: str):
                                 def visit_Lambda(self, node):
                                     node.body = ast.Constant(value="<deferred>")
                                     return node
-                            signature = ast.dump(Deferred().visit(value), include_attributes=False)
+                            # Transform a copy: the tree may be a shared cached one.
+                            signature = ast.dump(Deferred().visit(copy.deepcopy(value)), include_attributes=False)
                         targets = node.targets if isinstance(node, ast.Assign) else [node.target]
                         other.append(("assign", tuple(ast.dump(t, include_attributes=False) for t in targets), signature))
                 elif isinstance(node, ast.Pass):
@@ -310,7 +315,7 @@ def import_hazard_kind(old: str, new: str):
                     other.append(("other", ast.dump(node, include_attributes=False)))
         walk(tree.body)
         return imports, other
-    (old_imports, old_other), (new_imports, new_other) = scaffold(old), scaffold(new)
+    (old_imports, old_other), (new_imports, new_other) = scaffold(old, old_tree), scaffold(new, new_tree)
     if (old_imports, old_other) == (new_imports, new_other):
         return None
     if old_imports != new_imports or len(old_other) != len(new_other):
@@ -485,8 +490,14 @@ class Selector:
     def __init__(self, tests: list[dict], source: Path, map_path: Path, *, conservative_python=False,
                  relations=None, child_work=False, import_closure=None, import_check_budget=0.0,
                  setup_check_budget=0.0, executor_fixtures=False, executor_plans=None, executor_plan_budget=0.0,
-                 lazy_test_budget=0.0, schedule_admission=False, exact_comparisons=False):
+                 lazy_test_budget=0.0, import_effects=None, downstream_import_budget=0.0,
+                 schedule_admission=False, exact_comparisons=False):
         self.tests, self.source = tests, source
+        # Patches that change code or settings used while some module is being
+        # imported can break collection of every test file importing it. A forked
+        # import of the affected modules decides (CPU charged to this budget).
+        self.import_effects = import_effects
+        self.downstream_import_budget = downstream_import_budget
         # Admit every narrowing probe only after a patch's selection is final,
         # and only if dropping its tests saves enough schedule time for its CPU.
         self.schedule_admission = schedule_admission
@@ -635,6 +646,77 @@ class Selector:
         return result
 
     def select(self, patch: str, trace=None) -> int:
+        result = self._select_base(patch, trace)
+        if result != self.all and self.import_effects is not None and self.complete and not self.conservative_python:
+            try:
+                extra = self.downstream_imports(patch, result)
+            except Exception as error:  # Never let an added safety check crash the run.
+                print(f"downstream import check skipped ({type(error).__name__})", file=sys.stderr)
+                extra = 0
+            if extra and trace is not None:
+                trace(extra, "downstream import failure", None, None)
+            result |= extra
+        return result
+
+    def downstream_imports(self, patch, selected):
+        """Tests that fail before running because the patch breaks an import or a class setup they depend on."""
+        try:
+            changes = parse_patch(patch)
+            edits, overlays = [], {}
+            for c in changes:
+                if c["old"] != c["new"]:
+                    return self.all
+                old = self.read_source(c["old"])
+                new, removed, inserted = apply_change(old, c)
+                overlays[c["old"]] = new
+                if c["old"].endswith(".py"):
+                    edits.append((c["old"], old, removed | inserted, lambda old=old: baseline_tree(old)))
+        except (ValueError, OSError, UnicodeError):
+            return self.all
+        effects = self.import_effects
+        return (self._broken_imports(effects, effects.owners(edits), overlays, selected)
+                | self._broken_setups(effects, effects.setup_owners(edits), overlays, selected))
+
+    def _broken_imports(self, effects, owners, overlays, selected):
+        if not owners:
+            return 0
+        candidates = effects.tests_of(effects.dependents(owners))
+        if not candidates & ~selected:
+            return 0  # Every test that could fail collection is already selected.
+        from import_effects import module_name
+        modules = [module_name(owner) for owner in owners]
+        if None in modules or self.downstream_import_budget < 0.5:
+            return candidates
+        from native_probes import verify_imports
+        failed, cpu = verify_imports(self.source, overlays, modules, wall_seconds=10.0,
+                                     cpu_seconds=min(4.0, self.downstream_import_budget))
+        self.downstream_import_budget -= cpu
+        if failed is None:
+            return candidates
+        broken = [owner for owner, module in zip(owners, modules) if module in failed]
+        return effects.tests_of(effects.dependents(broken))
+
+    def _broken_setups(self, effects, classes, overlays, selected):
+        from import_effects import module_name
+        from native_probes import verify_setup
+        result = 0
+        for class_id in classes:
+            members = effects.class_tests([class_id])
+            if not members & ~selected:
+                continue  # The whole class is already selected.
+            module_path, class_name = class_id.split("::")[0], class_id.split("::")[-1]
+            module = module_name(module_path)
+            if module is None or self.downstream_import_budget < 1.0:
+                result |= members
+                continue
+            ok, cpu = verify_setup(self.source, overlays, module, class_name, wall_seconds=15.0,
+                                   cpu_seconds=min(8.0, self.downstream_import_budget))
+            self.downstream_import_budget -= cpu
+            if not ok:
+                result |= members
+        return result
+
+    def _select_base(self, patch: str, trace=None) -> int:
         # The offline profiler supplies trace(mask, reason, path, location).
         def include(mask, reason, path=None, location=None):
             if trace is not None and mask:
@@ -688,7 +770,7 @@ class Selector:
                         result |= include(entry["readers"], "file reader", name)
                         result |= include(self.external_for(name), "external dependency", name)
                         continue
-                    hazard = import_hazard_kind(old, new)
+                    hazard = import_hazard_kind(old, new, before, after)
                     if hazard == "initializer" and self.import_succeeds(name, changes):
                         hazard = None
                     if hazard:
@@ -1071,6 +1153,8 @@ def parse_args(argv=None):
     parser.add_argument("--executor-plans", type=Path, default=Path("/app/executor-plans"))
     parser.add_argument("--executor-plan-budget", type=float)
     parser.add_argument("--lazy-test-budget", type=float)
+    parser.add_argument("--import-time", type=Path, default=Path("/app/import-time.json"))
+    parser.add_argument("--downstream-import-budget", type=float)
     parser.add_argument("--schedule-admission", action=argparse.BooleanOptionalAction, default=None,
                         help="Admit narrowing probes only when their schedule saving pays for their CPU")
     parser.add_argument("--exact-comparisons", action=argparse.BooleanOptionalAction, default=None,
@@ -1107,6 +1191,8 @@ def parse_args(argv=None):
         args.executor_plan_budget = float(config.get("executor_plan_budget", 0.0))
     if args.lazy_test_budget is None:
         args.lazy_test_budget = float(config.get("lazy_test_budget", 0.0))
+    if args.downstream_import_budget is None:
+        args.downstream_import_budget = float(config.get("downstream_import_budget", 0.0))
     if args.schedule_admission is None:
         args.schedule_admission = config.get("schedule_admission", False)
     if args.exact_comparisons is None:
@@ -1114,12 +1200,25 @@ def parse_args(argv=None):
     args.settings = {"lazy_test_budget": args.lazy_test_budget, "executor_fixtures": bool(args.executor_fixtures), "executor_plan_budget": args.executor_plan_budget,"conservative_python": bool(conservative), "child_work": bool(child_work),
                      "relations": bool(args.relations), "probe_budget": float(args.probe_budget),
                      "import_check_budget": float(args.import_check_budget),
-                     "setup_check_budget": float(args.setup_check_budget)}
+                     "setup_check_budget": float(args.setup_check_budget),
+                     "downstream_import_budget": float(args.downstream_import_budget)}
     args.settings["schedule_admission"] = bool(args.schedule_admission)
     args.settings["exact_comparisons"] = bool(args.exact_comparisons)
     if args.cost_aware_probes:
         args.settings["probe_budget"] = {"seconds": args.probe_budget, "cost_aware": True}
     return args
+
+
+def load_import_effects(path, tests):
+    """The build-time import index, or None when it is missing or for another revision."""
+    try:
+        index = json.loads(Path(path).read_text())
+        if index.get("revision") != REVISION:
+            return None
+        from import_effects import ImportEffects
+        return ImportEffects(index, tests)
+    except (OSError, ValueError, KeyError, TypeError, AttributeError):
+        return None
 
 
 def resolve_settings(argv=None):
@@ -1143,6 +1242,8 @@ def main():
                         executor_fixtures=settings["executor_fixtures"], executor_plans=args.executor_plans,
                         executor_plan_budget=max(0.0, settings["executor_plan_budget"]),
                         lazy_test_budget=max(0.0, settings["lazy_test_budget"]),
+                        import_effects=load_import_effects(args.import_time, tests),
+                        downstream_import_budget=max(0.0, settings["downstream_import_budget"]),
                         schedule_admission=settings["schedule_admission"],
                         exact_comparisons=settings["exact_comparisons"])
     schedules = {}
