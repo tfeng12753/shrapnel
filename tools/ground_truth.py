@@ -24,12 +24,34 @@ from selector import apply_change, parse_patch  # noqa: E402
 # itself counts as passed, so subtest lines must be attributed to their parent.
 OUTCOME = re.compile(r"^(?:FAILED|ERROR|SUBFAILED|SUBERROR)\b")
 TEST_ID = re.compile(r"(?:^|\s)(tests/\S+?)(?=\s|$)")
+# Section header of a collection error: "____ ERROR collecting tests/x.py ____".
+COLLECTING = re.compile(r"^_+ ERROR collecting (tests/\S+?) _+$")
+# pytest stops before running anything when collection fails without
+# --continue-on-collection-errors: "!!!! Interrupted: 2 errors during collection !!!!".
+INTERRUPTED = re.compile(r"^!+ Interrupted: (\d+) errors? during collection !+$")
+# Flags passed to pytest. --continue-on-collection-errors keeps a broken test module
+# from aborting the session, so every other file still runs and reports its failures.
+PYTEST_ARGS = ["-q", "-p", "no:cacheprovider", "-rfE", "--continue-on-collection-errors", "--timeout=900"]
+
+
+def owned_tests(test_id, number):
+    """Catalog numbers of every test in a file or directory (collection errors name those)."""
+    path = test_id.rstrip("/")
+    return [n for i, n in number.items() if i == path or i.startswith(path + "::") or i.startswith(path + "/")]
 
 
 def failing_tests(stdout, number):
     """Map pytest -rfE short-summary lines to catalog numbers; return (failing, unknown, lines)."""
     failing, unknown, lines = set(), set(), []
     for line in stdout.splitlines():
+        section = COLLECTING.match(line)
+        if section:
+            # Also covers output whose short summary is missing or cut off.
+            matched = owned_tests(section[1], number)
+            failing.update(matched)
+            if not matched:
+                unknown.add(section[1])
+            continue
         if not OUTCOME.match(line):
             continue
         lines.append(line[:300])
@@ -42,11 +64,37 @@ def failing_tests(stdout, number):
             failing.add(number[test_id])
             continue
         # Collection errors name a file; every catalog test in it is affected.
-        matched = [n for i, n in number.items() if i == test_id or i.startswith(test_id + "::")]
+        matched = owned_tests(test_id, number)
         failing.update(matched)
         if not matched:
             unknown.add(test_id)
     return failing, unknown, lines
+
+
+def interrupted(stdout):
+    """Number of collection errors if pytest aborted the session before running tests, else None."""
+    for line in stdout.splitlines():
+        m = INTERRUPTED.match(line.strip())
+        if m:
+            return int(m[1])
+    return None
+
+
+def collection_errors(stdout):
+    return sorted({m[1] for m in map(COLLECTING.match, stdout.splitlines()) if m})
+
+
+def result_record(stdout, stderr, returncode, number, seconds):
+    """The JSON written for one patch. An aborted session leaves tests outside the
+    erroring files unrun, so it gets an `unknown` marker and is flagged as suspicious."""
+    failing, unknown, lines = failing_tests(stdout, number)
+    errors = interrupted(stdout)
+    if errors is not None:
+        unknown.add(f"session interrupted by {errors} collection errors: tests in other files did not run")
+    summary = stdout.strip().splitlines()[-1] if stdout.strip() else stderr[-300:]
+    # Keep the raw short-summary lines so results can be re-parsed without re-running.
+    return {"failing": sorted(failing), "unknown": sorted(unknown), "exit": returncode, "summary": summary,
+            "seconds": seconds, "summary_lines": lines, "collection_errors": collection_errors(stdout)}
 
 
 def main(patch_path, output, source="/opt/sqlglot", catalog="/repo/sample/tests.json"):
@@ -62,16 +110,11 @@ def main(patch_path, output, source="/opt/sqlglot", catalog="/repo/sample/tests.
                 path = root / change["old"]
                 new, _, _ = apply_change(path.read_text(), change)
                 path.write_text(new)
-        run = subprocess.run([sys.executable, "-m", "pytest", "tests", "-q", "-p", "no:cacheprovider", "-rfE",
-                              "--timeout=900"], cwd=root, capture_output=True, text=True,
-                             env={"PATH": "/usr/local/bin:/usr/bin:/bin", "HOME": "/tmp", "SKIP_INTEGRATION": "0",
-                                  "PYTHONDONTWRITEBYTECODE": "1"})
-    failing, unknown, lines = failing_tests(run.stdout, number)
-    summary = run.stdout.strip().splitlines()[-1] if run.stdout.strip() else run.stderr[-300:]
-    # Keep the raw short-summary lines so results can be re-parsed without re-running.
-    Path(output).write_text(json.dumps({"failing": sorted(failing), "unknown": sorted(unknown), "exit": run.returncode,
-                                        "summary": summary, "seconds": round(time.time() - started, 1),
-                                        "summary_lines": lines}))
+        run = subprocess.run([sys.executable, "-m", "pytest", "tests", *PYTEST_ARGS], cwd=root, capture_output=True,
+                             text=True, env={"PATH": "/usr/local/bin:/usr/bin:/bin", "HOME": "/tmp",
+                                             "SKIP_INTEGRATION": "0", "PYTHONDONTWRITEBYTECODE": "1"})
+    record = result_record(run.stdout, run.stderr, run.returncode, number, round(time.time() - started, 1))
+    Path(output).write_text(json.dumps(record))
 
 
 if __name__ == "__main__":

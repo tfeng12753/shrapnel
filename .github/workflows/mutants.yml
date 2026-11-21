@@ -1,5 +1,5 @@
 name: Held-out mutant ground truth
-# Evaluation only: generates seeded mutants of the pinned sqlglot checkout, runs the
+# Evaluation only: generates seeded mutants of the pinned checkout, runs the
 # real unchanged suite on each (real process pools) to record which tests fail, then
 # scores every selector variant against them. Mutants and results are never selector
 # input and never enter the selector image.
@@ -25,6 +25,11 @@ on:
       seed_base:
         description: First seed; use a new range for every launch to get fresh mutants
         default: '100'
+      families:
+        description: >-
+          Comma-separated mutant families for tools/mutants.py --families (empty = the original
+          code/fixture/comment/multi mix); e.g. setting-flip,typeddict-total,dict-value,comparison-swap,fixture-entry
+        default: ''
 permissions:
   contents: read
 jobs:
@@ -51,13 +56,15 @@ jobs:
       - name: Build the selector image (cached map, no network at run time)
         run: docker build --platform linux/amd64 -t shrapnel .
       - name: Generate mutants
+        env:
+          FAMILIES: ${{ inputs.families }}
         run: |
           seed=$(( ${{ inputs.seed_base }} + ${{ matrix.shard }} ))
           echo "SEED=$seed" >> "$GITHUB_ENV"
           mkdir -p "$RUNNER_TEMP/mutants"
           docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/repo:ro" -v "$RUNNER_TEMP/mutants:/m" shrapnel \
             python /repo/tools/mutants.py --source /opt/sqlglot --sample /repo/sample --out /m \
-              --count ${{ inputs.mutants_per_shard }} --seed "$seed"
+              --count ${{ inputs.mutants_per_shard }} --seed "$seed" --families "$FAMILIES"
       - name: Run the real suite on each mutant
         run: bash tools/run_ground_truth.sh "$RUNNER_TEMP/mutants" ${{ inputs.parallel }} "$DEADLINE"
       - name: Upload shard results
