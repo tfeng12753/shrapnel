@@ -47,21 +47,31 @@ def cold_comparisons(before, after, records):
     return True
 
 
+def changed_line(raw, after, line):
+    old = raw.splitlines(keepends=True)
+    new = after.encode().splitlines(keepends=True)
+    if len(old) != len(new) or old[:line - 1] != new[:line - 1] or old[line:] != new[line:]:
+        return None
+    return old[line - 1], new[line - 1]
+
+
+def replaced_operator(old, new, start, end):
+    prefix, suffix = old[:start], old[end:]
+    if not new.startswith(prefix) or not new.endswith(suffix):
+        return False
+    token = new[start:len(new) - len(suffix)]
+    return token != old[start:end] and token in COMPARISON_OPERATORS.values()
+
+
 def indexed_change(raw, after, removed, inserted, record):
     if not record or inserted or len(removed) != 1 or hashlib.sha256(raw).hexdigest() != record["digest"]:
         return False
     line, = removed
-    old = raw.splitlines(keepends=True)
-    new = after.encode().splitlines(keepends=True)
-    if old[:line - 1] != new[:line - 1] or old[line:] != new[line:] or len(old) != len(new):
-        return False
-    before_line, after_line = old[line - 1], new[line - 1]
-    for start, end in record["sites"].get(str(line), ()):
-        prefix, suffix = before_line[:start], before_line[end:]
-        if after_line.startswith(prefix) and after_line.endswith(suffix):
-            token = after_line[start:len(after_line) - len(suffix)]
-            if token != before_line[start:end] and token in COMPARISON_OPERATORS.values():
-                return True
+    spans = record["sites"].get(str(line), ())
+    if spans:
+        pair = changed_line(raw, after, line)
+        if pair:
+            return any(replaced_operator(*pair, start, end) for start, end in spans)
     return False
 
 

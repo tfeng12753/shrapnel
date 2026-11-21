@@ -134,6 +134,18 @@ COMPARISON_OPERATORS = {ast.Eq: b"==", ast.NotEq: b"!=", ast.Lt: b"<", ast.LtE: 
                         ast.Gt: b">", ast.GtE: b">=", ast.Is: b"is", ast.IsNot: b"is not"}
 
 
+def operator_span(node, lines):
+    if not isinstance(node, ast.Compare) or node.lineno != node.end_lineno or len(node.ops) != 1:
+        return None
+    token = COMPARISON_OPERATORS.get(type(node.ops[0]))
+    start = node.left.end_col_offset
+    gap = lines[node.lineno - 1][start:node.comparators[0].col_offset]
+    if gap.strip() != token or not gap[:1].isspace() or not gap[-1:].isspace():
+        return None
+    start += gap.index(token)
+    return [start, start + len(token)]
+
+
 def cold_operator_sites(raw, records):
     lines = raw.splitlines()
     cold = {tuple(pair) for pair in records}
@@ -152,15 +164,9 @@ def cold_operator_sites(raw, records):
                 if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.Lambda)):
                     continue
                 pending.extend(ast.iter_child_nodes(node))
-                if not isinstance(node, ast.Compare) or node.lineno != node.end_lineno or len(node.ops) != 1:
-                    continue
-                token = COMPARISON_OPERATORS.get(type(node.ops[0]))
-                start = node.left.end_col_offset
-                gap = lines[node.lineno - 1][start:node.comparators[0].col_offset]
-                if gap.strip() != token or not gap[:1].isspace() or not gap[-1:].isspace():
-                    continue
-                start += gap.index(token)
-                sites.setdefault(str(node.lineno), []).append([start, start + len(token)])
+                span = operator_span(node, lines)
+                if span:
+                    sites.setdefault(str(node.lineno), []).append(span)
     scan(ast.parse(raw).body, "")
     return sites
 

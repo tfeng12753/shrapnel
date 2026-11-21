@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 
 from selector import relation_outcome
-from tools.import_closure import REVISION
+from tools.import_closure import REVISION, operator_span
 
 
 def scalar_sites(source_text, spans):
@@ -63,6 +63,16 @@ def build_index(map_path, source, include_comparisons=False):
             files[name] = {"sha256": hashlib.sha256(raw).hexdigest(), "values": sites}
             if comparisons:
                 files[name]["comparisons"] = comparisons
+                lines = raw.splitlines()
+                offsets = {}
+                for node in ast.walk(ast.parse(raw)):
+                    if not isinstance(node, ast.Compare):
+                        continue
+                    site = f"{node.lineno}:{node.col_offset}"
+                    span = operator_span(node, lines)
+                    if span and comparisons.get(site) == type(node.ops[0]).__name__:
+                        offsets.setdefault(str(node.lineno), []).append([site, *span])
+                files[name]["operator_offsets"] = offsets
     return {"revision": REVISION, "format": "dictionary-values-v1", "files": files}
 
 

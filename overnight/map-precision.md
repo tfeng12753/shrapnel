@@ -2,6 +2,14 @@
 
 Base 2c4b6a8. Map construction uses the unmodified pinned checkout and its baseline suite. Generated patches are used for evaluation.
 
+## Fixed-schedule comparison after 5e74551
+
+The optional comparison index now records the operator's byte offsets at all 134 qualifying baseline sites. With a matching source hash, an exact operator substitution surrounded by identical bytes can use these offsets. Other candidate edits and older indexes still use the full syntax-tree comparison. The complete scheduled group must still pass in its patched checkout. The index grew from 72,598 to 77,076 bytes.
+
+Seven alternating classifier trials agreed for every patch. Median CPU for 30 public patches fell from 0.00168 to 0.00084 seconds, for 17 independent edits from 0.00174 to 0.00117 seconds, and for 41 independent edits from 0.13610 to 0.00628 seconds. The two approaches also agreed on 108 generated substitutions at 12 hash-selected baseline sites, including unsupported operators. The regression test covers multibyte operands, two comparisons on one line, a simultaneous operand edit, and legacy indexes.
+
+For a separate end-to-end check of the offline verifier, freeze one base schedule for each workload, run five alternating pairs against the existing and new indexes, and include worker subprocess CPU. Every attempted group, verified pass and removed group matched on every run. Public simulated time was 106.906 seconds with zero misses in both modes. Median verifier CPU was 1.1337 versus 1.1286 seconds on public, 0.3229 versus 0.3200 on the 17 edits, and 1.9253 versus 2.0100 on the 41 edits. The isolated classification improvement did not produce a consistent whole-replay gain. These measurements exclude base schedule generation. Project checks passed 106/107, with the existing locked-map fingerprint mismatch. Next profile checkout creation and pytest startup on Linux before changing the selection policy. Docker was unavailable on this host.
+
 ## Optional comparison verification after 1732345
 
 The offline dictionary index accepts `--include-comparisons`. This adds 134 baseline sites with known operands and a single observed boolean outcome to the index (72,598 bytes total). A single operator substitution at a matching source fingerprint can nominate an existing one-worker group for real patched pytest verification. Only a complete pass removes the group. A failed or timed-out comparison check closes admission for further comparisons that batch. Import verification runs first and its accepted groups are excluded from the second check.

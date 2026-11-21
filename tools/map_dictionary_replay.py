@@ -11,11 +11,14 @@ import xml.etree.ElementTree as ET
 
 from score import WORKER_COST_MILLISECONDS
 from selector import REVISION, apply_change, comparison_changes, parse_patch
-from tools.map_import_replay import check_items, replay as replay_import
+from tools.import_closure import COMPARISON_OPERATORS
+from tools.map_import_replay import changed_line, check_items, replaced_operator, replay as replay_import
 
 
 def mapped_literal_change(before, after, sites, line):
     """Accept one scalar value replacement in one uniquely keyed dictionary."""
+    if str(line) not in sites:
+        return False
     old_lines = before.splitlines(keepends=True)
     new_lines = after.splitlines(keepends=True)
     if (len(old_lines) != len(new_lines) or old_lines[:line - 1] != new_lines[:line - 1]
@@ -62,6 +65,15 @@ def dictionary_update(source, patch, files, *, comparisons=False):
         operators = record.get("comparisons", {})
         if not any(site.startswith(f"{line}:") for site in operators):
             return {}
+        offsets = record.get("operator_offsets", {}).get(str(line), ())
+        if offsets:
+            pair = changed_line(raw, after, line)
+            if pair:
+                old, new = pair
+                for site, start, end in offsets:
+                    op = getattr(ast, operators.get(site, ""), None)
+                    if COMPARISON_OPERATORS.get(op) == old[start:end] and replaced_operator(old, new, start, end):
+                        return {name: after}
         edits = comparison_changes(before, after)
         if not edits or len(edits) != 1 or operators.get(edits[0][0]) != edits[0][1]:
             return {}

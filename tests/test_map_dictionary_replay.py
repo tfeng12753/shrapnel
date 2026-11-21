@@ -118,6 +118,28 @@ class DictionaryReplayTests(unittest.TestCase):
             files[name]["comparisons"]["2:11"] = "Lt"
             self.assertFalse(dictionary_update(root, change, files, comparisons=True))
 
+    def test_operator_offsets_preserve_legacy_decisions_for_utf8_and_multiple_sites(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder).resolve()
+            name = "sqlglot/example.py"
+            path = root / name
+            path.parent.mkdir()
+            before = "def f(é, x):\n    return é == x or x < 4\n"
+            path.write_text(before)
+            meta = root / "map.json"
+            meta.write_text(json.dumps({"revision": REVISION, "version": 1, "complete": True, "files": {
+                name: {"comparisons": {"2:11": {"op": "Eq", "states": {"p:1": "1"}}}}
+            }}))
+            files = build_index(meta, root, include_comparisons=True)["files"]
+            change = diff(name, before, before.replace("==", "is not"))
+            with patch("tools.map_dictionary_replay.comparison_changes", side_effect=AssertionError):
+                self.assertEqual(dictionary_update(root, change, files, comparisons=True),
+                                 {name: before.replace("==", "is not")})
+            for after in (before.replace("<", ">"), before.replace("==", "!=").replace("4", "5")):
+                self.assertFalse(dictionary_update(root, diff(name, before, after), files, comparisons=True))
+            del files[name]["operator_offsets"]
+            self.assertTrue(dictionary_update(root, change, files, comparisons=True))
+
     def test_comparison_priority_requires_complete_single_outcome(self):
         base = {"op": "Eq", "states": {"p:1": "2", "p:9": "2"}}
         self.assertTrue(one_sided(base))
