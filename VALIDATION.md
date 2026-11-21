@@ -103,7 +103,7 @@ tuning split, and the result is reported on mutants generated afterwards.
 | Item | Value |
 | --- | --- |
 | Final configuration | `{"conservative_python":false,"child_work":false,"relations":false,"probe_budget":0.0,"import_check_budget":6.0}` (unchanged; relations stays off until held-out evaluation) |
-| Public sample score and misses | OFFICIAL_RUN (container, 3 runs, 0 misses) |
+| Public sample score and misses | 166.316 s simulated, 0 misses, median total 168.0 s with CPU (container, 3 runs, commit 4c6b976, CPU 1.86/1.65/1.64 s) |
 | Held-out mutant misses and score | Not yet run (scheduled after this submission) |
 | Project commit | The commit that adds this table (see `git log`) |
 | `builder_sha256` | `cc729b2e5ee84c1fb3fb7d656fbc8f03c9f6a362a6f6801d6407e9a9d48ad7d3` (verified by `tools/map_fingerprint.py --check`) |

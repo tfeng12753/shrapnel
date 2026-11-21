@@ -29,7 +29,7 @@ The default configuration is chosen by a held-out mutant evaluation, described i
 | Item | Value |
 | --- | --- |
 | Final configuration | `{"conservative_python":false,"child_work":false,"relations":false,"probe_budget":0.0,"import_check_budget":6.0}` (unchanged; relations stays off until held-out evaluation) |
-| Public sample score | OFFICIAL_RUN (container, 3 runs, 0 misses) |
+| Public sample score | 166.316 s simulated, 0 misses, median total 168.0 s with CPU (container, 3 runs, commit 4c6b976, CPU 1.86/1.65/1.64 s) |
 | Held-out mutant misses and score | Not yet run (scheduled after this submission) |
 | Project commit | The commit that adds this table (see `git log`) |
 | Map fingerprint | `builder_sha256` `cc729b2e5ee84c1fb3fb7d656fbc8f03c9f6a362a6f6801d6407e9a9d48ad7d3`, `map_sha256` `02198f60b3809b26d3f5f3fcfd55e9882880b1483c38e6d94d6c56021418b372` (verified by `tools/map_fingerprint.py --check`) |
