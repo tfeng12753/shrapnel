@@ -12,7 +12,7 @@ to 652.5 seconds. The historical no-map run in `validation.json` cost
 1,104.510 simulated seconds. Docker limits, cgroup CPU, and the hidden batch
 still require separate measurement.
 
-The targeted Python strategy scheduled 139.455 seconds of tests, but five
+Before the short-circuit fix, the targeted Python strategy scheduled 139.455 seconds of tests, but five
 missed patches added 1,500 seconds. Coverage alone, comparison refinement,
 and refinement with probes all missed the same five. Every omitted test was
 in the executor or optimizer test module. Both use process pools, and the
@@ -41,7 +41,7 @@ in a merge-subqueries fixture. They caused five, one, and one distinct test
 failures respectively. The default selected all seven. Targeted selection
 without the child-process guard missed four tests on the optimizer patch.
 
-The selector passed 52 project tests. The mixed-block regression checks that
+The selector passed 56 project tests. The mixed-block regression checks that
 adding a branch beside a replacement retains other users of the enclosing
 function. All public patches applied to the pinned source identically before
 and after the parser change.
@@ -52,3 +52,25 @@ strategies under the challenge limits. For a local run with a complete map:
 ```sh
 python3 tools/benchmark.py --source /path/to/pinned/sqlglot --map /path/to/dependencies.json.gz
 ```
+
+## Inline worker map experiment
+
+The separate map-builder change in PR #3 was tested at commit
+`3c22982d170f44bc523cda0bac6df9200ff8d97d` on the same pinned macOS checkout.
+All 1,621 baseline tests passed. Ordinary targeted selection with comparisons
+initially missed two public patches. For the mixed patch `rszg`, replaying its
+three file edits separately showed that only the Snowflake boolean edit made
+`TestOptimizer.test_optimize` fail. That test reached the first operand at
+baseline line 99, then short-circuited before the changed operator at line 101.
+
+Selecting users of the regrouped boolean expression recovered this test.
+The preview map with ordinary targeted selection then cost 143.067 scheduled
+seconds plus one 300-second penalty, for `3utz`. The guarded default scored
+470.062 simulated seconds with zero misses using either map.
+
+On `3utz`, `TestOptimizer.test_quote_identifiers` failed while deserializing a
+result from a real process pool. It passed with the inline pool. Adding an
+isolated serialize/deserialize step for the returned result made the patched
+test fail again, while the same experiment passed on the unchanged source.
+Worker transport remains a dependency to capture before relying on the faster
+targeted strategy.

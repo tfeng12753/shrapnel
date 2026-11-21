@@ -7,7 +7,9 @@ import gzip
 import json
 import re
 import sys
+from bisect import bisect_left
 from collections import defaultdict
+from difflib import SequenceMatcher
 from functools import lru_cache
 from pathlib import Path
 
@@ -320,6 +322,68 @@ def comparison_changes(old, new):
     return classify_python_edit(baseline_tree(old), ast.parse(new, type_comments=True)) or None
 
 
+def short_circuit_edits(before, after, affected_lines):
+    """Yield baseline spans whose operand evaluation order may have changed."""
+    affected = sorted(affected_lines)
+
+    def affected_span(start, end):
+        index = bisect_left(affected, start)
+        return index < len(affected) and affected[index] <= end
+
+    def old_boolean_spans(node):
+        if isinstance(node, ast.AST):
+            for child in ast.walk(node):
+                if isinstance(child, ast.BoolOp) and affected_span(child.lineno, child.end_lineno):
+                    yield child.lineno, child.end_lineno
+
+    def shape(node):
+        if isinstance(node, ast.BoolOp):
+            return type(node.op), tuple(shape(value) for value in node.values)
+        return None
+
+    def compare(left, right):
+        if isinstance(left, ast.expr) and shape(left) != shape(right):
+            # Include the outer expression when precedence changes move operands
+            # across operators. A test may have stopped before the edited line.
+            yield left.lineno, left.end_lineno
+            return
+        if isinstance(left, list) and isinstance(right, list):
+            if len(left) == len(right):
+                for old_item, new_item in zip(left, right):
+                    yield from compare(old_item, new_item)
+                return
+            if not left:
+                return
+            if len(left) + len(right) > 128:
+                # Keep alignment bounded on large, repetitive statement lists.
+                for item in left:
+                    yield from old_boolean_spans(item)
+                return
+            # Align unchanged items when a patch also inserts or removes
+            # statements. Pairing by position can hide the relevant edit.
+            def keys(items):
+                return [ast.dump(item) if isinstance(item, ast.AST) else item for item in items]
+
+            matcher = SequenceMatcher(None, keys(left), keys(right), autojunk=False)
+            for tag, i, j, k, end in matcher.get_opcodes():
+                if tag in ("replace", "delete"):
+                    if j - i == end - k:
+                        yield from compare(left[i:j], right[k:end])
+                    else:
+                        for item in left[i:j]:
+                            yield from compare(item, None)
+            return
+        if not isinstance(left, ast.AST):
+            return
+        if type(left) is type(right):
+            for field, value in ast.iter_fields(left):
+                yield from compare(value, getattr(right, field))
+        else:
+            yield from old_boolean_spans(left)
+
+    yield from compare(before, after)
+
+
 class Selector:
     def __init__(self, tests: list[dict], source: Path, map_path: Path, *, conservative_python=False,
                  relations=True, child_work=False):
@@ -447,8 +511,9 @@ class Selector:
                 new, removed, inserted = apply_change(old, c)
                 entry = self.files.get(name)
                 if name.endswith(".py"):
+                    before, after = baseline_tree(old), ast.parse(new, type_comments=True)
                     # Compare every file: a harmless-looking comment may accompany a fixture edit.
-                    changes_at_sites = classify_python_edit(baseline_tree(old), ast.parse(new, type_comments=True))
+                    changes_at_sites = classify_python_edit(before, after)
                     if changes_at_sites == []:
                         # Tests may inspect comments or exact source text.
                         if entry is None:
@@ -476,6 +541,11 @@ class Selector:
                         return include(self.all, "unknown file readers", name)
                     continue
                 result |= include(entry["readers"], "file reader", name)
+                for start, end in sorted(set(short_circuit_edits(before, after, removed | inserted))):
+                    users = 0
+                    for line in range(start, end + 1):
+                        users |= entry["lines"].get(line, entry["anchors"].get(line, 0))
+                    result |= include(users, "short-circuit evaluation change", name, (start, end))
                 for line in removed:
                     result |= include(entry["lines"].get(line, entry["anchors"].get(line, 0)), "affected line or anchor", name, line)
                 for anchor in inserted:
