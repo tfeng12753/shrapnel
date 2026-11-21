@@ -97,12 +97,20 @@ class DictionaryReads(ast.NodeTransformer):
         return self.generic_visit(node)
 
     def visit_Call(self, node):
-        if (isinstance(node.func, ast.Attribute) and node.func.attr == "get"
-                and self.field(node.func.value) and len(node.args) in (1, 2)
-                and not node.keywords and not any(isinstance(a, ast.Starred) for a in node.args)):
-            self.direct.add(node.func.value)
+        func = node.func
+        if (not isinstance(func, ast.Attribute) or func.attr not in ("get", "__getitem__", "__contains__")
+                or node.keywords or any(isinstance(arg, ast.Starred) for arg in node.args)):
+            return self.generic_visit(node)
+        allowed = (1, 2) if func.attr == "get" else (1,)
+        if self.field(func.value) and len(node.args) in allowed:
+            self.direct.add(func.value)
             self.generic_visit(node)
             return self.call("_blast_radius_dict_get", [node.func, *node.args], node)
+        if (isinstance(func.value, ast.Name) and func.value.id == "dict"
+                and len(node.args) - 1 in allowed and self.field(node.args[0])):
+            self.direct.add(node.args[0])
+            self.generic_visit(node)
+            return self.call("_blast_radius_dict_descriptor", [node.func, *node.args], node)
         return self.generic_visit(node)
 
     def visit_Compare(self, node):
@@ -239,9 +247,15 @@ class Instrumentation:
             return mapping[key]
 
         def get(method, key, *default):
-            if type(method) is types.BuiltinMethodType and type(method.__self__) is dict:
+            if type(method) in (types.BuiltinMethodType, types.MethodWrapperType) and type(method.__self__) is dict:
                 recorder.record_dictionary(method.__self__, key)
             return method(key, *default)
+
+        def descriptor(method, mapping, key, *args):
+            if type(mapping) is dict:
+                known = any(method is op for op in (dict.get, dict.__getitem__, dict.__contains__))
+                recorder.record_dictionary(mapping, key if known else None)
+            return method(mapping, key, *args)
 
         def contains(key, mapping):
             if type(mapping) is dict:
@@ -250,7 +264,7 @@ class Instrumentation:
 
         for name, value in (("_blast_radius_dict_whole", whole), ("_blast_radius_bind_dict", bind),
                             ("_blast_radius_dict_item", item), ("_blast_radius_dict_get", get),
-                            ("_blast_radius_dict_contains", contains),
+                            ("_blast_radius_dict_contains", contains), ("_blast_radius_dict_descriptor", descriptor),
                             ("_blast_radius_attribute", attribute), ("_blast_radius_dynamic_attribute", dynamic_attribute),
                             ("_blast_radius_comparison", comparison)):
             self.saved[name] = getattr(builtins, name, None)

@@ -20,6 +20,8 @@ class Other:
     DATA = {"x": 2}
 def run(key, config):
     return TABLE[key()], config.DATA.get(key()), key() in TABLE
+def descriptors():
+    return dict.__getitem__(TABLE, "x"), TABLE.__getitem__("y"), dict.get(TABLE, "y")
 def broad():
     return len(TABLE), TABLE.copy(), list(TABLE.items()), list(TABLE), id(TABLE)
 """
@@ -40,6 +42,8 @@ def broad():
             self.assertEqual(namespace["run"](keys.__next__, namespace["Config"]), (1, None, True))
             self.assertEqual(recorder.dictionary_reads["sqlglot/sample.py", "TABLE"], {"x": {"first"}, "y": {"first"}})
             self.assertEqual(recorder.dictionary_reads["sqlglot/sample.py", "Config.DATA"]["known"], {"first"})
+            self.assertEqual(namespace["descriptors"](), (1, 2, 2))
+            self.assertNotIn(None, recorder.dictionary_reads["sqlglot/sample.py", "TABLE"])
             self.assertNotIn(("sqlglot/sample.py", "Other.DATA"), recorder.dictionary_reads)
             recorder.record_dictionary(namespace["TABLE"], "unbounded-input")
             self.assertIn("first", recorder.dictionary_reads["sqlglot/sample.py", "TABLE"][None])
