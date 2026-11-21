@@ -201,8 +201,12 @@ class Transformer(ast.NodeTransformer):
                 return False
         observe = op in ("Is", "IsNot") or (op in ("Lt", "LtE", "Gt", "GtE") and (literal(node.left) or literal(node.comparators[0])))
         if op in ("Eq", "NotEq"):
-            observe = self.function_body and node.lineno == node.end_lineno and any(isinstance(expr, ast.Constant) and type(expr.value) in (int, str, bytes, bool)
-                          for expr in (node.left, node.comparators[0]))
+            left, right = node.left, node.comparators[0]
+            size, bound = (right, left) if isinstance(left, ast.Constant) else (left, right)
+            observe = (self.function_body and node.lineno == node.end_lineno
+                       and isinstance(size, ast.Call) and isinstance(size.func, ast.Name)
+                       and size.func.id == "len" and len(size.args) == 1 and not size.keywords
+                       and isinstance(bound, ast.Constant) and type(bound.value) is int)
         if not observe:
             return node
         call = ast.Call(func=ast.Name(id="_blast_radius_comparison", ctx=ast.Load()),
@@ -265,7 +269,7 @@ class Instrumentation:
                 # identity across runs. Retain these observations as unknown.
                 state = None
                 kind = type(left)
-                if kind is type(right) and type(kind) is type and kind in (int, str, bytes, bool):
+                if kind is int and type(right) is int:
                     unequal = value if op == "NotEq" else not value
                     if unequal:
                         state = "p:2" if left < right else "p:4"

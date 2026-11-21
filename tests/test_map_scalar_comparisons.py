@@ -18,15 +18,14 @@ class ScalarComparisonTests(unittest.TestCase):
                         "Lt": operator.lt, "LtE": operator.le,
                         "Gt": operator.gt, "GtE": operator.ge,
                         "Is": operator.is_, "IsNot": operator.is_not}
-        cases = [(0, [-4, 0, 6, False]), ("m", ["a", "m", "z", 3]),
-                 (b"m", [b"a", b"m", b"z", "m"]), (True, [False, True, 1, 0])]
+        cases = [(bound, [bound - 1, bound, bound + 1, "unusual"]) for bound in (0, 1, 2, 257)]
         for literal, values in cases:
             for old, source_op in (("Eq", "=="), ("NotEq", "!=")):
                 with self.subTest(literal=literal, old=old), tempfile.TemporaryDirectory() as tmp:
                     root = Path(tmp)
                     path = root / "sqlglot" / "subject.py"
                     path.parent.mkdir()
-                    source = f"def check(value):\n    return value {source_op} {literal!r}\n"
+                    source = f"def check(value, len):\n    return len(value) {source_op} {literal!r}\n"
                     path.write_text(source)
                     model = SourceModel(root)
                     rec = Recorder(root, model, None)
@@ -41,7 +40,7 @@ class ScalarComparisonTests(unittest.TestCase):
                         spec.loader.exec_module(module)
                         for test, value in zip(tests, values):
                             rec.current, rec.phase = test["id"], "call"
-                            self.assertEqual(module.check(value), replacements[old](value, literal))
+                            self.assertEqual(module.check(value, lambda x: x), replacements[old](value, literal))
                     finally:
                         obs.restore()
                     coverage = Mock()
@@ -63,26 +62,26 @@ class ScalarComparisonTests(unittest.TestCase):
                                 changed = True
                             if changed or type(value) is not type(literal) or value == literal:
                                 self.assertTrue(mask & (1 << i), (value, old, new))
-                        if literal == "m" and old == "Eq" and new == "Lt":
-                            self.assertFalse(mask & (1 << 2))  # "z" is neither equal nor less.
+                        if literal == 1 and old == "Eq" and new == "Lt":
+                            self.assertFalse(mask & (1 << 2))  # A larger value is neither equal nor less.
 
     def test_definition_time_and_cached_code_stay_on_ordinary_coverage(self):
         from tools.instrument import Transformer
         source = """
-MODULE = label == 'x'
+MODULE = len(label) == 1
 class C:
-    flag = label != 'y'
+    flag = len(label) != 2
     @cached
     def cached(self):
-        return label == 'z'
-def plain(value=(label == 'default')):
-    return value == 'runtime'
+        return len(label) == 3
+def plain(value=(len(label) == 4)):
+    return len(value) == 5
 """
         tree = Transformer("subject.py", set()).visit(ast.parse(source))
         calls = [n for n in ast.walk(tree) if isinstance(n, ast.Call)
                  and isinstance(n.func, ast.Name) and n.func.id == "_blast_radius_comparison"]
         self.assertEqual([source.splitlines()[n.lineno - 1].strip() for n in calls],
-                         ["return value == 'runtime'"])
+                         ["return len(value) == 5"])
 
     def test_overloaded_equality_is_called_once_and_remains_unknown(self):
         class Custom:
