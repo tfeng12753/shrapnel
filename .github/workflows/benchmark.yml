@@ -21,17 +21,17 @@ jobs:
         run: make unit
       - name: Build and compare selection strategies
         if: ${{ !inputs.executor_ab }}
-        run: make competitive
-      - name: Compare executor checks under scorer limits
+        run: make variants
+      - name: Compare executor checks under container limits
         if: ${{ inputs.executor_ab }}
-        run: python tools/competitive.py --executor-ab
+        run: python tools/variants.py --executor-ab
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: blast-radius-research
+          name: shrapnel-research
           path: |
             research-bundle.zip
-            competitive-results.json
+            variant-results.json
             selector-config.json
             maps/dependencies.json
           if-no-files-found: warn

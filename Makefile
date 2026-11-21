@@ -1,8 +1,8 @@
-IMAGE ?= blast-radius-entry
+IMAGE ?= shrapnel
 SAMPLE := $(CURDIR)/sample
 OUTPUT := $(CURDIR)/output.jsonl
 
-# The flags the scorer runs your image with. The scorer is linux/amd64, so on
+# Container limits used for every run. The image is linux/amd64, so on
 # an Apple Silicon Mac --platform makes your local run match it.
 RUN_FLAGS := --rm --platform linux/amd64 --network none --cpus 2 \
 	--memory 4096m --memory-swap 4096m --pids-limit 256 --read-only \
@@ -16,7 +16,7 @@ RUN_FLAGS := --rm --platform linux/amd64 --network none --cpus 2 \
 build:
 	docker build --platform linux/amd64 --tag $(IMAGE) .
 
-# Runs your image once on the sample commits under the scorer's limits and
+# Runs the image once on the sample commits under the container limits and
 # scores what it printed.
 sample: build
 	docker run $(RUN_FLAGS) $(IMAGE) > $(OUTPUT)
@@ -49,10 +49,10 @@ safe-sample:
 	docker run $(RUN_FLAGS) $(IMAGE) > $(OUTPUT)
 	python3 score.py $(SAMPLE) $(SAMPLE)/answers.json $(OUTPUT)
 
-.PHONY: competitive
+.PHONY: variants
 
-competitive:
-	python3 tools/competitive.py --image $(IMAGE)
+variants:
+	python3 tools/variants.py --image $(IMAGE)
 
 # One-off: regenerate the map (ignoring any cached copy) with a long per-test
 # timeout (instrumented test_max_nodes exceeds 180 s), then export it to

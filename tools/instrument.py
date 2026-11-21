@@ -69,7 +69,7 @@ class Transformer(ast.NodeTransformer):
     def visit_Attribute(self, node):
         node = self.generic_visit(node)
         if isinstance(node.ctx, ast.Load) and node.attr in self.fields:
-            call = ast.Call(func=ast.Name(id="_blast_radius_attribute", ctx=ast.Load()),
+            call = ast.Call(func=ast.Name(id="_shrapnel_attribute", ctx=ast.Load()),
                             args=[node.value, ast.Constant(node.attr)], keywords=[])
             return ast.copy_location(call, node)
         return node
@@ -77,7 +77,7 @@ class Transformer(ast.NodeTransformer):
     def visit_Call(self, node):
         node = self.generic_visit(node)
         if isinstance(node.func, ast.Name) and node.func.id == "getattr":
-            call = ast.Call(func=ast.Name(id="_blast_radius_dynamic_attribute", ctx=ast.Load()),
+            call = ast.Call(func=ast.Name(id="_shrapnel_dynamic_attribute", ctx=ast.Load()),
                             args=[node.func, *node.args], keywords=node.keywords)
             return ast.copy_location(call, node)
         return node
@@ -96,7 +96,7 @@ class Transformer(ast.NodeTransformer):
         observe = op in ("Is", "IsNot") or (op in ("Lt", "LtE", "Gt", "GtE") and (literal(node.left) or literal(node.comparators[0])))
         if not observe:
             return node
-        call = ast.Call(func=ast.Name(id="_blast_radius_comparison", ctx=ast.Load()),
+        call = ast.Call(func=ast.Name(id="_shrapnel_comparison", ctx=ast.Load()),
                         args=[node.left, node.comparators[0], ast.Constant(op),
                               ast.Constant(self.path), ast.Constant(f"{node.lineno}:{node.col_offset}")], keywords=[])
         return ast.copy_location(call, node)
@@ -141,7 +141,7 @@ class Instrumentation:
             value = OPS[op](left, right)
             recorder.record_comparison(path, site, op, relation(left, right))
             return value
-        for name, value in (("_blast_radius_attribute", attribute), ("_blast_radius_dynamic_attribute", dynamic_attribute), ("_blast_radius_comparison", comparison)):
+        for name, value in (("_shrapnel_attribute", attribute), ("_shrapnel_dynamic_attribute", dynamic_attribute), ("_shrapnel_comparison", comparison)):
             self.saved[name] = getattr(builtins, name, None)
             setattr(builtins, name, value)
         self.original = importlib.machinery.SourceFileLoader.get_code

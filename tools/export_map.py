@@ -11,7 +11,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from map_fingerprint import BUILDER_FILES, REVISION, builder_digest, map_digest  # noqa: E402
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--image", default="blast-radius-entry")
+parser.add_argument("--image", default="shrapnel")
 args = parser.parse_args()
 container = subprocess.check_output(["docker", "create", args.image], text=True).strip()
 try:

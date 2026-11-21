@@ -32,5 +32,5 @@
   ],
   "median_total_seconds": 1104.562721,
   "rounded_median_seconds": 1104.6,
-  "caveat": "Local Python/CPU measurement; Docker/cgroup scorer limits are not reproduced."
+  "caveat": "Local Python/CPU measurement; Docker/cgroup container limits are not reproduced."
 }

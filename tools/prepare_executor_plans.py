@@ -1,4 +1,4 @@
-"""Build optional executor reference files on the unchanged scorer checkout."""
+"""Build optional executor reference files on the unchanged pinned checkout."""
 import argparse
 import os
 from pathlib import Path

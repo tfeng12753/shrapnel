@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "tools"))
 import map_fingerprint  # noqa: E402
-from tools.competitive import BASE, VARIANTS, selector_options  # noqa: E402
+from tools.variants import BASE, VARIANTS, selector_options  # noqa: E402
 
 
 def selector_config_keys():

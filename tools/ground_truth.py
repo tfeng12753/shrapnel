@@ -4,7 +4,7 @@ Copies the pinned checkout, applies the patch with the selector's own strict
 patch reader, runs the full unchanged suite with real process pools, and writes
 the failing catalog numbers. Subtest failures count against their owning test.
 
-    docker run --rm -v $PWD:/repo:ro -v $PWD/mutants:/m blast-radius-entry \
+    docker run --rm -v $PWD:/repo:ro -v $PWD/mutants:/m shrapnel \
         python /repo/tools/ground_truth.py /m/commits/m01000.patch /m/results/m01000.json
 """
 import json

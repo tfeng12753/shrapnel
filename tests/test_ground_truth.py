@@ -14,7 +14,7 @@ NUMBER = {
     "tests/dialects/test_duckdb.py::TestDuckDB::test_time": 3,
 }
 
-# Captured from pytest 9.2.0 in the submission image.
+# Captured from pytest 9.2.0 in the selector image.
 STDOUT = """\
 tests/test_sub.py:6: AssertionError
 =========================== short test summary info ============================

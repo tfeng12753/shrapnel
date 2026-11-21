@@ -1,12 +1,12 @@
 """Generate held-out single-edit mutants of the pinned sqlglot checkout (evaluation only).
 
-The public patches look machine-made: one-token operator, boolean, or number
+The sample patches look machine-made: one-token operator, boolean, or number
 edits in sqlglot, corrupted lines in SQL fixtures, comment-only edits, and a few
 multi-file combinations. This writes fresh patches of the same kinds so selector
 changes can be checked against data they were not tuned on. Lines touched by the
-public sample patches are excluded.
+sample patches are excluded.
 
-Nothing here is copied into the submission image, and no output of this tool may
+Nothing here is copied into the selector image, and no output of this tool may
 be used as selector input: it exists only to measure misses and cost.
 
     python3 tools/mutants.py --source /path/to/pinned/sqlglot --out mutants --count 40 --seed 1
@@ -38,7 +38,7 @@ def diff(name, old, new):
 
 
 def sample_lines(sample):
-    """(file, line) pairs the public patches touch, so mutants stay independent."""
+    """(file, line) pairs the sample patches touch, so mutants stay independent."""
     touched = set()
     for patch in Path(sample, "commits").glob("*.patch"):
         name, line = None, 0

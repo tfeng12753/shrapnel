@@ -25,7 +25,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from score import evaluate_run, _duration_milliseconds, MISS_PENALTY_MILLISECONDS, WORKER_COST_MILLISECONDS  # noqa: E402
 from selector import split  # noqa: E402
-from tools.competitive import VARIANTS, selector_options  # noqa: E402
+from tools.variants import VARIANTS, selector_options  # noqa: E402
 
 KINDS = ("code", "fixture", "comment", "multi")
 # Last line of a pytest -q run, e.g. "3 failed, 1200 passed, 2 skipped in 61.20s (0:01:01)".

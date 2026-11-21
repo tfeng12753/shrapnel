@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Local scorer for the blast radius track. The rules are in SCORING.md.
+"""Local implementation of the cost model in COST_MODEL.md.
 
 Teams:    python3 score.py <data_dir> <answers.json> <output_file> [--cpu-seconds 1.5]
 Harness:  python3 score.py --batch < request.json
@@ -53,7 +53,7 @@ def _parse_json_line(line: str) -> Any:
 
 
 def _whole_number(value: Any) -> int | None:
-    # bool is a subclass of int in Python, and SCORING.md says `true` is not a number.
+    # bool is a subclass of int in Python, and COST_MODEL.md says `true` is not a number.
     if isinstance(value, bool):
         return None
     if isinstance(value, int):
@@ -64,8 +64,8 @@ def _whole_number(value: Any) -> int | None:
 
 
 def _duration_milliseconds(seconds: float) -> int:
-    # Rounds halves up like JavaScript's Math.round, so the server's scorer and
-    # this one agree even on a duration that does not have three decimals.
+    # Rounds halves up like JavaScript's Math.round, so other implementations of
+    # the cost model agree even on a duration that does not have three decimals.
     return math.floor(seconds * 1000 + 0.5)
 
 
@@ -236,7 +236,7 @@ def _run_report(arguments: list[str]) -> int:
     tests = json.loads((options.data_dir / "tests.json").read_text("utf-8"))["tests"]
     answers = json.loads(options.answers.read_text("utf-8"))["commits"]
 
-    # SCORING.md defines the known commits by the patch files, while score_run
+    # COST_MODEL.md defines the known commits by the patch files, while score_run
     # takes them from the answers, so the report is only right when they agree.
     patch_commits = {
         patch_path.name.removesuffix(".patch")
@@ -273,8 +273,8 @@ def _run_report(arguments: list[str]) -> int:
         print(f"  missed {commit}")
     if options.cpu_seconds is None:
         print(
-            "CPU:       not measured here. The simulated seconds above are exact. The board adds "
-            "the CPU seconds your container used and takes the middle of 3 runs."
+            "CPU:       not measured here. The simulated seconds above are exact. A full total adds "
+            "the CPU seconds the container used, summarized over 3 runs."
         )
         return 0
     cpu_microseconds = round(options.cpu_seconds * MICROSECONDS_PER_SECOND)

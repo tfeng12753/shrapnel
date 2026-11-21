@@ -17,4 +17,4 @@ with tarfile.open(fileobj=io.BytesIO(archive), mode="r:gz") as source:
             continue
         member.name = str(Path(*relative))
         source.extract(member, root, filter="data")
-(root / ".blast-radius-revision").write_text(REVISION + "\n")
+(root / ".pinned-revision").write_text(REVISION + "\n")

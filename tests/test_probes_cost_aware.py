@@ -88,7 +88,7 @@ class CostAwareProbeTests(unittest.TestCase):
         passed, _ = self.run_native(
             "import unittest\n"
             "class Case(unittest.TestCase):\n"
-            "    @unittest.skip('requires scorer environment')\n"
+            "    @unittest.skip('requires container environment')\n"
             "    def test_slow(self): pass\n"
         )
         self.assertEqual(passed, [])

@@ -11,7 +11,7 @@ set -u
 M=$(cd "$1" && pwd)
 PARALLEL=${2:-2}
 DEADLINE=${3:-0}
-IMAGE=${4:-blast-radius-entry}
+IMAGE=${4:-shrapnel}
 REPO=$(cd "$(dirname "$0")/.." && pwd)
 LOG="$M/ground-truth.log"
 mkdir -p "$M/results"

@@ -1,14 +1,14 @@
-# How a run is scored
+# Cost model
 
-These are the exact rules. `score.py` in this kit and the scorer on the server each follow them, and the two are compared on thousands of outputs before the event. For the same output, the simulated seconds you compute locally are the simulated seconds the server computes. The board's number also holds the CPU time your container used on the server, which `make sample` does not measure, and it is the middle of 3 runs.
+`score.py` implements these rules exactly. The total for a run also includes the CPU time the container used, which `make sample` does not measure; repeated runs are summarized by their median.
 
 ## Inputs
 
-`/data/tests.json` is `{"tests": [...]}`. Each entry is `{"number": 12, "id": "tests/test_parser.py::TestParser::test_union", "file": "tests/test_parser.py", "seconds": 0.031}`. Numbers run from 0 with no gaps, in the order listed. `seconds` has three decimals. A second key, `skipped`, names tests that our environment skips. They cannot fail and have no number.
+`/data/tests.json` is `{"tests": [...]}`. Each entry is `{"number": 12, "id": "tests/test_parser.py::TestParser::test_union", "file": "tests/test_parser.py", "seconds": 0.031}`. Numbers run from 0 with no gaps, in the order listed. `seconds` has three decimals. A second key, `skipped`, names tests the environment skips. They cannot fail and have no number.
 
 `/data/commits/<id>.patch` is one unified diff against the pinned sqlglot commit. The commit's id is the file name without `.patch`.
 
-The answers, which only the sample set ships, are `{"commits": {"<id>": {"failing": [12, 845], "kind": "code"}}}`. `failing` lists the numbers of the tests that fail on that commit.
+Sample answers (only the sample set has them) are `{"commits": {"<id>": {"failing": [12, 845], "kind": "code"}}}`. `failing` lists the numbers of the tests that fail on that commit.
 
 ## Reading your output
 
@@ -52,8 +52,6 @@ A commit is a miss when at least one of its failing tests is in none of its work
 
 CPU time is what every process in your container used, user and system together, from start to exit, in microseconds. The build is not charged.
 
-## A submission's score
+## Summarizing repeated runs
 
-Your image runs 3 times. All 3 must be valid. The score is the middle of the 3 totals, rounded to a tenth of a second with halves rounded up: `floor((microseconds + 50000) / 100000) / 10`.
-
-Lower is better. Equal scores rank the earlier submission first.
+The image runs 3 times and all 3 must be valid. The summary is the middle of the 3 totals, rounded to a tenth of a second with halves rounded up: `floor((microseconds + 50000) / 100000) / 10`. Lower is better.

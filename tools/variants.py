@@ -51,7 +51,7 @@ def selector_options(config):
 
 
 def run_container(image, data, options, tests, answers, *, trace_pytest=False):
-    name = "blast-radius-bench-" + uuid.uuid4().hex[:12]
+    name = "shrapnel-bench-" + uuid.uuid4().hex[:12]
     command = ["docker", "run", "--rm", "--name", name, "--platform", "linux/amd64", "--network", "none",
         "--cpus", "2", "--memory", "4096m", "--memory-swap", "4096m", "--pids-limit", "256", "--read-only",
         "--tmpfs", "/tmp:rw,size=64m,mode=1777", "--cap-drop", "ALL", "--security-opt", "no-new-privileges",
@@ -87,7 +87,7 @@ def run_container(image, data, options, tests, answers, *, trace_pytest=False):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--image", default="blast-radius-entry")
+    parser.add_argument("--image", default="shrapnel")
     parser.add_argument("--executor-ab", action="store_true",
                         help="Compare the main, fixture and 12-CPU-second plan configurations without changing the config")
     parser.add_argument("--skip-build", action="store_true")
@@ -135,9 +135,9 @@ def main():
     # A missed commit is never hidden by a favorable average over other commits.
     valid = {key: value for key, value in report.items() if all(run["misses"] == 0 for run in value["runs"])}
     report["best_zero_miss_variant"] = min(valid, key=lambda key: valid[key]["median_total_seconds"]) if valid else None
-    report["measurement_note"] = "CPU includes a small Python benchmark wrapper; official cgroup accounting may differ."
+    report["measurement_note"] = "CPU includes a small Python benchmark wrapper; cgroup accounting elsewhere may differ."
     payload = json.dumps(report, indent=2).encode()
-    (ROOT / "competitive-results.json").write_bytes(payload + b"\n")
+    (ROOT / "variant-results.json").write_bytes(payload + b"\n")
     print("Best zero-miss variant:", report["best_zero_miss_variant"])
     if args.executor_ab:
         if len(valid) != len(variants):
@@ -156,7 +156,7 @@ def main():
             if run["misses"] or run["simulated_seconds"] not in measured:
                 raise SystemExit(f"rebuilt default does not reproduce {best}: {run} vs {sorted(measured)}")
             report["validated_default"] = run
-            (ROOT / "competitive-results.json").write_text(json.dumps(report, indent=2) + "\n")
+            (ROOT / "variant-results.json").write_text(json.dumps(report, indent=2) + "\n")
             print(f"Validated rebuilt default: simulated={run['simulated_seconds']:.3f}s misses=0")
     else:
         print("No variant had zero misses. The exported evidence is needed to debug dependencies.")
@@ -170,7 +170,7 @@ def main():
             source_tar = subprocess.check_output(["docker", "cp", container + ":/opt/sqlglot/.", "-"])
             destination = ROOT / "research-bundle.zip"
             with zipfile.ZipFile(destination, "w", zipfile.ZIP_DEFLATED) as archive:
-                archive.writestr("competitive-results.json", payload)
+                archive.writestr("variant-results.json", payload)
                 archive.write(map_path, "dependencies.json.gz")
                 archive.writestr("pinned-sqlglot.tar.gz", gzip.compress(source_tar, compresslevel=6))
                 for name, output in outputs.items():

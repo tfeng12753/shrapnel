@@ -2,7 +2,7 @@ name: Held-out mutant ground truth
 # Evaluation only: generates seeded mutants of the pinned sqlglot checkout, runs the
 # real unchanged suite on each (real process pools) to record which tests fail, then
 # scores every selector variant against them. Mutants and results are never selector
-# input and never enter the submission image.
+# input and never enter the selector image.
 #
 # Each shard uses its own seed (seed_base + shard index), so shards never overlap.
 # A shard stops starting new mutants after budget_minutes and uploads what it has.
@@ -48,14 +48,14 @@ jobs:
       - uses: actions/checkout@v4
       - name: Start the clock
         run: echo "DEADLINE=$(( $(date +%s) + ${{ inputs.budget_minutes }} * 60 ))" >> "$GITHUB_ENV"
-      - name: Build the submission image (cached map, no network at run time)
-        run: docker build --platform linux/amd64 -t blast-radius-entry .
+      - name: Build the selector image (cached map, no network at run time)
+        run: docker build --platform linux/amd64 -t shrapnel .
       - name: Generate mutants
         run: |
           seed=$(( ${{ inputs.seed_base }} + ${{ matrix.shard }} ))
           echo "SEED=$seed" >> "$GITHUB_ENV"
           mkdir -p "$RUNNER_TEMP/mutants"
-          docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/repo:ro" -v "$RUNNER_TEMP/mutants:/m" blast-radius-entry \
+          docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/repo:ro" -v "$RUNNER_TEMP/mutants:/m" shrapnel \
             python /repo/tools/mutants.py --source /opt/sqlglot --sample /repo/sample --out /m \
               --count ${{ inputs.mutants_per_shard }} --seed "$seed"
       - name: Run the real suite on each mutant
@@ -105,12 +105,12 @@ jobs:
           print(f"{len(manifest)} mutants generated, {len(list((out / 'results').glob('*.json'))) - 1} with results, "
                 f"{len(baselines)} baselines, baseline failures {failing}")
           EOF
-      - name: Build the submission image
-        run: docker build --platform linux/amd64 -t blast-radius-entry .
+      - name: Build the selector image
+        run: docker build --platform linux/amd64 -t shrapnel .
       - name: Score every selector variant
         run: |
           for split in holdout tune all; do
-            docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/repo:ro" -v "$RUNNER_TEMP/all:/m" blast-radius-entry \
+            docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/repo:ro" -v "$RUNNER_TEMP/all:/m" shrapnel \
               python /repo/tools/mutant_eval.py --mutants /m --source /opt/sqlglot --map /app/dependencies.json.gz \
                 --import-closure /app/import-closure.json --catalog /repo/sample/tests.json \
                 --split "$split" --out "/m/eval-$split.json" | tee "$RUNNER_TEMP/eval-$split.txt"

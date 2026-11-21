@@ -64,7 +64,7 @@ def main():
     total = statistics.median(run["total_seconds"] for run in runs)
     report = {"dependency_map_present": args.map.is_file(), "selector_options": options, "runs": runs, "median_total_seconds": total,
               "rounded_median_seconds": int(total * 10 + .5) / 10,
-              "caveat": "Local Python/CPU measurement; Docker/cgroup scorer limits are not reproduced."}
+              "caveat": "Local Python/CPU measurement; Docker/cgroup container limits are not reproduced."}
     print(f"Median total: {report['rounded_median_seconds']:.1f} s")
     if args.report:
         args.report.write_text(json.dumps(report, indent=2) + "\n")

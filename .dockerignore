@@ -7,7 +7,7 @@ output.jsonl
 *.zip
 tests
 README.md
-SCORING.md
+COST_MODEL.md
 score.py
 
 *.bundle
