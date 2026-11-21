@@ -1,0 +1,12 @@
+diff --git a/sqlglot/lineage.py b/sqlglot/lineage.py
+--- a/sqlglot/lineage.py
++++ b/sqlglot/lineage.py
+@@ -496,7 +496,7 @@
+             # is unknown. This can happen if the definition of a source used in a query is not
+             # passed into the `sources` map.
+             col_expr = col_source or exp.Placeholder()
+-            leaf = Node(name=c.sql(comments=False), source=col_expr, expression=col_expr)
++            leaf = Node(name=c.sql(comments=True), source=col_expr, expression=col_expr)
+             node.downstream.append(leaf)
+             if on_node:
+                 on_node(leaf)

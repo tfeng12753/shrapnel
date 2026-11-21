@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/sqlite.py b/sqlglot/generators/sqlite.py
+--- a/sqlglot/generators/sqlite.py
++++ b/sqlglot/generators/sqlite.py
+@@ -286,7 +286,7 @@
+         modifier = modifier.unnest()
+         if (
+             unit
+-            and not isinstance(modifier, exp.Literal)
++            or not isinstance(modifier, exp.Literal)
+             and not (isinstance(modifier, exp.Neg) and modifier.this.is_number)
+         ):
+             return self.func(

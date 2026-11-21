@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/aggregate.py b/sqlglot/expressions/aggregate.py
+--- a/sqlglot/expressions/aggregate.py
++++ b/sqlglot/expressions/aggregate.py
+@@ -212,7 +212,7 @@
+ 
+ 
+ class Ntile(Expression, AggFunc):
+-    arg_types = {"this": False}
++    arg_types = {"this": True}
+ 
+ 
+ class NthValue(Expression, AggFunc):

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/builders.py b/sqlglot/expressions/builders.py
+--- a/sqlglot/expressions/builders.py
++++ b/sqlglot/expressions/builders.py
+@@ -214,7 +214,7 @@
+     Returns:
+         Delete: the syntax tree for the DELETE statement.
+     """
+-    delete_expr = Delete().delete(table, dialect=dialect, copy=False, **opts)
++    delete_expr = Delete().delete(table, dialect=dialect, copy=True, **opts)
+     if where:
+         delete_expr = delete_expr.where(where, dialect=dialect, copy=False, **opts)
+     if returning:

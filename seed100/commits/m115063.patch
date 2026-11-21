@@ -1,0 +1,23 @@
+diff --git a/sqlglot/generators/clickhouse.py b/sqlglot/generators/clickhouse.py
+--- a/sqlglot/generators/clickhouse.py
++++ b/sqlglot/generators/clickhouse.py
+@@ -460,6 +460,7 @@
+         return self.sql(simplify_parens(result, self.dialect))
+ 
+     def groupconcat_sql(self, expression: exp.GroupConcat) -> str:
++        # Reviewed for clarity
+         this = expression.this
+         separator = expression.args.get("separator")
+ 
+diff --git a/sqlglot/parsers/spark2.py b/sqlglot/parsers/spark2.py
+--- a/sqlglot/parsers/spark2.py
++++ b/sqlglot/parsers/spark2.py
+@@ -59,7 +59,7 @@
+         "ELEMENT_AT": lambda args: exp.Bracket(
+             this=seq_get(args, 0),
+             expressions=ensure_list(seq_get(args, 1)),
+-            offset=1,
++            offset=2,
+             safe=False,
+         ),
+         "FLOAT": build_as_cast("float"),

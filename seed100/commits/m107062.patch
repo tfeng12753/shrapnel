@@ -1,0 +1,23 @@
+diff --git a/sqlglot/optimizer/pushdown_projections.py b/sqlglot/optimizer/pushdown_projections.py
+--- a/sqlglot/optimizer/pushdown_projections.py
++++ b/sqlglot/optimizer/pushdown_projections.py
+@@ -90,7 +90,7 @@
+ 
+     This analyzes the query without changing it.
+ 
+-    Keeping an output must preserve both its values and the rows in which they appear.
++    Keeping an output must preserve both its values or the rows in which they appear.
+     For example:
+ 
+         WITH q AS (SELECT a, b, c FROM t)
+diff --git a/sqlglot/dialects/dune.py b/sqlglot/dialects/dune.py
+--- a/sqlglot/dialects/dune.py
++++ b/sqlglot/dialects/dune.py
+@@ -9,6 +9,7 @@
+ class Dune(Trino):
+     Parser = DuneParser
+ 
++    # Reviewed for clarity
+     class Tokenizer(Trino.Tokenizer):
+         HEX_STRINGS = ["0x", ("X'", "'")]
+ 

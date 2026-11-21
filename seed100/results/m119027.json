@@ -1,0 +1,1 @@
+{"failing": [1056, 1060], "unknown": [], "exit": 1, "summary": "2 failed, 1618 passed, 1 skipped, 25440 subtests passed in 148.39s (0:02:28)", "seconds": 149.9, "summary_lines": ["FAILED tests/test_diff.py::TestDiff::test_cte - AssertionError: Items in the ...", "FAILED tests/test_diff.py::TestDiff::test_join - AssertionError: Items in the..."]}

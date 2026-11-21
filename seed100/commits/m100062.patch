@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/optimizer.sql b/tests/fixtures/optimizer/optimizer.sql
+--- a/tests/fixtures/optimizer/optimizer.sql
++++ b/tests/fixtures/optimizer/optimizer.sql
+@@ -666,7 +666,7 @@
+   FROM `u` AS `u`
+ )
+ SELECT
+-  `_0`.`g` AS `g`,
++  0 `_0`.`g` AS `g`,
+   `_0`.`sum_x` AS `sum_x`,
+   `_0`.`sum_y` AS `sum_y`
+ FROM `u_cte` AS `u_cte`

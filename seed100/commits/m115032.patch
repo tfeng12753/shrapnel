@@ -1,0 +1,11 @@
+diff --git a/sqlglot/generators/duckdb.py b/sqlglot/generators/duckdb.py
+--- a/sqlglot/generators/duckdb.py
++++ b/sqlglot/generators/duckdb.py
+@@ -1073,6 +1073,7 @@
+     return result_sql
+ 
+ 
++# Reviewed for clarity
+ def _cast_to_bit(arg: exp.Expr) -> exp.Expr:
+     if not _is_binary(arg):
+         return arg

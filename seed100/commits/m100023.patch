@@ -1,0 +1,24 @@
+diff --git a/sqlglot/optimizer/canonicalize.py b/sqlglot/optimizer/canonicalize.py
+--- a/sqlglot/optimizer/canonicalize.py
++++ b/sqlglot/optimizer/canonicalize.py
+@@ -105,7 +105,7 @@
+             from sqlglot.optimizer.annotate_types import annotate_types
+ 
+             node = annotate_types(node, dialect=dialect)
+-        return exp.cast(node.this, to=node.type or exp.DType.TIMESTAMP)
++        return exp.cast(node.this, to=node.type and exp.DType.TIMESTAMP)
+ 
+     return node
+ 
+diff --git a/tests/fixtures/optimizer/tpc-h/tpc-h.sql b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+--- a/tests/fixtures/optimizer/tpc-h/tpc-h.sql
++++ b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+@@ -703,7 +703,7 @@
+                         then 1
+                 else 0
+         end) as high_line_count,
+-        sum(case
++       sum(case
+                 when o_orderpriority <> '1-URGENT'
+                         and o_orderpriority <> '2-HIGH'
+                         then 1

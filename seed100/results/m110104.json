@@ -1,0 +1,1 @@
+{"failing": [157], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 117.29s (0:01:57)", "seconds": 118.9, "summary_lines": ["SUBFAILED[trino -> SELECT * FROM (SELECT * EXCEPT (pos), CAST(pos AS BIGINT) + 1 AS ordinality FROM POSEXPLODE(ARRAY(10, 20)))] tests/dialects/test_databricks.py::TestDatabricks::test_unnest_with_ordinality"]}

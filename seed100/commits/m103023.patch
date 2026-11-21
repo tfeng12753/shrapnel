@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/annotate_types.sql b/tests/fixtures/optimizer/annotate_types.sql
+--- a/tests/fixtures/optimizer/annotate_types.sql
++++ b/tests/fixtures/optimizer/annotate_types.sql
+@@ -105,7 +105,7 @@
+ MAP(ARRAY(x), ARRAY(1));
+ UNKNOWN;
+ 
+-STRUCT(MAP(ARRAY(1), ARRAY(x)) AS a);
++STRUCT(MAP(ARRAY(1), ARRAY(x)) AS
+ UNKNOWN;
+ 
+ ARRAY_AGG(ARRAY(x));

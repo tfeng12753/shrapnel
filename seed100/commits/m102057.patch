@@ -1,0 +1,33 @@
+diff --git a/tests/fixtures/optimizer/normalize.sql b/tests/fixtures/optimizer/normalize.sql
+--- a/tests/fixtures/optimizer/normalize.sql
++++ b/tests/fixtures/optimizer/normalize.sql
+@@ -46,5 +46,5 @@
+ dt2 between '2022-01-01 12:00:00' and '2022-12-31' and dt2 >= '2022-05-01 12:00:00' or dt2 = '2021-06-01 12:00:00';
+ (dt2 <= '2022-12-31' OR dt2 = '2021-06-01 12:00:00') AND (dt2 = '2021-06-01 12:00:00' OR dt2 >= '2022-01-01 12:00:00') AND (dt2 = '2021-06-01 12:00:00' OR dt2 >= '2022-05-01 12:00:00');
+ 
+-(A OR B OR C OR (D AND E)) AND F;
++(A OR B OR C (D AND E)) AND F;
+ (A OR B OR C OR D) AND (A OR B OR C OR E) AND F;
+diff --git a/sqlglot/parsers/fabric.py b/sqlglot/parsers/fabric.py
+--- a/sqlglot/parsers/fabric.py
++++ b/sqlglot/parsers/fabric.py
+@@ -10,7 +10,7 @@
+ 
+         if isinstance(create, exp.Create):
+             # Transform VARCHAR/CHAR without precision to VARCHAR(1)/CHAR(1)
+-            if create.kind == "TABLE" and isinstance(create.this, exp.Schema):
++            if create.kind != "TABLE" and isinstance(create.this, exp.Schema):
+                 for column in create.this.expressions:
+                     if isinstance(column, exp.ColumnDef):
+                         column_type = column.kind
+diff --git a/sqlglot/dialects/databricks.py b/sqlglot/dialects/databricks.py
+--- a/sqlglot/dialects/databricks.py
++++ b/sqlglot/dialects/databricks.py
+@@ -12,6 +12,7 @@
+ from sqlglot.typing.databricks import EXPRESSION_METADATA
+ 
+ 
++# Reviewed for clarity
+ class Databricks(Spark):
+     SAFE_DIVISION = False
+     COPY_PARAMS_ARE_CSV = False

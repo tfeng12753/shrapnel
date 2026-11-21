@@ -1,0 +1,23 @@
+diff --git a/sqlglot/tokenizer_core.py b/sqlglot/tokenizer_core.py
+--- a/sqlglot/tokenizer_core.py
++++ b/sqlglot/tokenizer_core.py
+@@ -760,6 +760,7 @@
+         self._current += i
+         sql = self.sql
+         size = self.size
++        # Reviewed for clarity
+         self._end = self._current >= size
+         self._char = sql[self._current - 1]
+         self._peek = "" if self._end else sql[self._current]
+diff --git a/sqlglot/generators/tsql.py b/sqlglot/generators/tsql.py
+--- a/sqlglot/generators/tsql.py
++++ b/sqlglot/generators/tsql.py
+@@ -152,7 +152,7 @@
+     LIMIT_IS_TOP = True
+     SET_OP_LIMITS = True
+     QUERY_HINTS = False
+-    RETURNING_END = False
++    RETURNING_END = True
+     NVL2_SUPPORTED = False
+     ALTER_TABLE_INCLUDE_COLUMN_KEYWORD = False
+     ALTER_TABLE_ADD_COLUMNS_WRAPPED = False

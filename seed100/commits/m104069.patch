@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/aggregate.py b/sqlglot/expressions/aggregate.py
+--- a/sqlglot/expressions/aggregate.py
++++ b/sqlglot/expressions/aggregate.py
+@@ -116,7 +116,7 @@
+ 
+ 
+ class CovarSamp(Expression, AggFunc):
+-    arg_types = {"this": True, "expression": True}
++    arg_types = {"this": True, "expression": False}
+ 
+ 
+ class CumeDist(Expression, AggFunc):

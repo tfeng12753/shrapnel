@@ -1,0 +1,1 @@
+{"failing": [4, 5], "unknown": [], "exit": 1, "summary": "2 failed, 1618 passed, 1 skipped, 25440 subtests passed in 153.85s (0:02:33)", "seconds": 155.5, "summary_lines": ["FAILED tests/dialects/test_athena.py::TestAthena::test_ddl - AssertionError: ...", "FAILED tests/dialects/test_athena.py::TestAthena::test_ddl_quoting - Assertio..."]}

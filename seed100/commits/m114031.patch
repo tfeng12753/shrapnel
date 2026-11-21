@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/pushdown_projections.py b/sqlglot/optimizer/pushdown_projections.py
+--- a/sqlglot/optimizer/pushdown_projections.py
++++ b/sqlglot/optimizer/pushdown_projections.py
+@@ -342,7 +342,7 @@
+             if (
+                 name in scope.semi_or_anti_join_tables
+                 or scope.scans_all_subscope_columns
+-                or scope.pivots
++                and scope.pivots
+                 or isinstance(first, exp.QueryTransform)
+             ):
+                 scope_node.dependencies.extend(source_outputs)

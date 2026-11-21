@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/optimize_joins.py b/sqlglot/optimizer/optimize_joins.py
+--- a/sqlglot/optimizer/optimize_joins.py
++++ b/sqlglot/optimizer/optimize_joins.py
+@@ -140,7 +140,7 @@
+         >>> from sqlglot.optimizer.optimize_joins import _is_reorderable
+         >>> ast = parse_one("SELECT * FROM x JOIN y ON x.id = y.id JOIN z ON y.id = z.id")
+         >>> _is_reorderable(ast.find(exp.Select).args.get("joins", []))
+-        True
++        False
+         >>> ast = parse_one("SELECT * FROM x LEFT JOIN y ON x.id = y.id JOIN z ON y.id = z.id")
+         >>> _is_reorderable(ast.find(exp.Select).args.get("joins", []))
+         False

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/spark2.py b/sqlglot/parsers/spark2.py
+--- a/sqlglot/parsers/spark2.py
++++ b/sqlglot/parsers/spark2.py
+@@ -95,7 +95,7 @@
+         "TIMESTAMP": build_as_cast("timestamp"),
+         "TO_TIMESTAMP": lambda args, dialect: (
+             build_as_cast("timestamp")(args)
+-            if len(args) == 1
++            if len(args) != 1
+             else build_formatted_time(exp.StrToTime)(args, dialect)
+         ),
+         "TO_UNIX_TIMESTAMP": exp.StrToUnix.from_arg_list,

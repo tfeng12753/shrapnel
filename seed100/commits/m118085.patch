@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/helpers.py b/sqlglot/optimizer/helpers.py
+--- a/sqlglot/optimizer/helpers.py
++++ b/sqlglot/optimizer/helpers.py
+@@ -55,7 +55,7 @@
+                     has_aggregate = bool(find_in_scope(window, exp.AggFunc))
+                     window.meta[WINDOW_HAS_AGGREGATE] = has_aggregate
+                 if has_aggregate:
+-                    return True
++                    return False
+ 
+                 name = window.alias
+         elif isinstance(node, exp.AggFunc) and id(node) not in windowed_aggregates:

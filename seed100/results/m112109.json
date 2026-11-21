@@ -1,0 +1,1 @@
+{"failing": [313], "unknown": [], "exit": 1, "summary": "1 failed, 1619 passed, 1 skipped, 25429 subtests passed in 130.07s (0:02:10)", "seconds": 132.2, "summary_lines": ["FAILED tests/dialects/test_drill.py::TestDrill::test_ilike - sqlglot.errors.P..."]}

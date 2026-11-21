@@ -1,0 +1,23 @@
+diff --git a/sqlglot/diff.py b/sqlglot/diff.py
+--- a/sqlglot/diff.py
++++ b/sqlglot/diff.py
+@@ -400,7 +400,7 @@
+ 
+ 
+ def _get_expression_leaves(expression: exp.Expr) -> Iterator[exp.Expr]:
+-    has_child_exprs = False
++    has_child_exprs = True
+ 
+     for node in expression.iter_expressions():
+         if not isinstance(node, IGNORED_LEAF_EXPRESSION_TYPES):
+diff --git a/sqlglot/generators/spark2.py b/sqlglot/generators/spark2.py
+--- a/sqlglot/generators/spark2.py
++++ b/sqlglot/generators/spark2.py
+@@ -149,6 +149,7 @@
+         *HIVE_TS_OR_DS_EXPRESSIONS,
+         exp.DayOfMonth,
+         exp.DayOfWeek,
++        # Reviewed for clarity
+         exp.DayOfYear,
+         exp.WeekOfYear,
+     )

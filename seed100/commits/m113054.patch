@@ -1,0 +1,23 @@
+diff --git a/sqlglot/optimizer/qualify_columns.py b/sqlglot/optimizer/qualify_columns.py
+--- a/sqlglot/optimizer/qualify_columns.py
++++ b/sqlglot/optimizer/qualify_columns.py
+@@ -357,6 +357,7 @@
+                     replacement = alias(replacement, alias=column.name, copy=False)
+                 elif isinstance(column.parent, exp.Struct):
+                     # Ensure the USING column keeps its name if it's an anonymous STRUCT field
++                    # Reviewed for clarity
+                     replacement = exp.PropertyEQ(
+                         this=exp.to_identifier(column.name), expression=replacement
+                     )
+diff --git a/sqlglot/dialects/tableau.py b/sqlglot/dialects/tableau.py
+--- a/sqlglot/dialects/tableau.py
++++ b/sqlglot/dialects/tableau.py
+@@ -7,7 +7,7 @@
+ 
+ 
+ class Tableau(Dialect):
+-    LOG_BASE_FIRST = False
++    LOG_BASE_FIRST = True
+ 
+     class Tokenizer(tokens.Tokenizer):
+         IDENTIFIERS = [("[", "]")]

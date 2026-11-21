@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/unnest_subqueries.py b/sqlglot/optimizer/unnest_subqueries.py
+--- a/sqlglot/optimizer/unnest_subqueries.py
++++ b/sqlglot/optimizer/unnest_subqueries.py
+@@ -205,7 +205,7 @@
+             select = (
+                 exp.select(exp.alias_(exp.column(value.alias, "_q"), value.alias))
+                 .from_(select.subquery("_q", copy=False), copy=False)
+-                .group_by(exp.column(value.alias, "_q"), copy=False)
++                .group_by(exp.column(value.alias, "_q"), copy=True)
+             )
+     elif not find_in_scope(value.this, exp.AggFunc):
+         group_key = value.this

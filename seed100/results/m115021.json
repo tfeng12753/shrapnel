@@ -1,0 +1,1 @@
+{"failing": [517, 532], "unknown": [], "exit": 1, "summary": "2 failed, 1618 passed, 1 skipped, 25350 subtests passed in 152.90s (0:02:32)", "seconds": 154.7, "summary_lines": ["FAILED tests/dialects/test_oracle.py::TestOracle::test_flashback - AssertionE...", "FAILED tests/dialects/test_oracle.py::TestOracle::test_oracle - AssertionErro..."]}

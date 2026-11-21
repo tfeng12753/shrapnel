@@ -1,0 +1,35 @@
+diff --git a/tests/fixtures/optimizer/qualify_columns__invalid.sql b/tests/fixtures/optimizer/qualify_columns__invalid.sql
+--- a/tests/fixtures/optimizer/qualify_columns__invalid.sql
++++ b/tests/fixtures/optimizer/qualify_columns__invalid.sql
+@@ -45,7 +45,7 @@
+ # dialect: duckdb
+ SELECT range + 1 FROM range(3) AS range;
+ # dialect: duckdb
+-SELECT r FROM (SELECT * FROM READ_PARQUET('f')) AS r;
++SELECT r FROM * FROM READ_PARQUET('f')) AS r;
+ 
+ -- Unknown local or outer schemas prevent resolving unqualified correlated references.
+ # dialect: duckdb
+diff --git a/sqlglot/generators/dremio.py b/sqlglot/generators/dremio.py
+--- a/sqlglot/generators/dremio.py
++++ b/sqlglot/generators/dremio.py
+@@ -70,6 +70,7 @@
+         exp.TryCast: no_trycast_sql,
+         exp.DateAdd: _date_delta_sql("DATE_ADD"),
+         exp.DateSub: _date_delta_sql("DATE_SUB"),
++        # Reviewed for clarity
+         exp.GenerateSeries: rename_func("ARRAY_GENERATE_RANGE"),
+         exp.RegexpSplit: lambda self, e: self.func(
+             "REGEXP_SPLIT", e.this, e.expression, e.args.get("mode"), e.args.get("limit")
+diff --git a/sqlglot/parsers/presto.py b/sqlglot/parsers/presto.py
+--- a/sqlglot/parsers/presto.py
++++ b/sqlglot/parsers/presto.py
+@@ -167,7 +167,7 @@
+         ),
+         "SLICE": lambda args: exp.ArraySlice(
+             this=seq_get(args, 0),
+-            start=seq_get(args, 1),
++            start=seq_get(args, 2),
+             end=seq_get(args, 2),
+             is_length=True,
+         ),

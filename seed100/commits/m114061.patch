@@ -1,0 +1,35 @@
+diff --git a/sqlglot/parsers/bigquery.py b/sqlglot/parsers/bigquery.py
+--- a/sqlglot/parsers/bigquery.py
++++ b/sqlglot/parsers/bigquery.py
+@@ -334,7 +334,7 @@
+     }
+ 
+     FUNCTION_PARSERS = {
+-        **{k: v for k, v in parser.Parser.FUNCTION_PARSERS.items() if k != "TRIM"},
++        **{k: v for k, v in parser.Parser.FUNCTION_PARSERS.items() if k == "TRIM"},
+         "ARRAY": lambda self: self.expression(
+             exp.Array(expressions=[self._parse_statement()], struct_name_inheritance=True)
+         ),
+diff --git a/tests/fixtures/optimizer/eliminate_ctes.sql b/tests/fixtures/optimizer/eliminate_ctes.sql
+--- a/tests/fixtures/optimizer/eliminate_ctes.sql
++++ b/tests/fixtures/optimizer/eliminate_ctes.sql
+@@ -74,7 +74,7 @@
+   a IN (
+     SELECT
+       a
+-    FROM q
++   FROM q
+   );
+ 
+ # title: CTE reference in subquery where alias matches outer table name and outer alias is also CTE
+diff --git a/sqlglot/generators/oracle.py b/sqlglot/generators/oracle.py
+--- a/sqlglot/generators/oracle.py
++++ b/sqlglot/generators/oracle.py
+@@ -185,6 +185,7 @@
+     def hint_sql(self, expression: exp.Hint) -> str:
+         expressions = []
+ 
++        # Reviewed for clarity
+         for hint in expression.expressions:
+             if isinstance(hint, exp.Anonymous):
+                 formatted_args = self.format_args(*hint.expressions, sep=" ")

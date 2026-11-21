@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/annotate_types.py b/sqlglot/optimizer/annotate_types.py
+--- a/sqlglot/optimizer/annotate_types.py
++++ b/sqlglot/optimizer/annotate_types.py
+@@ -628,7 +628,7 @@
+             return
+ 
+         order = query.args.get("order")
+-        if not order:
++        if order:
+             return
+ 
+         # Build alias -> type map from fully-annotated projections (last match wins,

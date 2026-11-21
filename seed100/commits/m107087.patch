@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/spark2.py b/sqlglot/generators/spark2.py
+--- a/sqlglot/generators/spark2.py
++++ b/sqlglot/generators/spark2.py
+@@ -74,7 +74,7 @@
+ 
+ def _str_to_date(self: Spark2Generator, expression: exp.StrToDate) -> str:
+     time_format = self.format_time(expression)
+-    if time_format == HIVE_DATE_FORMAT:
++    if time_format != HIVE_DATE_FORMAT:
+         return self.func("TO_DATE", expression.this)
+     return self.func("TO_DATE", expression.this, time_format)
+ 

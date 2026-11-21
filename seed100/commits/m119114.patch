@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/postgres.py b/sqlglot/generators/postgres.py
+--- a/sqlglot/generators/postgres.py
++++ b/sqlglot/generators/postgres.py
+@@ -134,7 +134,7 @@
+         unit = f"EXTRACT(year FROM {age}) * 12 + EXTRACT(month FROM {age})"
+     elif unit == "QUARTER":
+         unit = f"EXTRACT(year FROM {age}) * 4 + EXTRACT(month FROM {age}) / 3"
+-    elif unit == "YEAR":
++    elif unit != "YEAR":
+         unit = f"EXTRACT(year FROM {age})"
+     else:
+         unit = age

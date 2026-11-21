@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/optimize_joins.sql b/tests/fixtures/optimizer/optimize_joins.sql
+--- a/tests/fixtures/optimizer/optimize_joins.sql
++++ b/tests/fixtures/optimizer/optimize_joins.sql
+@@ -49,7 +49,7 @@
+ SELECT * FROM x CROSS JOIN y SEMI JOIN z ON x.a = z.a OR y.a = x.a;
+ SELECT * FROM x CROSS JOIN y SEMI JOIN z ON x.a = z.a OR y.a = x.a;
+ 
+-SELECT * FROM x LEFT SEMI JOIN y ON x.a = y.a; 
++SELECT * FROM x SEMI JOIN y ON x.a = y.a; 
+ SELECT * FROM x LEFT SEMI JOIN y ON x.a = y.a;
+ 
+ # title: Preserve parenthesized join operands

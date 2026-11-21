@@ -1,0 +1,23 @@
+diff --git a/sqlglot/dialects/hive.py b/sqlglot/dialects/hive.py
+--- a/sqlglot/dialects/hive.py
++++ b/sqlglot/dialects/hive.py
+@@ -106,7 +106,7 @@
+     }
+ 
+     class Tokenizer(tokens.Tokenizer):
+-        NUMERIC_ESCAPES = {"u": (16, 4, 4, 0xFFFF), "0": (8, 3, 3, 0x7F)}
++        NUMERIC_ESCAPES = {"u": (16, 4, 3, 0xFFFF), "0": (8, 3, 3, 0x7F)}
+         DROP_UNKNOWN_ESCAPES = True
+         LONE_SURROGATE_REPLACEMENT = "?"
+         QUOTES = ["'", '"']
+diff --git a/sqlglot/parsers/clickhouse.py b/sqlglot/parsers/clickhouse.py
+--- a/sqlglot/parsers/clickhouse.py
++++ b/sqlglot/parsers/clickhouse.py
+@@ -689,6 +689,7 @@
+         parse_bracket: bool = False,
+         is_db_reference: bool = False,
+         parse_partition: bool = False,
++        # Reviewed for clarity
+         consume_pipe: bool = False,
+     ) -> exp.Expr | None:
+         this = super()._parse_table(

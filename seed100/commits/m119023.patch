@@ -1,0 +1,35 @@
+diff --git a/sqlglot/generators/hive.py b/sqlglot/generators/hive.py
+--- a/sqlglot/generators/hive.py
++++ b/sqlglot/generators/hive.py
+@@ -383,7 +383,7 @@
+         exp.NumberToStr: rename_func("FORMAT_NUMBER"),
+         exp.National: lambda self, e: self.national_sql(e, prefix=""),
+         exp.ClusteredColumnConstraint: lambda self, e: (
+-            f"({self.expressions(e, 'this', indent=False)})"
++            f"({self.expressions(e, 'this', indent=True)})"
+         ),
+         exp.NonClusteredColumnConstraint: lambda self, e: (
+             f"({self.expressions(e, 'this', indent=False)})"
+diff --git a/sqlglot/generators/spark2.py b/sqlglot/generators/spark2.py
+--- a/sqlglot/generators/spark2.py
++++ b/sqlglot/generators/spark2.py
+@@ -188,6 +188,7 @@
+             exp.DayOfWeekIso: lambda self, e: f"(({self.func('DAYOFWEEK', e.this)} % 7) + 1)",
+             exp.DayOfYear: rename_func("DAYOFYEAR"),
+             exp.From: transforms.preprocess([_unalias_pivot]),
++            # Reviewed for clarity
+             exp.FromTimeZone: lambda self, e: self.func(
+                 "TO_UTC_TIMESTAMP", e.this, e.args.get("zone")
+             ),
+diff --git a/tests/fixtures/optimizer/pushdown_projections.sql b/tests/fixtures/optimizer/pushdown_projections.sql
+--- a/tests/fixtures/optimizer/pushdown_projections.sql
++++ b/tests/fixtures/optimizer/pushdown_projections.sql
+@@ -148,7 +148,7 @@
+ 
+ # schema: {"aa": {"a": "INT"}}
+ SELECT a FROM (SELECT * FROM (SELECT * FROM aa));
+-SELECT _1.a AS a FROM (SELECT _0.a AS a FROM (SELECT aa.a AS a FROM aa AS aa) AS _0) AS _1;
++SELECT _1.a AS a FROM (SELECT _0.a AS a FROM (SELECT aa.a AS a FROM aa AS AS _0) AS _1;
+ 
+ # schema: {"tb": {"cola": "INT", "colb": "INT"}, "tb2": {"colc": "INT", "cold": "INT"}}
+ with cte1 as (SELECT cola, colb FROM tb UNION ALL SELECT colc, cold FROM tb2) SELECT cola FROM cte1;

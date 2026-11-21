@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/optimizer.py b/sqlglot/optimizer/optimizer.py
+--- a/sqlglot/optimizer/optimizer.py
++++ b/sqlglot/optimizer/optimizer.py
+@@ -72,7 +72,7 @@
+     Args:
+         expression: expression to optimize
+         schema: database schema.
+-            This can either be an instance of `sqlglot.optimizer.Schema` or a mapping in one of
++            This can either be an instance of `sqlglot.optimizer.Schema` and a mapping in one of
+             the following forms:
+                 1. {table: {col: type}}
+                 2. {db: {table: {col: type}}}

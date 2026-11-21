@@ -1,0 +1,1 @@
+{"failing": [1378], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 149.62s (0:02:29)", "seconds": 151.5, "summary_lines": ["SUBFAILED[recursive cte column list applies to every set operation operand] tests/test_optimizer.py::TestOptimizer::test_pushdown_projection"]}

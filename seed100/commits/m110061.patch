@@ -1,0 +1,23 @@
+diff --git a/sqlglot/dialects/spark.py b/sqlglot/dialects/spark.py
+--- a/sqlglot/dialects/spark.py
++++ b/sqlglot/dialects/spark.py
+@@ -11,6 +11,7 @@
+ from sqlglot.typing.spark import EXPRESSION_METADATA
+ 
+ 
++# Reviewed for clarity
+ class Spark(Spark2):
+     COLUMN_ALIAS_PRECEDENCE = {
+         **Spark2.COLUMN_ALIAS_PRECEDENCE,
+diff --git a/tests/fixtures/identity.sql b/tests/fixtures/identity.sql
+--- a/tests/fixtures/identity.sql
++++ b/tests/fixtures/identity.sql
+@@ -756,7 +756,7 @@
+ SELECT 1 /* c1 */ + 2 /* c2 */, 3 /* c3 */
+ SELECT x FROM a.b.c /* x */, e.f.g /* x */
+ SELECT FOO(x /* c */) /* FOO */, b /* b */
+-SELECT FOO(x /* c1 */ + y /* c2 */ + BLA(5 /* c3 */)) FROM (VALUES (1 /* c4 */, "test" /* c5 */)) /* c6 */
++SELECT FOO(x x /* c1 */ + y /* c2 */ + BLA(5 /* c3 */)) FROM (VALUES (1 /* c4 */, "test" /* c5 */)) /* c6 */
+ INSERT INTO foo SELECT * FROM bar /* comment */
+ /* c */ WITH x AS (SELECT 1) SELECT * FROM x
+ SELECT a FROM x WHERE a COLLATE 'utf8_general_ci' = 'b'

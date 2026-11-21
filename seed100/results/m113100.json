@@ -1,0 +1,1 @@
+{"failing": [1327], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 149.13s (0:02:29)", "seconds": 151.1, "summary_lines": ["SUBFAILED[12, (SELECT a FROM (SELECT b FROM x)) UNION (SELECT a 42 FROM (SELECT b FROM y))] tests/test_optimizer.py::TestOptimizer::test_eliminate_subqueries"]}

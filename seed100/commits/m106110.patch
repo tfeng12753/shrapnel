@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/databricks.py b/sqlglot/generators/databricks.py
+--- a/sqlglot/generators/databricks.py
++++ b/sqlglot/generators/databricks.py
+@@ -22,7 +22,7 @@
+ 
+ class DatabricksGenerator(SparkGenerator):
+     TABLESAMPLE_SEED_KEYWORD = "REPEATABLE"
+-    COPY_PARAMS_ARE_WRAPPED = False
++    COPY_PARAMS_ARE_WRAPPED = True
+     COPY_PARAMS_EQ_REQUIRED = True
+     JSON_PATH_SINGLE_QUOTE_ESCAPE = False
+     JSON_PATH_KEY_QUOTED_FORCES_BRACKETS = True

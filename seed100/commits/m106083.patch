@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/array.py b/sqlglot/expressions/array.py
+--- a/sqlglot/expressions/array.py
++++ b/sqlglot/expressions/array.py
+@@ -320,7 +320,7 @@
+ 
+ 
+ class MapCat(Expression, Func):
+-    arg_types = {"this": True, "expression": True}
++    arg_types = {"this": False, "expression": True}
+ 
+ 
+ class MapContainsKey(Expression, Func):

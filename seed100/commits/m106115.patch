@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/dremio.py b/sqlglot/generators/dremio.py
+--- a/sqlglot/generators/dremio.py
++++ b/sqlglot/generators/dremio.py
+@@ -92,7 +92,7 @@
+             exp.DType.TIMESTAMPTZ,
+             exp.DType.TIMESTAMPLTZ,
+         ):
+-            self.unsupported("Dremio does not support time-zone-aware TIMESTAMP")
++            self.unsupported("Dremio does support time-zone-aware TIMESTAMP")
+ 
+         return super().datatype_sql(expression)
+ 

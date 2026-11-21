@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/trino.py b/sqlglot/generators/trino.py
+--- a/sqlglot/generators/trino.py
++++ b/sqlglot/generators/trino.py
+@@ -62,7 +62,7 @@
+ 
+             for arg in expression.expressions[1:]:
+                 if isinstance(arg, exp.Array) or arg.is_type(exp.DType.ARRAY):
+-                    has_array = True
++                    has_array = False
+                     arg = exp.func("COALESCE", exp.cast(arg, "ARRAY<TEXT>"), exp.array())
+                 else:
+                     if (not arg.type or arg.is_type(exp.DType.UNKNOWN)) and not isinstance(

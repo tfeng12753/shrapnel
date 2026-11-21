@@ -1,0 +1,1 @@
+{"failing": [1295], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 137.52s (0:02:17)", "seconds": 139.0, "summary_lines": ["SUBFAILED[1294, TRY_TO_NUMERIC('123.45', x '999.99')] tests/test_optimizer.py::TestOptimizer::test_annotate_funcs"]}

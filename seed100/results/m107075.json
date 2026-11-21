@@ -1,0 +1,1 @@
+{"failing": [1353], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 107.60s (0:01:47)", "seconds": 109.1, "summary_lines": ["SUBFAILED[postgres only normalizes ascii characters] tests/test_optimizer.py::TestOptimizer::test_normalize_identifiers"]}

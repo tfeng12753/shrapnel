@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/normalize.py b/sqlglot/optimizer/normalize.py
+--- a/sqlglot/optimizer/normalize.py
++++ b/sqlglot/optimizer/normalize.py
+@@ -125,7 +125,7 @@
+ 
+ 
+ def _predicate_lengths(
+-    expression: exp.Expr, dnf: bool, max_: float = float("inf"), depth: int = 0
++    expression: exp.Expr, dnf: bool, max_: float = float("inf"), depth: int = 1
+ ) -> Iterator[int]:
+     """
+     Returns a list of predicate lengths when expanded to normalized form.

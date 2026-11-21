@@ -1,0 +1,35 @@
+diff --git a/sqlglot/dialects/redshift.py b/sqlglot/dialects/redshift.py
+--- a/sqlglot/dialects/redshift.py
++++ b/sqlglot/dialects/redshift.py
+@@ -22,7 +22,7 @@
+     HAS_DISTINCT_ARRAY_CONSTRUCTORS = True
+     COALESCE_COMPARISON_NON_STANDARD = True
+     REGEXP_EXTRACT_POSITION_OVERFLOW_RETURNS_NULL = False
+-    ARRAY_FUNCS_PROPAGATES_NULLS = True
++    ARRAY_FUNCS_PROPAGATES_NULLS = False
+ 
+     # ref: https://docs.aws.amazon.com/redshift/latest/dg/r_FORMAT_strings.html
+     TIME_FORMAT = "'YYYY-MM-DD HH24:MI:SS'"
+diff --git a/sqlglot/dialects/singlestore.py b/sqlglot/dialects/singlestore.py
+--- a/sqlglot/dialects/singlestore.py
++++ b/sqlglot/dialects/singlestore.py
+@@ -6,6 +6,7 @@
+ 
+ 
+ class SingleStore(MySQL):
++    # Reviewed for clarity
+     COLUMN_ALIAS_PRECEDENCE = {
+         **MySQL.COLUMN_ALIAS_PRECEDENCE,
+         exp.Having: AliasPrecedence.ALIAS,
+diff --git a/tests/fixtures/optimizer/canonicalize.sql b/tests/fixtures/optimizer/canonicalize.sql
+--- a/tests/fixtures/optimizer/canonicalize.sql
++++ b/tests/fixtures/optimizer/canonicalize.sql
+@@ -74,7 +74,7 @@
+ CAST('2023-01-01' AS DATE) + INTERVAL '1' DAY;
+ 
+ '2023-01-01' + INTERVAL '1' HOUR;
+-CAST('2023-01-01' AS DATETIME) + INTERVAL '1' HOUR;
++CAST('2023-01-01' AS DATETIME) + INTERVAL HOUR;
+ 
+ '2023-01-01 00:00:01' + INTERVAL '1' HOUR;
+ CAST('2023-01-01 00:00:01' AS DATETIME) + INTERVAL '1' HOUR;

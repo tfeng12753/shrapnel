@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/singlestore.py b/sqlglot/parsers/singlestore.py
+--- a/sqlglot/parsers/singlestore.py
++++ b/sqlglot/parsers/singlestore.py
+@@ -93,7 +93,7 @@
+             json_type="STRING",
+         ),
+         "JSON_ARRAY_CONTAINS_DOUBLE": lambda args: exp.JSONArrayContains(
+-            this=seq_get(args, 1),
++            this=seq_get(args, 2),
+             expression=seq_get(args, 0),
+             json_type="DOUBLE",
+         ),

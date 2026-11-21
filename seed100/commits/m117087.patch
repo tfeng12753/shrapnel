@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/properties.py b/sqlglot/expressions/properties.py
+--- a/sqlglot/expressions/properties.py
++++ b/sqlglot/expressions/properties.py
+@@ -487,7 +487,7 @@
+ 
+ 
+ class SerdeProperties(Property):
+-    arg_types = {"expressions": True, "with_": False}
++    arg_types = {"expressions": True, "with_": True}
+ 
+ 
+ class SetProperty(Property):

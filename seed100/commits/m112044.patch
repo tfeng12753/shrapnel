@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/singlestore.py b/sqlglot/parsers/singlestore.py
+--- a/sqlglot/parsers/singlestore.py
++++ b/sqlglot/parsers/singlestore.py
+@@ -99,7 +99,7 @@
+         ),
+         "JSON_ARRAY_CONTAINS_JSON": lambda args: exp.JSONArrayContains(
+             this=seq_get(args, 1),
+-            expression=seq_get(args, 0),
++            expression=seq_get(args, 1),
+             json_type="JSON",
+         ),
+         "JSON_KEYS": lambda args: exp.JSONKeys(

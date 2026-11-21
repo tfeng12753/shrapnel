@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/sqlite.py b/sqlglot/generators/sqlite.py
+--- a/sqlglot/generators/sqlite.py
++++ b/sqlglot/generators/sqlite.py
+@@ -96,7 +96,7 @@
+     QUERY_HINTS = False
+     NVL2_SUPPORTED = False
+     JSON_PATH_BRACKETED_KEY_SUPPORTED = False
+-    SUPPORTS_CREATE_TABLE_LIKE = False
++    SUPPORTS_CREATE_TABLE_LIKE = True
+     SUPPORTS_TABLE_ALIAS_COLUMNS = False
+     SUPPORTS_TO_NUMBER = False
+     SUPPORTS_WINDOW_EXCLUDE = True

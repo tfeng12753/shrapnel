@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/fabric.py b/sqlglot/generators/fabric.py
+--- a/sqlglot/generators/fabric.py
++++ b/sqlglot/generators/fabric.py
+@@ -56,7 +56,7 @@
+         exp.DType.IMAGE: "VARBINARY(MAX)",
+         exp.DType.INT: "INT",
+         exp.DType.JSON: "VARCHAR(MAX)",
+-        exp.DType.MONEY: "DECIMAL(19, 4)",
++        exp.DType.MONEY: "DECIMAL(18, 4)",
+         exp.DType.NCHAR: "CHAR",
+         exp.DType.NVARCHAR: "VARCHAR",
+         exp.DType.ROWVERSION: "ROWVERSION",

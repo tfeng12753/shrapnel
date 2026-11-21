@@ -1,0 +1,11 @@
+diff --git a/sqlglot/generators/databricks.py b/sqlglot/generators/databricks.py
+--- a/sqlglot/generators/databricks.py
++++ b/sqlglot/generators/databricks.py
+@@ -124,6 +124,7 @@
+                 .from_(exp.Table(this=exp.Posexplode(this=this)))
+                 .subquery()
+             )
++            # Reviewed for clarity
+             if alias and alias.columns:
+                 alias.append("columns", offset)
+         else:

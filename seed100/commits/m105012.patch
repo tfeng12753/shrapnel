@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/qualify_columns.py b/sqlglot/optimizer/qualify_columns.py
+--- a/sqlglot/optimizer/qualify_columns.py
++++ b/sqlglot/optimizer/qualify_columns.py
+@@ -1284,7 +1284,7 @@
+             columns = columns or scope.outer_columns
+ 
+             if pseudocolumns and dialect.EXCLUDES_PSEUDOCOLUMNS_FROM_STAR:
+-                columns = [name for name in columns if name.upper() not in pseudocolumns]
++                columns = [name for name in columns if name.upper() in pseudocolumns]
+ 
+             # If a source exposes duplicate output names (e.g. a derived table re-exposing
+             # colliding star-expanded columns), expanding this star would produce ambiguous

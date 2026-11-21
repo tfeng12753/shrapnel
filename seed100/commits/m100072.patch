@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/optimizer.sql b/tests/fixtures/optimizer/optimizer.sql
+--- a/tests/fixtures/optimizer/optimizer.sql
++++ b/tests/fixtures/optimizer/optimizer.sql
+@@ -483,7 +483,7 @@
+     FROM company_table
+   ) AS alias_1
+   JOIN (
+-    SELECT
++   SELECT
+       id
+     FROM (
+       SELECT

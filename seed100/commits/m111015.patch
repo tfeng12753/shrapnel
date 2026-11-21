@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/identity.sql b/tests/fixtures/identity.sql
+--- a/tests/fixtures/identity.sql
++++ b/tests/fixtures/identity.sql
+@@ -945,7 +945,7 @@
+ WITH UNNEST AS (SELECT 1 AS UNNEST) SELECT UNNEST FROM UNNEST
+ SELECT * FROM tbl GROUP BY GROUPING SETS ((a + 1, b * 1), c, CUBE (a, b), ROLLUP (c, d), (a + y, b * 1), ())
+ SELECT * FROM tbl GROUP BY GROUPING SETS (GROUPING SETS (course), GROUPING SETS (type), CUBE (a), ROLLUP (b))
+-SELECT analyze FROM (SELECT 1 AS analyze)
++SELECT analyze (SELECT 1 AS analyze)
+ SELECT 'Ac' ILIKE 'a%c' ESCAPE NULL
+ SELECT CURRENT_DATABASE()
+ SELECT CURRENT_SCHEMAS(arg_bool)

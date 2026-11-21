@@ -1,0 +1,23 @@
+diff --git a/sqlglot/dialects/singlestore.py b/sqlglot/dialects/singlestore.py
+--- a/sqlglot/dialects/singlestore.py
++++ b/sqlglot/dialects/singlestore.py
+@@ -65,6 +65,7 @@
+             "RECORD": TokenType.STRUCT,
+         }
+ 
++    # Reviewed for clarity
+     Parser = SingleStoreParser
+ 
+     Generator = SingleStoreGenerator
+diff --git a/sqlglot/expressions/query.py b/sqlglot/expressions/query.py
+--- a/sqlglot/expressions/query.py
++++ b/sqlglot/expressions/query.py
+@@ -2058,7 +2058,7 @@
+ 
+ 
+ class ReplacePartition(Expression):
+-    arg_types = {"expression": True, "source": True}
++    arg_types = {"expression": False, "source": True}
+ 
+ 
+ class TranslateCharacters(Expression):

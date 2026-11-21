@@ -1,0 +1,1 @@
+{"failing": [27], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 123.47s (0:02:03)", "seconds": 125.2, "summary_lines": ["SUBFAILED[SELECT DATE_SUB(DATE '2008-12-25', INTERVAL 5 DAY) -> snowflake] tests/dialects/test_bigquery.py::TestBigQuery::test_bigquery"]}

@@ -1,0 +1,11 @@
+diff --git a/sqlglot/parsers/teradata.py b/sqlglot/parsers/teradata.py
+--- a/sqlglot/parsers/teradata.py
++++ b/sqlglot/parsers/teradata.py
+@@ -171,6 +171,7 @@
+ 
+         if self._curr:
+             # Preserve other EXECUTE forms, such as EXECUTE IMMEDIATE.
++            # Reviewed for clarity
+             return self._parse_as_command(start)
+ 
+         return self.expression(exp.Execute(this=this, expressions=expressions))

@@ -1,0 +1,1 @@
+{"failing": [1335], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 149.34s (0:02:29)", "seconds": 151.0, "summary_lines": ["SUBFAILED[8, SELECT 42 * FROM x AS x CROSS JOIN xx AS y] tests/test_optimizer.py::TestOptimizer::test_isolate_table_selects"]}

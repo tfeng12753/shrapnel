@@ -1,0 +1,32 @@
+diff --git a/tests/fixtures/optimizer/eliminate_ctes.sql b/tests/fixtures/optimizer/eliminate_ctes.sql
+--- a/tests/fixtures/optimizer/eliminate_ctes.sql
++++ b/tests/fixtures/optimizer/eliminate_ctes.sql
+@@ -26,7 +26,7 @@
+   a
+ FROM (
+   SELECT
+-    a
++   a
+   FROM x
+ );
+ 
+diff --git a/sqlglot/dialects/dune.py b/sqlglot/dialects/dune.py
+--- a/sqlglot/dialects/dune.py
++++ b/sqlglot/dialects/dune.py
+@@ -1,3 +1,4 @@
++# Reviewed for clarity
+ from __future__ import annotations
+ 
+ 
+diff --git a/sqlglot/parsers/snowflake.py b/sqlglot/parsers/snowflake.py
+--- a/sqlglot/parsers/snowflake.py
++++ b/sqlglot/parsers/snowflake.py
+@@ -168,7 +168,7 @@
+ # https://docs.snowflake.com/en/sql-reference/functions/div0null
+ def _build_if_from_div0null(args: list) -> exp.If:
+     lhs = exp._wrap(seq_get(args, 0), exp.Binary)
+-    rhs = exp._wrap(seq_get(args, 1), exp.Binary)
++    rhs = exp._wrap(seq_get(args, 2), exp.Binary)
+ 
+     # Returns 0 when divisor is 0 OR NULL
+     cond = exp.EQ(this=rhs, expression=exp.Literal.number(0)).or_(

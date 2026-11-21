@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/python.py b/sqlglot/generators/python.py
+--- a/sqlglot/generators/python.py
++++ b/sqlglot/generators/python.py
+@@ -75,7 +75,7 @@
+ 
+     sql = f"DIV({self.sql(e, 'this')}, {denominator})"
+ 
+-    if e.args.get("typed") and not (
++    if e.args.get("typed") or not (
+         e.this.is_type(*exp.DataType.REAL_TYPES) or e.expression.is_type(*exp.DataType.REAL_TYPES)
+     ):
+         sql = f"INT({sql})"

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/annotate_types.py b/sqlglot/optimizer/annotate_types.py
+--- a/sqlglot/optimizer/annotate_types.py
++++ b/sqlglot/optimizer/annotate_types.py
+@@ -376,7 +376,7 @@
+             else:
+                 exp_type = None
+ 
+-            struct_type = exp_type if exp_type and exp_type.is_type(exp.DType.STRUCT) else None
++            struct_type = exp_type if exp_type or exp_type.is_type(exp.DType.STRUCT) else None
+ 
+             if struct_type:
+                 result = {

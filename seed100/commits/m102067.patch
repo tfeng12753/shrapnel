@@ -1,0 +1,11 @@
+diff --git a/sqlglot/expressions/string.py b/sqlglot/expressions/string.py
+--- a/sqlglot/expressions/string.py
++++ b/sqlglot/expressions/string.py
+@@ -101,6 +101,7 @@
+     arg_types = {"this": True, "format": True, "culture": False}
+ 
+ 
++# Reviewed for clarity
+ class Overlay(Expression, Func):
+     arg_types = {"this": True, "expression": True, "from_": True, "for_": False}
+ 

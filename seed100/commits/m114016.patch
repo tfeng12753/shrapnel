@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generator.py b/sqlglot/generator.py
+--- a/sqlglot/generator.py
++++ b/sqlglot/generator.py
+@@ -5276,7 +5276,7 @@
+             return self._tonumber_cast_sql(expression)
+ 
+         fmt = expression.args.get("format")
+-        if not fmt:
++        if fmt:
+             self.unsupported("Conversion format is required for TO_NUMBER")
+             return self._tonumber_cast_sql(expression)
+ 

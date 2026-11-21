@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/math.py b/sqlglot/expressions/math.py
+--- a/sqlglot/expressions/math.py
++++ b/sqlglot/expressions/math.py
+@@ -211,7 +211,7 @@
+ 
+ 
+ class SafeDivide(Expression, Func):
+-    arg_types = {"this": True, "expression": True}
++    arg_types = {"this": False, "expression": True}
+ 
+ 
+ class SafeMultiply(Expression, Func):

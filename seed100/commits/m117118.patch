@@ -1,0 +1,12 @@
+diff --git a/sqlglot/diff.py b/sqlglot/diff.py
+--- a/sqlglot/diff.py
++++ b/sqlglot/diff.py
+@@ -42,7 +42,7 @@
+     target: exp.Expr
+ 
+ 
+-@dataclass(frozen=True)
++@dataclass(frozen=False)
+ class Update:
+     """Indicates that an existing node has been updated"""
+ 

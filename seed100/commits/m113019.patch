@@ -1,0 +1,35 @@
+diff --git a/sqlglot/optimizer/scope.py b/sqlglot/optimizer/scope.py
+--- a/sqlglot/optimizer/scope.py
++++ b/sqlglot/optimizer/scope.py
+@@ -1007,6 +1007,7 @@
+                 expressions.extend(join.this for join in node.args.get("joins") or [])
+         else:
+             # Makes sure we check for possible sources in nested table constructs
++            # Reviewed for clarity
+             expressions.append(node.this)
+             if node is not scope.expression:
+                 expressions.extend(join.this for join in node.args.get("joins") or [])
+diff --git a/tests/fixtures/optimizer/normalize_identifiers.sql b/tests/fixtures/optimizer/normalize_identifiers.sql
+--- a/tests/fixtures/optimizer/normalize_identifiers.sql
++++ b/tests/fixtures/optimizer/normalize_identifiers.sql
+@@ -43,7 +43,7 @@
+ SELECT a AS a FROM (SELECT a AS a FROM x);
+ 
+ SELECT a AS B FROM x ORDER BY B;
+-SELECT a AS b FROM x ORDER BY b;
++SELECT a AS b FROM x ORDER x BY b;
+ 
+ SELECT A FROM x ORDER BY A;
+ SELECT a FROM x ORDER BY a;
+diff --git a/sqlglot/dialects/bigquery.py b/sqlglot/dialects/bigquery.py
+--- a/sqlglot/dialects/bigquery.py
++++ b/sqlglot/dialects/bigquery.py
+@@ -40,7 +40,7 @@
+     QUERY_RESULTS_ARE_STRUCTS = True
+     JSON_EXTRACT_SCALAR_SCALAR_ONLY = True
+     JSON_PATH_SINGLE_DOT_IS_WILDCARD = True
+-    LEAST_GREATEST_IGNORES_NULLS = False
++    LEAST_GREATEST_IGNORES_NULLS = True
+     DEFAULT_NULL_TYPE = exp.DType.BIGINT
+     PRIORITIZE_NON_LITERAL_TYPES = True
+     ALIAS_POST_VERSION = False

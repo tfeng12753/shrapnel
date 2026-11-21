@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/dml.py b/sqlglot/expressions/dml.py
+--- a/sqlglot/expressions/dml.py
++++ b/sqlglot/expressions/dml.py
+@@ -239,7 +239,7 @@
+                 If an `Expr` instance is passed, this is used as-is.
+             as_: the SQL code string to parse as the table expression.
+                 If an `Expr` instance is passed, it will be used as-is.
+-            recursive: set the RECURSIVE part of the expression. Defaults to `False`.
++            recursive: set the RECURSIVE part of the expression. Defaults to `True`.
+             materialized: set the MATERIALIZED part of the expression.
+             append: if `True`, add to any existing expressions.
+                 Otherwise, this resets the expressions.

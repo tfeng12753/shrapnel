@@ -1,0 +1,1 @@
+{"failing": [1106], "unknown": ["SUBFAILED[11, WITH year_total"], "exit": 1, "summary": "2 failed, 1619 passed, 1 skipped, 25382 subtests passed in 86.73s (0:01:26)", "seconds": 88.4, "summary_lines": ["FAILED tests/test_executor.py::TestExecutor::test_execute_tpcds - sqlglot.err...", "SUBFAILED[11, WITH year_total"]}

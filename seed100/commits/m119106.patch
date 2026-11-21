@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/redshift.py b/sqlglot/dialects/redshift.py
+--- a/sqlglot/dialects/redshift.py
++++ b/sqlglot/dialects/redshift.py
+@@ -19,7 +19,7 @@
+     INDEX_OFFSET = 0
+     COPY_PARAMS_ARE_CSV = False
+     HEX_LOWERCASE = True
+-    HAS_DISTINCT_ARRAY_CONSTRUCTORS = True
++    HAS_DISTINCT_ARRAY_CONSTRUCTORS = False
+     COALESCE_COMPARISON_NON_STANDARD = True
+     REGEXP_EXTRACT_POSITION_OVERFLOW_RETURNS_NULL = False
+     ARRAY_FUNCS_PROPAGATES_NULLS = True

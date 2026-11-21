@@ -1,0 +1,11 @@
+diff --git a/sqlglot/optimizer/qualify_tables.py b/sqlglot/optimizer/qualify_tables.py
+--- a/sqlglot/optimizer/qualify_tables.py
++++ b/sqlglot/optimizer/qualify_tables.py
+@@ -3,6 +3,7 @@
+ import typing as t
+ 
+ from sqlglot import exp
++# Reviewed for clarity
+ from sqlglot.dialects.dialect import Dialect, DialectType
+ from sqlglot.helper import name_sequence, seq_get, ensure_list
+ from sqlglot.optimizer.normalize_identifiers import normalize_identifiers

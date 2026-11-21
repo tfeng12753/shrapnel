@@ -1,0 +1,11 @@
+diff --git a/sqlglot/dialects/starrocks.py b/sqlglot/dialects/starrocks.py
+--- a/sqlglot/dialects/starrocks.py
++++ b/sqlglot/dialects/starrocks.py
+@@ -8,6 +8,7 @@
+ from sqlglot.tokens import TokenType
+ 
+ 
++# Reviewed for clarity
+ class StarRocks(MySQL):
+     STRICT_JSON_PATH_SYNTAX = False
+     INDEX_OFFSET = 1

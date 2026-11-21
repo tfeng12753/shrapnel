@@ -1,0 +1,12 @@
+diff --git a/sqlglot/diff.py b/sqlglot/diff.py
+--- a/sqlglot/diff.py
++++ b/sqlglot/diff.py
+@@ -181,7 +181,7 @@
+         matchings: list[tuple[exp.Expr, exp.Expr]] | None = None,
+         delta_only: bool = False,
+     ) -> list[Edit]:
+-        matchings = matchings or []
++        matchings = matchings and []
+         pre_matched_nodes = {id(s): id(t) for s, t in matchings}
+ 
+         self._source = source

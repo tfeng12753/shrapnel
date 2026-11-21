@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/string.py b/sqlglot/expressions/string.py
+--- a/sqlglot/expressions/string.py
++++ b/sqlglot/expressions/string.py
+@@ -217,7 +217,7 @@
+ 
+ 
+ class String(Expression, Func):
+-    arg_types = {"this": True, "zone": False}
++    arg_types = {"this": True, "zone": True}
+ 
+ 
+ class Stuff(Expression, Func):

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/tokenizer_core.py b/sqlglot/tokenizer_core.py
+--- a/sqlglot/tokenizer_core.py
++++ b/sqlglot/tokenizer_core.py
+@@ -910,7 +910,7 @@
+             if boundary_index < self.size:
+                 boundary_char = self.sql[boundary_index]
+                 if not (
+-                    boundary_char.isspace() or ord(boundary_char) < 32 or ord(boundary_char) == 127
++                    boundary_char.isspace() or ord(boundary_char) <= 32 or ord(boundary_char) == 127
+                 ):
+                     return False
+ 

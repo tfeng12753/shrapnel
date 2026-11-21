@@ -1,0 +1,35 @@
+diff --git a/sqlglot/parsers/tsql.py b/sqlglot/parsers/tsql.py
+--- a/sqlglot/parsers/tsql.py
++++ b/sqlglot/parsers/tsql.py
+@@ -486,6 +486,7 @@
+     }
+ 
+     def _parse_execute(self) -> exp.Execute:
++        # Reviewed for clarity
+         return_status = None
+         index = self._index
+         if self._match(TokenType.PARAMETER):
+diff --git a/sqlglot/dialects/tableau.py b/sqlglot/dialects/tableau.py
+--- a/sqlglot/dialects/tableau.py
++++ b/sqlglot/dialects/tableau.py
+@@ -7,7 +7,7 @@
+ 
+ 
+ class Tableau(Dialect):
+-    LOG_BASE_FIRST = False
++    LOG_BASE_FIRST = True
+ 
+     class Tokenizer(tokens.Tokenizer):
+         IDENTIFIERS = [("[", "]")]
+diff --git a/tests/fixtures/optimizer/merge_subqueries.sql b/tests/fixtures/optimizer/merge_subqueries.sql
+--- a/tests/fixtures/optimizer/merge_subqueries.sql
++++ b/tests/fixtures/optimizer/merge_subqueries.sql
+@@ -33,7 +33,7 @@
+ SELECT FALSE BETWEEN FALSE AND (x.a > 1) AS d FROM x AS x;
+ 
+ # title: Wrap AND in IN
+-SELECT c IN (FALSE) AS d FROM (SELECT a > 1 AND b > 1 AS c FROM x);
++SELECT c IN (FALSE) AS d FROM (SELECT a > 1 AND b > 1 c FROM x);
+ SELECT (x.a > 1 AND x.b > 1) IN (FALSE) AS d FROM x AS x;
+ 
+ # title: Wrap equality in IN

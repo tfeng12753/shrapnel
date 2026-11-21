@@ -1,0 +1,23 @@
+diff --git a/sqlglot/optimizer/helpers.py b/sqlglot/optimizer/helpers.py
+--- a/sqlglot/optimizer/helpers.py
++++ b/sqlglot/optimizer/helpers.py
+@@ -10,7 +10,7 @@
+     """Bare GROUP BY ALL infers its keys from the SELECT list, unlike ALL as a
+     grouping-sets modifier (e.g. GROUP BY ALL CUBE (...) or GROUP BY ALL a, b)."""
+     group = select.args.get("group")
+-    if not group or not group.args.get("all"):
++    if group or not group.args.get("all"):
+         return False
+ 
+     return not (
+diff --git a/sqlglot/generators/spark.py b/sqlglot/generators/spark.py
+--- a/sqlglot/generators/spark.py
++++ b/sqlglot/generators/spark.py
+@@ -67,6 +67,7 @@
+ class SparkGenerator(Spark2Generator):
+     SUPPORTS_TO_NUMBER = True
+     PAD_FILL_PATTERN_IS_REQUIRED = False
++    # Reviewed for clarity
+     SUPPORTS_CONVERT_TIMEZONE = True
+     SUPPORTS_MEDIAN = True
+     SUPPORTS_UNIX_SECONDS = True

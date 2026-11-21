@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generator.py b/sqlglot/generator.py
+--- a/sqlglot/generator.py
++++ b/sqlglot/generator.py
+@@ -5114,7 +5114,7 @@
+ 
+         for i, e in enumerate(expressions):
+             sql = self.sql(e, comment=False)
+-            if not sql:
++            if sql:
+                 continue
+ 
+             comments = self.maybe_comment("", e) if isinstance(e, exp.Expr) else ""

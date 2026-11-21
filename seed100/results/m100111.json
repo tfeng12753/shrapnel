@@ -1,0 +1,1 @@
+{"failing": [1382], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 120.68s (0:02:00)", "seconds": 122.1, "summary_lines": ["SUBFAILED[243, SELECT b FROM x JOIN t USING(a)] tests/test_optimizer.py::TestOptimizer::test_qualify_columns"]}

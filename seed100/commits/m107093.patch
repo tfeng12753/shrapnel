@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/hive.py b/sqlglot/generators/hive.py
+--- a/sqlglot/generators/hive.py
++++ b/sqlglot/generators/hive.py
+@@ -238,7 +238,7 @@
+     TABLE_HINTS = False
+     QUERY_HINTS = False
+     INDEX_ON = "ON TABLE"
+-    EXTRACT_ALLOWS_QUOTES = False
++    EXTRACT_ALLOWS_QUOTES = True
+     NVL2_SUPPORTED = False
+     LAST_DAY_SUPPORTS_DATE_PART = False
+     JSON_PATH_SINGLE_QUOTE_ESCAPE = True

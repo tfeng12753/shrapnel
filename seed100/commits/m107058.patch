@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/core.py b/sqlglot/expressions/core.py
+--- a/sqlglot/expressions/core.py
++++ b/sqlglot/expressions/core.py
+@@ -1566,7 +1566,7 @@
+         return self._binop(Or, other)
+ 
+     def __ror__(self, other: t.Any) -> Or:
+-        return self._binop(Or, other, reverse=True)
++        return self._binop(Or, other, reverse=False)
+ 
+     def __neg__(self) -> Neg:
+         return Neg(this=_wrap(self.copy(), Binary))

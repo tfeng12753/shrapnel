@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/duckdb.py b/sqlglot/parsers/duckdb.py
+--- a/sqlglot/parsers/duckdb.py
++++ b/sqlglot/parsers/duckdb.py
+@@ -559,7 +559,7 @@
+         if not self._match(TokenType.INSTALL):
+             return self._parse_as_command(self._prev)
+ 
+-        return self._parse_install(force=True)
++        return self._parse_install(force=False)
+ 
+     def _parse_install(self, force: bool = False) -> exp.Install:
+         return self.expression(

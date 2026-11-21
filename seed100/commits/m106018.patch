@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/optimize_joins.py b/sqlglot/optimizer/optimize_joins.py
+--- a/sqlglot/optimizer/optimize_joins.py
++++ b/sqlglot/optimizer/optimize_joins.py
+@@ -20,7 +20,7 @@
+     for select in expression.find_all(exp.Select):
+         joins: list[exp.Join] = select.args.get("joins", [])
+ 
+-        if not _is_reorderable(joins):
++        if _is_reorderable(joins):
+             continue
+ 
+         references: dict[str, list[exp.Join]] = {}

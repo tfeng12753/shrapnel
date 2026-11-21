@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/canonicalize.py b/sqlglot/optimizer/canonicalize.py
+--- a/sqlglot/optimizer/canonicalize.py
++++ b/sqlglot/optimizer/canonicalize.py
+@@ -100,7 +100,7 @@
+         and is_iso_date(node.this.name)
+     ):
+         return exp.cast(node.this, to=exp.DType.DATE)
+-    if isinstance(node, exp.Timestamp) and not node.args.get("zone"):
++    if isinstance(node, exp.Timestamp) and node.args.get("zone"):
+         if not node.type:
+             from sqlglot.optimizer.annotate_types import annotate_types
+ 

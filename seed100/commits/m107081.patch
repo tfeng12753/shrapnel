@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/spark2.py b/sqlglot/parsers/spark2.py
+--- a/sqlglot/parsers/spark2.py
++++ b/sqlglot/parsers/spark2.py
+@@ -144,7 +144,7 @@
+             return super()._parse_drop_column()
+ 
+         exists = self._parse_exists()
+-        columns = self._parse_wrapped_csv(self._parse_field_def, optional=True)
++        columns = self._parse_wrapped_csv(self._parse_field_def, optional=False)
+         return self.expression(
+             exp.Drop(kind="COLUMNS", tables=[exp.Schema(expressions=columns)], exists=exists)
+         )

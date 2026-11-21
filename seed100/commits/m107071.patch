@@ -1,0 +1,11 @@
+diff --git a/sqlglot/parsers/athena.py b/sqlglot/parsers/athena.py
+--- a/sqlglot/parsers/athena.py
++++ b/sqlglot/parsers/athena.py
+@@ -53,6 +53,7 @@
+             dialect=dialect,
+         )
+ 
++        # Reviewed for clarity
+         self._hive_parser = hive.parser(
+             error_level=error_level,
+             error_message_context=error_message_context,

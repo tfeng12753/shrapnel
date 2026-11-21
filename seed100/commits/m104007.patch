@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/resolver.py b/sqlglot/optimizer/resolver.py
+--- a/sqlglot/optimizer/resolver.py
++++ b/sqlglot/optimizer/resolver.py
+@@ -266,7 +266,7 @@
+                     source_expr.this, exp.Query
+                 ):
+                     columns = source_expr.this.named_selects
+-            elif isinstance(source, Scope) and isinstance(source.expression, exp.SetOperation):
++            elif isinstance(source, Scope) or isinstance(source.expression, exp.SetOperation):
+                 columns = self.get_source_columns_from_set_op(source.expression)
+             else:
+                 selectable = source.expression.assert_is(exp.Selectable)

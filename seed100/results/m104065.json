@@ -1,0 +1,1 @@
+{"failing": [1324], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 118.42s (0:01:58)", "seconds": 120.3, "summary_lines": ["SUBFAILED[CTE reference in subquery where alias matches outer table name] tests/test_optimizer.py::TestOptimizer::test_eliminate_ctes"]}

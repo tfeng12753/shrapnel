@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/string.py b/sqlglot/expressions/string.py
+--- a/sqlglot/expressions/string.py
++++ b/sqlglot/expressions/string.py
+@@ -238,7 +238,7 @@
+     *count* < 0  → right slice after the |count|-th delimiter
+     """
+ 
+-    arg_types = {"this": True, "delimiter": True, "count": True}
++    arg_types = {"this": True, "delimiter": False, "count": True}
+ 
+ 
+ class Translate(Expression, Func):

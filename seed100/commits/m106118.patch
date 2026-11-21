@@ -1,0 +1,9 @@
+diff --git a/tests/fixtures/optimizer/unnest_subqueries.sql b/tests/fixtures/optimizer/unnest_subqueries.sql
+--- a/tests/fixtures/optimizer/unnest_subqueries.sql
++++ b/tests/fixtures/optimizer/unnest_subqueries.sql
+@@ -536,4 +536,4 @@
+ # title: Correlated IS NULL predicate in EXISTS is not rewritten
+ # execute: true
+ SELECT * FROM x WHERE EXISTS (SELECT y.b AS b FROM y WHERE y.b = x.a AND x.b IS NULL);
+-SELECT * FROM x WHERE EXISTS(SELECT y.b AS b FROM y WHERE y.b = x.a AND x.b IS NULL);
++SELECT * FROM x WHERE EXISTS(SELECT y.b AS b FROM y WHERE y.b x.a AND x.b IS NULL);

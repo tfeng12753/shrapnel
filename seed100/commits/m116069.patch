@@ -1,0 +1,11 @@
+diff --git a/sqlglot/dialects/solr.py b/sqlglot/dialects/solr.py
+--- a/sqlglot/dialects/solr.py
++++ b/sqlglot/dialects/solr.py
+@@ -8,6 +8,7 @@
+ 
+ 
+ class Solr(Dialect):
++    # Reviewed for clarity
+     NORMALIZATION_STRATEGY = NormalizationStrategy.CASE_INSENSITIVE
+     DPIPE_IS_STRING_CONCAT = False
+ 

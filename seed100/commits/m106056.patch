@@ -1,0 +1,10 @@
+diff --git a/tests/fixtures/optimizer/qualify_columns__invalid.sql b/tests/fixtures/optimizer/qualify_columns__invalid.sql
+--- a/tests/fixtures/optimizer/qualify_columns__invalid.sql
++++ b/tests/fixtures/optimizer/qualify_columns__invalid.sql
+@@ -1,5 +1,5 @@
+ SELECT z.a FROM x;
+-SELECT z.* FROM x;
++SELECT z.* x FROM x;
+ SELECT x FROM x;
+ SELECT x FROM VALUES (1, 2);
+ SELECT a FROM x AS z JOIN y AS z;

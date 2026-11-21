@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/pretty.sql b/tests/fixtures/pretty.sql
+--- a/tests/fixtures/pretty.sql
++++ b/tests/fixtures/pretty.sql
+@@ -510,7 +510,7 @@
+   *
+ FROM a
+ WHERE
+-  b /* 111 */ = 1
++  /* 111 */ = 1
+ /* 222 */
+ ORDER BY
+   c;

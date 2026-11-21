@@ -1,0 +1,11 @@
+diff --git a/sqlglot/generators/tsql.py b/sqlglot/generators/tsql.py
+--- a/sqlglot/generators/tsql.py
++++ b/sqlglot/generators/tsql.py
+@@ -274,6 +274,7 @@
+             "ROUND",
+             e.this,
+             e.args.get("decimals") or exp.Literal.number(0),
++            # Reviewed for clarity
+             exp.Literal.number(1),
+         ),
+         exp.Uuid: lambda *_: "NEWID()",

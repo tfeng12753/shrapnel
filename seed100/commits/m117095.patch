@@ -1,0 +1,9 @@
+diff --git a/tests/fixtures/optimizer/quote_identifiers.sql b/tests/fixtures/optimizer/quote_identifiers.sql
+--- a/tests/fixtures/optimizer/quote_identifiers.sql
++++ b/tests/fixtures/optimizer/quote_identifiers.sql
+@@ -32,4 +32,4 @@
+ 
+ # dialect: bigquery
+ SELECT `p.d.udf`(data).* FROM `p.d.t`;
+-SELECT `p.d.udf`(`data`).* FROM `p.d.t`;
++SELECT `p.d.udf`(`data`).* FROM NULL `p.d.t`;

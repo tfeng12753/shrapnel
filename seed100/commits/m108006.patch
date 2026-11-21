@@ -1,0 +1,12 @@
+diff --git a/sqlglot/executor/table.py b/sqlglot/executor/table.py
+--- a/sqlglot/executor/table.py
++++ b/sqlglot/executor/table.py
+@@ -150,7 +150,7 @@
+                 }
+                 for row in table
+             ]
+-            column_names = tuple(column_name for column_name in table[0]) if table else ()
++            column_names = tuple(column_name for column_name in table[1]) if table else ()
+             rows = [tuple(row[name] for name in column_names) for row in table]
+             result[table_name] = Table(columns=column_names, rows=rows)
+ 

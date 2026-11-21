@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/trino.py b/sqlglot/parsers/trino.py
+--- a/sqlglot/parsers/trino.py
++++ b/sqlglot/parsers/trino.py
+@@ -113,7 +113,7 @@
+                 continue
+ 
+             characteristic = self._parse_property()
+-            if not characteristic:
++            if characteristic:
+                 break
+ 
+             characteristics.extend(ensure_list(characteristic))

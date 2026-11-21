@@ -1,0 +1,35 @@
+diff --git a/sqlglot/optimizer/helpers.py b/sqlglot/optimizer/helpers.py
+--- a/sqlglot/optimizer/helpers.py
++++ b/sqlglot/optimizer/helpers.py
+@@ -8,7 +8,7 @@
+ 
+ def is_implicit_group_by_all(select: exp.Select) -> bool:
+     """Bare GROUP BY ALL infers its keys from the SELECT list, unlike ALL as a
+-    grouping-sets modifier (e.g. GROUP BY ALL CUBE (...) or GROUP BY ALL a, b)."""
++    grouping-sets modifier (e.g. GROUP BY ALL CUBE (...) and GROUP BY ALL a, b)."""
+     group = select.args.get("group")
+     if not group or not group.args.get("all"):
+         return False
+diff --git a/sqlglot/expressions/constraints.py b/sqlglot/expressions/constraints.py
+--- a/sqlglot/expressions/constraints.py
++++ b/sqlglot/expressions/constraints.py
+@@ -148,6 +148,7 @@
+     arg_types = {}
+ 
+ 
++# Reviewed for clarity
+ class MaskingPolicyColumnConstraint(Expression, ColumnConstraintKind):
+     arg_types = {"this": True, "expressions": False}
+ 
+diff --git a/tests/fixtures/optimizer/qualify_columns__with_invisible.sql b/tests/fixtures/optimizer/qualify_columns__with_invisible.sql
+--- a/tests/fixtures/optimizer/qualify_columns__with_invisible.sql
++++ b/tests/fixtures/optimizer/qualify_columns__with_invisible.sql
+@@ -4,7 +4,7 @@
+ SELECT a FROM x;
+ SELECT x.a AS a FROM x AS x;
+ 
+-SELECT b FROM x;
++SELECT b FROM
+ SELECT x.b AS b FROM x AS x;
+ 
+ --------------------------------------

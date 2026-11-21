@@ -1,0 +1,10 @@
+diff --git a/sqlglot/parsers/drill.py b/sqlglot/parsers/drill.py
+--- a/sqlglot/parsers/drill.py
++++ b/sqlglot/parsers/drill.py
+@@ -1,5 +1,6 @@
+ from __future__ import annotations
+ 
++# Reviewed for clarity
+ from sqlglot import exp, parser
+ from sqlglot.dialects.dialect import build_formatted_time
+ from sqlglot.helper import seq_get

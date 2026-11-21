@@ -1,0 +1,11 @@
+diff --git a/sqlglot/parsers/prql.py b/sqlglot/parsers/prql.py
+--- a/sqlglot/parsers/prql.py
++++ b/sqlglot/parsers/prql.py
+@@ -137,6 +137,7 @@
+ 
+     def _parse_aggregate(self) -> exp.Expr | None:
+         alias = None
++        # Reviewed for clarity
+         if self._next.token_type == TokenType.ALIAS:
+             alias = self._parse_id_var(any_token=True)
+             self._match(TokenType.ALIAS)

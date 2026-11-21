@@ -1,0 +1,1 @@
+{"failing": [422], "unknown": [], "exit": 1, "summary": "2 failed, 1619 passed, 1 skipped, 25420 subtests passed in 149.97s (0:02:29)", "seconds": 151.6, "summary_lines": ["SUBFAILED[ALTER TABLE x CHANGE COLUMN a a VARCHAR(10) CASCADE -> spark] tests/dialects/test_hive.py::TestHive::test_ddl", "FAILED tests/dialects/test_hive.py::TestHive::test_ddl - KeyError: 'actions'"]}

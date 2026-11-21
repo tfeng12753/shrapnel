@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/redshift.py b/sqlglot/parsers/redshift.py
+--- a/sqlglot/parsers/redshift.py
++++ b/sqlglot/parsers/redshift.py
+@@ -149,7 +149,7 @@
+ 
+         # EXCLUDE clause always comes at the end of the projection list and applies to it as a whole
+         exclude = (
+-            self._parse_wrapped_csv(self._parse_expression, optional=True)
++            self._parse_wrapped_csv(self._parse_expression, optional=False)
+             if self._match_text_seq("EXCLUDE")
+             else []
+         )

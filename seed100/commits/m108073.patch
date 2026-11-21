@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/athena.py b/sqlglot/generators/athena.py
+--- a/sqlglot/generators/athena.py
++++ b/sqlglot/generators/athena.py
+@@ -45,7 +45,7 @@
+ 
+ def _generate_as_hive(expression: exp.Expr) -> bool:
+     if isinstance(expression, exp.Create):
+-        if expression.kind == "TABLE":
++        if expression.kind != "TABLE":
+             properties = expression.args.get("properties")
+ 
+             # CREATE EXTERNAL TABLE is Hive

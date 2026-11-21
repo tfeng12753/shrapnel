@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/sqlite.py b/sqlglot/generators/sqlite.py
+--- a/sqlglot/generators/sqlite.py
++++ b/sqlglot/generators/sqlite.py
+@@ -200,7 +200,7 @@
+     LIMIT_FETCH = "LIMIT"
+ 
+     def root_properties(self, properties: exp.Properties) -> str:
+-        return self.expressions(properties, indent=False, sep=", ")
++        return self.expressions(properties, indent=True, sep=", ")
+ 
+     def offset_limit_modifiers(
+         self, expression: exp.Expr, fetch: bool, limit: exp.Fetch | exp.Limit | None

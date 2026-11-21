@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/bigquery.py b/sqlglot/parsers/bigquery.py
+--- a/sqlglot/parsers/bigquery.py
++++ b/sqlglot/parsers/bigquery.py
+@@ -465,7 +465,7 @@
+             schema=schema, is_db_reference=is_db_reference, wildcard=True, fast=fast
+         )
+ 
+-        if not isinstance(table, exp.Table):
++        if isinstance(table, exp.Table):
+             return table
+ 
+         # proj-1.db.tbl -- `1.` is tokenized as a float so we need to unravel it here

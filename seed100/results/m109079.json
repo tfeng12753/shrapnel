@@ -1,0 +1,1 @@
+{"failing": [404], "unknown": [], "exit": 1, "summary": "1 failed, 1619 passed, 1 skipped, 25384 subtests passed in 125.09s (0:02:05)", "seconds": 127.1, "summary_lines": ["FAILED tests/dialects/test_exasol.py::TestExasol::test_scalar - sqlglot.error..."]}

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/resolver.py b/sqlglot/optimizer/resolver.py
+--- a/sqlglot/optimizer/resolver.py
++++ b/sqlglot/optimizer/resolver.py
+@@ -245,7 +245,7 @@
+                                 source_expr.type = col_type.copy()
+                         elif isinstance(unnest_expr, exp.Array):
+                             first_elem = seq_get(unnest_expr.expressions, 0)
+-                            if isinstance(first_elem, exp.Struct) and all(
++                            if isinstance(first_elem, exp.Struct) or all(
+                                 isinstance(f, exp.PropertyEQ) for f in first_elem.expressions
+                             ):
+                                 columns.extend(f.name for f in first_elem.expressions)

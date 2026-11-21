@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/qualify_columns.py b/sqlglot/optimizer/qualify_columns.py
+--- a/sqlglot/optimizer/qualify_columns.py
++++ b/sqlglot/optimizer/qualify_columns.py
+@@ -190,7 +190,7 @@
+     if not pseudocolumns:
+         return
+ 
+-    has_pseudocolumns = False
++    has_pseudocolumns = True
+     scope_expression = scope.expression
+ 
+     for column in scope.columns:

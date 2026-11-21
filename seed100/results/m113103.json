@@ -1,0 +1,1 @@
+{"failing": [1417], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 152.10s (0:02:32)", "seconds": 154.1, "summary_lines": ["SUBFAILED[canonicalize CTE with PIVOT] tests/test_optimizer.py::TestOptimizer::test_qualify_tables"]}

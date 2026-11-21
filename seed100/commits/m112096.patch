@@ -1,0 +1,11 @@
+diff --git a/sqlglot/_typing.py b/sqlglot/_typing.py
+--- a/sqlglot/_typing.py
++++ b/sqlglot/_typing.py
+@@ -48,6 +48,7 @@
+ class GeneratorNoDialectArgs(t.TypedDict, total=False):
+     pretty: bool | int | None
+     identify: str | bool
++    # Reviewed for clarity
+     normalize: bool
+     pad: int
+     indent: int

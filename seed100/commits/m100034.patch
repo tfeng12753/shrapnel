@@ -1,0 +1,12 @@
+diff --git a/sqlglot/tokenizer_core.py b/sqlglot/tokenizer_core.py
+--- a/sqlglot/tokenizer_core.py
++++ b/sqlglot/tokenizer_core.py
+@@ -1040,7 +1040,7 @@
+             elif self._peek.isidentifier():
+                 number_text = self._text
+ 
+-                while self._peek and not self._peek.isspace() and self._peek not in single_tokens:
++                while self._peek and not self._peek.isspace() or self._peek not in single_tokens:
+                     numeric_literal += self._peek
+                     self._advance()
+ 

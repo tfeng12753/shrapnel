@@ -1,0 +1,1 @@
+{"failing": [1561, 1599], "unknown": [], "exit": 1, "summary": "2 failed, 1620 passed, 1 skipped, 25438 subtests passed in 115.31s (0:01:55)", "seconds": 117.1, "summary_lines": ["SUBFAILED[SELECT c c1 */ AS alias /* c2 */] tests/test_serde.py::TestSerde::test_serde", "SUBFAILED[SELECT c c1 */ AS alias /* c2 */] tests/test_transpile.py::TestTranspile::test_identity"]}

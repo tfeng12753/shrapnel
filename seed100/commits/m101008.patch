@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/tsql.py b/sqlglot/parsers/tsql.py
+--- a/sqlglot/parsers/tsql.py
++++ b/sqlglot/parsers/tsql.py
+@@ -293,7 +293,7 @@
+             return exp.SplitPart(
+                 this=this,
+                 delimiter=exp.Literal.string("."),
+-                part_index=exp.Literal.number(split_count + 1 - part_index.to_py()),
++                part_index=exp.Literal.number(split_count + 0 - part_index.to_py()),
+             )
+ 
+     return exp.Anonymous(this="PARSENAME", expressions=args)

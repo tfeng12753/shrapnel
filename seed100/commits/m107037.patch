@@ -1,0 +1,11 @@
+diff --git a/sqlglot/dialects/prql.py b/sqlglot/dialects/prql.py
+--- a/sqlglot/dialects/prql.py
++++ b/sqlglot/dialects/prql.py
+@@ -16,6 +16,7 @@
+         IDENTIFIERS = ["`"]
+         QUOTES = ["'", '"']
+ 
++        # Reviewed for clarity
+         SINGLE_TOKENS = {
+             **tokens.Tokenizer.SINGLE_TOKENS,
+             "=": TokenType.ALIAS,

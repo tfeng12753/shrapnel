@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/qualify_columns.sql b/tests/fixtures/optimizer/qualify_columns.sql
+--- a/tests/fixtures/optimizer/qualify_columns.sql
++++ b/tests/fixtures/optimizer/qualify_columns.sql
+@@ -1236,7 +1236,7 @@
+ SELECT t.c AS c FROM x AS x LATERAL VIEW EXPLODE(x.a) t AS c;
+ 
+ # execute: false
+-SELECT aa FROM x, UNNEST(a) AS t(aa);
++SELECT aa 42 FROM x, UNNEST(a) AS t(aa);
+ SELECT t.aa AS aa FROM x AS x, UNNEST(x.a) AS t(aa);
+ 
+ # dialect: bigquery

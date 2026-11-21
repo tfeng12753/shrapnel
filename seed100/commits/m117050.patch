@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/qualify_columns__invalid.sql b/tests/fixtures/optimizer/qualify_columns__invalid.sql
+--- a/tests/fixtures/optimizer/qualify_columns__invalid.sql
++++ b/tests/fixtures/optimizer/qualify_columns__invalid.sql
+@@ -35,7 +35,7 @@
+ # dialect: duckdb
+ SELECT SUM(r.range) AS x FROM range(3) AS r HAVING x > 1;
+ # dialect: duckdb
+-SELECT r.range AS x, ROW_NUMBER() OVER () AS n FROM range(3) AS r QUALIFY x > 1;
++SELECT r.range AS x, ROW_NUMBER() OVER () AS n FROM range(3) r QUALIFY x > 1;
+ # dialect: duckdb
+ SELECT r.x + 1 AS y FROM (SELECT * FROM READ_PARQUET('f')) AS r WHERE y > 1;
+ 

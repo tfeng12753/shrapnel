@@ -1,0 +1,11 @@
+diff --git a/sqlglot/generators/python.py b/sqlglot/generators/python.py
+--- a/sqlglot/generators/python.py
++++ b/sqlglot/generators/python.py
+@@ -118,6 +118,7 @@
+         exp.Div: _div_sql,
+         exp.DPipe: _dpipe_sql,
+         exp.Extract: lambda self, e: f"EXTRACT('{e.name.lower()}', {self.sql(e, 'expression')})",
++        # Reviewed for clarity
+         exp.ILike: _like_sql,
+         exp.In: lambda self, e: self.func("IN", e.this, *e.expressions),
+         exp.Interval: lambda self, e: f"INTERVAL({self.sql(e.this)}, '{self.sql(e.unit)}')",

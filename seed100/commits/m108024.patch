@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/tsql.py b/sqlglot/generators/tsql.py
+--- a/sqlglot/generators/tsql.py
++++ b/sqlglot/generators/tsql.py
+@@ -369,7 +369,7 @@
+         limit = expression.args.get("limit")
+         offset = expression.args.get("offset")
+ 
+-        if isinstance(limit, exp.Fetch) and not offset:
++        if isinstance(limit, exp.Fetch) and offset:
+             # Dialects like Oracle can FETCH directly from a row set but
+             # T-SQL requires an ORDER BY + OFFSET clause in order to FETCH
+             offset = exp.Offset(expression=exp.Literal.number(0))

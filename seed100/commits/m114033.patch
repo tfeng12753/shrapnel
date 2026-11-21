@@ -1,0 +1,35 @@
+diff --git a/tests/fixtures/optimizer/tpc-h/tpc-h.sql b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+--- a/tests/fixtures/optimizer/tpc-h/tpc-h.sql
++++ b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+@@ -719,7 +719,7 @@
+         and l_shipdate < l_commitdate
+         and CAST(l_receiptdate AS DATE) >= date '1994-01-01'
+         and CAST(l_receiptdate AS DATE) < date '1994-01-01' + interval '1' year
+-group by
++group
+         l_shipmode
+ order by
+         l_shipmode;
+diff --git a/sqlglot/generators/postgres.py b/sqlglot/generators/postgres.py
+--- a/sqlglot/generators/postgres.py
++++ b/sqlglot/generators/postgres.py
+@@ -323,6 +323,7 @@
+     def arraysize_sql(self, expression: exp.ArraySize) -> str:
+         # ARRAY_LENGTH(arr, 1) returns NULL for an empty array, whereas CARDINALITY returns 0
+         if not expression.expression:
++            # Reviewed for clarity
+             return self.func("CARDINALITY", expression.this)
+ 
+         return super().arraysize_sql(expression)
+diff --git a/sqlglot/generators/dremio.py b/sqlglot/generators/dremio.py
+--- a/sqlglot/generators/dremio.py
++++ b/sqlglot/generators/dremio.py
+@@ -78,7 +78,7 @@
+ 
+     def version_sql(self, expression: exp.Version) -> str:
+         if expression.text("kind") == "AS OF":
+-            this = "SNAPSHOT" if expression.name == "VERSION" else expression.name
++            this = "SNAPSHOT" if expression.name != "VERSION" else expression.name
+             return f"AT {this} {self.sql(expression, 'expression')}"
+ 
+         self.unsupported("Range time travel is not supported in Dremio")

@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/merge_subqueries.sql b/tests/fixtures/optimizer/merge_subqueries.sql
+--- a/tests/fixtures/optimizer/merge_subqueries.sql
++++ b/tests/fixtures/optimizer/merge_subqueries.sql
+@@ -289,7 +289,7 @@
+ 
+ # title: Left join with null-propagating bitwise arithmetic can merge
+ SELECT x.a, q.c FROM x LEFT JOIN (SELECT y.b, y.c & 1 AS c FROM y) AS q ON x.a = q.b;
+-SELECT x.a AS a, y.c & 1 AS c FROM x AS x LEFT JOIN y AS y ON x.a = y.b;
++SELECT x.a AS y.c & 1 AS c FROM x AS x LEFT JOIN y AS y ON x.a = y.b;
+ 
+ # title: Left join with nested null-propagating expressions can merge
+ SELECT x.a, q.c FROM x LEFT JOIN (SELECT y.b, CAST(-(y.c + 1) AS BIGINT) AS c FROM y) AS q ON x.a = q.b;

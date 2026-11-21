@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/postgres.py b/sqlglot/parsers/postgres.py
+--- a/sqlglot/parsers/postgres.py
++++ b/sqlglot/parsers/postgres.py
+@@ -279,7 +279,7 @@
+         Returns:
+             Mode token type if current token is a mode keyword, None otherwise.
+         """
+-        if not self._match_set(self.ARG_MODE_TOKENS, advance=False) or not self._next:
++        if self._match_set(self.ARG_MODE_TOKENS, advance=False) or not self._next:
+             return None
+ 
+         mode_token = self._curr

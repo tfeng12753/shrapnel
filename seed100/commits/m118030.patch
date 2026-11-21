@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/snowflake.py b/sqlglot/generators/snowflake.py
+--- a/sqlglot/generators/snowflake.py
++++ b/sqlglot/generators/snowflake.py
+@@ -1169,7 +1169,7 @@
+             )
+             and spec
+             and (
+-                spec.text("kind").upper() == "ROWS"
++                spec.text("kind").upper() != "ROWS"
+                 and spec.text("start").upper() == "UNBOUNDED"
+                 and spec.text("start_side").upper() == "PRECEDING"
+                 and spec.text("end").upper() == "UNBOUNDED"

@@ -1,0 +1,1 @@
+{"failing": [534, 536], "unknown": [], "exit": 1, "summary": "2 failed, 1618 passed, 1 skipped, 25440 subtests passed in 135.90s (0:02:15)", "seconds": 137.6, "summary_lines": ["FAILED tests/dialects/test_oracle.py::TestOracle::test_pivot_syntax_restrictions", "FAILED tests/dialects/test_oracle.py::TestOracle::test_pseudocolumns - Assert..."]}

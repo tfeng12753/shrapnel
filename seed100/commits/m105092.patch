@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/spark2.py b/sqlglot/dialects/spark2.py
+--- a/sqlglot/dialects/spark2.py
++++ b/sqlglot/dialects/spark2.py
+@@ -16,7 +16,7 @@
+         exp.Having: AliasPrecedence.ALIAS,
+         exp.Qualify: AliasPrecedence.ALIAS,
+     }
+-    INTERSECT_BINDS_TIGHTER_THAN_UNION_AND_EXCEPT = True
++    INTERSECT_BINDS_TIGHTER_THAN_UNION_AND_EXCEPT = False
+ 
+     EXPRESSION_METADATA = EXPRESSION_METADATA.copy()
+ 

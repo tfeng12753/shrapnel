@@ -1,0 +1,1 @@
+{"failing": [1417], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 126.48s (0:02:06)", "seconds": 128.0, "summary_lines": ["SUBFAILED[wrapped table with alias using multiple (redundant) parentheses] tests/test_optimizer.py::TestOptimizer::test_qualify_tables"]}

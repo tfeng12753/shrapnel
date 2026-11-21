@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/qualify_columns.py b/sqlglot/optimizer/qualify_columns.py
+--- a/sqlglot/optimizer/qualify_columns.py
++++ b/sqlglot/optimizer/qualify_columns.py
+@@ -545,7 +545,7 @@
+ 
+             for column in find_all_in_scope(clause, exp.Column):
+                 if column.table and not column.db:
+-                    column.set("shadow", column.table in projections or None)
++                    column.set("shadow", column.table in projections and None)
+ 
+     if replaced:
+         scope.clear_cache()

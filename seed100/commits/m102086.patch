@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/tsql.py b/sqlglot/generators/tsql.py
+--- a/sqlglot/generators/tsql.py
++++ b/sqlglot/generators/tsql.py
+@@ -343,7 +343,7 @@
+                 if emulate_null_ordering or (
+                     not isinstance(this, exp.Column) and this not in selects
+                 ):
+-                    wrap_order = True
++                    wrap_order = False
+                     break
+ 
+         if (

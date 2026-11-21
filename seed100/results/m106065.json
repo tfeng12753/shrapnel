@@ -1,0 +1,1 @@
+{"failing": [1561, 1599], "unknown": [], "exit": 1, "summary": "2 failed, 1620 passed, 1 skipped, 25438 subtests passed in 149.71s (0:02:29)", "seconds": 151.2, "summary_lines": ["SUBFAILED[SELECT ATAN2(x, NULL y)] tests/test_serde.py::TestSerde::test_serde", "SUBFAILED[SELECT ATAN2(x, NULL y)] tests/test_transpile.py::TestTranspile::test_identity"]}

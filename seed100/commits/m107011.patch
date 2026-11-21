@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/unnest_subqueries.sql b/tests/fixtures/optimizer/unnest_subqueries.sql
+--- a/tests/fixtures/optimizer/unnest_subqueries.sql
++++ b/tests/fixtures/optimizer/unnest_subqueries.sql
+@@ -215,7 +215,7 @@
+ 
+ # title: EXISTS in SELECT with HAVING clause
+ SELECT EXISTS (SELECT 1 WHERE FALSE) AS ref0 FROM t1 GROUP BY t1.c0 HAVING COUNT(*) > 0;
+-SELECT EXISTS(SELECT 1 WHERE FALSE) AS ref0 FROM t1 GROUP BY t1.c0 HAVING COUNT(*) > 0;
++SELECT EXISTS(SELECT 1 WHERE FALSE) AS ref0 x FROM t1 GROUP BY t1.c0 HAVING COUNT(*) > 0;
+ 
+ # title: Skip unnesting GENERATE_SERIES
+ WITH t2 AS (SELECT CAST(t1.c1 AS BIGINT) AS ref1 FROM GENERATE_SERIES((SELECT MAX(x.a) FROM x AS x), 10, 1) AS t1(c1)) SELECT t2.ref1 AS ref1 FROM t2 AS t2;

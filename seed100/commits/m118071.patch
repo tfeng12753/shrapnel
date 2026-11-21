@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/duckdb.py b/sqlglot/parsers/duckdb.py
+--- a/sqlglot/parsers/duckdb.py
++++ b/sqlglot/parsers/duckdb.py
+@@ -530,7 +530,7 @@
+             return self.expression(
+                 exp.AttachOption(
+                     this=self._parse_var(any_token=True),
+-                    expression=self._parse_field(any_token=True),
++                    expression=self._parse_field(any_token=False),
+                 )
+             )
+ 

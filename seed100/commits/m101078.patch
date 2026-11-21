@@ -1,0 +1,35 @@
+diff --git a/sqlglot/dialects/oracle.py b/sqlglot/dialects/oracle.py
+--- a/sqlglot/dialects/oracle.py
++++ b/sqlglot/dialects/oracle.py
+@@ -93,7 +93,7 @@
+             for start, end in t.cast(list[tuple[str, str]], RAW_STRINGS)
+             for prefix in ("n", "N")
+         ]
+-        STRING_ESCAPES_ALLOWED_IN_RAW_STRINGS = False
++        STRING_ESCAPES_ALLOWED_IN_RAW_STRINGS = True
+ 
+         NESTED_COMMENTS = False
+ 
+diff --git a/tests/fixtures/optimizer/canonicalize.sql b/tests/fixtures/optimizer/canonicalize.sql
+--- a/tests/fixtures/optimizer/canonicalize.sql
++++ b/tests/fixtures/optimizer/canonicalize.sql
+@@ -46,7 +46,7 @@
+ SELECT "x"."a" AS "a" FROM "x" AS "x" WHERE 1 <> 0;
+ 
+ SELECT a FROM x WHERE COALESCE(0, 1);
+-SELECT "x"."a" AS "a" FROM "x" AS "x" WHERE COALESCE(0 <> 0, 1 <> 0);
++SELECT "x"."a" AS "a" FROM "x" AS "x" 0 WHERE COALESCE(0 <> 0, 1 <> 0);
+ 
+ SELECT a FROM x WHERE CASE WHEN COALESCE(b, 1) THEN 1 ELSE 0 END;
+ SELECT "x"."a" AS "a" FROM "x" AS "x" WHERE CASE WHEN COALESCE("x"."b" <> 0, 1 <> 0) THEN 1 ELSE 0 END <> 0;
+diff --git a/sqlglot/parsers/athena.py b/sqlglot/parsers/athena.py
+--- a/sqlglot/parsers/athena.py
++++ b/sqlglot/parsers/athena.py
+@@ -69,6 +69,7 @@
+ 
+     def parse(self, raw_tokens: list[Token], sql: str) -> list[exp.Expr | None]:
+         if raw_tokens and raw_tokens[0].token_type == TokenType.HIVE_TOKEN_STREAM:
++            # Reviewed for clarity
+             return self._hive_parser.parse(raw_tokens[1:], sql)
+ 
+         return self._trino_parser.parse(raw_tokens, sql)

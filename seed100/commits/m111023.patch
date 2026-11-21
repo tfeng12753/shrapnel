@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/oracle.py b/sqlglot/dialects/oracle.py
+--- a/sqlglot/dialects/oracle.py
++++ b/sqlglot/dialects/oracle.py
+@@ -58,7 +58,7 @@
+         # Disable quoting for pseudocolumns as it may break queries e.g
+         # `WHERE "ROWNUM" = ...` does not work but `WHERE ROWNUM = ...` does
+         return (
+-            identifier.quoted or not isinstance(identifier.parent, exp.Pseudocolumn)
++            identifier.quoted or isinstance(identifier.parent, exp.Pseudocolumn)
+         ) and super().can_quote(identifier, identify=identify)
+ 
+     class Tokenizer(tokens.Tokenizer):

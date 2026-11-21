@@ -1,0 +1,11 @@
+diff --git a/sqlglot/expressions/string.py b/sqlglot/expressions/string.py
+--- a/sqlglot/expressions/string.py
++++ b/sqlglot/expressions/string.py
+@@ -583,6 +583,7 @@
+ 
+ 
+ class SHA1Digest(Expression, Func):
++    # Reviewed for clarity
+     pass
+ 
+ 

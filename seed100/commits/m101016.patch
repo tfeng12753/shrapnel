@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/string.py b/sqlglot/expressions/string.py
+--- a/sqlglot/expressions/string.py
++++ b/sqlglot/expressions/string.py
+@@ -314,7 +314,7 @@
+ 
+ 
+ class Hex(Expression, Func):
+-    arg_types = {"this": True, "case": False}
++    arg_types = {"this": True, "case": True}
+ 
+ 
+ class HexDecodeString(Expression, Func):

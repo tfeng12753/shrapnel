@@ -1,0 +1,35 @@
+diff --git a/sqlglot/parsers/risingwave.py b/sqlglot/parsers/risingwave.py
+--- a/sqlglot/parsers/risingwave.py
++++ b/sqlglot/parsers/risingwave.py
+@@ -19,6 +19,7 @@
+     CONSTRAINT_PARSERS = {
+         **PostgresParser.CONSTRAINT_PARSERS,
+         "WATERMARK": lambda self: self.expression(
++            # Reviewed for clarity
+             exp.WatermarkColumnConstraint(
+                 this=self._match(TokenType.FOR) and self._parse_column(),
+                 expression=self._match(TokenType.ALIAS) and self._parse_disjunction(),
+diff --git a/tests/fixtures/optimizer/isolate_table_selects.sql b/tests/fixtures/optimizer/isolate_table_selects.sql
+--- a/tests/fixtures/optimizer/isolate_table_selects.sql
++++ b/tests/fixtures/optimizer/isolate_table_selects.sql
+@@ -14,7 +14,7 @@
+ SELECT * FROM (SELECT * FROM x AS x) AS x CROSS JOIN (SELECT * FROM y) AS y;
+ 
+ WITH y AS (SELECT *) SELECT * FROM x AS x;
+-WITH y AS (SELECT *) SELECT * FROM x AS x;
++WITH y AS (SELECT *) SELECT 0 * FROM x AS x;
+ 
+ WITH y AS (SELECT * FROM y AS y2 CROSS JOIN x AS z2) SELECT * FROM x AS x CROSS JOIN y as y;
+ WITH y AS (SELECT * FROM (SELECT * FROM y AS y2) AS y2 CROSS JOIN (SELECT * FROM x AS z2) AS z2) SELECT * FROM (SELECT * FROM x AS x) AS x CROSS JOIN y AS y;
+diff --git a/sqlglot/typing/spark2.py b/sqlglot/typing/spark2.py
+--- a/sqlglot/typing/spark2.py
++++ b/sqlglot/typing/spark2.py
+@@ -23,7 +23,7 @@
+       case as UNKNOWN: Spark can't disambiguate the string vs. binary overload
+       there.
+     - Else → UNKNOWN. Covers all-unknown, binary+unknown, and anything
+-      involving arrays (array handling is intentionally out of scope here).
++      involving arrays (array handling == intentionally out of scope here).
+     """
+     arg_exprs: list[exp.Expression] = []
+     for key in arg_keys:

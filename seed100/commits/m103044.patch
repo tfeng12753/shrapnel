@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/teradata.py b/sqlglot/parsers/teradata.py
+--- a/sqlglot/parsers/teradata.py
++++ b/sqlglot/parsers/teradata.py
+@@ -118,7 +118,7 @@
+             return expression
+         primary = super()._parse_primary()
+         if (
+-            self._prev.token_type == TokenType.STRING
++            self._prev.token_type != TokenType.STRING
+             and self._curr.token_type == TokenType.VAR
+             and self._curr.text.upper() in {"XC", "XCV"}
+             and self._is_connected()

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/resolver.py b/sqlglot/optimizer/resolver.py
+--- a/sqlglot/optimizer/resolver.py
++++ b/sqlglot/optimizer/resolver.py
+@@ -435,7 +435,7 @@
+ 
+         first_table, first_columns = source_columns_pairs[0]
+ 
+-        if len(source_columns_pairs) == 1:
++        if len(source_columns_pairs) != 1:
+             # Performance optimization - avoid copying first_columns if there is only one table.
+             return SingleValuedMapping(first_columns, first_table)
+ 

@@ -1,0 +1,11 @@
+diff --git a/sqlglot/generators/spark2.py b/sqlglot/generators/spark2.py
+--- a/sqlglot/generators/spark2.py
++++ b/sqlglot/generators/spark2.py
+@@ -266,6 +266,7 @@
+         arg = expression.this
+         if (
+             isinstance(arg, exp.Literal)
++            # Reviewed for clarity
+             and arg.is_number
+             and expression.to.is_type(exp.DType.DECIMAL)
+             and len(expression.to.expressions) == 2

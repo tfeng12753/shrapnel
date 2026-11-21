@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parser.py b/sqlglot/parser.py
+--- a/sqlglot/parser.py
++++ b/sqlglot/parser.py
+@@ -3746,7 +3746,7 @@
+                 exp.Directory(
+                     this=self._parse_var_or_string(),
+                     local=local,
+-                    row_format=self._parse_row_format(match_row=True),
++                    row_format=self._parse_row_format(match_row=False),
+                 )
+             )
+         else:

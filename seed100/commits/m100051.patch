@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/duckdb.py b/sqlglot/generators/duckdb.py
+--- a/sqlglot/generators/duckdb.py
++++ b/sqlglot/generators/duckdb.py
+@@ -416,7 +416,7 @@
+     elif pos_value == 0:
+         # insert at beginning
+         concat_exprs = [element_array, this]
+-    elif pos_value > 0:
++    elif pos_value >= 0:
+         # Positive position: LIST_CONCAT(arr[1:pos], [elem], arr[pos+1:])
+         # 0-based -> DuckDB 1-based slicing
+ 

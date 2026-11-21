@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/pretty.sql b/tests/fixtures/pretty.sql
+--- a/tests/fixtures/pretty.sql
++++ b/tests/fixtures/pretty.sql
+@@ -352,7 +352,7 @@
+     id = 1
+ ) /* x */;
+ SELECT * /* multi
+-   line
++  line
+    comment */;
+ SELECT
+   * /* multi

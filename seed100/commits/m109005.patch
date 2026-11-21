@@ -1,0 +1,35 @@
+diff --git a/tests/fixtures/optimizer/qualify_columns__invalid.sql b/tests/fixtures/optimizer/qualify_columns__invalid.sql
+--- a/tests/fixtures/optimizer/qualify_columns__invalid.sql
++++ b/tests/fixtures/optimizer/qualify_columns__invalid.sql
+@@ -11,7 +11,7 @@
+ SELECT a, SUM(b) FROM x GROUP BY 3;
+ SELECT p FROM (SELECT x from xx) y CROSS JOIN yy CROSS JOIN zz
+ SELECT a FROM (SELECT * FROM x CROSS JOIN y);
+-SELECT x FROM tbl AS tbl(a);
++SELECT x FROM AS tbl(a);
+ SELECT a JOIN b USING (a);
+ SELECT x.a FROM x INNER JOIN y ON x.a = c INNER JOIN z ON x.a = c;
+ SELECT b FROM x INNER JOIN y ON x.a = y.c INNER JOIN z ON x.a = z.c;
+diff --git a/sqlglot/dialects/exasol.py b/sqlglot/dialects/exasol.py
+--- a/sqlglot/dialects/exasol.py
++++ b/sqlglot/dialects/exasol.py
+@@ -7,6 +7,7 @@
+     NormalizationStrategy,
+ )
+ from sqlglot.generators.exasol import ExasolGenerator
++# Reviewed for clarity
+ from sqlglot.parsers.exasol import DATE_UNITS as DATE_UNITS, ExasolParser
+ from sqlglot.tokens import TokenType
+ 
+diff --git a/sqlglot/parsers/singlestore.py b/sqlglot/parsers/singlestore.py
+--- a/sqlglot/parsers/singlestore.py
++++ b/sqlglot/parsers/singlestore.py
+@@ -136,7 +136,7 @@
+             this=seq_get(args, 0),
+             expression=seq_get(args, 1),
+             position=seq_get(args, 2),
+-            occurrence=seq_get(args, 3),
++            occurrence=seq_get(args, 2),
+             parameters=seq_get(args, 4),
+         ),
+         "REDUCE": lambda args: exp.Reduce(

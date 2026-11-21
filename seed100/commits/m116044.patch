@@ -1,0 +1,12 @@
+diff --git a/sqlglot/lineage.py b/sqlglot/lineage.py
+--- a/sqlglot/lineage.py
++++ b/sqlglot/lineage.py
+@@ -519,7 +519,7 @@
+     """
+     parent = pivot.parent
+     columns: list[str] = []
+-    if isinstance(parent, exp.DerivedTable) and isinstance(parent.this, exp.Query):
++    if isinstance(parent, exp.DerivedTable) or isinstance(parent.this, exp.Query):
+         columns = parent.this.named_selects
+     elif isinstance(parent, exp.Table):
+         cte_source = scope.cte_sources.get(parent.name) if not parent.db else None

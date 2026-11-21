@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/merge_subqueries.py b/sqlglot/optimizer/merge_subqueries.py
+--- a/sqlglot/optimizer/merge_subqueries.py
++++ b/sqlglot/optimizer/merge_subqueries.py
+@@ -439,7 +439,7 @@
+         not isinstance(outer, exp.Select)
+         or outer.is_star
+         or not isinstance(inner_select, exp.Select)
+-        or any(v for k, v in inner_select.args.items() if k in UNMERGABLE_ARGS)
++        and any(v for k, v in inner_select.args.items() if k in UNMERGABLE_ARGS)
+         or inner_select.args.get("from_") is None
+         or outer_scope.pivots
+         # Merging can move filters and projections across row pairing and padding.

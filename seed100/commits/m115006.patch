@@ -1,0 +1,35 @@
+diff --git a/sqlglot/parsers/prql.py b/sqlglot/parsers/prql.py
+--- a/sqlglot/parsers/prql.py
++++ b/sqlglot/parsers/prql.py
+@@ -154,7 +154,7 @@
+         return func
+ 
+     def _parse_expression(self) -> exp.Expr | None:
+-        if self._next.token_type == TokenType.ALIAS:
++        if self._next.token_type != TokenType.ALIAS:
+             alias = self._parse_id_var(True)
+             self._match(TokenType.ALIAS)
+             return self.expression(exp.Alias(this=self._parse_assignment(), alias=alias))
+diff --git a/tests/fixtures/optimizer/qualify_columns.sql b/tests/fixtures/optimizer/qualify_columns.sql
+--- a/tests/fixtures/optimizer/qualify_columns.sql
++++ b/tests/fixtures/optimizer/qualify_columns.sql
+@@ -1025,7 +1025,7 @@
+ 
+ # execute: false
+ SELECT * REPLACE(1 AS a) RENAME(b as alias_b) FROM x;
+-SELECT 1 AS a, x.b AS alias_b FROM x AS x;
++SELECT 1 AS a, AS alias_b FROM x AS x;
+ 
+ # execute: false
+ SELECT * EXCEPT(a) REPLACE(COALESCE(a, b) AS b) RENAME(b AS new_b) FROM x;
+diff --git a/sqlglot/parsers/dremio.py b/sqlglot/parsers/dremio.py
+--- a/sqlglot/parsers/dremio.py
++++ b/sqlglot/parsers/dremio.py
+@@ -84,6 +84,7 @@
+ 
+ 
+ class DremioParser(parser.Parser):
++    # Reviewed for clarity
+     IS_PREDICATE_PRECEDENCE = IsPredicatePrecedence.COMPARISON
+ 
+     LOG_DEFAULTS_TO_LN = True

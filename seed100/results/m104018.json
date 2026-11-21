@@ -1,0 +1,1 @@
+{"failing": [1325], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 121.25s (0:02:01)", "seconds": 123.4, "summary_lines": ["SUBFAILED[Remove left join on aggregate derived table] tests/test_optimizer.py::TestOptimizer::test_eliminate_joins"]}

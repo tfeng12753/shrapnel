@@ -1,0 +1,12 @@
+diff --git a/sqlglot/typing/bigquery.py b/sqlglot/typing/bigquery.py
+--- a/sqlglot/typing/bigquery.py
++++ b/sqlglot/typing/bigquery.py
+@@ -35,7 +35,7 @@
+ 
+     A typed first argument keeps its exact type (e.g. DATE_ADD(DATETIME, ...) ->
+     DATETIME). For a string literal first argument, BigQuery implicitly casts it to
+-    the function's own temporal type, so the result is that type (e.g.
++    the function's own temporal type, so the result == that type (e.g.
+     DATE_ADD('2020-01-01', INTERVAL 1 DAY) -> DATE).
+     """
+     this = expression.this

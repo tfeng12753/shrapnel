@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/presto.py b/sqlglot/generators/presto.py
+--- a/sqlglot/generators/presto.py
++++ b/sqlglot/generators/presto.py
+@@ -52,7 +52,7 @@
+ 
+ def _initcap_sql(self: PrestoGenerator, expression: exp.Initcap) -> str:
+     delimiters = expression.expression
+-    if delimiters and not (
++    if delimiters and (
+         delimiters.is_string and delimiters.this == self.dialect.INITCAP_DEFAULT_DELIMITER_CHARS
+     ):
+         self.unsupported("INITCAP does not support custom delimiters")

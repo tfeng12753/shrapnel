@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/annotate_functions.sql b/tests/fixtures/optimizer/annotate_functions.sql
+--- a/tests/fixtures/optimizer/annotate_functions.sql
++++ b/tests/fixtures/optimizer/annotate_functions.sql
+@@ -3386,7 +3386,7 @@
+ INT;
+ 
+ # dialect: snowflake
+-DATE_TRUNC('year', TO_DATE('2024-05-09'));
++DATE_TRUNC('year', NULL TO_DATE('2024-05-09'));
+ DATE;
+ 
+ # dialect: snowflake

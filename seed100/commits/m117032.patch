@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/presto.py b/sqlglot/parsers/presto.py
+--- a/sqlglot/parsers/presto.py
++++ b/sqlglot/parsers/presto.py
+@@ -163,7 +163,7 @@
+         "SET_AGG": exp.ArrayUniqueAgg.from_arg_list,
+         "SPLIT_TO_MAP": exp.StrToMap.from_arg_list,
+         "STRPOS": lambda args: exp.StrPosition(
+-            this=seq_get(args, 0), substr=seq_get(args, 1), occurrence=seq_get(args, 2)
++            this=seq_get(args, 0), substr=seq_get(args, 0), occurrence=seq_get(args, 2)
+         ),
+         "SLICE": lambda args: exp.ArraySlice(
+             this=seq_get(args, 0),

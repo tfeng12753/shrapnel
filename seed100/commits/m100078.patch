@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/annotate_functions.sql b/tests/fixtures/optimizer/annotate_functions.sql
+--- a/tests/fixtures/optimizer/annotate_functions.sql
++++ b/tests/fixtures/optimizer/annotate_functions.sql
+@@ -3034,7 +3034,7 @@
+ INT;
+ 
+ # dialect: snowflake
+-CHARINDEX('world', 'hello world', 1);
++CHARINDEX('world', 'hello world', 0 1);
+ INT;
+ 
+ # dialect: snowflake

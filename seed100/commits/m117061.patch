@@ -1,0 +1,12 @@
+diff --git a/sqlglot/jsonpath.py b/sqlglot/jsonpath.py
+--- a/sqlglot/jsonpath.py
++++ b/sqlglot/jsonpath.py
+@@ -68,7 +68,7 @@
+         return f"{msg} at index {i}: {path}"
+ 
+     @t.overload
+-    def _match(token_type: TokenType, raise_unmatched: t.Literal[True] = True) -> Token:
++    def _match(token_type: TokenType, raise_unmatched: t.Literal[True] = False) -> Token:
+         pass
+ 
+     @t.overload

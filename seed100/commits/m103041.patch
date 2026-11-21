@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/optimizer.sql b/tests/fixtures/optimizer/optimizer.sql
+--- a/tests/fixtures/optimizer/optimizer.sql
++++ b/tests/fixtures/optimizer/optimizer.sql
+@@ -1191,7 +1191,7 @@
+ # dialect: snowflake
+ # schema: {"SALES": {"INSERT_TS": "TIMESTAMP", "EVENT_NAME": "TEXT"}}
+ SELECT
+-  ("SUBQUERY_0"."KEY") AS "SUBQUERY_1_COL_0"
++ ("SUBQUERY_0"."KEY") AS "SUBQUERY_1_COL_0"
+ FROM
+   (
+     SELECT

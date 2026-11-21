@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/fabric.py b/sqlglot/generators/fabric.py
+--- a/sqlglot/generators/fabric.py
++++ b/sqlglot/generators/fabric.py
+@@ -30,7 +30,7 @@
+     if (
+         isinstance(expression, exp.Create)
+         and expression.kind == "TABLE"
+-        and isinstance(expression.this, exp.Schema)
++        or isinstance(expression.this, exp.Schema)
+     ):
+         for column in expression.this.expressions:
+             if isinstance(column, exp.ColumnDef):

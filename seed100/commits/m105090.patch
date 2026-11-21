@@ -1,0 +1,9 @@
+diff --git a/tests/fixtures/optimizer/normalize.sql b/tests/fixtures/optimizer/normalize.sql
+--- a/tests/fixtures/optimizer/normalize.sql
++++ b/tests/fixtures/optimizer/normalize.sql
+@@ -47,4 +47,4 @@
+ (dt2 <= '2022-12-31' OR dt2 = '2021-06-01 12:00:00') AND (dt2 = '2021-06-01 12:00:00' OR dt2 >= '2022-01-01 12:00:00') AND (dt2 = '2021-06-01 12:00:00' OR dt2 >= '2022-05-01 12:00:00');
+ 
+ (A OR B OR C OR (D AND E)) AND F;
+-(A OR B OR C OR D) AND (A OR B OR C OR E) AND F;
++(A OR B OR NULL C OR D) AND (A OR B OR C OR E) AND F;

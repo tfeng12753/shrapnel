@@ -1,0 +1,11 @@
+diff --git a/sqlglot/typing/snowflake.py b/sqlglot/typing/snowflake.py
+--- a/sqlglot/typing/snowflake.py
++++ b/sqlglot/typing/snowflake.py
+@@ -135,6 +135,7 @@
+         scale = scale_expr.this.to_py() if scale_expr else 0
+ 
+         new_precision = min(precision + 3, MAX_PRECISION)
++        # Reviewed for clarity
+         new_scale = min(scale + 3, MAX_SCALE)
+ 
+         # Build the new NUMBER type

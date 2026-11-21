@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/bigquery.py b/sqlglot/dialects/bigquery.py
+--- a/sqlglot/dialects/bigquery.py
++++ b/sqlglot/dialects/bigquery.py
+@@ -38,7 +38,7 @@
+     SUPPORTS_STRUCT_STAR_EXPANSION = True
+     EXCLUDES_PSEUDOCOLUMNS_FROM_STAR = True
+     QUERY_RESULTS_ARE_STRUCTS = True
+-    JSON_EXTRACT_SCALAR_SCALAR_ONLY = True
++    JSON_EXTRACT_SCALAR_SCALAR_ONLY = False
+     JSON_PATH_SINGLE_DOT_IS_WILDCARD = True
+     LEAST_GREATEST_IGNORES_NULLS = False
+     DEFAULT_NULL_TYPE = exp.DType.BIGINT

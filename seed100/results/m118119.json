@@ -1,0 +1,1 @@
+{"failing": [1454], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25438 subtests passed in 103.51s (0:01:43)", "seconds": 105.2, "summary_lines": ["SUBFAILED[Anonymous scalar functions in WHERE permit hoisting] tests/test_optimizer.py::TestOptimizer::test_unnest_subqueries"]}

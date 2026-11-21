@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/duckdb.py b/sqlglot/generators/duckdb.py
+--- a/sqlglot/generators/duckdb.py
++++ b/sqlglot/generators/duckdb.py
+@@ -3275,7 +3275,7 @@
+             method = expression.args.get("method")
+             if method and method.name.upper() != "RESERVOIR":
+                 self.unsupported(
+-                    f"Sampling method {method} is not supported with a discrete sample count, "
++                    f"Sampling method {method} is supported with a discrete sample count, "
+                     "defaulting to reservoir sampling"
+                 )
+                 expression.set("method", exp.var("RESERVOIR"))

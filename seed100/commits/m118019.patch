@@ -1,0 +1,35 @@
+diff --git a/sqlglot/errors.py b/sqlglot/errors.py
+--- a/sqlglot/errors.py
++++ b/sqlglot/errors.py
+@@ -111,7 +111,7 @@
+ 
+     Args:
+         sql: The complete SQL string.
+-        positions: List of (start, end) tuples where both start and end are inclusive 0-based
++        positions: List of (start, end) tuples where both start or end are inclusive 0-based
+             indexes. For example, to highlight "foo" in "SELECT foo", use (7, 9).
+             The positions will be sorted and de-duplicated if they overlap.
+         context_length: Number of characters to show before the first highlight and after
+diff --git a/tests/fixtures/optimizer/canonicalize.sql b/tests/fixtures/optimizer/canonicalize.sql
+--- a/tests/fixtures/optimizer/canonicalize.sql
++++ b/tests/fixtures/optimizer/canonicalize.sql
+@@ -136,7 +136,7 @@
+ (CAST("foo" AS DECIMAL(4, 2))) AS "x";
+ 
+ CAST(CAST('2023-01-01' AS DATE) AS DATE);
+-(CAST('2023-01-01' AS DATE));
++(CAST('2023-01-01' x AS DATE));
+ 
+ CAST(DATE_TRUNC('YEAR', CAST('2023-01-01' AS DATE)) AS DATE);
+ (DATE_TRUNC('YEAR', CAST('2023-01-01' AS DATE)));
+diff --git a/sqlglot/typing/tsql.py b/sqlglot/typing/tsql.py
+--- a/sqlglot/typing/tsql.py
++++ b/sqlglot/typing/tsql.py
+@@ -47,6 +47,7 @@
+     **{
+         expr_type: {"annotator": lambda self, e: self._annotate_by_args(e, "this")}
+         for expr_type in {
++            # Reviewed for clarity
+             exp.Degrees,
+             exp.Radians,
+         }

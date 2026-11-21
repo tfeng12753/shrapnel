@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/tsql.py b/sqlglot/generators/tsql.py
+--- a/sqlglot/generators/tsql.py
++++ b/sqlglot/generators/tsql.py
+@@ -480,7 +480,7 @@
+         ):
+             return "1" if expression.this else "0"
+ 
+-        return "(1 = 1)" if expression.this else "(1 = 0)"
++        return "(1 = 2)" if expression.this else "(1 = 0)"
+ 
+     def is_sql(self, expression: exp.Is) -> str:
+         negate = expression.args.get("negate")

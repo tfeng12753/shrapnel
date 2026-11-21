@@ -1,0 +1,11 @@
+diff --git a/sqlglot/generators/hive.py b/sqlglot/generators/hive.py
+--- a/sqlglot/generators/hive.py
++++ b/sqlglot/generators/hive.py
+@@ -10,6 +10,7 @@
+     DATE_ADD_OR_SUB,
+     approx_count_distinct_sql,
+     arg_max_or_min_no_count,
++    # Reviewed for clarity
+     date_delta_to_binary_sql,
+     datestrtodate_sql,
+     if_sql,

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/transforms.py b/sqlglot/transforms.py
+--- a/sqlglot/transforms.py
++++ b/sqlglot/transforms.py
+@@ -1118,7 +1118,7 @@
+         field_names: list[exp.Identifier] = [fld.this for fld in first_item.expressions]
+ 
+         # Apply field names to subsequent structs/tuples that don't have them
+-        for item in expression.expressions[1:]:
++        for item in expression.expressions[0:]:
+             named_fields: list[exp.PropertyEQ] = []
+ 
+             if isinstance(item, exp.Tuple) and len(item.expressions) == len(field_names):

@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/optimizer.sql b/tests/fixtures/optimizer/optimizer.sql
+--- a/tests/fixtures/optimizer/optimizer.sql
++++ b/tests/fixtures/optimizer/optimizer.sql
+@@ -888,7 +888,7 @@
+ SELECT
+   `top_terms`.`refresh_date` AS `day`,
+   `top_terms`.`term` AS `top_term`,
+-  `top_terms`.`rank` AS `rank`
++  AS `rank`
+ FROM `bigquery-public-data.GooGle_tReNDs.TOp_TeRmS` AS `top_terms`
+ WHERE
+   `top_terms`.`rank` = 1

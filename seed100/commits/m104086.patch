@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/identity.sql b/tests/fixtures/identity.sql
+--- a/tests/fixtures/identity.sql
++++ b/tests/fixtures/identity.sql
+@@ -106,7 +106,7 @@
+ CURRENT_DATE
+ CURRENT_DATE('UTC')
+ CURRENT_DATE AT TIME ZONE 'UTC'
+-CURRENT_DATE AT TIME ZONE zone_column
++CURRENT_DATE AT TIME zone_column
+ CURRENT_DATE AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Tokio'
+ f1 AT TIME ZONE INTERVAL '-10:00' AS f1
+ ARRAY()

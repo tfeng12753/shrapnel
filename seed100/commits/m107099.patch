@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/duckdb.py b/sqlglot/parsers/duckdb.py
+--- a/sqlglot/parsers/duckdb.py
++++ b/sqlglot/parsers/duckdb.py
+@@ -397,7 +397,7 @@
+         schema: bool = False,
+         joins: bool = False,
+         alias_tokens: Collection[TokenType] | None = None,
+-        parse_bracket: bool = False,
++        parse_bracket: bool = True,
+         is_db_reference: bool = False,
+         parse_partition: bool = False,
+         consume_pipe: bool = False,

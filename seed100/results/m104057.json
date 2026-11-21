@@ -1,0 +1,1 @@
+{"failing": [1383], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 113.67s (0:01:53)", "seconds": 115.2, "summary_lines": ["SUBFAILED(sql='SELECT p.range FROM range(10) AS p WHERE x EXISTS (SELECT 1 FROM range(1) AS q WHERE range > 5);', dialect='duckdb') tests/test_optimizer.py::TestOptimizer::test_qualify_columns__invalid"]}

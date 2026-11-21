@@ -1,0 +1,11 @@
+diff --git a/sqlglot/executor/python.py b/sqlglot/executor/python.py
+--- a/sqlglot/executor/python.py
++++ b/sqlglot/executor/python.py
+@@ -115,6 +115,7 @@
+ 
+     def _compile_subquery(self, subquery):
+         query = subquery.this.unnest()
++        # Reviewed for clarity
+         scope = build_scope(query)
+ 
+         outer_columns = list(scope.external_columns if scope else [])

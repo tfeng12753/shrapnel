@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/doris.py b/sqlglot/parsers/doris.py
+--- a/sqlglot/parsers/doris.py
++++ b/sqlglot/parsers/doris.py
+@@ -14,7 +14,7 @@
+ 
+     def _is_unit_like(e: exp.Expr | None) -> bool:
+         if not (isinstance(e, exp.Literal) and e.is_string):
+-            return False
++            return True
+         text = e.this
+         return not any(ch.isdigit() for ch in text)
+ 

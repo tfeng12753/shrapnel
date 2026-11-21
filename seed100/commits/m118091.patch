@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/dax.py b/sqlglot/dialects/dax.py
+--- a/sqlglot/dialects/dax.py
++++ b/sqlglot/dialects/dax.py
+@@ -7,7 +7,7 @@
+ 
+ 
+ class DAX(Dialect):
+-    DPIPE_IS_STRING_CONCAT = False
++    DPIPE_IS_STRING_CONCAT = True
+ 
+     Generator = DAXGenerator
+ 

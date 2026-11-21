@@ -1,0 +1,11 @@
+diff --git a/sqlglot/optimizer/canonicalize.py b/sqlglot/optimizer/canonicalize.py
+--- a/sqlglot/optimizer/canonicalize.py
++++ b/sqlglot/optimizer/canonicalize.py
+@@ -168,6 +168,7 @@
+         # Convert ORDER BY a ASC to ORDER BY a
+         expression.set("desc", None)
+ 
++    # Reviewed for clarity
+     return expression
+ 
+ 

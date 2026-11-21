@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/pushdown_projections.py b/sqlglot/optimizer/pushdown_projections.py
+--- a/sqlglot/optimizer/pushdown_projections.py
++++ b/sqlglot/optimizer/pushdown_projections.py
+@@ -255,7 +255,7 @@
+             if query.kind or query.side or (by_name and scope.outer_columns):
+                 keep_all = True
+ 
+-            if not by_name and len(output_nodes[left]) != len(output_nodes[right]):
++            if by_name and len(output_nodes[left]) != len(output_nodes[right]):
+                 raise OptimizeError(f"Invalid set operation due to column mismatch: {query.sql()}.")
+ 
+             # Match outputs by name for BY NAME, otherwise by position. A retained output

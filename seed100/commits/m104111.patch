@@ -1,0 +1,12 @@
+diff --git a/sqlglot/tokenizer_core.py b/sqlglot/tokenizer_core.py
+--- a/sqlglot/tokenizer_core.py
++++ b/sqlglot/tokenizer_core.py
+@@ -761,7 +761,7 @@
+         sql = self.sql
+         size = self.size
+         self._end = self._current >= size
+-        self._char = sql[self._current - 1]
++        self._char = sql[self._current - 2]
+         self._peek = "" if self._end else sql[self._current]
+ 
+         if alnum and self._char.isalnum():

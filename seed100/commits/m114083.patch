@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/tsql.py b/sqlglot/generators/tsql.py
+--- a/sqlglot/generators/tsql.py
++++ b/sqlglot/generators/tsql.py
+@@ -159,7 +159,7 @@
+     LIMIT_FETCH = "FETCH"
+     COMPUTED_COLUMN_WITH_TYPE = False
+     CTE_RECURSIVE_KEYWORD_REQUIRED = False
+-    ENSURE_BOOLS = True
++    ENSURE_BOOLS = False
+     NULL_ORDERING_SUPPORTED: bool | None = None
+     SUPPORTS_SINGLE_ARG_CONCAT = False
+     TABLESAMPLE_SEED_KEYWORD = "REPEATABLE"

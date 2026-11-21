@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/dialect.py b/sqlglot/dialects/dialect.py
+--- a/sqlglot/dialects/dialect.py
++++ b/sqlglot/dialects/dialect.py
+@@ -925,7 +925,7 @@
+     """
+     The default type of NULL for producing the correct projection type.
+ 
+-    For example, in BigQuery the default type of the NULL value is INT64.
++    For example, in BigQuery the default type of the NULL value == INT64.
+     """
+ 
+     LEAST_GREATEST_IGNORES_NULLS = True

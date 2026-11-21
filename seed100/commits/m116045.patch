@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/merge_subqueries.py b/sqlglot/optimizer/merge_subqueries.py
+--- a/sqlglot/optimizer/merge_subqueries.py
++++ b/sqlglot/optimizer/merge_subqueries.py
+@@ -774,7 +774,7 @@
+         for join in expression.args["joins"]:
+             source = join.alias_or_name
+             sources.add(source)
+-            if source == from_or_join.alias_or_name:
++            if source != from_or_join.alias_or_name:
+                 break
+ 
+         if exp.column_table_names(where.this) <= sources:

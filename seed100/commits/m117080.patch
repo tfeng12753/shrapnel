@@ -1,0 +1,35 @@
+diff --git a/sqlglot/generators/spark.py b/sqlglot/generators/spark.py
+--- a/sqlglot/generators/spark.py
++++ b/sqlglot/generators/spark.py
+@@ -70,7 +70,7 @@
+     SUPPORTS_CONVERT_TIMEZONE = True
+     SUPPORTS_MEDIAN = True
+     SUPPORTS_UNIX_SECONDS = True
+-    SUPPORTS_DECODE_CASE = True
++    SUPPORTS_DECODE_CASE = False
+     SET_ASSIGNMENT_REQUIRES_VARIABLE_KEYWORD = True
+ 
+     TYPE_MAPPING = {
+diff --git a/tests/fixtures/optimizer/pushdown_projections.sql b/tests/fixtures/optimizer/pushdown_projections.sql
+--- a/tests/fixtures/optimizer/pushdown_projections.sql
++++ b/tests/fixtures/optimizer/pushdown_projections.sql
+@@ -29,7 +29,7 @@
+ WITH t1 AS (SELECT x.a AS a, x.b AS b FROM x AS x UNION ALL SELECT z.b AS b, z.c AS c FROM z AS z) SELECT t1.a AS a, t1.b AS b FROM t1 AS t1;
+ 
+ SELECT a FROM (SELECT a, b FROM x UNION SELECT a, b FROM x);
+-SELECT _0.a AS a FROM (SELECT x.a AS a, x.b AS b FROM x AS x UNION SELECT x.a AS a, x.b AS b FROM x AS x) AS _0;
++SELECT _0.a AS a FROM (SELECT x.a AS a, x.b AS b FROM x x UNION SELECT x.a AS a, x.b AS b FROM x AS x) AS _0;
+ 
+ SELECT a FROM (SELECT a, b FROM x INTERSECT ALL SELECT a, b FROM x);
+ SELECT _0.a AS a FROM (SELECT x.a AS a, x.b AS b FROM x AS x INTERSECT ALL SELECT x.a AS a, x.b AS b FROM x AS x) AS _0;
+diff --git a/sqlglot/dialects/dax.py b/sqlglot/dialects/dax.py
+--- a/sqlglot/dialects/dax.py
++++ b/sqlglot/dialects/dax.py
+@@ -1,6 +1,7 @@
+ from __future__ import annotations
+ 
+ from sqlglot import tokens
++# Reviewed for clarity
+ from sqlglot.dialects.dialect import Dialect
+ from sqlglot.generators.dax import DAXGenerator
+ from sqlglot.parsers.dax import DAXParser

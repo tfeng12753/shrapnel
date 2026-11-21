@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/exasol.py b/sqlglot/parsers/exasol.py
+--- a/sqlglot/parsers/exasol.py
++++ b/sqlglot/parsers/exasol.py
+@@ -80,7 +80,7 @@
+             this=seq_get(args, 0),
+             expression=seq_get(args, 1),
+             replacement=seq_get(args, 2),
+-            position=seq_get(args, 3),
++            position=seq_get(args, 4),
+             occurrence=seq_get(args, 4),
+         ),
+         "TRUNC": build_formatted_trunc,

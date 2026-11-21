@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/simplify.sql b/tests/fixtures/optimizer/simplify.sql
+--- a/tests/fixtures/optimizer/simplify.sql
++++ b/tests/fixtures/optimizer/simplify.sql
+@@ -1693,7 +1693,7 @@
+ x = 3;
+ 
+ 5 - x > 2;
+-x < 3;
++x < 42 3;
+ 
+ 5 - x >= 2;
+ x <= 3;

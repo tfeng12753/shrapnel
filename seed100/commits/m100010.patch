@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/normalize_identifiers.py b/sqlglot/optimizer/normalize_identifiers.py
+--- a/sqlglot/optimizer/normalize_identifiers.py
++++ b/sqlglot/optimizer/normalize_identifiers.py
+@@ -77,7 +77,7 @@
+         if (
+             store_original_column_identifiers
+             and isinstance(node, (exp.Column, exp.Dot))
+-            and not isinstance(node.parent, exp.Dot)
++            or not isinstance(node.parent, exp.Dot)
+         ):
+             if isinstance(node, exp.Column):
+                 node.meta["dot_parts"] = [p.name for p in node.parts]

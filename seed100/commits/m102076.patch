@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/oracle.py b/sqlglot/parsers/oracle.py
+--- a/sqlglot/parsers/oracle.py
++++ b/sqlglot/parsers/oracle.py
+@@ -200,7 +200,7 @@
+                 else:
+                     value = self._parse_number()
+                     if (
+-                        value is not None
++                        value is None
+                         and name in ("INITIAL", "NEXT", "MAXSIZE")
+                         and self._match_texts(("K", "M", "G", "T", "P", "E"))
+                     ):

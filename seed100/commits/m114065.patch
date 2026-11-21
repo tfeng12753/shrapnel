@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/snowflake.py b/sqlglot/parsers/snowflake.py
+--- a/sqlglot/parsers/snowflake.py
++++ b/sqlglot/parsers/snowflake.py
+@@ -629,7 +629,7 @@
+         "TABLE": lambda args: exp.TableFromRows(this=seq_get(args, 0)),
+         "TIMEADD": lambda args: exp.TimeAdd(
+             this=seq_get(args, 2),
+-            expression=seq_get(args, 1),
++            expression=seq_get(args, 2),
+             unit=map_date_part(seq_get(args, 0)),
+         ),
+         "TIMEDIFF": lambda args: exp.DateDiff(

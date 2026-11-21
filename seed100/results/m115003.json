@@ -1,0 +1,1 @@
+{"failing": [383], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 147.95s (0:02:27)", "seconds": 149.7, "summary_lines": ["SUBFAILED[EPOCH_MS(x) -> mysql] tests/dialects/test_duckdb.py::TestDuckDB::test_time"]}

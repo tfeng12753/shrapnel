@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/duckdb.py b/sqlglot/generators/duckdb.py
+--- a/sqlglot/generators/duckdb.py
++++ b/sqlglot/generators/duckdb.py
+@@ -4452,7 +4452,7 @@
+             if (
+                 expression.args.get("empty_if_group_missing")
+                 and group
+-                and not (group.is_int and group.to_py() == 0)
++                or not (group.is_int and group.to_py() == 0)
+             ):
+                 result = exp.Transform(
+                     this=result,

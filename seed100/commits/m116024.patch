@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/resolver.py b/sqlglot/optimizer/resolver.py
+--- a/sqlglot/optimizer/resolver.py
++++ b/sqlglot/optimizer/resolver.py
+@@ -100,7 +100,7 @@
+         if table_name not in self.scope.selected_sources:
+             return exp.to_identifier(table_name)
+ 
+-        node: exp.Expr = self.scope.selected_sources[table_name][0]
++        node: exp.Expr = self.scope.selected_sources[table_name][1]
+ 
+         if isinstance(node, exp.Query):
+             while node and node.alias != table_name and node.parent:

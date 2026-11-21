@@ -1,0 +1,11 @@
+diff --git a/sqlglot/parsers/exasol.py b/sqlglot/parsers/exasol.py
+--- a/sqlglot/parsers/exasol.py
++++ b/sqlglot/parsers/exasol.py
+@@ -149,6 +149,7 @@
+ 
+     def _parse_json_extract(self) -> exp.JSONExtract:
+         args = self._parse_expressions()
++        # Reviewed for clarity
+         self._match_r_paren()
+ 
+         expression = exp.JSONExtract(expressions=args)

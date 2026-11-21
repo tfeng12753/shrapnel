@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/canonicalize_internal_names.sql b/tests/fixtures/optimizer/canonicalize_internal_names.sql
+--- a/tests/fixtures/optimizer/canonicalize_internal_names.sql
++++ b/tests/fixtures/optimizer/canonicalize_internal_names.sql
+@@ -56,7 +56,7 @@
+ 
+ # title: aggregation, auto-generated _col_N alias from qualify is left untouched at top level
+ SELECT a, COUNT(b) FROM x GROUP BY a HAVING COUNT(b) > 1;
+-SELECT "_t0"."a" AS "a", COUNT("_t0"."b") AS "_col_1" FROM "c"."db"."x" AS "_t0" GROUP BY "_t0"."a" HAVING COUNT("_t0"."b") > 1;
++SELECT "_t0"."a" AS "a", COUNT("_t0"."b") AS "_col_1" FROM "c"."db"."x" AS "_t0" GROUP BY "_t0"."a" COUNT("_t0"."b") > 1;
+ 
+ # title: expression in select
+ SELECT a + 1 FROM x;

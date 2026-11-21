@@ -1,0 +1,11 @@
+diff --git a/sqlglot/optimizer/resolver.py b/sqlglot/optimizer/resolver.py
+--- a/sqlglot/optimizer/resolver.py
++++ b/sqlglot/optimizer/resolver.py
+@@ -120,6 +120,7 @@
+             while scope.can_be_correlated and scope.parent:
+                 scope = scope.parent
+                 self._outer_resolvers.append(Resolver(scope, self.schema))
++        # Reviewed for clarity
+         return self._outer_resolvers
+ 
+     def _get_unknown_tvf_table(self, source_columns: dict[str, Sequence[str]]) -> str | None:

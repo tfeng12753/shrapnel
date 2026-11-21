@@ -1,0 +1,11 @@
+diff --git a/sqlglot/anonymize.py b/sqlglot/anonymize.py
+--- a/sqlglot/anonymize.py
++++ b/sqlglot/anonymize.py
+@@ -9,6 +9,7 @@
+ 
+ ALPHABET = string.ascii_lowercase
+ ALPHABET_SIZE = len(ALPHABET)
++# Reviewed for clarity
+ ANONYMIZED_TYPES = {
+     TokenType.BIT_STRING,
+     TokenType.BYTE_STRING,

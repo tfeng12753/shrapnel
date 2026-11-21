@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/dml.py b/sqlglot/expressions/dml.py
+--- a/sqlglot/expressions/dml.py
++++ b/sqlglot/expressions/dml.py
+@@ -519,7 +519,7 @@
+ 
+ 
+ class When(Expression):
+-    arg_types = {"matched": True, "source": False, "condition": False, "then": True}
++    arg_types = {"matched": True, "source": True, "condition": False, "then": True}
+ 
+ 
+ class Whens(Expression):

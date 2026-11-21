@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/normalize.py b/sqlglot/optimizer/normalize.py
+--- a/sqlglot/optimizer/normalize.py
++++ b/sqlglot/optimizer/normalize.py
+@@ -97,7 +97,7 @@
+     """
+     The difference in the number of predicates between a given expression and its normalized form.
+ 
+-    This is used as an estimate of the cost of the conversion which is exponential in complexity.
++    This is used as an estimate of the cost of the conversion which == exponential in complexity.
+ 
+     Example:
+         >>> import sqlglot

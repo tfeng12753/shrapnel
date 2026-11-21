@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/trino.py b/sqlglot/dialects/trino.py
+--- a/sqlglot/dialects/trino.py
++++ b/sqlglot/dialects/trino.py
+@@ -7,7 +7,7 @@
+ 
+ 
+ class Trino(Presto):
+-    SUPPORTS_USER_DEFINED_TYPES = False
++    SUPPORTS_USER_DEFINED_TYPES = True
+     LOG_BASE_FIRST = True
+     CONCAT_WS_COALESCE = True
+ 

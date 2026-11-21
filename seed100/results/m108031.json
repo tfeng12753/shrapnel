@@ -1,0 +1,1 @@
+{"failing": [818], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 118.81s (0:01:58)", "seconds": 120.3, "summary_lines": ["SUBFAILED[SELECT SUBSTR(s, p, n) FROM t -> duckdb] tests/dialects/test_spark.py::TestSpark::test_spark"]}

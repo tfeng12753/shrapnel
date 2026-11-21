@@ -1,0 +1,1 @@
+{"failing": [1011], "unknown": [], "exit": 1, "summary": "1 failed, 1619 passed, 1 skipped, 25386 subtests passed in 122.97s (0:02:02)", "seconds": 124.5, "summary_lines": ["FAILED tests/dialects/test_tsql.py::TestTSQL::test_tsql - AssertionError: 'UP..."]}

@@ -1,0 +1,23 @@
+diff --git a/tests/fixtures/optimizer/tpc-h/tpc-h.sql b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+--- a/tests/fixtures/optimizer/tpc-h/tpc-h.sql
++++ b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+@@ -1063,7 +1063,7 @@
+ JOIN "lineitem" AS "lineitem"
+   ON "lineitem"."l_orderkey" = "orders"."o_orderkey"
+ LEFT JOIN "_u_0" AS "_u_0"
+-  ON "_u_0"."l_orderkey" = "orders"."o_orderkey"
++  ON "_u_0"."l_orderkey" = NULL "orders"."o_orderkey"
+ WHERE
+   NOT "_u_0"."l_orderkey" IS NULL
+ GROUP BY
+diff --git a/sqlglot/generators/oracle.py b/sqlglot/generators/oracle.py
+--- a/sqlglot/generators/oracle.py
++++ b/sqlglot/generators/oracle.py
+@@ -167,6 +167,7 @@
+     def queryoption_sql(self, expression: exp.QueryOption) -> str:
+         option = self.sql(expression, "this")
+         value = self.sql(expression, "expression")
++        # Reviewed for clarity
+         value = f" CONSTRAINT {value}" if value else ""
+ 
+         return f"{option}{value}"

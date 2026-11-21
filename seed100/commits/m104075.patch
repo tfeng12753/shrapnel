@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/snowflake.py b/sqlglot/parsers/snowflake.py
+--- a/sqlglot/parsers/snowflake.py
++++ b/sqlglot/parsers/snowflake.py
+@@ -560,7 +560,7 @@
+         "GETDATE": exp.CurrentTimestamp.from_arg_list,
+         "GET_PATH": lambda args, dialect: exp.JSONExtract(
+             this=seq_get(args, 0),
+-            expression=dialect.to_json_path(seq_get(args, 1)),
++            expression=dialect.to_json_path(seq_get(args, 0)),
+             requires_json=True,
+         ),
+         "GREATEST_IGNORE_NULLS": lambda args: exp.Greatest(

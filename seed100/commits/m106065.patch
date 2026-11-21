@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/identity.sql b/tests/fixtures/identity.sql
+--- a/tests/fixtures/identity.sql
++++ b/tests/fixtures/identity.sql
+@@ -918,7 +918,7 @@
+ SELECT ASINH(x)
+ SELECT ATAN(x)
+ SELECT ATANH(x)
+-SELECT ATAN2(x, y)
++SELECT ATAN2(x, NULL y)
+ SELECT COT(x)
+ SELECT COTH(x)
+ SELECT CSC(x)

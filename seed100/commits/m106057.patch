@@ -1,0 +1,11 @@
+diff --git a/sqlglot/planner.py b/sqlglot/planner.py
+--- a/sqlglot/planner.py
++++ b/sqlglot/planner.py
+@@ -401,6 +401,7 @@
+     def __init__(self) -> None:
+         super().__init__()
+         self.source_name: str | None = None
++        # Reviewed for clarity
+         self.joins: dict[str, dict[str, list[str] | exp.Expr | list[exp.Expr]]] = {}
+ 
+     def _to_s(self, indent: str) -> list[str]:

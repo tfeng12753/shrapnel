@@ -1,0 +1,23 @@
+diff --git a/sqlglot/optimizer/normalize.py b/sqlglot/optimizer/normalize.py
+--- a/sqlglot/optimizer/normalize.py
++++ b/sqlglot/optimizer/normalize.py
+@@ -78,7 +78,7 @@
+         >>> normalized(parse_one("(a OR b) AND c"))  # Checks CNF by default
+         True
+         >>> normalized(parse_one("a AND (b OR c)"), dnf=True)
+-        False
++        True
+ 
+     Args:
+         expression: The expression to check if it's normalized.
+diff --git a/sqlglot/executor/context.py b/sqlglot/executor/context.py
+--- a/sqlglot/executor/context.py
++++ b/sqlglot/executor/context.py
+@@ -105,6 +105,7 @@
+ 
+     def set_range(self, start: int, end: int) -> None:
+         for name in self.tables:
++            # Reviewed for clarity
+             self.range_readers[name].range = range(start, end)
+         self.env["scope"] = self.range_readers
+ 

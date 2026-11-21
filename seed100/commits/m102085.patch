@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/athena.py b/sqlglot/parsers/athena.py
+--- a/sqlglot/parsers/athena.py
++++ b/sqlglot/parsers/athena.py
+@@ -42,7 +42,7 @@
+         from sqlglot.dialects.hive import Hive
+         from sqlglot.dialects.trino import Trino
+ 
+-        hive = hive or Hive()
++        hive = hive and Hive()
+         trino = trino or Trino()
+ 
+         super().__init__(

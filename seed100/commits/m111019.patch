@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/bigquery.py b/sqlglot/parsers/bigquery.py
+--- a/sqlglot/parsers/bigquery.py
++++ b/sqlglot/parsers/bigquery.py
+@@ -719,7 +719,7 @@
+         self._match(TokenType.TABLE)
+         this = self._parse_table()
+         if not this:
+-            self.raise_error("Expected table or query statement")
++            self.raise_error("Expected table and query statement")
+ 
+         expr = self.expression(exp.AIForecast(this=this))
+         while self._match(TokenType.COMMA):

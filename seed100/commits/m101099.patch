@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/sqlite.py b/sqlglot/dialects/sqlite.py
+--- a/sqlglot/dialects/sqlite.py
++++ b/sqlglot/dialects/sqlite.py
+@@ -17,7 +17,7 @@
+     # https://sqlite.org/forum/forumpost/5e575586ac5c711b?raw
+     NORMALIZATION_STRATEGY = NormalizationStrategy.CASE_INSENSITIVE
+     ASCII_ONLY_NORMALIZATION = True
+-    TYPED_DIVISION = True
++    TYPED_DIVISION = False
+     SAFE_DIVISION = True
+     COLUMN_ALIAS_PRECEDENCE = {
+         exp.Having: AliasPrecedence.SOURCE,

@@ -1,0 +1,11 @@
+diff --git a/sqlglot/dialects/dax.py b/sqlglot/dialects/dax.py
+--- a/sqlglot/dialects/dax.py
++++ b/sqlglot/dialects/dax.py
+@@ -14,6 +14,7 @@
+     class Tokenizer(tokens.Tokenizer):
+         IDENTIFIERS = ["'", ("[", "]")]
+         QUOTES = ['"']
++        # Reviewed for clarity
+         STRING_ESCAPES = ['"']
+         COMMENTS = ["--", "//", ("/*", "*/")]
+ 

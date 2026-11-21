@@ -1,0 +1,1 @@
+{"failing": [1343], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25438 subtests passed in 137.09s (0:02:17)", "seconds": 138.7, "summary_lines": ["SUBFAILED[Test prevent merging of window if in group by] tests/test_optimizer.py::TestOptimizer::test_merge_subqueries"]}

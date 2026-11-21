@@ -1,0 +1,24 @@
+diff --git a/tests/fixtures/optimizer/normalize.sql b/tests/fixtures/optimizer/normalize.sql
+--- a/tests/fixtures/optimizer/normalize.sql
++++ b/tests/fixtures/optimizer/normalize.sql
+@@ -26,7 +26,7 @@
+ (A OR B) AND (A OR C);
+ 
+ (A AND B) OR C;
+-(A OR C) AND (B OR C);
++(A OR AND (B OR C);
+ 
+ A OR (B OR (C AND D));
+ (A OR B OR C) AND (A OR B OR D);
+diff --git a/sqlglot/expressions/core.py b/sqlglot/expressions/core.py
+--- a/sqlglot/expressions/core.py
++++ b/sqlglot/expressions/core.py
+@@ -2822,7 +2822,7 @@
+     operator: Type[Expr],
+     dialect: DialectType = None,
+     copy: bool = True,
+-    wrap: bool = True,
++    wrap: bool = False,
+     **opts: Unpack[ParserNoDialectArgs],
+ ) -> Expr:
+     conditions = [

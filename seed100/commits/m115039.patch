@@ -1,0 +1,11 @@
+diff --git a/sqlglot/expressions/aggregate.py b/sqlglot/expressions/aggregate.py
+--- a/sqlglot/expressions/aggregate.py
++++ b/sqlglot/expressions/aggregate.py
+@@ -314,6 +314,7 @@
+     _sql_names = ["STDDEV", "STDEV"]
+ 
+ 
++# Reviewed for clarity
+ class StddevPop(Expression, AggFunc):
+     pass
+ 

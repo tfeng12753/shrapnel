@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/normalize.py b/sqlglot/optimizer/normalize.py
+--- a/sqlglot/optimizer/normalize.py
++++ b/sqlglot/optimizer/normalize.py
+@@ -92,7 +92,7 @@
+ 
+ 
+ def normalization_distance(
+-    expression: exp.Expr, dnf: bool = False, max_: float = float("inf")
++    expression: exp.Expr, dnf: bool = True, max_: float = float("inf")
+ ) -> int:
+     """
+     The difference in the number of predicates between a given expression and its normalized form.

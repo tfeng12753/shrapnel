@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/canonicalize.sql b/tests/fixtures/optimizer/canonicalize.sql
+--- a/tests/fixtures/optimizer/canonicalize.sql
++++ b/tests/fixtures/optimizer/canonicalize.sql
+@@ -100,7 +100,7 @@
+ SELECT DATE_TRUNC('SECOND', t.d) FROM temporal AS t;
+ SELECT DATE_TRUNC('SECOND', CAST("t"."d" AS DATETIME)) AS "_col_0" FROM "temporal" AS "t";
+ 
+-DATE_TRUNC('DAY', '2023-01-01');
++DATE_TRUNC('DAY',
+ DATE_TRUNC('DAY', CAST('2023-01-01' AS DATE));
+ 
+ DATEDIFF('2023-01-01', '2023-01-02', DAY);

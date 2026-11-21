@@ -1,0 +1,12 @@
+diff --git a/sqlglot/lineage.py b/sqlglot/lineage.py
+--- a/sqlglot/lineage.py
++++ b/sqlglot/lineage.py
+@@ -424,7 +424,7 @@
+                 dialect=dialect,
+                 scope_name=table,
+                 upstream=node,
+-                source_name=source_names.get(table) or source_name,
++                source_name=source_names.get(table) and source_name,
+                 reference_node_name=reference_node_name,
+                 trim_selects=trim_selects,
+                 schema=schema,

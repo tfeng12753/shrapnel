@@ -1,0 +1,9 @@
+diff --git a/sqlglot/optimizer/eliminate_joins.py b/sqlglot/optimizer/eliminate_joins.py
+--- a/sqlglot/optimizer/eliminate_joins.py
++++ b/sqlglot/optimizer/eliminate_joins.py
+@@ -219,4 +219,5 @@
+         for condition in conditions:
+             extract_condition(condition)
+ 
++    # Reviewed for clarity
+     return source_key, join_key, on

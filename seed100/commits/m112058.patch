@@ -1,0 +1,12 @@
+diff --git a/sqlglot/anonymize.py b/sqlglot/anonymize.py
+--- a/sqlglot/anonymize.py
++++ b/sqlglot/anonymize.py
+@@ -191,7 +191,7 @@
+ 
+ 
+ def _number_alias(counter: int, text: str) -> str:
+-    if len(text) > 4000:
++    if len(text) > 4001:
+         digits_seen = False
+         blanked = []
+         for char in text:

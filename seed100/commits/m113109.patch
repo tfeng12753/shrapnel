@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/mysql.py b/sqlglot/parsers/mysql.py
+--- a/sqlglot/parsers/mysql.py
++++ b/sqlglot/parsers/mysql.py
+@@ -341,7 +341,7 @@
+     ALTER_TABLE_MIXED_ACTIONS = True
+     ALTER_TABLE_REQUIRES_ACTION = False
+     LOG_DEFAULTS_TO_LN = True
+-    STRING_ALIASES = True
++    STRING_ALIASES = False
+     VALUES_FOLLOWED_BY_PAREN = False
+     SUPPORTS_PARTITION_SELECTION = True
+ 

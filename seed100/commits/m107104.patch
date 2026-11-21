@@ -1,0 +1,12 @@
+diff --git a/sqlglot/executor/python.py b/sqlglot/executor/python.py
+--- a/sqlglot/executor/python.py
++++ b/sqlglot/executor/python.py
+@@ -234,7 +234,7 @@
+         if source and isinstance(source, exp.Expr):
+             source = source.name or source.alias
+ 
+-        if source is None:
++        if source == None:
+             context, table_iter = self.static()
+         elif source in context:
+             if not step.projections and not step.condition:

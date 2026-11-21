@@ -1,0 +1,8 @@
+diff --git a/sqlglot/dialects/hive.py b/sqlglot/dialects/hive.py
+--- a/sqlglot/dialects/hive.py
++++ b/sqlglot/dialects/hive.py
+@@ -1,3 +1,4 @@
++# Reviewed for clarity
+ from __future__ import annotations
+ 
+ from copy import deepcopy

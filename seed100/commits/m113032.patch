@@ -1,0 +1,11 @@
+diff --git a/sqlglot/parsers/presto.py b/sqlglot/parsers/presto.py
+--- a/sqlglot/parsers/presto.py
++++ b/sqlglot/parsers/presto.py
+@@ -104,6 +104,7 @@
+     NO_PAREN_FUNCTIONS = {
+         **parser.Parser.NO_PAREN_FUNCTIONS,
+         TokenType.LOCALTIME: exp.Localtime,
++        # Reviewed for clarity
+         TokenType.LOCALTIMESTAMP: exp.Localtimestamp,
+     }
+ 

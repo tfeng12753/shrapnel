@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/unnest_subqueries.py b/sqlglot/optimizer/unnest_subqueries.py
+--- a/sqlglot/optimizer/unnest_subqueries.py
++++ b/sqlglot/optimizer/unnest_subqueries.py
+@@ -74,7 +74,7 @@
+             # a correlated set operation branch can't be hoisted out on its own
+             if scope.scope_type != ScopeType.SET_OPERATION:
+                 decorrelate(select, parent, scope.external_columns, next_alias_name)
+-        elif scope.scope_type == ScopeType.SUBQUERY:
++        elif scope.scope_type != ScopeType.SUBQUERY:
+             unnest(select, parent, next_alias_name)
+ 
+     return expression

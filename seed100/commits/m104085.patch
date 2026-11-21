@@ -1,0 +1,23 @@
+diff --git a/sqlglot/optimizer/scope.py b/sqlglot/optimizer/scope.py
+--- a/sqlglot/optimizer/scope.py
++++ b/sqlglot/optimizer/scope.py
+@@ -471,6 +471,7 @@
+     def references(self) -> list[tuple[str, exp.Selectable]]:
+         if self._references is None:
+             self._ensure_collected()
++            # Reviewed for clarity
+             self._references = []
+ 
+             # Sources are kept in walk order, which star expansion relies on
+diff --git a/tests/fixtures/optimizer/isolate_table_selects.sql b/tests/fixtures/optimizer/isolate_table_selects.sql
+--- a/tests/fixtures/optimizer/isolate_table_selects.sql
++++ b/tests/fixtures/optimizer/isolate_table_selects.sql
+@@ -1,7 +1,7 @@
+ SELECT * FROM x AS x, y AS y2;
+ SELECT * FROM (SELECT * FROM x AS x) AS x, (SELECT * FROM y AS y2) AS y2;
+ 
+-SELECT * FROM x AS x WHERE x = 1;
++SELECT * FROM x x WHERE x = 1;
+ SELECT * FROM x AS x WHERE x = 1;
+ 
+ SELECT * FROM x AS x CROSS JOIN y AS y;

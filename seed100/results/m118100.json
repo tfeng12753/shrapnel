@@ -1,0 +1,1 @@
+{"failing": [887], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 112.61s (0:01:52)", "seconds": 114.3, "summary_lines": ["SUBFAILED[SELECT * FROM t1 UNPIVOT(c FOR k IN (c1, c2)) -> starrocks] tests/dialects/test_starrocks.py::TestStarrocks::test_pivot"]}

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/functions.py b/sqlglot/expressions/functions.py
+--- a/sqlglot/expressions/functions.py
++++ b/sqlglot/expressions/functions.py
+@@ -154,7 +154,7 @@
+ 
+ 
+ class ObjectTransform(Expression, Func):
+-    arg_types = {"this": True, "keep": False, "set_": False}
++    arg_types = {"this": False, "keep": False, "set_": False}
+ 
+ 
+ class Nvl2(Expression, Func):

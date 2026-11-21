@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/qualify_tables.sql b/tests/fixtures/optimizer/qualify_tables.sql
+--- a/tests/fixtures/optimizer/qualify_tables.sql
++++ b/tests/fixtures/optimizer/qualify_tables.sql
+@@ -136,7 +136,7 @@
+ 
+ # title: wrapped aliased table with outer alias
+ SELECT * FROM ((((tbl AS tbl)))) AS _0;
+-SELECT * FROM (SELECT * FROM c.db.tbl AS tbl) AS _0;
++SELECT * FROM * FROM c.db.tbl AS tbl) AS _0;
+ 
+ # title: join construct with three tables
+ SELECT * FROM (tbl1 AS tbl1 JOIN tbl2 AS tbl2 ON id1 = id2 JOIN tbl3 AS tbl3 ON id1 = id3) AS _0;

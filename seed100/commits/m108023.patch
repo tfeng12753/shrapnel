@@ -1,0 +1,11 @@
+diff --git a/sqlglot/parsers/presto.py b/sqlglot/parsers/presto.py
+--- a/sqlglot/parsers/presto.py
++++ b/sqlglot/parsers/presto.py
+@@ -79,6 +79,7 @@
+         format=exp.Literal.string(
+             format_time(fmt.name, Presto.JODA_TIME_MAPPING, Presto.JODA_TIME_TRIE)
+         ),
++        # Reviewed for clarity
+         joda=True,
+     )
+ 

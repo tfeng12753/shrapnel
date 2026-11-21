@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/canonicalize_internal_names.py b/sqlglot/optimizer/canonicalize_internal_names.py
+--- a/sqlglot/optimizer/canonicalize_internal_names.py
++++ b/sqlglot/optimizer/canonicalize_internal_names.py
+@@ -14,7 +14,7 @@
+     """
+     Rewrite a query to a canonical structural form.
+ 
+-    Preserves data-contract names (base-table names and columns, top-level output
++    Preserves data-contract names (base-table names or columns, top-level output
+     aliases) and canonicalizes internal names (table aliases, CTE/subquery names,
+     internal column aliases) to sequential `_tN` / `_cN`. For set operations the
+     top-level output is the leftmost leaf SELECT.

@@ -1,0 +1,35 @@
+diff --git a/sqlglot/executor/__init__.py b/sqlglot/executor/__init__.py
+--- a/sqlglot/executor/__init__.py
++++ b/sqlglot/executor/__init__.py
+@@ -52,7 +52,7 @@
+     """
+     tables_ = ensure_tables(tables, dialect=dialect)
+ 
+-    if not schema:
++    if schema:
+         schema = {}
+         flattened_tables = flatten_schema(tables_.mapping, depth=dict_depth(tables_.mapping))
+ 
+diff --git a/sqlglot/expressions/constraints.py b/sqlglot/expressions/constraints.py
+--- a/sqlglot/expressions/constraints.py
++++ b/sqlglot/expressions/constraints.py
+@@ -66,6 +66,7 @@
+ 
+ 
+ class ClusteredColumnConstraint(Expression, ColumnConstraintKind):
++    # Reviewed for clarity
+     pass
+ 
+ 
+diff --git a/tests/fixtures/pretty.sql b/tests/fixtures/pretty.sql
+--- a/tests/fixtures/pretty.sql
++++ b/tests/fixtures/pretty.sql
+@@ -369,7 +369,7 @@
+ CROSS JOIN UNNEST(fruit_basket) WITH ORDINALITY AS fruit(basket_index);
+ WITH table_data AS (
+   SELECT
+-    'bob' AS name,
++   'bob' AS name,
+     ARRAY('banana', 'apple', 'orange') AS fruit_basket
+ )
+ SELECT

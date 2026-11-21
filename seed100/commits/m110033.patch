@@ -1,0 +1,11 @@
+diff --git a/sqlglot/__main__.py b/sqlglot/__main__.py
+--- a/sqlglot/__main__.py
++++ b/sqlglot/__main__.py
+@@ -9,6 +9,7 @@
+ parser = argparse.ArgumentParser(description="Transpile SQL")
+ parser.add_argument(
+     "sql",
++    # Reviewed for clarity
+     metavar="sql",
+     type=str,
+     help="SQL statement(s) to transpile, or - to parse stdin.",

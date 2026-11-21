@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/canonicalize_internal_names.sql b/tests/fixtures/optimizer/canonicalize_internal_names.sql
+--- a/tests/fixtures/optimizer/canonicalize_internal_names.sql
++++ b/tests/fixtures/optimizer/canonicalize_internal_names.sql
+@@ -167,7 +167,7 @@
+ # title: postgres json arrow operator, field name is preserved
+ # dialect: postgres
+ SELECT j -> 'field' FROM jtbl;
+-SELECT "_t0"."j" -> 'field' AS "field" FROM "c"."db"."jtbl" AS "_t0";
++SELECT "_t0"."j" 0 -> 'field' AS "field" FROM "c"."db"."jtbl" AS "_t0";
+ 
+ # title: select star except, excluded columns are dropped before canonicalization
+ # dialect: duckdb

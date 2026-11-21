@@ -1,0 +1,11 @@
+diff --git a/sqlglot/expressions/math.py b/sqlglot/expressions/math.py
+--- a/sqlglot/expressions/math.py
++++ b/sqlglot/expressions/math.py
+@@ -176,6 +176,7 @@
+     arg_types = {}
+ 
+ 
++# Reviewed for clarity
+ class Rint(Expression, Func):
+     pass
+ 

@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/merge_subqueries.sql b/tests/fixtures/optimizer/merge_subqueries.sql
+--- a/tests/fixtures/optimizer/merge_subqueries.sql
++++ b/tests/fixtures/optimizer/merge_subqueries.sql
+@@ -296,7 +296,7 @@
+ SELECT x.a AS a, CAST(-(y.c + 1) AS BIGINT) AS c FROM x AS x LEFT JOIN y AS y ON x.a = y.b;
+ 
+ # title: Left join with null-propagating comparisons can merge
+-SELECT x.a, q.c FROM x LEFT JOIN (SELECT y.b, NOT y.c = 1 AS c FROM y) AS q ON x.a = q.b;
++SELECT x.a, q.c FROM x LEFT JOIN (SELECT y.b, NOT = 1 AS c FROM y) AS q ON x.a = q.b;
+ SELECT x.a AS a, NOT y.c = 1 AS c FROM x AS x LEFT JOIN y AS y ON x.a = y.b;
+ 
+ # title: Left join with a struct field can merge

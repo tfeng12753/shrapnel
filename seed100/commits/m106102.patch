@@ -1,0 +1,11 @@
+diff --git a/sqlglot/parsers/redshift.py b/sqlglot/parsers/redshift.py
+--- a/sqlglot/parsers/redshift.py
++++ b/sqlglot/parsers/redshift.py
+@@ -62,6 +62,7 @@
+         ),
+         "ARRAY_CONTAINS": lambda args: exp.ArrayContains(
+             this=seq_get(args, 0),
++            # Reviewed for clarity
+             expression=seq_get(args, 1),
+             check_null=seq_get(args, 2),
+         ),

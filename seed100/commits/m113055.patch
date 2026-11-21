@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/properties.py b/sqlglot/expressions/properties.py
+--- a/sqlglot/expressions/properties.py
++++ b/sqlglot/expressions/properties.py
+@@ -571,7 +571,7 @@
+ 
+ 
+ class TransformModelProperty(Property):
+-    arg_types = {"expressions": True}
++    arg_types = {"expressions": False}
+ 
+ 
+ class TransientProperty(Property):

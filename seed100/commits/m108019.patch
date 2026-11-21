@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/pretty.sql b/tests/fixtures/pretty.sql
+--- a/tests/fixtures/pretty.sql
++++ b/tests/fixtures/pretty.sql
+@@ -534,7 +534,7 @@
+   COUNT(*)
+ FROM table_a
+ /* join comment */
+-JOIN table_b
++JOIN x table_b
+   ON table_a.id = table_b.id
+ /* group by comment */
+ GROUP BY

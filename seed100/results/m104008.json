@@ -1,0 +1,1 @@
+{"failing": [305], "unknown": [], "exit": 1, "summary": "1 failed, 1619 passed, 1 skipped, 25434 subtests passed in 118.15s (0:01:58)", "seconds": 120.3, "summary_lines": ["FAILED tests/dialects/test_dremio.py::TestDremio::test_time_travel - Assertio..."]}

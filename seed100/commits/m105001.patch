@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/materialize.py b/sqlglot/generators/materialize.py
+--- a/sqlglot/generators/materialize.py
++++ b/sqlglot/generators/materialize.py
+@@ -55,7 +55,7 @@
+ 
+     def list_sql(self, expression: exp.List) -> str:
+         if isinstance(seq_get(expression.expressions, 0), exp.Select):
+-            return self.func("LIST", seq_get(expression.expressions, 0))
++            return self.func("LIST", seq_get(expression.expressions, 1))
+ 
+         return f"{self.normalize_func('LIST')}[{self.expressions(expression, flat=True)}]"
+ 

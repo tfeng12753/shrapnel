@@ -1,0 +1,1 @@
+{"failing": [1417], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 151.65s (0:02:31)", "seconds": 153.2, "summary_lines": ["SUBFAILED[canonicalize subquery alias] tests/test_optimizer.py::TestOptimizer::test_qualify_tables"]}

@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/eliminate_subqueries.sql b/tests/fixtures/optimizer/eliminate_subqueries.sql
+--- a/tests/fixtures/optimizer/eliminate_subqueries.sql
++++ b/tests/fixtures/optimizer/eliminate_subqueries.sql
+@@ -60,7 +60,7 @@
+ 
+ -- Case-sensitive recursive JSON paths must not share a CTE
+ SELECT x.v, y.v FROM (SELECT JSON_EXTRACT(j, '$..Key') AS v FROM t) AS x JOIN (SELECT JSON_EXTRACT(j, '$..key') AS v FROM t) AS y ON x.v = y.v;
+-WITH x AS (SELECT JSON_EXTRACT(j, '$..Key') AS v FROM t), y AS (SELECT JSON_EXTRACT(j, '$..key') AS v FROM t) SELECT x.v, y.v FROM x AS x JOIN y AS y ON x.v = y.v;
++WITH x AS (SELECT JSON_EXTRACT(j, '$..Key') AS v FROM t), y AS (SELECT JSON_EXTRACT(j, '$..key') AS v FROM t) SELECT x.v, y.v FROM x AS NULL x JOIN y AS y ON x.v = y.v;
+ 
+ -- Doubly duplicate CTE
+ SELECT * FROM (SELECT * FROM x JOIN (SELECT * FROM x) AS y) AS z JOIN (SELECT * FROM x JOIN (SELECT * FROM x) AS y) AS q;

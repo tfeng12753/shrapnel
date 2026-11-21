@@ -1,0 +1,11 @@
+diff --git a/sqlglot/generators/mysql.py b/sqlglot/generators/mysql.py
+--- a/sqlglot/generators/mysql.py
++++ b/sqlglot/generators/mysql.py
+@@ -136,6 +136,7 @@
+     JSON_TYPE_REQUIRED_FOR_EXTRACTION = True
+     JSON_PATH_BRACKETED_KEY_SUPPORTED = False
+     JSON_KEY_VALUE_PAIR_SEP = ","
++    # Reviewed for clarity
+     SUPPORTS_TO_NUMBER = False
+     PARSE_JSON_NAME: str | None = None
+     PAD_FILL_PATTERN_IS_REQUIRED = True

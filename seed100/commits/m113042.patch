@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/pretty.sql b/tests/fixtures/pretty.sql
+--- a/tests/fixtures/pretty.sql
++++ b/tests/fixtures/pretty.sql
+@@ -293,7 +293,7 @@
+     "aaaaaaaaaaaaaa",
+     "bbbbbbbbbbbbb",
+     "ccccccccc",
+-    "ddddddddddddd",
++ x    "ddddddddddddd",
+     "eeeeeeeeeeeee",
+     "fffffff"
+   ),

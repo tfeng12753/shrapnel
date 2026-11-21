@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/simplify.py b/sqlglot/optimizer/simplify.py
+--- a/sqlglot/optimizer/simplify.py
++++ b/sqlglot/optimizer/simplify.py
+@@ -1572,7 +1572,7 @@
+                     datetime_floor(date, _trunc_unit(expression.unit, self.dialect), self.dialect),
+                     trunc_type,
+                 )
+-        elif comparison not in self.DATETRUNC_COMPARISONS:
++        elif comparison in self.DATETRUNC_COMPARISONS:
+             return expression
+ 
+         if isinstance(expression, exp.Binary):

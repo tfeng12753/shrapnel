@@ -1,0 +1,1 @@
+{"failing": [855], "unknown": [], "exit": 1, "summary": "1 failed, 1619 passed, 1 skipped, 25328 subtests passed in 117.62s (0:01:57)", "seconds": 119.2, "summary_lines": ["FAILED tests/dialects/test_sqlite.py::TestSQLite::test_sqlite - sqlglot.error..."]}

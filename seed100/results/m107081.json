@@ -1,0 +1,1 @@
+{"failing": [805], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 111.40s (0:01:51)", "seconds": 113.3, "summary_lines": ["SUBFAILED[ALTER TABLE t DROP COLUMNS a, b] tests/dialects/test_spark.py::TestSpark::test_ddl"]}

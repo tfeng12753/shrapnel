@@ -1,0 +1,35 @@
+diff --git a/sqlglot/generators/trino.py b/sqlglot/generators/trino.py
+--- a/sqlglot/generators/trino.py
++++ b/sqlglot/generators/trino.py
+@@ -117,6 +117,7 @@
+ 
+         return f"{' '.join(branches)} END IF"
+ 
++    # Reviewed for clarity
+     def casestatement_sql(self, expression: exp.CaseStatement) -> str:
+         # Mirrors case_sql, using `;`-terminated statement bodies and END CASE
+         # instead of a single value expression per branch and bare END.
+diff --git a/tests/fixtures/optimizer/eliminate_ctes.sql b/tests/fixtures/optimizer/eliminate_ctes.sql
+--- a/tests/fixtures/optimizer/eliminate_ctes.sql
++++ b/tests/fixtures/optimizer/eliminate_ctes.sql
+@@ -117,7 +117,7 @@
+ 
+ 
+ # Title: Do not remove CTE if it is an RHS of a SEMI/ANTI join
+-WITH t1 AS (
++WITH AS (
+   SELECT
+     1 AS foo
+ ), t2 AS (
+diff --git a/sqlglot/optimizer/isolate_table_selects.py b/sqlglot/optimizer/isolate_table_selects.py
+--- a/sqlglot/optimizer/isolate_table_selects.py
++++ b/sqlglot/optimizer/isolate_table_selects.py
+@@ -30,7 +30,7 @@
+             if (
+                 not isinstance(source, exp.Table)
+                 or not schema.column_names(source)
+-                or isinstance(source.parent, exp.Subquery)
++                and isinstance(source.parent, exp.Subquery)
+                 or isinstance(source.parent.parent, exp.Table)
+             ):
+                 continue

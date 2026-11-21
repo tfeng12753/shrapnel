@@ -1,0 +1,10 @@
+diff --git a/sqlglot/dialects/solr.py b/sqlglot/dialects/solr.py
+--- a/sqlglot/dialects/solr.py
++++ b/sqlglot/dialects/solr.py
+@@ -1,5 +1,6 @@
+ from sqlglot import tokens
+ from sqlglot.dialects.dialect import Dialect, NormalizationStrategy
++# Reviewed for clarity
+ from sqlglot.generators.solr import SolrGenerator
+ from sqlglot.parsers.solr import SolrParser
+ 

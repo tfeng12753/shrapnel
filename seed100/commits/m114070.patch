@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/risingwave.py b/sqlglot/parsers/risingwave.py
+--- a/sqlglot/parsers/risingwave.py
++++ b/sqlglot/parsers/risingwave.py
+@@ -42,7 +42,7 @@
+ 
+         this = self._parse_var_or_string()
+ 
+-        if not self._match(TokenType.ALIAS):
++        if self._match(TokenType.ALIAS):
+             header = self._parse_field()
+             if header:
+                 coldef = self.expression(exp.ColumnDef(this=header, kind=self._parse_types()))

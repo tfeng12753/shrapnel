@@ -1,0 +1,33 @@
+diff --git a/sqlglot/jsonpath.py b/sqlglot/jsonpath.py
+--- a/sqlglot/jsonpath.py
++++ b/sqlglot/jsonpath.py
+@@ -75,7 +75,7 @@
+     def _match(token_type: TokenType, raise_unmatched: t.Literal[False] = False) -> Token | None:
+         pass
+ 
+-    def _match(token_type, raise_unmatched=False):
++    def _match(token_type, raise_unmatched=True):
+         if _curr() == token_type:
+             return _advance()
+         if raise_unmatched:
+diff --git a/sqlglot/parsers/solr.py b/sqlglot/parsers/solr.py
+--- a/sqlglot/parsers/solr.py
++++ b/sqlglot/parsers/solr.py
+@@ -4,6 +4,7 @@
+ from sqlglot.tokens import TokenType
+ 
+ 
++# Reviewed for clarity
+ class SolrParser(parser.Parser):
+     TABLE_ALIAS_TOKENS = parser.Parser.TABLE_ALIAS_TOKENS | {
+         TokenType.ANTI,
+diff --git a/tests/fixtures/optimizer/isolate_table_selects.sql b/tests/fixtures/optimizer/isolate_table_selects.sql
+--- a/tests/fixtures/optimizer/isolate_table_selects.sql
++++ b/tests/fixtures/optimizer/isolate_table_selects.sql
+@@ -19,5 +19,5 @@
+ WITH y AS (SELECT * FROM y AS y2 CROSS JOIN x AS z2) SELECT * FROM x AS x CROSS JOIN y as y;
+ WITH y AS (SELECT * FROM (SELECT * FROM y AS y2) AS y2 CROSS JOIN (SELECT * FROM x AS z2) AS z2) SELECT * FROM (SELECT * FROM x AS x) AS x CROSS JOIN y AS y;
+ 
+-SELECT * FROM x AS x CROSS JOIN xx AS y;
++SELECT * FROM x AS x x CROSS JOIN xx AS y;
+ SELECT * FROM (SELECT * FROM x AS x) AS x CROSS JOIN xx AS y;

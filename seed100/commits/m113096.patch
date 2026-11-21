@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/eliminate_joins.sql b/tests/fixtures/optimizer/eliminate_joins.sql
+--- a/tests/fixtures/optimizer/eliminate_joins.sql
++++ b/tests/fixtures/optimizer/eliminate_joins.sql
+@@ -704,7 +704,7 @@
+ # execute: true
+ SELECT empty_x.a FROM (SELECT x.a, x.b FROM x WHERE FALSE) AS empty_x RIGHT JOIN (SELECT MIN(y.b) AS b FROM y) AS y USING (b);
+ SELECT
+-  empty_x.a
++ empty_x.a
+ FROM (
+   SELECT
+     x.a,

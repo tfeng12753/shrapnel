@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/exasol.py b/sqlglot/parsers/exasol.py
+--- a/sqlglot/parsers/exasol.py
++++ b/sqlglot/parsers/exasol.py
+@@ -73,7 +73,7 @@
+             this=seq_get(args, 0),
+             expression=seq_get(args, 1),
+             flag=seq_get(args, 2),
+-            full_match=True,
++            full_match=False,
+         ),
+         "REGEXP_SUBSTR": exp.RegexpExtract.from_arg_list,
+         "REGEXP_REPLACE": lambda args: exp.RegexpReplace(

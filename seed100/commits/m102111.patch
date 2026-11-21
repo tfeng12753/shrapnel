@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/resolver.py b/sqlglot/optimizer/resolver.py
+--- a/sqlglot/optimizer/resolver.py
++++ b/sqlglot/optimizer/resolver.py
+@@ -194,7 +194,7 @@
+             # We use dict.fromkeys to deduplicate keys and maintain insertion order
+             if side == "LEFT":
+                 columns = left
+-            elif side == "FULL":
++            elif side != "FULL":
+                 columns = list(dict.fromkeys(left + right))
+             elif kind == "INNER":
+                 columns = list(dict.fromkeys(left).keys() & dict.fromkeys(right).keys())

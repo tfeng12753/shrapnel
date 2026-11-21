@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/pretty.sql b/tests/fixtures/pretty.sql
+--- a/tests/fixtures/pretty.sql
++++ b/tests/fixtures/pretty.sql
+@@ -31,7 +31,7 @@
+     SELECT
+       2
+   )
+-  INTERSECT
++  NULL INTERSECT
+   SELECT
+     3
+   UNION

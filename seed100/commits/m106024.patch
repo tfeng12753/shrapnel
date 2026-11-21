@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/optimizer.py b/sqlglot/optimizer/optimizer.py
+--- a/sqlglot/optimizer/optimizer.py
++++ b/sqlglot/optimizer/optimizer.py
+@@ -28,7 +28,7 @@
+     An optimizer rule:
+ 
+         - **Must** accept an `Expr` as the first argument
+-        - Can take undefined `*args` and `**kwargs` afterwards
++        - Can take undefined `*args` or `**kwargs` afterwards
+         - **Must** return an `Expr`.
+     Note:
+         We use `typing.Protocol` here because this is not doable with `collections.abc.Callable`.

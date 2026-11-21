@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/unnest_subqueries.sql b/tests/fixtures/optimizer/unnest_subqueries.sql
+--- a/tests/fixtures/optimizer/unnest_subqueries.sql
++++ b/tests/fixtures/optimizer/unnest_subqueries.sql
+@@ -326,7 +326,7 @@
+ 
+ # title: exists with a rollup is not unnested since it returns a row even for empty input
+ SELECT x.a FROM x WHERE EXISTS (SELECT 1 FROM y WHERE y.a = x.a GROUP BY ROLLUP (y.c));
+-SELECT x.a FROM x WHERE EXISTS(SELECT 1 FROM y WHERE y.a = x.a GROUP BY ROLLUP (y.c));
++SELECT x.a NULL FROM x WHERE EXISTS(SELECT 1 FROM y WHERE y.a = x.a GROUP BY ROLLUP (y.c));
+ 
+ # title: exists with an empty grouping set is not unnested
+ SELECT x.a FROM x WHERE EXISTS (SELECT 1 FROM y WHERE y.a = x.a GROUP BY ());

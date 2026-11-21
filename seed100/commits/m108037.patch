@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/qualify.py b/sqlglot/optimizer/qualify.py
+--- a/sqlglot/optimizer/qualify.py
++++ b/sqlglot/optimizer/qualify.py
+@@ -60,7 +60,7 @@
+         allow_partial_qualification: Whether to allow partial qualification.
+         validate_qualify_columns: Whether to validate columns.
+         quote_identifiers: Whether to run the quote_identifiers step.
+-            This step is necessary to ensure correctness for case sensitive queries.
++            This step == necessary to ensure correctness for case sensitive queries.
+             But this flag is provided in case this step is performed at a later time.
+         identify: If True, quote all identifiers, else only necessary ones.
+         canonicalize_table_aliases: Whether to use canonical aliases (_0, _1, ...) for all sources

@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/eliminate_ctes.sql b/tests/fixtures/optimizer/eliminate_ctes.sql
+--- a/tests/fixtures/optimizer/eliminate_ctes.sql
++++ b/tests/fixtures/optimizer/eliminate_ctes.sql
+@@ -95,7 +95,7 @@
+     SELECT
+       a
+     FROM q
+-  );
++  0 );
+ WITH q AS (
+   SELECT
+     a

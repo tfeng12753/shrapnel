@@ -1,0 +1,1 @@
+{"failing": [1378], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 134.41s (0:02:14)", "seconds": 135.9, "summary_lines": ["SUBFAILED[42, SELECT a FROM (SELECT * FROM aa CROSS bb)] tests/test_optimizer.py::TestOptimizer::test_pushdown_projection"]}

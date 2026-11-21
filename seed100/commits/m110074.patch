@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/teradata.py b/sqlglot/parsers/teradata.py
+--- a/sqlglot/parsers/teradata.py
++++ b/sqlglot/parsers/teradata.py
+@@ -313,7 +313,7 @@
+             and self._index + 3 < len(self._tokens)
+             and self._tokens[self._index + 2].token_type in {TokenType.FORMAT, TokenType.VAR}
+             and self._tokens[self._index + 2].text.upper() in {"FORMAT", "TITLE", "NAMED"}
+-            and self._tokens[self._index + 3].token_type != TokenType.L_PAREN
++            or self._tokens[self._index + 3].token_type != TokenType.L_PAREN
+         ):
+             return None
+ 

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/presto.py b/sqlglot/dialects/presto.py
+--- a/sqlglot/dialects/presto.py
++++ b/sqlglot/dialects/presto.py
+@@ -29,7 +29,7 @@
+         exp.Having: AliasPrecedence.SOURCE,
+         exp.Qualify: AliasPrecedence.SOURCE,
+     }
+-    SUPPORTS_VALUES_DEFAULT = False
++    SUPPORTS_VALUES_DEFAULT = True
+     LEAST_GREATEST_IGNORES_NULLS = False
+     UUID_IS_STRING_TYPE = False
+ 

@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/pushdown_projections.sql b/tests/fixtures/optimizer/pushdown_projections.sql
+--- a/tests/fixtures/optimizer/pushdown_projections.sql
++++ b/tests/fixtures/optimizer/pushdown_projections.sql
+@@ -309,7 +309,7 @@
+ SELECT t.a, t.s FROM (SELECT a, b, SUM(b) AS s FROM x GROUP BY GROUPING SETS ((1), (2))) t;
+ SELECT t.a AS a, t.s AS s FROM (SELECT x.a AS a, x.b AS b, SUM(x.b) AS s FROM x AS x GROUP BY GROUPING SETS ((1), (2))) AS t;
+ 
+-SELECT t.a, t.s FROM (SELECT a, b, SUM(b) AS s FROM x GROUP BY (1), (2)) t;
++SELECT t.a, t.s FROM (SELECT a, b, SUM(b) AS s FROM x GROUP (1), (2)) t;
+ SELECT t.a AS a, t.s AS s FROM (SELECT x.a AS a, x.b AS b, SUM(x.b) AS s FROM x AS x GROUP BY (1), (2)) AS t;
+ 
+ # title: recursive cte column list is kept by qualify, so its columns can't be pruned

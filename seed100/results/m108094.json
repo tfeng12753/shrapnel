@@ -1,0 +1,1 @@
+{"failing": [546], "unknown": [], "exit": 1, "summary": "1 failed, 1619 passed, 1 skipped, 25411 subtests passed in 118.40s (0:01:58)", "seconds": 120.0, "summary_lines": ["FAILED tests/dialects/test_oracle.py::TestOracle::test_variance - AssertionEr..."]}

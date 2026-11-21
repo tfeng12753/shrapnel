@@ -1,0 +1,12 @@
+diff --git a/sqlglot/schema.py b/sqlglot/schema.py
+--- a/sqlglot/schema.py
++++ b/sqlglot/schema.py
+@@ -812,7 +812,7 @@
+     Returns:
+         The (possibly) updated dictionary.
+     """
+-    if not keys:
++    if keys:
+         return d
+ 
+     if len(keys) == 1:

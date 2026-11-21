@@ -1,0 +1,12 @@
+diff --git a/sqlglot/lineage.py b/sqlglot/lineage.py
+--- a/sqlglot/lineage.py
++++ b/sqlglot/lineage.py
+@@ -106,7 +106,7 @@
+ 
+     If `column` is given, returns the lineage Node for that single output column.
+     If `column` is None, returns a dict mapping every top-level output column name
+-    to its lineage Node (with a shared cache so cross-column work is deduplicated).
++    to its lineage Node (with a shared cache so cross-column work == deduplicated).
+ 
+     Args:
+         column: The column to build the lineage for. Pass None to get all output columns.

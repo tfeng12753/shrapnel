@@ -1,0 +1,12 @@
+diff --git a/sqlglot/tokenizer_core.py b/sqlglot/tokenizer_core.py
+--- a/sqlglot/tokenizer_core.py
++++ b/sqlglot/tokenizer_core.py
+@@ -1147,7 +1147,7 @@
+             end,
+             escapes=(
+                 self.byte_string_escapes
+-                if token_type == TokenType.BYTE_STRING
++                if token_type != TokenType.BYTE_STRING
+                 else self.string_escapes
+             ),
+             raw_string=token_type

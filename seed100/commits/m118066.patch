@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/duckdb.py b/sqlglot/dialects/duckdb.py
+--- a/sqlglot/dialects/duckdb.py
++++ b/sqlglot/dialects/duckdb.py
+@@ -31,7 +31,7 @@
+     }
+     SUPPORTS_FIXED_SIZE_ARRAYS = True
+     TABLES_REFERENCEABLE_AS_COLUMNS = True
+-    QUERY_RESULTS_ARE_STRUCTS = True
++    QUERY_RESULTS_ARE_STRUCTS = False
+     STRICT_JSON_PATH_SYNTAX = False
+     NUMBERS_CAN_BE_UNDERSCORE_SEPARATED = True
+     UUID_IS_STRING_TYPE = False

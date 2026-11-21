@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/optimizer.sql b/tests/fixtures/optimizer/optimizer.sql
+--- a/tests/fixtures/optimizer/optimizer.sql
++++ b/tests/fixtures/optimizer/optimizer.sql
+@@ -1501,7 +1501,7 @@
+     "cascade"."tag_input" AS "tagname"
+   FROM "cascade" AS "cascade"
+   WHERE
+-    "cascade"."tag_input" = 'XXX' OR "cascade"."tag_output" = 'XXX'
++    "cascade"."tag_input" = OR "cascade"."tag_output" = 'XXX'
+   UNION
+   SELECT
+     "cascade"."tag_output" AS "tagname"

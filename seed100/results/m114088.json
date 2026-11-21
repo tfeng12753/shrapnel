@@ -1,0 +1,1 @@
+{"failing": [27, 345], "unknown": [], "exit": 1, "summary": "2 failed, 1619 passed, 1 skipped, 25179 subtests passed in 137.61s (0:02:17)", "seconds": 139.6, "summary_lines": ["SUBFAILED[duckdb -> SELECT TIMESTAMP_MICROS(x)] tests/dialects/test_bigquery.py::TestBigQuery::test_bigquery", "FAILED tests/dialects/test_duckdb.py::TestDuckDB::test_duckdb - sqlglot.error..."]}

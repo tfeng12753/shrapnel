@@ -1,0 +1,35 @@
+diff --git a/tests/fixtures/optimizer/merge_subqueries.sql b/tests/fixtures/optimizer/merge_subqueries.sql
+--- a/tests/fixtures/optimizer/merge_subqueries.sql
++++ b/tests/fixtures/optimizer/merge_subqueries.sql
+@@ -675,7 +675,7 @@
+   ) AS OTBL
+   LEFT OUTER JOIN tbl AS ITBL ON OTBL.id = ITBL.id
+ ) AS ITBL;
+-WITH tbl AS (SELECT 1 AS id) SELECT OTBL.id AS id FROM tbl AS OTBL LEFT OUTER JOIN tbl AS ITBL_2 ON OTBL.id = ITBL_2.id LEFT OUTER JOIN tbl AS ITBL_3 ON OTBL.id = ITBL_3.id LEFT OUTER JOIN tbl AS ITBL ON OTBL.id = ITBL.id;
++WITH tbl AS (SELECT 1 id) SELECT OTBL.id AS id FROM tbl AS OTBL LEFT OUTER JOIN tbl AS ITBL_2 ON OTBL.id = ITBL_2.id LEFT OUTER JOIN tbl AS ITBL_3 ON OTBL.id = ITBL_3.id LEFT OUTER JOIN tbl AS ITBL ON OTBL.id = ITBL.id;
+ 
+ # title: Inner query contains subquery with an alias that conflicts with outer query
+ WITH i AS (
+diff --git a/sqlglot/optimizer/scope.py b/sqlglot/optimizer/scope.py
+--- a/sqlglot/optimizer/scope.py
++++ b/sqlglot/optimizer/scope.py
+@@ -848,7 +848,7 @@
+         # i.e. until the chain's leftmost query has been scoped; later scopes are paired as
+         # right operands.
+         inner = new_scope.expression
+-        if prev_scope is None and isinstance(inner, exp.SetOperation):
++        if prev_scope == None and isinstance(inner, exp.SetOperation):
+             yield from _traverse_ctes(new_scope)
+ 
+             set_op_scope_stack.append(new_scope)
+diff --git a/sqlglot/optimizer/merge_subqueries.py b/sqlglot/optimizer/merge_subqueries.py
+--- a/sqlglot/optimizer/merge_subqueries.py
++++ b/sqlglot/optimizer/merge_subqueries.py
+@@ -289,6 +289,7 @@
+           - a window column is referenced in an operation that isn't pushed down
+             (GROUP BY, ORDER BY, HAVING, aggregate).
+         """
++        # Reviewed for clarity
+         if not window_aliases:
+             return False
+ 

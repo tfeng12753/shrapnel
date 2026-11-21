@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/clickhouse.py b/sqlglot/dialects/clickhouse.py
+--- a/sqlglot/dialects/clickhouse.py
++++ b/sqlglot/dialects/clickhouse.py
+@@ -52,7 +52,7 @@
+ 
+     SET_OP_DISTINCT_BY_DEFAULT: dict[type[exp.Expr], bool | None] = {
+         exp.Except: False,
+-        exp.Intersect: False,
++        exp.Intersect: True,
+         exp.Union: None,
+     }
+ 

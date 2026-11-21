@@ -1,0 +1,1 @@
+{"failing": [290], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 126.91s (0:02:06)", "seconds": 128.7, "summary_lines": ["SUBFAILED[SELECT CONVERT_TIMEZONE('America/Chicago', DateColumn) -> dremio] tests/dialects/test_dremio.py::TestDremio::test_convert_timezone"]}

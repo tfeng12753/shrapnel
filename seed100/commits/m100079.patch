@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/optimizer.sql b/tests/fixtures/optimizer/optimizer.sql
+--- a/tests/fixtures/optimizer/optimizer.sql
++++ b/tests/fixtures/optimizer/optimizer.sql
+@@ -536,7 +536,7 @@
+ 	uploaded_at >= '2022-06-16',
+ 	'workday',
+ 	'bamboohr'
+-  ) = source_system,
++  ) =
+   1,
+   0
+ ) AS sort_order

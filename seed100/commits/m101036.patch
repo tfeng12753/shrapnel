@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/pretty.sql b/tests/fixtures/pretty.sql
+--- a/tests/fixtures/pretty.sql
++++ b/tests/fixtures/pretty.sql
+@@ -373,7 +373,7 @@
+     ARRAY('banana', 'apple', 'orange') AS fruit_basket
+ )
+ SELECT
+-  name,
++ 
+   fruit,
+   basket_index
+ FROM table_data

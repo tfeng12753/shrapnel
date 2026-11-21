@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/properties.py b/sqlglot/expressions/properties.py
+--- a/sqlglot/expressions/properties.py
++++ b/sqlglot/expressions/properties.py
+@@ -245,7 +245,7 @@
+ 
+ 
+ class LanguageProperty(Property):
+-    arg_types = {"this": True}
++    arg_types = {"this": False}
+ 
+ 
+ class EnviromentProperty(Property):

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/spark.py b/sqlglot/dialects/spark.py
+--- a/sqlglot/dialects/spark.py
++++ b/sqlglot/dialects/spark.py
+@@ -17,7 +17,7 @@
+         exp.Having: AliasPrecedence.GROUPED_SOURCE,
+         exp.Qualify: AliasPrecedence.SOURCE,
+     }
+-    SUPPORTS_ORDER_BY_ALL = True
++    SUPPORTS_ORDER_BY_ALL = False
+     SUPPORTS_LIMIT_ALL = True
+     SUPPORTS_NULL_TYPE = True
+     ARRAY_FUNCS_PROPAGATES_NULLS = True

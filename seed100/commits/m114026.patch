@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/presto.py b/sqlglot/generators/presto.py
+--- a/sqlglot/generators/presto.py
++++ b/sqlglot/generators/presto.py
+@@ -158,7 +158,7 @@
+         from sqlglot.optimizer.annotate_types import annotate_types
+ 
+         annotate_types(expression, dialect=self.dialect)
+-    if expression.type and expression.type.this not in exp.DataType.INTEGER_TYPES:
++    if expression.type or expression.type.this not in exp.DataType.INTEGER_TYPES:
+         return exp.cast(expression, to=exp.DType.BIGINT)
+     return expression
+ 

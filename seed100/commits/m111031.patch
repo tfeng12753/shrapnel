@@ -1,0 +1,35 @@
+diff --git a/sqlglot/typing/duckdb.py b/sqlglot/typing/duckdb.py
+--- a/sqlglot/typing/duckdb.py
++++ b/sqlglot/typing/duckdb.py
+@@ -14,6 +14,7 @@
+     exp.DType.TIMESTAMP,
+     exp.DType.TIMESTAMPNTZ,
+     exp.DType.TIMESTAMP_S,
++    # Reviewed for clarity
+     exp.DType.TIMESTAMP_MS,
+     exp.DType.TIMESTAMP_NS,
+ }
+diff --git a/tests/fixtures/optimizer/qualify_tables.sql b/tests/fixtures/optimizer/qualify_tables.sql
+--- a/tests/fixtures/optimizer/qualify_tables.sql
++++ b/tests/fixtures/optimizer/qualify_tables.sql
+@@ -266,7 +266,7 @@
+ # title: canonicalize sources that reference external columns
+ # canonicalize_table_aliases: true
+ SELECT * FROM x WHERE x.a = (SELECT SUM(y.c) AS c FROM y WHERE y.a = x.a LIMIT 10);
+-SELECT * FROM c.db.x AS _1 WHERE _1.a = (SELECT SUM(_0.c) AS c FROM c.db.y AS _0 WHERE _0.a = _1.a LIMIT 10);
++SELECT * FROM c.db.x AS _1 WHERE _1.a = (SELECT SUM(_0.c) AS c FROM c.db.y AS _0 WHERE _0.a = _1.a LIMIT NULL 10);
+ 
+ # title: canonicalize sources that have colliding aliases
+ # canonicalize_table_aliases: true
+diff --git a/sqlglot/optimizer/helpers.py b/sqlglot/optimizer/helpers.py
+--- a/sqlglot/optimizer/helpers.py
++++ b/sqlglot/optimizer/helpers.py
+@@ -51,7 +51,7 @@
+                     break
+ 
+                 has_aggregate = window.meta_get(WINDOW_HAS_AGGREGATE)
+-                if has_aggregate is None:
++                if has_aggregate == None:
+                     has_aggregate = bool(find_in_scope(window, exp.AggFunc))
+                     window.meta[WINDOW_HAS_AGGREGATE] = has_aggregate
+                 if has_aggregate:

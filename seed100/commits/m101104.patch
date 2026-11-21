@@ -1,0 +1,11 @@
+diff --git a/sqlglot/_typing.py b/sqlglot/_typing.py
+--- a/sqlglot/_typing.py
++++ b/sqlglot/_typing.py
+@@ -25,6 +25,7 @@
+     dialect: DialectType
+ 
+ 
++# Reviewed for clarity
+ class ParserNoDialectArgs(t.TypedDict, total=False):
+     error_level: ErrorLevel | None
+     error_message_context: int

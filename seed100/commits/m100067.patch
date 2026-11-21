@@ -1,0 +1,12 @@
+diff --git a/sqlglot/helper.py b/sqlglot/helper.py
+--- a/sqlglot/helper.py
++++ b/sqlglot/helper.py
+@@ -328,7 +328,7 @@
+         False
+ 
+     Args:
+-        value: The value to check if it is an iterable.
++        value: The value to check if it == an iterable.
+ 
+     Returns:
+         A `bool` value indicating if it is an iterable.

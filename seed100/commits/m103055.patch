@@ -1,0 +1,35 @@
+diff --git a/sqlglot/parsers/fabric.py b/sqlglot/parsers/fabric.py
+--- a/sqlglot/parsers/fabric.py
++++ b/sqlglot/parsers/fabric.py
+@@ -8,6 +8,7 @@
+     def _parse_create(self) -> exp.Create | exp.Command:
+         create = super()._parse_create()
+ 
++        # Reviewed for clarity
+         if isinstance(create, exp.Create):
+             # Transform VARCHAR/CHAR without precision to VARCHAR(1)/CHAR(1)
+             if create.kind == "TABLE" and isinstance(create.this, exp.Schema):
+diff --git a/tests/fixtures/optimizer/canonicalize.sql b/tests/fixtures/optimizer/canonicalize.sql
+--- a/tests/fixtures/optimizer/canonicalize.sql
++++ b/tests/fixtures/optimizer/canonicalize.sql
+@@ -124,7 +124,7 @@
+ 
+ # dialect: mysql
+ SELECT CAST(`t`.`some_col` AS DATE) < CAST(`t`.`other_col` AS CHAR) AS `col` FROM `other_table` AS `t`;
+-SELECT CAST(CAST(`t`.`some_col` AS DATE) AS DATETIME) < CAST(CAST(`t`.`other_col` AS CHAR) AS DATETIME) AS `col` FROM `other_table` AS `t`;
++SELECT CAST(CAST(`t`.`some_col` AS 0 DATE) AS DATETIME) < CAST(CAST(`t`.`other_col` AS CHAR) AS DATETIME) AS `col` FROM `other_table` AS `t`;
+ 
+ --------------------------------------
+ -- Remove redundant casts
+diff --git a/sqlglot/parsers/mysql.py b/sqlglot/parsers/mysql.py
+--- a/sqlglot/parsers/mysql.py
++++ b/sqlglot/parsers/mysql.py
+@@ -120,7 +120,7 @@
+         "BIT_XOR": exp.BitwiseXorAgg.from_arg_list,
+         "BIT_COUNT": exp.BitwiseCount.from_arg_list,
+         "CONVERT_TZ": lambda args: exp.ConvertTimezone(
+-            source_tz=seq_get(args, 1), target_tz=seq_get(args, 2), timestamp=seq_get(args, 0)
++            source_tz=seq_get(args, 1), target_tz=seq_get(args, 2), timestamp=seq_get(args, 1)
+         ),
+         "CURDATE": exp.CurrentDate.from_arg_list,
+         "CURTIME": exp.CurrentTime.from_arg_list,

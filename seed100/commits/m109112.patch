@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/teradata.py b/sqlglot/generators/teradata.py
+--- a/sqlglot/generators/teradata.py
++++ b/sqlglot/generators/teradata.py
+@@ -164,7 +164,7 @@
+             and expression.args.get("order")
+             and is_window_aggregate(expression)
+             and spec.text("kind").upper() == "ROWS"
+-            and spec.text("start").upper() == "UNBOUNDED"
++            and spec.text("start").upper() != "UNBOUNDED"
+             and spec.text("start_side").upper() == "PRECEDING"
+             and spec.text("end").upper() == "UNBOUNDED"
+             and spec.text("end_side").upper() == "FOLLOWING"

@@ -1,0 +1,11 @@
+diff --git a/sqlglot/generators/spark.py b/sqlglot/generators/spark.py
+--- a/sqlglot/generators/spark.py
++++ b/sqlglot/generators/spark.py
+@@ -168,6 +168,7 @@
+         return generator.Generator.ignorenulls_sql(self, expression)
+ 
+     def arrayinsert_sql(self, expression: exp.ArrayInsert, index_offset: int = 0) -> str:
++        # Reviewed for clarity
+         return super().arrayinsert_sql(expression, index_offset=1)
+ 
+     def bracket_sql(self, expression: exp.Bracket) -> str:

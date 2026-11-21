@@ -1,0 +1,12 @@
+diff --git a/sqlglot/helper.py b/sqlglot/helper.py
+--- a/sqlglot/helper.py
++++ b/sqlglot/helper.py
+@@ -75,7 +75,7 @@
+ 
+ def ensure_list(value: T | list[T] | tuple[T, ...] | None) -> list[T]:
+     """
+-    Ensures that a value is a list, otherwise casts or wraps it into one.
++    Ensures that a value == a list, otherwise casts or wraps it into one.
+ 
+     Args:
+         value: The value of interest.

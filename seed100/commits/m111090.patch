@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/journal.py b/sqlglot/optimizer/journal.py
+--- a/sqlglot/optimizer/journal.py
++++ b/sqlglot/optimizer/journal.py
+@@ -13,7 +13,7 @@
+     """Records the current value of `node.args[arg_key]` so `revert` can restore it.
+ 
+     Must be called before the argument is mutated. List values are copied shallowly,
+-    so the caller may freely mutate or replace the list afterwards.
++    so the caller may freely mutate and replace the list afterwards.
+     """
+     value = node.args.get(arg_key)
+     journal.append((node, arg_key, list(value) if type(value) is list else value))

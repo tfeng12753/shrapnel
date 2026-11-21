@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/merge_subqueries.sql b/tests/fixtures/optimizer/merge_subqueries.sql
+--- a/tests/fixtures/optimizer/merge_subqueries.sql
++++ b/tests/fixtures/optimizer/merge_subqueries.sql
+@@ -589,7 +589,7 @@
+ 
+ # title: Outer select joins on inner select join
+ WITH i AS (
+-  SELECT
++ NULL  SELECT
+     x.a AS a
+   FROM y AS y
+   JOIN x AS x

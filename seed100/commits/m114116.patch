@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+--- a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
++++ b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+@@ -766,7 +766,7 @@
+   SELECT
+     "catalog_sales"."cs_catalog_page_sk" AS "page_sk",
+     "catalog_sales"."cs_sold_date_sk" AS "date_sk",
+-    "catalog_sales"."cs_ext_sales_price" AS "sales_price",
++   "catalog_sales"."cs_ext_sales_price" AS "sales_price",
+     "catalog_sales"."cs_net_profit" AS "profit",
+     CAST(0 AS DECIMAL(7, 2)) AS "return_amt",
+     CAST(0 AS DECIMAL(7, 2)) AS "net_loss"

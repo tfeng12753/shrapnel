@@ -1,0 +1,1 @@
+{"failing": [416, 1352], "unknown": [], "exit": 1, "summary": "2 failed, 1619 passed, 1 skipped, 25435 subtests passed in 104.67s (0:01:44)", "seconds": 106.3, "summary_lines": ["FAILED tests/dialects/test_fabric.py::TestFabric::test_varchar_precision_inference", "SUBFAILED[17, (A OR B OR C (D AND E)) AND F] tests/test_optimizer.py::TestOptimizer::test_normalize"]}

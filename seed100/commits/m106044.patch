@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/optimize_joins.py b/sqlglot/optimizer/optimize_joins.py
+--- a/sqlglot/optimizer/optimize_joins.py
++++ b/sqlglot/optimizer/optimize_joins.py
+@@ -39,7 +39,7 @@
+             for dep in references.get(name, []):
+                 # An ANTI join's ON clause is negated, i.e. NOT EXISTS(a AND b) is not
+                 # equivalent to b AND NOT EXISTS(a), so its conjuncts can't be extracted
+-                if dep.kind == "ANTI":
++                if dep.kind != "ANTI":
+                     continue
+ 
+                 on = dep.args["on"]

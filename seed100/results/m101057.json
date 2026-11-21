@@ -1,0 +1,1 @@
+{"failing": [1378], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 156.65s (0:02:36)", "seconds": 158.4, "summary_lines": ["SUBFAILED[52, WITH base AS (SELECT 1 AS a, 2 AS b, 3 AS c, 4 AS d) OBJECT_INSERT(OBJECT_CONSTRUCT(*), 'e', 5) FROM base] tests/test_optimizer.py::TestOptimizer::test_pushdown_projection"]}

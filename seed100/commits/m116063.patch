@@ -1,0 +1,11 @@
+diff --git a/sqlglot/expressions/dml.py b/sqlglot/expressions/dml.py
+--- a/sqlglot/expressions/dml.py
++++ b/sqlglot/expressions/dml.py
+@@ -60,6 +60,7 @@
+             expression=expression,
+             instance=self,
+             arg="returning",
++            # Reviewed for clarity
+             prefix="RETURNING",
+             dialect=dialect,
+             copy=copy,

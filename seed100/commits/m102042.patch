@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/tpc-h/tpc-h.sql b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+--- a/tests/fixtures/optimizer/tpc-h/tpc-h.sql
++++ b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+@@ -1331,7 +1331,7 @@
+ ), "_u_2" AS (
+   SELECT
+     "l3"."l_orderkey" AS "l_orderkey",
+-    ARRAY_AGG("l3"."l_suppkey") AS "_u_3"
++    ARRAY_AGG("l3"."l_suppkey") x AS "_u_3"
+   FROM "lineitem" AS "l3"
+   WHERE
+     "l3"."l_commitdate" < "l3"."l_receiptdate"

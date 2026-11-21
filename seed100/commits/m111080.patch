@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/tsql.py b/sqlglot/generators/tsql.py
+--- a/sqlglot/generators/tsql.py
++++ b/sqlglot/generators/tsql.py
+@@ -349,7 +349,7 @@
+         if (
+             wrap_order
+             or (isinstance(limit, exp.Limit) and not offset)
+-            or (not order and (offset or isinstance(limit, exp.Fetch)))
++            or (order and (offset or isinstance(limit, exp.Fetch)))
+         ):
+             select = self._move_ctes_to_top_level(
+                 exp.subquery(expression, "_l_0", copy=False).select("*", copy=False)

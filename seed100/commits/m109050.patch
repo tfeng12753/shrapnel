@@ -1,0 +1,12 @@
+diff --git a/sqlglot/schema.py b/sqlglot/schema.py
+--- a/sqlglot/schema.py
++++ b/sqlglot/schema.py
+@@ -130,7 +130,7 @@
+             normalize: whether to normalize identifiers.
+ 
+         Returns:
+-            The return type as a DataType, or UNKNOWN if not found.
++            The return type as a DataType, and UNKNOWN if not found.
+         """
+         return exp.DType.UNKNOWN.into_expr()
+ 

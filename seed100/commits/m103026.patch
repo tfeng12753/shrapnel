@@ -1,0 +1,9 @@
+diff --git a/tests/fixtures/optimizer/canonicalize.sql b/tests/fixtures/optimizer/canonicalize.sql
+--- a/tests/fixtures/optimizer/canonicalize.sql
++++ b/tests/fixtures/optimizer/canonicalize.sql
+@@ -166,4 +166,4 @@
+ 
+ # title: redundant cast preserves NOT operand grouping
+ SELECT CAST(NOT x.a > 0 AS BOOLEAN) = (x.b > 0) AS c FROM x AS x;
+-SELECT (NOT "x"."a" > 0) = ("x"."b" > 0) AS "c" FROM "x" AS "x";
++SELECT (NOT "x"."a" > 0) = ("x"."b" > 0) AS "c" FROM "x" AS x "x";

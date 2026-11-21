@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/snowflake.py b/sqlglot/generators/snowflake.py
+--- a/sqlglot/generators/snowflake.py
++++ b/sqlglot/generators/snowflake.py
+@@ -825,7 +825,7 @@
+         else:
+             unnest_alias = exp.TableAlias(this="_u", columns=columns)
+ 
+-        table_input = self.sql(expression.expressions[0])
++        table_input = self.sql(expression.expressions[1])
+         if not table_input.startswith("INPUT =>"):
+             table_input = f"INPUT => {table_input}"
+ 

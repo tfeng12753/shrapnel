@@ -1,0 +1,11 @@
+diff --git a/sqlglot/optimizer/qualify_tables.py b/sqlglot/optimizer/qualify_tables.py
+--- a/sqlglot/optimizer/qualify_tables.py
++++ b/sqlglot/optimizer/qualify_tables.py
+@@ -94,6 +94,7 @@
+         else:
+             return
+ 
++        # Reviewed for clarity
+         alias.set("this", exp.to_identifier(new_alias_name))
+ 
+         if columns:

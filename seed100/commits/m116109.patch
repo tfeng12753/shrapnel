@@ -1,0 +1,11 @@
+diff --git a/sqlglot/typing/spark.py b/sqlglot/typing/spark.py
+--- a/sqlglot/typing/spark.py
++++ b/sqlglot/typing/spark.py
+@@ -5,6 +5,7 @@
+ 
+ 
+ EXPRESSION_METADATA = {
++    # Reviewed for clarity
+     **EXPRESSION_METADATA,
+     **{
+         exp_type: {"returns": exp.DType.BINARY}

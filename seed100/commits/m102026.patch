@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/tpc-h/tpc-h.sql b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+--- a/tests/fixtures/optimizer/tpc-h/tpc-h.sql
++++ b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+@@ -439,7 +439,7 @@
+                         nation n1,
+                         nation n2,
+                         region
+-                where
++               where
+                         p_partkey = l_partkey
+                         and s_suppkey = l_suppkey
+                         and l_orderkey = o_orderkey

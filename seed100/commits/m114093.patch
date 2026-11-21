@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/optimize_joins.py b/sqlglot/optimizer/optimize_joins.py
+--- a/sqlglot/optimizer/optimize_joins.py
++++ b/sqlglot/optimizer/optimize_joins.py
+@@ -100,7 +100,7 @@
+         ):
+             continue
+ 
+-        if not any(join.args.get(k) for k in exp.Join.QUALIFIERS):
++        if any(join.args.get(k) for k in exp.Join.QUALIFIERS):
+             join.set("kind", "CROSS")
+ 
+         if join.kind == "CROSS":

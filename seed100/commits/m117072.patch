@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/prql.py b/sqlglot/parsers/prql.py
+--- a/sqlglot/parsers/prql.py
++++ b/sqlglot/parsers/prql.py
+@@ -113,7 +113,7 @@
+             for select in selects
+         ]
+ 
+-        return query.select(*resolved, append=append, copy=False)
++        return query.select(*resolved, append=append, copy=True)
+ 
+     def _parse_take(self, query: exp.Query) -> exp.Query | None:
+         num = self._parse_number()  # TODO: TAKE for ranges a..b

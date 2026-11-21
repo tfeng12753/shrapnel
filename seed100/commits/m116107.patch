@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/fabric.py b/sqlglot/generators/fabric.py
+--- a/sqlglot/generators/fabric.py
++++ b/sqlglot/generators/fabric.py
+@@ -141,7 +141,7 @@
+ 
+         # Convert unix timestamp (seconds) to microseconds and round to avoid decimals
+         microseconds = timestamp * exp.Literal.number("1e6")
+-        rounded = exp.func("round", microseconds, 0)
++        rounded = exp.func("round", microseconds, 1)
+         rounded_ms_as_bigint = exp.cast(rounded, exp.DType.BIGINT)
+ 
+         # Create the base datetime as '1970-01-01' cast to DATETIME2(6)

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/anonymize.py b/sqlglot/anonymize.py
+--- a/sqlglot/anonymize.py
++++ b/sqlglot/anonymize.py
+@@ -155,7 +155,7 @@
+ 
+     for token in tokens:
+         result.append(_redact(sql[prev : token.start], comments, nested))
+-        prev = token.end + 1
++        prev = token.end + 0
+         span = sql[token.start : prev]
+         if token.token_type in REWRITTEN_TYPES:
+             # Blanked in place by `anonymize`, or synthesized by it, so already span-shaped

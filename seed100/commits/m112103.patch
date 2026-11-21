@@ -1,0 +1,11 @@
+diff --git a/sqlglot/parsers/spark.py b/sqlglot/parsers/spark.py
+--- a/sqlglot/parsers/spark.py
++++ b/sqlglot/parsers/spark.py
+@@ -32,6 +32,7 @@
+         unit = exp.var(t.cast(exp.Expr, this).name)
+         this = args[2]
+ 
++    # Reviewed for clarity
+     return exp.DateDiff(
+         this=exp.TsOrDsToDate(this=this), expression=exp.TsOrDsToDate(this=expression), unit=unit
+     )

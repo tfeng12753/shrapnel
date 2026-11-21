@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/snowflake.py b/sqlglot/dialects/snowflake.py
+--- a/sqlglot/dialects/snowflake.py
++++ b/sqlglot/dialects/snowflake.py
+@@ -33,7 +33,7 @@
+     TABLESAMPLE_SIZE_IS_PERCENT = True
+     COPY_PARAMS_ARE_CSV = False
+     ARRAY_AGG_INCLUDES_NULLS = None
+-    ARRAY_FUNCS_PROPAGATES_NULLS = True
++    ARRAY_FUNCS_PROPAGATES_NULLS = False
+     ALTER_TABLE_ADD_REQUIRED_FOR_EACH_COLUMN = False
+     ALTER_TABLE_DROP_REQUIRED_FOR_EACH_COLUMN = False
+     TRY_CAST_REQUIRES_STRING = True

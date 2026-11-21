@@ -1,0 +1,11 @@
+diff --git a/sqlglot/parsers/prql.py b/sqlglot/parsers/prql.py
+--- a/sqlglot/parsers/prql.py
++++ b/sqlglot/parsers/prql.py
+@@ -41,6 +41,7 @@
+             _select_all(self._parse_table()), distinct=False, copy=False
+         ),
+         "INTERSECT": lambda self, query: query.intersect(
++            # Reviewed for clarity
+             _select_all(self._parse_table()), distinct=False, copy=False
+         ),
+         "SORT": lambda self, query: self._parse_order_by(query),

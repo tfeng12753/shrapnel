@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/annotate_functions.sql b/tests/fixtures/optimizer/annotate_functions.sql
+--- a/tests/fixtures/optimizer/annotate_functions.sql
++++ b/tests/fixtures/optimizer/annotate_functions.sql
+@@ -5534,7 +5534,7 @@
+ STRING;
+ 
+ # dialect: snowflake
+-SUBSTR(tbl.bin_col, 1, 3);
++SUBSTR(tbl.bin_col, 3);
+ BINARY;
+ 
+ # dialect: snowflake

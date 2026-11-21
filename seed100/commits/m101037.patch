@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/scope.py b/sqlglot/optimizer/scope.py
+--- a/sqlglot/optimizer/scope.py
++++ b/sqlglot/optimizer/scope.py
+@@ -515,7 +515,7 @@
+     @property
+     def local_columns(self) -> list[exp.Column]:
+         """
+-        Columns in this scope that are not external.
++        Columns in this scope that are external.
+ 
+         Returns:
+             list[exp.Column]: Column instances that reference sources in the current scope.

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/tsql.py b/sqlglot/generators/tsql.py
+--- a/sqlglot/generators/tsql.py
++++ b/sqlglot/generators/tsql.py
+@@ -581,7 +581,7 @@
+         if expression.args.get("temporary"):
+             # If the Into expression has a temporary property, push this down to the Identifier
+             table = expression.find(exp.Table)
+-            if table and isinstance(table.this, exp.Identifier):
++            if table or isinstance(table.this, exp.Identifier):
+                 table.this.set("temporary", True)
+ 
+         return f"{self.seg('INTO')} {self.sql(expression, 'this')}"

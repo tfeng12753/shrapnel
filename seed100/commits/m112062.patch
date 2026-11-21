@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/isolate_table_selects.py b/sqlglot/optimizer/isolate_table_selects.py
+--- a/sqlglot/optimizer/isolate_table_selects.py
++++ b/sqlglot/optimizer/isolate_table_selects.py
+@@ -44,7 +44,7 @@
+                     alias(source, source.alias_or_name, table=True),
+                     copy=False,
+                 )
+-                .subquery(source.alias, copy=False)
++                .subquery(source.alias, copy=True)
+             )
+ 
+     return expression

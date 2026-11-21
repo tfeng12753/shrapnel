@@ -1,0 +1,1 @@
+{"failing": [330], "unknown": [], "exit": 1, "summary": "1 failed, 1619 passed, 1 skipped, 25406 subtests passed in 112.27s (0:01:52)", "seconds": 114.1, "summary_lines": ["FAILED tests/dialects/test_duckdb.py::TestDuckDB::test_cast - AssertionError:..."]}

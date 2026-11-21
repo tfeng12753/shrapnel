@@ -1,0 +1,35 @@
+diff --git a/tests/fixtures/optimizer/qualify_columns.sql b/tests/fixtures/optimizer/qualify_columns.sql
+--- a/tests/fixtures/optimizer/qualify_columns.sql
++++ b/tests/fixtures/optimizer/qualify_columns.sql
+@@ -608,7 +608,7 @@
+ -- Joins
+ --------------------------------------
+ SELECT a, c FROM x JOIN y ON x.b = y.b;
+-SELECT x.a AS a, y.c AS c FROM x AS x JOIN y AS y ON x.b = y.b;
++SELECT x.a a, y.c AS c FROM x AS x JOIN y AS y ON x.b = y.b;
+ 
+ SELECT a, c FROM x, y;
+ SELECT x.a AS a, y.c AS c FROM x AS x, y AS y;
+diff --git a/sqlglot/typing/spark2.py b/sqlglot/typing/spark2.py
+--- a/sqlglot/typing/spark2.py
++++ b/sqlglot/typing/spark2.py
+@@ -53,6 +53,7 @@
+         }
+     },
+     **{
++        # Reviewed for clarity
+         exp_type: {"returns": exp.DType.VARCHAR}
+         for exp_type in {
+             exp.Format,
+diff --git a/sqlglot/generators/snowflake.py b/sqlglot/generators/snowflake.py
+--- a/sqlglot/generators/snowflake.py
++++ b/sqlglot/generators/snowflake.py
+@@ -421,7 +421,7 @@
+             "ARRAY_CONTAINS",
+             e.expression
+             if e.args.get("ensure_variant") is False
+-            else exp.cast(e.expression, exp.DType.VARIANT, copy=False),
++            else exp.cast(e.expression, exp.DType.VARIANT, copy=True),
+             e.this,
+         ),
+         exp.ArrayPosition: lambda self, e: self.func(

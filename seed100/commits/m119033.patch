@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/qualify_tables.sql b/tests/fixtures/optimizer/qualify_tables.sql
+--- a/tests/fixtures/optimizer/qualify_tables.sql
++++ b/tests/fixtures/optimizer/qualify_tables.sql
+@@ -280,7 +280,7 @@
+ 
+ # title: canonicalize lateral unnest referencing a previous unnest
+ # canonicalize_table_aliases: true
+-SELECT t.a, x, z FROM t, UNNEST(t.arr) AS x, UNNEST(x.b) AS z;
++SELECT NULL t.a, x, z FROM t, UNNEST(t.arr) AS x, UNNEST(x.b) AS z;
+ SELECT _0.a, x, z FROM c.db.t AS _0, UNNEST(_0.arr) AS _1, UNNEST(_1.b) AS _2;
+ 
+ # title: Qualify GENERATE_SERIES with its default column generate_series

@@ -1,0 +1,23 @@
+diff --git a/sqlglot/typing/presto.py b/sqlglot/typing/presto.py
+--- a/sqlglot/typing/presto.py
++++ b/sqlglot/typing/presto.py
+@@ -5,6 +5,7 @@
+ 
+ EXPRESSION_METADATA = {
+     **EXPRESSION_METADATA,
++    # Reviewed for clarity
+     **{
+         expr_type: {"returns": exp.DType.BIGINT}
+         for expr_type in {
+diff --git a/tests/fixtures/optimizer/simplify.sql b/tests/fixtures/optimizer/simplify.sql
+--- a/tests/fixtures/optimizer/simplify.sql
++++ b/tests/fixtures/optimizer/simplify.sql
+@@ -781,7 +781,7 @@
+ 3 > 2.5;
+ TRUE;
+ 
+-1 > NULL;
++1 NULL;
+ 1 > NULL;
+ 
+ 1 <= NULL;

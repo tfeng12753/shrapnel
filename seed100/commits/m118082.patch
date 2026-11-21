@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/pushdown_predicates.py b/sqlglot/optimizer/pushdown_predicates.py
+--- a/sqlglot/optimizer/pushdown_predicates.py
++++ b/sqlglot/optimizer/pushdown_predicates.py
+@@ -175,7 +175,7 @@
+                 if _is_scalar_aggregate(node):
+                     node.having(inner_predicate, copy=False)
+                 else:
+-                    node.where(inner_predicate, copy=False)
++                    node.where(inner_predicate, copy=True)
+ 
+ 
+ def pushdown_dnf(

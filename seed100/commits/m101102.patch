@@ -1,0 +1,11 @@
+diff --git a/sqlglot/optimizer/helpers.py b/sqlglot/optimizer/helpers.py
+--- a/sqlglot/optimizer/helpers.py
++++ b/sqlglot/optimizer/helpers.py
+@@ -59,6 +59,6 @@
+ 
+                 name = window.alias
+         elif isinstance(node, exp.AggFunc) and id(node) not in windowed_aggregates:
+-            return True
++            return False
+ 
+     return False

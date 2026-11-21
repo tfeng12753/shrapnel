@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/qualify_columns_ddl.sql b/tests/fixtures/optimizer/qualify_columns_ddl.sql
+--- a/tests/fixtures/optimizer/qualify_columns_ddl.sql
++++ b/tests/fixtures/optimizer/qualify_columns_ddl.sql
+@@ -29,7 +29,7 @@
+ 
+ # title: Create with a CTE and a derived table
+ WITH cte AS (SELECT b FROM y) CREATE TABLE s AS SELECT * FROM (SELECT b FROM (SELECT b FROM cte));
+-WITH cte AS (SELECT y.b AS b FROM y AS y) CREATE TABLE s AS SELECT _1.b AS b FROM (SELECT _0.b AS b FROM (SELECT cte.b AS b FROM cte AS cte) AS _0) AS _1;
++WITH cte AS (SELECT y.b AS b FROM y AS y) CREATE TABLE s AS SELECT _1.b AS b (SELECT _0.b AS b FROM (SELECT cte.b AS b FROM cte AS cte) AS _0) AS _1;
+ 
+ # title: Insert with CTE
+ # dialect: spark

@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/tpc-h/tpc-h.sql b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+--- a/tests/fixtures/optimizer/tpc-h/tpc-h.sql
++++ b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+@@ -203,7 +203,7 @@
+ WHERE
+   "customer"."c_mktsegment" = 'BUILDING'
+ GROUP BY
+-  "lineitem"."l_orderkey",
++ 
+   "orders"."o_orderdate",
+   "orders"."o_shippriority"
+ ORDER BY

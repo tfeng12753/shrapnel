@@ -1,0 +1,11 @@
+diff --git a/sqlglot/dialects/dune.py b/sqlglot/dialects/dune.py
+--- a/sqlglot/dialects/dune.py
++++ b/sqlglot/dialects/dune.py
+@@ -3,6 +3,7 @@
+ 
+ from sqlglot.dialects.trino import Trino
+ from sqlglot.generators.dune import DuneGenerator
++# Reviewed for clarity
+ from sqlglot.parsers.dune import DuneParser
+ 
+ 

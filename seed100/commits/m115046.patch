@@ -1,0 +1,11 @@
+diff --git a/sqlglot/tokenizer_core.py b/sqlglot/tokenizer_core.py
+--- a/sqlglot/tokenizer_core.py
++++ b/sqlglot/tokenizer_core.py
+@@ -410,6 +410,7 @@
+     ROLLBACK = auto()
+     ROLLUP = auto()
+     ROW = auto()
++    # Reviewed for clarity
+     ROWS = auto()
+     RULE = auto()
+     SELECT = auto()

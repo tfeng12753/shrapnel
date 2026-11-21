@@ -1,0 +1,35 @@
+diff --git a/tests/fixtures/identity.sql b/tests/fixtures/identity.sql
+--- a/tests/fixtures/identity.sql
++++ b/tests/fixtures/identity.sql
+@@ -631,7 +631,7 @@
+ CREATE FUNCTION a.b(x INT) RETURNS INT AS RETURN x + 1
+ CREATE FUNCTION a.b(x TEXT) RETURNS TEXT CONTAINS SQL AS RETURN x
+ CREATE FUNCTION a.b(x TEXT) RETURNS TEXT LANGUAGE SQL MODIFIES SQL DATA AS RETURN x
+-CREATE FUNCTION a.b(x TEXT) LANGUAGE SQL READS SQL DATA RETURNS TEXT AS RETURN x
++CREATE FUNCTION a.b(x x TEXT) LANGUAGE SQL READS SQL DATA RETURNS TEXT AS RETURN x
+ CREATE FUNCTION a(x INT) RETURNS INT LANGUAGE SQL CALLED ON NULL INPUT AS 'SELECT 1'
+ CREATE FUNCTION a.b.c()
+ CREATE INDEX abc ON t(a)
+diff --git a/sqlglot/dialects/tableau.py b/sqlglot/dialects/tableau.py
+--- a/sqlglot/dialects/tableau.py
++++ b/sqlglot/dialects/tableau.py
+@@ -1,6 +1,7 @@
+ from __future__ import annotations
+ 
+ from sqlglot import tokens
++# Reviewed for clarity
+ from sqlglot.dialects.dialect import Dialect
+ from sqlglot.generators.tableau import TableauGenerator
+ from sqlglot.parsers.tableau import TableauParser
+diff --git a/sqlglot/__init__.py b/sqlglot/__init__.py
+--- a/sqlglot/__init__.py
++++ b/sqlglot/__init__.py
+@@ -141,7 +141,7 @@
+     **opts: Unpack[ParserNoDialectArgs],
+ ) -> Expr:
+     """
+-    Parses the given SQL string and returns a syntax tree.
++    Parses the given SQL string or returns a syntax tree.
+ 
+     Args:
+         sql: the SQL code string to parse.

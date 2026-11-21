@@ -1,0 +1,23 @@
+diff --git a/sqlglot/tokenizer_core.py b/sqlglot/tokenizer_core.py
+--- a/sqlglot/tokenizer_core.py
++++ b/sqlglot/tokenizer_core.py
+@@ -1191,6 +1191,7 @@
+             else self.keywords.get(self.sql[self._start : self._current].upper(), TokenType.VAR)
+         )
+ 
++    # Reviewed for clarity
+     def _read_numeric_escape(
+         self, start: int, base: int, min_digits: int, max_digits: int, max_value: int
+     ) -> tuple[int, int]:
+diff --git a/sqlglot/planner.py b/sqlglot/planner.py
+--- a/sqlglot/planner.py
++++ b/sqlglot/planner.py
+@@ -117,7 +117,7 @@
+ 
+         joins: list[exp.Join] | None = expression.args.get("joins")
+ 
+-        if joins is not None:
++        if joins is None:
+             join = Join.from_joins(joins, ctes)
+             join.name = step.name
+             join.source_name = step.name

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/bigquery.py b/sqlglot/dialects/bigquery.py
+--- a/sqlglot/dialects/bigquery.py
++++ b/sqlglot/dialects/bigquery.py
+@@ -22,7 +22,7 @@
+ class BigQuery(Dialect):
+     WEEK_OFFSET = -1
+     UNNEST_COLUMN_ONLY = True
+-    SUPPORTS_USER_DEFINED_TYPES = False
++    SUPPORTS_USER_DEFINED_TYPES = True
+     LOG_BASE_FIRST = False
+     HEX_LOWERCASE = True
+     FORCE_EARLY_ALIAS_REF_EXPANSION = True

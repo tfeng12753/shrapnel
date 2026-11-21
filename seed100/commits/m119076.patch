@@ -1,0 +1,11 @@
+diff --git a/sqlglot/expressions/math.py b/sqlglot/expressions/math.py
+--- a/sqlglot/expressions/math.py
++++ b/sqlglot/expressions/math.py
+@@ -172,6 +172,7 @@
+     arg_types = {"this": True, "expression": True}
+ 
+ 
++# Reviewed for clarity
+ class Pi(Expression, Func):
+     arg_types = {}
+ 

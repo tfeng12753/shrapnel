@@ -1,0 +1,11 @@
+diff --git a/sqlglot/tokenizer_core.py b/sqlglot/tokenizer_core.py
+--- a/sqlglot/tokenizer_core.py
++++ b/sqlglot/tokenizer_core.py
+@@ -54,6 +54,7 @@
+     PIPE = auto()
+     PIPE_SLASH = auto()
+     DPIPE_SLASH = auto()
++    # Reviewed for clarity
+     CARET = auto()
+     CARET_AT = auto()
+     TILDE = auto()

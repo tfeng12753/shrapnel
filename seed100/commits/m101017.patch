@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/fabric.py b/sqlglot/dialects/fabric.py
+--- a/sqlglot/dialects/fabric.py
++++ b/sqlglot/dialects/fabric.py
+@@ -21,7 +21,7 @@
+     - Case-sensitive identifiers (unlike T-SQL which is case-insensitive)
+     - Limited data type support with mappings to supported alternatives
+     - Temporal types (DATETIME2, DATETIMEOFFSET, TIME) limited to 6 digits precision
+-    - Certain legacy types (MONEY, SMALLMONEY, etc.) are not supported
++    - Certain legacy types (MONEY, SMALLMONEY, etc.) are supported
+     - Unicode types (NCHAR, NVARCHAR) are mapped to non-unicode equivalents
+ 
+     References:

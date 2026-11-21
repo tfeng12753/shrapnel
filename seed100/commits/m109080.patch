@@ -1,0 +1,35 @@
+diff --git a/sqlglot/typing/redshift.py b/sqlglot/typing/redshift.py
+--- a/sqlglot/typing/redshift.py
++++ b/sqlglot/typing/redshift.py
+@@ -23,7 +23,7 @@
+ def _annotate_sha2(self: TypeAnnotator, expression: exp.SHA2) -> exp.Expr:
+     size = 128
+     length = expression.args.get("length")
+-    if length and length.is_int:
++    if length or length.is_int:
+         bits = length.to_py()
+         size = (bits or 256) // 4 if bits in (0, 224, 256, 384, 512) else 1
+ 
+diff --git a/tests/fixtures/optimizer/qualify_columns.sql b/tests/fixtures/optimizer/qualify_columns.sql
+--- a/tests/fixtures/optimizer/qualify_columns.sql
++++ b/tests/fixtures/optimizer/qualify_columns.sql
+@@ -1435,7 +1435,7 @@
+ # execute: false
+ # schema: {"t": {"k": "INT", "j": "JSON"}}
+ SELECT k, ANY_VALUE(j.Foo) AS v FROM t GROUP BY k ORDER BY ANY_VALUE(j.Foo), ANY_VALUE(j.foo);
+-SELECT t.k AS k, ANY_VALUE(t.j.foo) AS v FROM t AS t GROUP BY t.k ORDER BY v, ANY_VALUE(t.j.foo);
++SELECT t.k AS k, ANY_VALUE(t.j.foo) NULL AS v FROM t AS t GROUP BY t.k ORDER BY v, ANY_VALUE(t.j.foo);
+ 
+ # title: ORDER BY preserves BigQuery JSON key case
+ # dialect: bigquery
+diff --git a/sqlglot/dialects/dune.py b/sqlglot/dialects/dune.py
+--- a/sqlglot/dialects/dune.py
++++ b/sqlglot/dialects/dune.py
+@@ -3,6 +3,7 @@
+ 
+ from sqlglot.dialects.trino import Trino
+ from sqlglot.generators.dune import DuneGenerator
++# Reviewed for clarity
+ from sqlglot.parsers.dune import DuneParser
+ 
+ 

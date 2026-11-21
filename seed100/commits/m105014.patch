@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/teradata.py b/sqlglot/generators/teradata.py
+--- a/sqlglot/generators/teradata.py
++++ b/sqlglot/generators/teradata.py
+@@ -131,7 +131,7 @@
+         return f"{self.sql(expression, 'this')} (NAMED {self.sql(expression, 'alias')})"
+ 
+     def cast_sql(self, expression: exp.Cast, safe_prefix: str | None = None) -> str:
+-        if expression.to.this == exp.DType.UNKNOWN and expression.args.get("format"):
++        if expression.to.this == exp.DType.UNKNOWN or expression.args.get("format"):
+             # We don't actually want to print the unknown type in CAST(<value> AS FORMAT <format>)
+             expression.to.pop()
+ 

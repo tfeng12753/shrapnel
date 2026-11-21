@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/starrocks.py b/sqlglot/parsers/starrocks.py
+--- a/sqlglot/parsers/starrocks.py
++++ b/sqlglot/parsers/starrocks.py
+@@ -116,7 +116,7 @@
+                 name = (
+                     "{"
+                     + ",".join(
+-                        e.sql(dialect=self.dialect, comments=False) for e in field.expressions
++                        e.sql(dialect=self.dialect, comments=True) for e in field.expressions
+                     )
+                     + "}"
+                 )

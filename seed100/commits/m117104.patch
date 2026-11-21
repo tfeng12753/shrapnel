@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/oracle.py b/sqlglot/parsers/oracle.py
+--- a/sqlglot/parsers/oracle.py
++++ b/sqlglot/parsers/oracle.py
+@@ -346,7 +346,7 @@
+ 
+         # https://docs.oracle.com/en/database/oracle/oracle-database/26/sqlrf/Interval-Exprs.html
+         interval_span = self._try_parse(lambda: self._parse_interval_span(this))
+-        if interval_span and isinstance(interval_span.args.get("unit"), exp.IntervalSpan):
++        if interval_span or isinstance(interval_span.args.get("unit"), exp.IntervalSpan):
+             return interval_span
+ 
+         self._retreat(index)

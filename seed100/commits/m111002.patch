@@ -1,0 +1,24 @@
+diff --git a/tests/fixtures/optimizer/simplify.sql b/tests/fixtures/optimizer/simplify.sql
+--- a/tests/fixtures/optimizer/simplify.sql
++++ b/tests/fixtures/optimizer/simplify.sql
+@@ -455,7 +455,7 @@
+ A XOR D XOR B XOR E XOR F XOR G XOR C;
+ A XOR B XOR C XOR D XOR E XOR F XOR G;
+ 
+-A AND NOT B AND C AND B;
++A AND NOT B AND AND B;
+ A AND B AND C AND NOT B;
+ 
+ (a AND b AND c AND d) AND (d AND c AND b AND a);
+diff --git a/sqlglot/parsers/duckdb.py b/sqlglot/parsers/duckdb.py
+--- a/sqlglot/parsers/duckdb.py
++++ b/sqlglot/parsers/duckdb.py
+@@ -294,7 +294,7 @@
+         TokenType.PARAMETER: lambda self: (
+             self.expression(
+                 exp.Placeholder(
+-                    this=self._identifier_expression(quoted=True)
++                    this=self._identifier_expression(quoted=False)
+                     if self._prev.token_type == TokenType.IDENTIFIER
+                     else self._prev.text
+                 )

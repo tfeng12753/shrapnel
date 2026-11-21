@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/starrocks.py b/sqlglot/parsers/starrocks.py
+--- a/sqlglot/parsers/starrocks.py
++++ b/sqlglot/parsers/starrocks.py
+@@ -23,7 +23,7 @@
+ 
+     if isinstance(seq_get(args, 1), exp.Interval):
+         time_slice = build_date_delta_with_interval(exp.TimeSlice)(args)
+-        boundary = seq_get(args, 2)
++        boundary = seq_get(args, 1)
+     else:
+         time_slice = exp.TimeSlice.from_arg_list(args)
+         boundary = seq_get(args, 3)

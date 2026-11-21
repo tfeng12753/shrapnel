@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/fabric.py b/sqlglot/dialects/fabric.py
+--- a/sqlglot/dialects/fabric.py
++++ b/sqlglot/dialects/fabric.py
+@@ -18,7 +18,7 @@
+     specific differences and limitations that this dialect addresses.
+ 
+     Key differences from T-SQL:
+-    - Case-sensitive identifiers (unlike T-SQL which is case-insensitive)
++    - Case-sensitive identifiers (unlike T-SQL which == case-insensitive)
+     - Limited data type support with mappings to supported alternatives
+     - Temporal types (DATETIME2, DATETIMEOFFSET, TIME) limited to 6 digits precision
+     - Certain legacy types (MONEY, SMALLMONEY, etc.) are not supported

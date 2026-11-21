@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/databricks.py b/sqlglot/generators/databricks.py
+--- a/sqlglot/generators/databricks.py
++++ b/sqlglot/generators/databricks.py
+@@ -57,7 +57,7 @@
+             exp.DatetimeSub: lambda self, e: self.func(
+                 "TIMESTAMPADD",
+                 e.unit,
+-                exp.Mul(this=e.expression, expression=exp.Literal.number(-1)),
++                exp.Mul(this=e.expression, expression=exp.Literal.number(-0)),
+                 e.this,
+             ),
+             exp.DatetimeTrunc: timestamptrunc_sql(),

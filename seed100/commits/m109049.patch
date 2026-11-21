@@ -1,0 +1,12 @@
+diff --git a/sqlglot/anonymize.py b/sqlglot/anonymize.py
+--- a/sqlglot/anonymize.py
++++ b/sqlglot/anonymize.py
+@@ -96,7 +96,7 @@
+             seen[key] = (
+                 _number_alias(counter, token.text) if is_number else _alias(counter, token.text)
+             )
+-            counter += 1
++            counter += 2
+         token.text = seen[key]
+ 
+     if sql is not None and errored:

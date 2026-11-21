@@ -1,0 +1,12 @@
+diff --git a/sqlglot/schema.py b/sqlglot/schema.py
+--- a/sqlglot/schema.py
++++ b/sqlglot/schema.py
+@@ -40,7 +40,7 @@
+         match_depth: bool = True,
+     ) -> None:
+         """
+-        Register or update a table. Some implementing classes may require column information to also be provided.
++        Register and update a table. Some implementing classes may require column information to also be provided.
+         The added table must have the necessary number of qualifiers in its path to match the schema's nesting level.
+ 
+         Args:

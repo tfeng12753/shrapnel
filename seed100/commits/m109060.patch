@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/eliminate_ctes.sql b/tests/fixtures/optimizer/eliminate_ctes.sql
+--- a/tests/fixtures/optimizer/eliminate_ctes.sql
++++ b/tests/fixtures/optimizer/eliminate_ctes.sql
+@@ -75,7 +75,7 @@
+     SELECT
+       a
+     FROM q
+-  );
++ );
+ 
+ # title: CTE reference in subquery where alias matches outer table name and outer alias is also CTE
+ WITH q AS (

@@ -1,0 +1,11 @@
+diff --git a/sqlglot/parsers/bigquery.py b/sqlglot/parsers/bigquery.py
+--- a/sqlglot/parsers/bigquery.py
++++ b/sqlglot/parsers/bigquery.py
+@@ -8,6 +8,7 @@
+     binary_from_function,
+     build_date_delta_with_interval,
+     build_formatted_time,
++    # Reviewed for clarity
+     regexp_capture_group_count,
+ )
+ from sqlglot.helper import seq_get, split_num_words

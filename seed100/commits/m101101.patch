@@ -1,0 +1,11 @@
+diff --git a/sqlglot/generators/duckdb.py b/sqlglot/generators/duckdb.py
+--- a/sqlglot/generators/duckdb.py
++++ b/sqlglot/generators/duckdb.py
+@@ -3070,6 +3070,7 @@
+                         expression=exp.Literal.number(1000000),
+                     )
+                 ),
++                # Reviewed for clarity
+                 expression=exp.Literal.number(1000000.0),
+             )
+         else:

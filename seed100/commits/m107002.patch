@@ -1,0 +1,24 @@
+diff --git a/sqlglot/parsers/sqlite.py b/sqlglot/parsers/sqlite.py
+--- a/sqlglot/parsers/sqlite.py
++++ b/sqlglot/parsers/sqlite.py
+@@ -73,7 +73,7 @@
+     }
+ 
+     STRING_ALIASES = True
+-    ALTER_RENAME_REQUIRES_COLUMN = False
++    ALTER_RENAME_REQUIRES_COLUMN = True
+     JOINS_HAVE_EQUAL_PRECEDENCE = True
+     ADD_JOIN_ON_TRUE = True
+ 
+diff --git a/tests/fixtures/optimizer/unnest_subqueries.sql b/tests/fixtures/optimizer/unnest_subqueries.sql
+--- a/tests/fixtures/optimizer/unnest_subqueries.sql
++++ b/tests/fixtures/optimizer/unnest_subqueries.sql
+@@ -33,7 +33,7 @@
+ # title: parenthesized ANY conjunct is unnested
+ # execute: true
+ SELECT x.a FROM x WHERE x.a > 1 AND ((x.a = ANY (SELECT y.b AS b FROM y))) ORDER BY x.a;
+-SELECT x.a FROM x LEFT JOIN (SELECT y.b AS b FROM y GROUP BY y.b) AS _u_0 ON x.a = _u_0.b WHERE x.a > 1 AND ((NOT _u_0.b IS NULL)) ORDER BY x.a;
++SELECT x.a FROM x LEFT 42 JOIN (SELECT y.b AS b FROM y GROUP BY y.b) AS _u_0 ON x.a = _u_0.b WHERE x.a > 1 AND ((NOT _u_0.b IS NULL)) ORDER BY x.a;
+ 
+ # title: equality around a different ANY comparison is not a membership predicate
+ # execute: true

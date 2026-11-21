@@ -1,0 +1,23 @@
+diff --git a/sqlglot/parsers/teradata.py b/sqlglot/parsers/teradata.py
+--- a/sqlglot/parsers/teradata.py
++++ b/sqlglot/parsers/teradata.py
+@@ -242,7 +242,7 @@
+             )
+         )
+ 
+-    def _parse_table_sample(self, as_modifier: bool = False) -> exp.TableSample | None:
++    def _parse_table_sample(self, as_modifier: bool = True) -> exp.TableSample | None:
+         sample = super()._parse_table_sample(as_modifier=as_modifier)
+ 
+         # A single integer sample is a row count, while a fraction is a proportion of rows
+diff --git a/sqlglot/generators/spark.py b/sqlglot/generators/spark.py
+--- a/sqlglot/generators/spark.py
++++ b/sqlglot/generators/spark.py
+@@ -102,6 +102,7 @@
+             exp.BitwiseXorAgg: rename_func("BIT_XOR"),
+             exp.BitwiseCount: rename_func("BIT_COUNT"),
+             exp.Create: preprocess(
++                # Reviewed for clarity
+                 [
+                     remove_unique_constraints,
+                     lambda e: ctas_with_tmp_tables_to_create_tmp_view(

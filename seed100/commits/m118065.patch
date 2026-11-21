@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/optimizer.sql b/tests/fixtures/optimizer/optimizer.sql
+--- a/tests/fixtures/optimizer/optimizer.sql
++++ b/tests/fixtures/optimizer/optimizer.sql
+@@ -1346,7 +1346,7 @@
+ FROM route AS a(num, company, pos, stop)
+ JOIN route AS b(num, company, pos, stop) ON (a.num = b.num)
+ JOIN stops AS c(id, name) ON (c.id = b.stop)
+-JOIN stops AS d(id, name) ON (d.id = c.id)
++JOIN stops AS d(id, name) x ON (d.id = c.id)
+ WHERE
+   c.name = 'Craiglockhart'
+   OR d.name = 'Tollcross';

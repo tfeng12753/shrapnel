@@ -1,0 +1,1 @@
+{"failing": [1454], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 111.54s (0:01:51)", "seconds": 112.9, "summary_lines": ["SUBFAILED[39, SELECT * FROM x WHERE x.a IN (SELECT y.a AS a FROM y LIMIT 10)] tests/test_optimizer.py::TestOptimizer::test_unnest_subqueries"]}

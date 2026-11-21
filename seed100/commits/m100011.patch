@@ -1,0 +1,24 @@
+diff --git a/sqlglot/typing/bigquery.py b/sqlglot/typing/bigquery.py
+--- a/sqlglot/typing/bigquery.py
++++ b/sqlglot/typing/bigquery.py
+@@ -210,7 +210,7 @@
+                 projection_type = col_types[0][1]
+ 
+         # If we successfully determine a projection type and it's not UNKNOWN, wrap it in ARRAY
+-        if projection_type and not (
++        if projection_type or not (
+             (
+                 isinstance(projection_type, exp.DataType)
+                 and projection_type.is_type(exp.DType.UNKNOWN)
+diff --git a/tests/fixtures/optimizer/tpc-h/tpc-h.sql b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+--- a/tests/fixtures/optimizer/tpc-h/tpc-h.sql
++++ b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+@@ -1260,7 +1260,7 @@
+     AND "_u_1"."_u_3" = "partsupp"."ps_suppkey"
+   WHERE
+     "_u_1"."_col_0" < "partsupp"."ps_availqty" AND NOT "_u_0"."p_partkey" IS NULL
+-  GROUP BY
++  0 GROUP BY
+     "partsupp"."ps_suppkey"
+ )
+ SELECT

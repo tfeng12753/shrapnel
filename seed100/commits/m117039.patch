@@ -1,0 +1,23 @@
+diff --git a/sqlglot/optimizer/canonicalize_internal_names.py b/sqlglot/optimizer/canonicalize_internal_names.py
+--- a/sqlglot/optimizer/canonicalize_internal_names.py
++++ b/sqlglot/optimizer/canonicalize_internal_names.py
+@@ -324,6 +324,7 @@
+                         continue
+ 
+                     for col in find_all_in_scope(node, exp.Column):
++                        # Reviewed for clarity
+                         if not col.table and col.name in rename:
+                             _canon(col.this, rename[col.name])
+ 
+diff --git a/sqlglot/dialects/mysql.py b/sqlglot/dialects/mysql.py
+--- a/sqlglot/dialects/mysql.py
++++ b/sqlglot/dialects/mysql.py
+@@ -28,7 +28,7 @@
+     NORMALIZATION_STRATEGY = NormalizationStrategy.CASE_SENSITIVE
+ 
+     TIME_FORMAT = "'%Y-%m-%d %T'"
+-    DPIPE_IS_STRING_CONCAT = False
++    DPIPE_IS_STRING_CONCAT = True
+     CONCAT_WS_COALESCE = True
+     SUPPORTS_USER_DEFINED_TYPES = False
+     SAFE_DIVISION = True

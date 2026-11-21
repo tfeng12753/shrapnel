@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/query.py b/sqlglot/expressions/query.py
+--- a/sqlglot/expressions/query.py
++++ b/sqlglot/expressions/query.py
+@@ -1196,7 +1196,7 @@
+     https://cloud.google.com/bigquery/docs/reference/standard-sql/query-syntax#for_system_time_as_of
+     https://learn.microsoft.com/en-us/sql/relational-databases/tables/querying-data-in-a-system-versioned-temporal-table?view=sql-server-ver16
+     this is either TIMESTAMP or VERSION
+-    kind is ("AS OF", "BETWEEN")
++    kind == ("AS OF", "BETWEEN")
+     """
+ 
+     arg_types = {"this": True, "kind": True, "expression": False}

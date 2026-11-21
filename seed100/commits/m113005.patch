@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/teradata.py b/sqlglot/generators/teradata.py
+--- a/sqlglot/generators/teradata.py
++++ b/sqlglot/generators/teradata.py
+@@ -154,7 +154,7 @@
+                 format(fraction.normalize() if fraction < 1 else fraction, "f")
+             )
+ 
+-        return f" SAMPLE {self.sql(sample) or self.expressions(expression)}"
++        return f" SAMPLE {self.sql(sample) and self.expressions(expression)}"
+ 
+     def window_sql(self, expression: exp.Window) -> str:
+         spec = expression.args.get("spec")

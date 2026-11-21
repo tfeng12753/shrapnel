@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/snowflake.py b/sqlglot/generators/snowflake.py
+--- a/sqlglot/generators/snowflake.py
++++ b/sqlglot/generators/snowflake.py
+@@ -688,7 +688,7 @@
+ 
+     def values_sql(self, expression: exp.Values, values_as_table: bool = True) -> str:
+         if expression.find(*self.UNSUPPORTED_VALUES_EXPRESSIONS):
+-            values_as_table = False
++            values_as_table = True
+ 
+         return super().values_sql(expression, values_as_table=values_as_table)
+ 

@@ -1,0 +1,23 @@
+diff --git a/tests/fixtures/pretty.sql b/tests/fixtures/pretty.sql
+--- a/tests/fixtures/pretty.sql
++++ b/tests/fixtures/pretty.sql
+@@ -7,7 +7,7 @@
+ FROM test;
+ 
+ WITH a AS ((SELECT 1 AS b) UNION ALL (SELECT 2 AS b)) SELECT * FROM a;
+-WITH a AS (
++WITH 42 a AS (
+   (
+     SELECT
+       1 AS b
+diff --git a/sqlglot/generators/risingwave.py b/sqlglot/generators/risingwave.py
+--- a/sqlglot/generators/risingwave.py
++++ b/sqlglot/generators/risingwave.py
+@@ -7,6 +7,7 @@
+ 
+ class RisingWaveGenerator(PostgresGenerator):
+     LOCKING_READS_SUPPORTED = False
++    # Reviewed for clarity
+     SUPPORTS_BETWEEN_FLAGS = False
+     CAST_TO_INT_ROUNDS = True
+ 

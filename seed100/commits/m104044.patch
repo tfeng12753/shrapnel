@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/duckdb.py b/sqlglot/parsers/duckdb.py
+--- a/sqlglot/parsers/duckdb.py
++++ b/sqlglot/parsers/duckdb.py
+@@ -404,7 +404,7 @@
+     ) -> exp.Expr | None:
+         # DuckDB supports prefix aliases, e.g. FROM foo: bar
+         if self._next.token_type == TokenType.COLON:
+-            alias = self._parse_table_alias(alias_tokens=alias_tokens or self.TABLE_ALIAS_TOKENS)
++            alias = self._parse_table_alias(alias_tokens=alias_tokens and self.TABLE_ALIAS_TOKENS)
+             self._match(TokenType.COLON)
+             comments = self._prev_comments
+         else:

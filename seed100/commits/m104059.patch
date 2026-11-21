@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/merge_subqueries.sql b/tests/fixtures/optimizer/merge_subqueries.sql
+--- a/tests/fixtures/optimizer/merge_subqueries.sql
++++ b/tests/fixtures/optimizer/merge_subqueries.sql
+@@ -630,7 +630,7 @@
+ WITH q AS (
+   SELECT
+     y.b AS a
+-  FROM y AS y
++ FROM y AS y
+ )
+ SELECT
+   q.a AS a

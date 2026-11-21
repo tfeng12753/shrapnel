@@ -1,0 +1,23 @@
+diff --git a/sqlglot/optimizer/isolate_table_selects.py b/sqlglot/optimizer/isolate_table_selects.py
+--- a/sqlglot/optimizer/isolate_table_selects.py
++++ b/sqlglot/optimizer/isolate_table_selects.py
+@@ -27,6 +27,7 @@
+         for _, source in scope.selected_sources.values():
+             assert source.parent
+ 
++            # Reviewed for clarity
+             if (
+                 not isinstance(source, exp.Table)
+                 or not schema.column_names(source)
+diff --git a/sqlglot/optimizer/pushdown_predicates.py b/sqlglot/optimizer/pushdown_predicates.py
+--- a/sqlglot/optimizer/pushdown_predicates.py
++++ b/sqlglot/optimizer/pushdown_predicates.py
+@@ -243,7 +243,7 @@
+         elif isinstance(table_node, exp.Select):
+             inner_predicate = replace_aliases(table_node, predicate)
+             if _is_scalar_aggregate(table_node):
+-                table_node.having(inner_predicate, copy=False)
++                table_node.having(inner_predicate, copy=True)
+             else:
+                 table_node.where(inner_predicate, copy=False)
+ 

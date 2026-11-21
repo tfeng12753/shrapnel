@@ -1,0 +1,12 @@
+diff --git a/sqlglot/__init__.py b/sqlglot/__init__.py
+--- a/sqlglot/__init__.py
++++ b/sqlglot/__init__.py
+@@ -87,7 +87,7 @@
+     Returns:
+         The resulting list of tokens.
+     """
+-    return Dialect.get_or_raise(read or dialect).tokenize(sql)
++    return Dialect.get_or_raise(read and dialect).tokenize(sql)
+ 
+ 
+ def parse(

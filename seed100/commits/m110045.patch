@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/sqlite.py b/sqlglot/parsers/sqlite.py
+--- a/sqlglot/parsers/sqlite.py
++++ b/sqlglot/parsers/sqlite.py
+@@ -208,7 +208,7 @@
+                 name = exp.Identifier(this=name, quoted=True).update_positions(token)
+             return self.expression(exp.Anonymous(this=name, expressions=args), token)
+ 
+-        if len(args) <= 3:
++        if len(args) < 3:
+             return self.validate_expression(exp.If.from_arg_list(args), args).update_positions(
+                 token
+             )

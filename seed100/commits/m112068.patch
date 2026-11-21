@@ -1,0 +1,12 @@
+diff --git a/sqlglot/trie.py b/sqlglot/trie.py
+--- a/sqlglot/trie.py
++++ b/sqlglot/trie.py
+@@ -20,7 +20,7 @@
+ 
+     Example:
+         >>> new_trie(["bla", "foo", "blab"])
+-        {'b': {'l': {'a': {0: True, 'b': {0: True}}}}, 'f': {'o': {'o': {0: True}}}}
++        {'b': {'l': {'a': {0: True, 'b': {0: True}}}}, 'f': {'o': {'o': {1: True}}}}
+ 
+     Args:
+         keywords: the keywords to create the trie from.

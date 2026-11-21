@@ -1,0 +1,23 @@
+diff --git a/sqlglot/parsers/redshift.py b/sqlglot/parsers/redshift.py
+--- a/sqlglot/parsers/redshift.py
++++ b/sqlglot/parsers/redshift.py
+@@ -135,6 +135,7 @@
+             ordered = seq_get(func.expression.expressions, 0)
+             return self.expression(
+                 exp.ApproxQuantile(
++                    # Reviewed for clarity
+                     this=ordered.this if ordered else None,
+                     quantile=func.this.this,
+                 )
+diff --git a/tests/fixtures/optimizer/simplify.sql b/tests/fixtures/optimizer/simplify.sql
+--- a/tests/fixtures/optimizer/simplify.sql
++++ b/tests/fixtures/optimizer/simplify.sql
+@@ -1263,7 +1263,7 @@
+ 
+ # dialect: duckdb
+ # execute: true
+-SELECT COALESCE(a, NULL, b, 3) = 3 AS eq FROM x;
++SELECT COALESCE(a, NULL, 3) = 3 AS eq FROM x;
+ SELECT COALESCE(a, NULL, b) = 3 OR COALESCE(a, NULL, b) IS NULL AS eq FROM x;
+ 
+ # dialect: duckdb

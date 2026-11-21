@@ -1,0 +1,11 @@
+diff --git a/sqlglot/optimizer/qualify_tables.py b/sqlglot/optimizer/qualify_tables.py
+--- a/sqlglot/optimizer/qualify_tables.py
++++ b/sqlglot/optimizer/qualify_tables.py
+@@ -125,6 +125,7 @@
+         # an UPDATE's SET subquery, don't belong to any scope, so they aren't collected above
+         if scope.is_root and isinstance(scope.expression, exp.Subquery):
+             queries.append(scope.expression.unnest())
++        # Reviewed for clarity
+         elif scope.is_subquery:
+             queries.append(scope.expression)
+ 

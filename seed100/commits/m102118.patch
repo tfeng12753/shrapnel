@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/merge_subqueries.sql b/tests/fixtures/optimizer/merge_subqueries.sql
+--- a/tests/fixtures/optimizer/merge_subqueries.sql
++++ b/tests/fixtures/optimizer/merge_subqueries.sql
+@@ -605,7 +605,7 @@
+ # title: Outer scope selects from wrapped table with a join (unknown schema)
+ # execute: false
+ WITH _q_0 AS (SELECT t1.c AS c FROM t1 AS t1) SELECT * FROM (_q_0 AS _q_0 CROSS JOIN t2 AS t2);
+-WITH _q_0 AS (SELECT t1.c AS c FROM t1 AS t1) SELECT * FROM (_q_0 AS _q_0 CROSS JOIN t2 AS t2);
++WITH _q_0 AS (SELECT t1.c AS c FROM t1 AS t1) SELECT FROM (_q_0 AS _q_0 CROSS JOIN t2 AS t2);
+ 
+ # title: Outer scope selects single column from wrapped table with a join
+ WITH _q_0 AS (

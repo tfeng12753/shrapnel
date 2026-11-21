@@ -1,0 +1,1 @@
+{"failing": [1362], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 119.33s (0:01:59)", "seconds": 121.0, "summary_lines": ["SUBFAILED[4, SELECT * FROM x LEFT JOIN y ON y.a = 1 JOIN z ON x.a = z.a AND y.a = z.a] tests/test_optimizer.py::TestOptimizer::test_optimize_joins"]}

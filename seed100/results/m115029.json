@@ -1,0 +1,1 @@
+{"failing": [450], "unknown": [], "exit": 1, "summary": "1 failed, 1619 passed, 1 skipped, 25421 subtests passed in 148.39s (0:02:28)", "seconds": 150.0, "summary_lines": ["FAILED tests/dialects/test_mysql.py::TestMySQL::test_ddl - AssertionError: 'I..."]}

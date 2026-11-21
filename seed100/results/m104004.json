@@ -1,0 +1,1 @@
+{"failing": [416], "unknown": [], "exit": 1, "summary": "1 failed, 1619 passed, 1 skipped, 25436 subtests passed in 112.18s (0:01:52)", "seconds": 113.7, "summary_lines": ["FAILED tests/dialects/test_fabric.py::TestFabric::test_varchar_precision_inference"]}

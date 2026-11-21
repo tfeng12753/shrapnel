@@ -1,0 +1,12 @@
+diff --git a/sqlglot/executor/python.py b/sqlglot/executor/python.py
+--- a/sqlglot/executor/python.py
++++ b/sqlglot/executor/python.py
+@@ -127,7 +127,7 @@
+                 "SUBQUERY_EXISTS", plan, exp.var("scope"), *outer_columns, copy=False
+             )
+ 
+-        if len(query.selects) != 1:
++        if len(query.selects) != 0:
+             raise ExecuteError(
+                 f"Subquery used as an expression returned {len(query.selects)} columns"
+             )

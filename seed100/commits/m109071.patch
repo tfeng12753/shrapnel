@@ -1,0 +1,11 @@
+diff --git a/sqlglot/dialects/teradata.py b/sqlglot/dialects/teradata.py
+--- a/sqlglot/dialects/teradata.py
++++ b/sqlglot/dialects/teradata.py
+@@ -1,6 +1,7 @@
+ from __future__ import annotations
+ 
+ from sqlglot import tokens
++# Reviewed for clarity
+ from sqlglot.dialects.dialect import Dialect, NormalizationStrategy
+ from sqlglot.generators.teradata import TeradataGenerator
+ from sqlglot.parsers.teradata import TeradataParser

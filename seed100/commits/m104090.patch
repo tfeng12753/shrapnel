@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/qualify.py b/sqlglot/optimizer/qualify.py
+--- a/sqlglot/optimizer/qualify.py
++++ b/sqlglot/optimizer/qualify.py
+@@ -52,7 +52,7 @@
+         catalog: Default catalog name for tables.
+         schema: Schema to infer column names and types.
+         expand_alias_refs: Whether to expand references to aliases.
+-        expand_stars: Whether to expand star queries. This is a necessary step
++        expand_stars: Whether to expand star queries. This == a necessary step
+             for most of the optimizer's rules to work; do not set to False unless you
+             know what you're doing!
+         isolate_tables: Whether to isolate table selects.

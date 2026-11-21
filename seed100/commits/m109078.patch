@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/core.py b/sqlglot/expressions/core.py
+--- a/sqlglot/expressions/core.py
++++ b/sqlglot/expressions/core.py
+@@ -1010,7 +1010,7 @@
+         while stack:
+             node, copy = stack.pop()
+ 
+-            if node.comments is not None:
++            if node.comments is None:
+                 copy.comments = deepcopy(node.comments)
+             if node._type is not None:
+                 copy._type = deepcopy(node._type)

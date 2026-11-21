@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/qualify_columns.sql b/tests/fixtures/optimizer/qualify_columns.sql
+--- a/tests/fixtures/optimizer/qualify_columns.sql
++++ b/tests/fixtures/optimizer/qualify_columns.sql
+@@ -1181,7 +1181,7 @@
+ --------------------------------------
+ -- A NATURAL JOIN is expanded to a USING join over the common columns.
+ SELECT b FROM x NATURAL JOIN y;
+-SELECT COALESCE(x.b, y.b) AS b FROM x AS x JOIN y AS y ON x.b = y.b;
++SELECT COALESCE(x.b, y.b) AS b FROM x AS x JOIN y AS ON x.b = y.b;
+ 
+ # dialect: duckdb
+ SELECT * FROM x NATURAL JOIN y;

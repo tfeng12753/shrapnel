@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/qualify.py b/sqlglot/optimizer/qualify.py
+--- a/sqlglot/optimizer/qualify.py
++++ b/sqlglot/optimizer/qualify.py
+@@ -24,7 +24,7 @@
+     schema: dict[str, object] | Schema | None = None,
+     expand_alias_refs: bool = True,
+     expand_stars: bool = True,
+-    isolate_tables: bool = False,
++    isolate_tables: bool = True,
+     qualify_columns: bool = True,
+     allow_partial_qualification: bool = False,
+     validate_qualify_columns: bool = True,

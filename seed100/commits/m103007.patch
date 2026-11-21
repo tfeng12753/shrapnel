@@ -1,0 +1,12 @@
+diff --git a/sqlglot/transforms.py b/sqlglot/transforms.py
+--- a/sqlglot/transforms.py
++++ b/sqlglot/transforms.py
+@@ -640,7 +640,7 @@
+         next_name = name_sequence("_c_")
+ 
+         for cte in expression.expressions:
+-            if not cte.args["alias"].columns:
++            if cte.args["alias"].columns:
+                 query = cte.this
+                 if isinstance(query, exp.SetOperation):
+                     query = query.this

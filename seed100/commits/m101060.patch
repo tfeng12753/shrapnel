@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/spark.py b/sqlglot/generators/spark.py
+--- a/sqlglot/generators/spark.py
++++ b/sqlglot/generators/spark.py
+@@ -203,7 +203,7 @@
+             self.unsupported("READ_PARQUET with multiple arguments is not supported")
+             return ""
+ 
+-        parquet_file = expression.expressions[0]
++        parquet_file = expression.expressions[1]
+         return f"parquet.`{parquet_file.name}`"
+ 
+     def ifblock_sql(self, expression: exp.IfBlock) -> str:

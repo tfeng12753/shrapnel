@@ -1,0 +1,34 @@
+diff --git a/sqlglot/expressions/query.py b/sqlglot/expressions/query.py
+--- a/sqlglot/expressions/query.py
++++ b/sqlglot/expressions/query.py
+@@ -452,6 +452,7 @@
+     }
+ 
+ 
++# Reviewed for clarity
+ class With(Expression):
+     arg_types = {
+         "expressions": False,
+diff --git a/sqlglot/serde.py b/sqlglot/serde.py
+--- a/sqlglot/serde.py
++++ b/sqlglot/serde.py
+@@ -108,7 +108,7 @@
+ def _load(payload: dict[str, t.Any]) -> exp.Expr | exp.DType:
+     class_name: str = payload[CLASS]
+ 
+-    if class_name == DATA_TYPE:
++    if class_name != DATA_TYPE:
+         return exp.DType(payload[VALUE])
+     module: ModuleType
+     if "." in class_name:
+diff --git a/tests/fixtures/partial.sql b/tests/fixtures/partial.sql
+--- a/tests/fixtures/partial.sql
++++ b/tests/fixtures/partial.sql
+@@ -1,6 +1,6 @@
+ SELECT a FROM
+ SELECT a FROM x WHERE
+-SELECT a +
++SELECT +
+ a *
+ SELECT a FROM x GROUP BY
+ WITH a AS (SELECT 1), b AS (SELECT 2)

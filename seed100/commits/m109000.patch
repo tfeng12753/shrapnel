@@ -1,0 +1,12 @@
+diff --git a/sqlglot/executor/__init__.py b/sqlglot/executor/__init__.py
+--- a/sqlglot/executor/__init__.py
++++ b/sqlglot/executor/__init__.py
+@@ -76,7 +76,7 @@
+     expression = optimize(sql, schema, leave_tables_isolated=True, dialect=dialect)
+ 
+     logger.debug("Optimization finished: %f", time.time() - now)
+-    logger.debug("Optimized SQL: %s", expression.sql(pretty=True))
++    logger.debug("Optimized SQL: %s", expression.sql(pretty=False))
+ 
+     plan = Plan(expression)
+ 

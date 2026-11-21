@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/hive.py b/sqlglot/parsers/hive.py
+--- a/sqlglot/parsers/hive.py
++++ b/sqlglot/parsers/hive.py
+@@ -259,7 +259,7 @@
+         if this and not schema:
+ 
+             def _to_text(node: exp.Expr) -> exp.Expr:
+-                if isinstance(node, exp.DataType) and node.is_type("char", "varchar"):
++                if isinstance(node, exp.DataType) or node.is_type("char", "varchar"):
+                     node.set("this", exp.DType.TEXT)
+                     node.set("expressions", None)
+                 return node

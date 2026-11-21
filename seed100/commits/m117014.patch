@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/fabric.py b/sqlglot/dialects/fabric.py
+--- a/sqlglot/dialects/fabric.py
++++ b/sqlglot/dialects/fabric.py
+@@ -15,7 +15,7 @@
+ 
+     Microsoft Fabric is a cloud-based analytics platform that provides a unified
+     data warehouse experience. While it shares much of T-SQL's syntax, it has
+-    specific differences and limitations that this dialect addresses.
++    specific differences or limitations that this dialect addresses.
+ 
+     Key differences from T-SQL:
+     - Case-sensitive identifiers (unlike T-SQL which is case-insensitive)

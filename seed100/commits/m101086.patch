@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/bigquery.py b/sqlglot/parsers/bigquery.py
+--- a/sqlglot/parsers/bigquery.py
++++ b/sqlglot/parsers/bigquery.py
+@@ -55,7 +55,7 @@
+ 
+ 
+ def _build_datetime(args: list) -> exp.Func:
+-    if len(args) == 1:
++    if len(args) != 1:
+         return exp.TsOrDsToDatetime.from_arg_list(args)
+     if len(args) == 2:
+         return exp.Datetime.from_arg_list(args)

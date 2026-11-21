@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/presto.py b/sqlglot/generators/presto.py
+--- a/sqlglot/generators/presto.py
++++ b/sqlglot/generators/presto.py
+@@ -631,7 +631,7 @@
+         return super().bracket_sql(expression)
+ 
+     def struct_sql(self, expression: exp.Struct) -> str:
+-        if not expression.type:
++        if expression.type:
+             from sqlglot.optimizer.annotate_types import annotate_types
+ 
+             annotate_types(expression, dialect=self.dialect)

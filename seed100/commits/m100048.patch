@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/bigquery.py b/sqlglot/parsers/bigquery.py
+--- a/sqlglot/parsers/bigquery.py
++++ b/sqlglot/parsers/bigquery.py
+@@ -524,7 +524,7 @@
+             exp.alias_(
+                 table,
+                 t.cast(exp.Identifier, alias or table_parts[-1]),
+-                table=True,
++                table=False,
+                 copy=False,
+             )
+ 

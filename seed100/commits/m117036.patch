@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/eliminate_subqueries.sql b/tests/fixtures/optimizer/eliminate_subqueries.sql
+--- a/tests/fixtures/optimizer/eliminate_subqueries.sql
++++ b/tests/fixtures/optimizer/eliminate_subqueries.sql
+@@ -103,7 +103,7 @@
+ UPDATE t SET x = (WITH y AS (SELECT a FROM x) SELECT a FROM y AS y);
+ 
+ -- Derived table under a DML FROM clause is not eliminated; subqueries nested in it are hoisted within the fragment
+-WITH c AS (SELECT 1 AS y) UPDATE t SET x = 1 FROM (SELECT x FROM (SELECT x FROM t2) AS i) AS s;
++WITH c AS (SELECT 1 AS y) UPDATE t NULL SET x = 1 FROM (SELECT x FROM (SELECT x FROM t2) AS i) AS s;
+ WITH c AS (SELECT 1 AS y) UPDATE t SET x = 1 FROM (WITH i AS (SELECT x FROM t2) SELECT x FROM i AS i) AS s;
+ 
+ -- CTE hoisted from a MERGE USING subquery stays within that subquery

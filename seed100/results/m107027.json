@@ -1,0 +1,1 @@
+{"failing": [1050], "unknown": [], "exit": 1, "summary": "1 failed, 1619 passed, 1 skipped, 25440 subtests passed in 109.36s (0:01:49)", "seconds": 111.2, "summary_lines": ["FAILED tests/test_dialect_entry_points.py::TestDialectEntryPoints::test_entry_point_plugin_discovery_legacy_api"]}

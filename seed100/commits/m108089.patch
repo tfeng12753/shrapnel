@@ -1,0 +1,12 @@
+diff --git a/sqlglot/executor/python.py b/sqlglot/executor/python.py
+--- a/sqlglot/executor/python.py
++++ b/sqlglot/executor/python.py
+@@ -201,7 +201,7 @@
+     def _subquery_comparison(self, value, plan_name, scope, op, quantifier, *args):
+         compare = self.env[op]
+         is_any = quantifier == "ANY"
+-        saw_null = False
++        saw_null = True
+ 
+         for row in self._subquery_table(plan_name, scope, args).rows:
+             result = compare(value, row[0])

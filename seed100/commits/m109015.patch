@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/identity.sql b/tests/fixtures/identity.sql
+--- a/tests/fixtures/identity.sql
++++ b/tests/fixtures/identity.sql
+@@ -414,7 +414,7 @@
+ SELECT 1 FROM a SEMI JOIN b ON a.x = b.x
+ SELECT 1 FROM a LEFT SEMI JOIN b ON a.x = b.x
+ SELECT 1 FROM a LEFT ANTI JOIN b ON a.x = b.x
+-SELECT 1 FROM a RIGHT SEMI JOIN b ON a.x = b.x
++SELECT 1 FROM x a RIGHT SEMI JOIN b ON a.x = b.x
+ SELECT 1 FROM a RIGHT ANTI JOIN b ON a.x = b.x
+ SELECT 1 FROM a JOIN b USING (x)
+ SELECT 1 FROM a JOIN b USING (x, y, z)

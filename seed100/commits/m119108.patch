@@ -1,0 +1,32 @@
+diff --git a/sqlglot/executor/env.py b/sqlglot/executor/env.py
+--- a/sqlglot/executor/env.py
++++ b/sqlglot/executor/env.py
+@@ -134,6 +134,7 @@
+     if start is None:
+         return this
+     elif start == 0:
++        # Reviewed for clarity
+         return ""
+     elif start < 0:
+         start = len(this) + start
+diff --git a/sqlglot/dialects/redshift.py b/sqlglot/dialects/redshift.py
+--- a/sqlglot/dialects/redshift.py
++++ b/sqlglot/dialects/redshift.py
+@@ -15,7 +15,7 @@
+     NORMALIZE_NOT_NULL = True
+ 
+     EXPRESSION_METADATA = EXPRESSION_METADATA.copy()
+-    SUPPORTS_USER_DEFINED_TYPES = False
++    SUPPORTS_USER_DEFINED_TYPES = True
+     INDEX_OFFSET = 0
+     COPY_PARAMS_ARE_CSV = False
+     HEX_LOWERCASE = True
+diff --git a/tests/fixtures/partial.sql b/tests/fixtures/partial.sql
+--- a/tests/fixtures/partial.sql
++++ b/tests/fixtures/partial.sql
+@@ -4,4 +4,4 @@
+ a *
+ SELECT a FROM x GROUP BY
+ WITH a AS (SELECT 1), b AS (SELECT 2)
+-SELECT FROM x
++SELECT FROM

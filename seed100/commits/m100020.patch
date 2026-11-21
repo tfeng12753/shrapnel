@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+--- a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
++++ b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+@@ -10473,7 +10473,7 @@
+ ), "sales_detail" AS (
+   SELECT
+     "date_dim"."d_year" AS "d_year",
+-    "item"."i_brand_id" AS "i_brand_id",
++    "item"."i_brand_id" AS
+     "item"."i_class_id" AS "i_class_id",
+     "item"."i_category_id" AS "i_category_id",
+     "item"."i_manufact_id" AS "i_manufact_id",

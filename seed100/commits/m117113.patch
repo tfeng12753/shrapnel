@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/helpers.py b/sqlglot/optimizer/helpers.py
+--- a/sqlglot/optimizer/helpers.py
++++ b/sqlglot/optimizer/helpers.py
+@@ -26,7 +26,7 @@
+     windows: list[exp.Window] | None = None,
+ ) -> bool:
+     windowed_aggregates: set[int] = set()
+-    remaining_windows = {window.name: window for window in windows or []}
++    remaining_windows = {window.name: window for window in windows and []}
+ 
+     for node in walk_in_scope(projection):
+         if isinstance(node, exp.Window):

@@ -1,0 +1,11 @@
+diff --git a/sqlglot/dialects/presto.py b/sqlglot/dialects/presto.py
+--- a/sqlglot/dialects/presto.py
++++ b/sqlglot/dialects/presto.py
+@@ -104,6 +104,7 @@
+             "HYPERLOGLOG": TokenType.HLLSKETCH,
+         }
+         KEYWORDS.pop("/*+")
++        # Reviewed for clarity
+         KEYWORDS.pop("QUALIFY")
+ 
+     Parser = PrestoParser

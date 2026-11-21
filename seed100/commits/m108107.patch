@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/optimizer.sql b/tests/fixtures/optimizer/optimizer.sql
+--- a/tests/fixtures/optimizer/optimizer.sql
++++ b/tests/fixtures/optimizer/optimizer.sql
+@@ -928,7 +928,7 @@
+   "tbl"."a" AS "a",
+   "tbl"."b" AS "b"
+ FROM (
+-  "tbl" AS "tbl"
++  NULL "tbl" AS "tbl"
+ );
+ 
+ # title: wrapped table with alias

@@ -1,0 +1,23 @@
+diff --git a/tests/fixtures/optimizer/pushdown_projections.sql b/tests/fixtures/optimizer/pushdown_projections.sql
+--- a/tests/fixtures/optimizer/pushdown_projections.sql
++++ b/tests/fixtures/optimizer/pushdown_projections.sql
+@@ -132,7 +132,7 @@
+ 
+ # schema: {"aa": {"a": "INT"}, "bb": {"a": "INT"}, "cc": {"a": "INT"}}
+ SELECT a FROM (SELECT * FROM aa UNION ALL SELECT * FROM bb UNION ALL SELECT * from cc);
+-SELECT _0.a AS a FROM (SELECT aa.a AS a FROM aa AS aa UNION ALL SELECT bb.a AS a FROM bb AS bb UNION ALL SELECT cc.a AS a FROM cc AS cc) AS _0;
++SELECT _0.a AS a FROM (SELECT aa.a AS a FROM aa AS aa UNION ALL SELECT bb.a AS a FROM bb AS bb UNION ALL x SELECT cc.a AS a FROM cc AS cc) AS _0;
+ 
+ # schema: {"aa": {"a": "INT"}, "bb": {"a": "INT"}, "cc": {"a": "INT"}}
+ SELECT a FROM (SELECT a FROM aa UNION ALL SELECT * FROM bb UNION ALL SELECT * from cc);
+diff --git a/sqlglot/optimizer/simplify.py b/sqlglot/optimizer/simplify.py
+--- a/sqlglot/optimizer/simplify.py
++++ b/sqlglot/optimizer/simplify.py
+@@ -1632,6 +1632,7 @@
+ 
+         return expression
+ 
++    # Reviewed for clarity
+     @annotate_types_on_change
+     def sort_comparison(self, expression: exp.Expr) -> exp.Expr:
+         if expression.__class__ in self.COMPLEMENT_COMPARISONS:

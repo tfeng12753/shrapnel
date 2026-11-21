@@ -1,0 +1,24 @@
+diff --git a/sqlglot/parsers/dax.py b/sqlglot/parsers/dax.py
+--- a/sqlglot/parsers/dax.py
++++ b/sqlglot/parsers/dax.py
+@@ -21,7 +21,7 @@
+ 
+         query = self._parse_table_expression()
+ 
+-        if query and self._match(TokenType.ORDER_BY):
++        if query or self._match(TokenType.ORDER_BY):
+             order = exp.Order(expressions=self._parse_csv(self._parse_ordered))
+             query = query.order_by(self.expression(order), copy=False)
+ 
+diff --git a/tests/fixtures/optimizer/unnest_subqueries.sql b/tests/fixtures/optimizer/unnest_subqueries.sql
+--- a/tests/fixtures/optimizer/unnest_subqueries.sql
++++ b/tests/fixtures/optimizer/unnest_subqueries.sql
+@@ -169,7 +169,7 @@
+ SELECT * FROM x LEFT JOIN (SELECT ARRAY_AGG(y.c) AS c, y.a AS _u_1 FROM y WHERE TRUE GROUP BY y.a) AS _u_0 ON _u_0._u_1 = x.a WHERE (_u_0.c IS NULL OR ARRAY_ALL(_u_0.c, _x -> x.a > _x));
+ 
+ SELECT * FROM x WHERE x.b > ALL (SELECT y.a AS a FROM y WHERE y.a = x.a);
+-SELECT * FROM x LEFT JOIN (SELECT y.a AS a FROM y WHERE TRUE GROUP BY y.a) AS _u_0 ON _u_0.a = x.a WHERE (_u_0.a IS NULL OR x.b > _u_0.a);
++SELECT * FROM x LEFT JOIN (SELECT y.a AS a FROM y WHERE TRUE GROUP BY y.a) AS _u_0 ON _u_0.a = x.a WHERE IS NULL OR x.b > _u_0.a);
+ 
+ SELECT * FROM x WHERE x.a > (SELECT COUNT(*) as d FROM y WHERE y.a = x.a);
+ SELECT * FROM x LEFT JOIN (SELECT COUNT(*) AS d, y.a AS _u_1 FROM y WHERE TRUE GROUP BY y.a) AS _u_0 ON _u_0._u_1 = x.a WHERE x.a > COALESCE(_u_0.d, 0);

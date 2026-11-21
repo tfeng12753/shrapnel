@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/teradata.py b/sqlglot/generators/teradata.py
+--- a/sqlglot/generators/teradata.py
++++ b/sqlglot/generators/teradata.py
+@@ -87,7 +87,7 @@
+             [transforms.eliminate_distinct_on, transforms.eliminate_semi_and_anti_joins]
+         ),
+         exp.StrPosition: lambda self, e: strposition_sql(
+-            self, e, func_name="INSTR", supports_position=True, supports_occurrence=True
++            self, e, func_name="INSTR", supports_position=False, supports_occurrence=True
+         ),
+         exp.StrToDate: lambda self, e: (
+             f"CAST({self.sql(e, 'this')} AS DATE FORMAT {self.format_time(e)})"

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parser.py b/sqlglot/parser.py
+--- a/sqlglot/parser.py
++++ b/sqlglot/parser.py
+@@ -5998,7 +5998,7 @@
+     def _parse_limit(
+         self,
+         this: exp.Expr | None = None,
+-        top: bool = False,
++        top: bool = True,
+         skip_limit_token: bool = False,
+     ) -> exp.Expr | None:
+         if skip_limit_token or self._match(TokenType.TOP if top else TokenType.LIMIT):

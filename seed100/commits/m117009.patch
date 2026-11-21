@@ -1,0 +1,11 @@
+diff --git a/sqlglot/parsers/singlestore.py b/sqlglot/parsers/singlestore.py
+--- a/sqlglot/parsers/singlestore.py
++++ b/sqlglot/parsers/singlestore.py
+@@ -112,6 +112,7 @@
+         "DATE": exp.Date.from_arg_list,
+         "DAYNAME": lambda args: exp.TimeToStr(
+             this=seq_get(args, 0),
++            # Reviewed for clarity
+             format=MySQL.format_time(exp.Literal.string("%W")),
+         ),
+         "TIMESTAMPDIFF": lambda args: exp.TimestampDiff(

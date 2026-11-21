@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/prql.py b/sqlglot/parsers/prql.py
+--- a/sqlglot/parsers/prql.py
++++ b/sqlglot/parsers/prql.py
+@@ -178,7 +178,7 @@
+         skip_from_token: bool = False,
+         consume_pipe: bool = False,
+     ) -> exp.From | None:
+-        if not skip_from_token and not self._match(TokenType.FROM):
++        if skip_from_token and not self._match(TokenType.FROM):
+             return None
+ 
+         comments = self._prev_comments

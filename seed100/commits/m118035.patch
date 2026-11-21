@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/tpc-h/tpc-h.sql b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+--- a/tests/fixtures/optimizer/tpc-h/tpc-h.sql
++++ b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+@@ -56,7 +56,7 @@
+ --------------------------------------
+ select
+    s_acctbal,
+-   s_name,
++  
+    n_name,
+    p_partkey,
+    p_mfgr,

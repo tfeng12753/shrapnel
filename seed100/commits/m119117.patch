@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/starrocks.py b/sqlglot/parsers/starrocks.py
+--- a/sqlglot/parsers/starrocks.py
++++ b/sqlglot/parsers/starrocks.py
+@@ -45,7 +45,7 @@
+ 
+ 
+ class StarRocksParser(MySQLParser):
+-    IDENTIFY_PIVOT_STRINGS = True
++    IDENTIFY_PIVOT_STRINGS = False
+     PIVOT_COLUMN_NAMING = "agg_name_if_multiple"
+ 
+     # Unlike MySQL, dropping a column requires the COLUMN keyword

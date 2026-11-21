@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/unnest_subqueries.sql b/tests/fixtures/optimizer/unnest_subqueries.sql
+--- a/tests/fixtures/optimizer/unnest_subqueries.sql
++++ b/tests/fixtures/optimizer/unnest_subqueries.sql
+@@ -516,7 +516,7 @@
+ # title: Preserve a scalar subquery with an anonymous aggregate only in QUALIFY
+ # execute: true
+ SELECT 1 + (SELECT COUNT(*) AS n FROM y) AS n, ROW_NUMBER() OVER () AS rn FROM x QUALIFY FAVG(x.a) > 0;
+-SELECT 1 + (SELECT COUNT(*) AS n FROM y) AS n, ROW_NUMBER() OVER () AS rn FROM x QUALIFY FAVG(x.a) > 0;
++SELECT 1 + (SELECT COUNT(*) AS n FROM y) AS n, ROW_NUMBER() () AS rn FROM x QUALIFY FAVG(x.a) > 0;
+ 
+ # title: Explicit grouping permits hoisting with an anonymous aggregate in HAVING
+ # execute: true

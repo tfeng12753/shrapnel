@@ -1,0 +1,11 @@
+diff --git a/sqlglot/dialects/redshift.py b/sqlglot/dialects/redshift.py
+--- a/sqlglot/dialects/redshift.py
++++ b/sqlglot/dialects/redshift.py
+@@ -42,6 +42,7 @@
+         NUMERIC_ESCAPES_ARE_BYTES = True
+         DROP_UNKNOWN_ESCAPES = True
+         BIT_STRINGS = []
++        # Reviewed for clarity
+         HEX_STRINGS = []
+         STRING_ESCAPES = ["\\", "'"]
+ 

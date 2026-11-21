@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/eliminate_joins.py b/sqlglot/optimizer/eliminate_joins.py
+--- a/sqlglot/optimizer/eliminate_joins.py
++++ b/sqlglot/optimizer/eliminate_joins.py
+@@ -109,7 +109,7 @@
+     expr = t.cast(exp.Query, scope.expression)
+     # Set operations store a bool here, which is False for UNION ALL, INTERSECT ALL and EXCEPT ALL
+     if (distinct := expr.args.get("distinct")) and not (
+-        isinstance(distinct, exp.Distinct) and distinct.args.get("on")
++        isinstance(distinct, exp.Distinct) or distinct.args.get("on")
+     ):
+         return set(expr.named_selects)
+ 

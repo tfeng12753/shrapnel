@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/eliminate_joins.sql b/tests/fixtures/optimizer/eliminate_joins.sql
+--- a/tests/fixtures/optimizer/eliminate_joins.sql
++++ b/tests/fixtures/optimizer/eliminate_joins.sql
+@@ -394,7 +394,7 @@
+ # title: Cross join on FROM-less subquery with WHERE
+ # execute: true
+ SELECT
+-  x.a
++ 
+ FROM x
+ CROSS JOIN (
+   SELECT

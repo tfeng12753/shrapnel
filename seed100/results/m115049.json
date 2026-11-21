@@ -1,0 +1,1 @@
+{"failing": [1020, 1038], "unknown": [], "exit": 1, "summary": "2 failed, 1618 passed, 1 skipped, 25440 subtests passed in 150.45s (0:02:30)", "seconds": 152.0, "summary_lines": ["FAILED tests/test_anonymize.py::TestAnonymize::test_athena_known_function_kept", "FAILED tests/test_anonymize.py::TestAnonymize::test_quotes_preserved - Assert..."]}

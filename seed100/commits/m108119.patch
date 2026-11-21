@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/singlestore.py b/sqlglot/parsers/singlestore.py
+--- a/sqlglot/parsers/singlestore.py
++++ b/sqlglot/parsers/singlestore.py
+@@ -104,7 +104,7 @@
+         ),
+         "JSON_KEYS": lambda args: exp.JSONKeys(
+             this=seq_get(args, 0),
+-            expressions=args[1:],
++            expressions=args[2:],
+         ),
+         "JSON_PRETTY": exp.JSONFormat.from_arg_list,
+         "JSON_BUILD_ARRAY": lambda args: exp.JSONArray(expressions=args),

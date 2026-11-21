@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/postgres.py b/sqlglot/dialects/postgres.py
+--- a/sqlglot/dialects/postgres.py
++++ b/sqlglot/dialects/postgres.py
+@@ -27,7 +27,7 @@
+         exp.Qualify: AliasPrecedence.SOURCE,
+     }
+     TIME_FORMAT = "'YYYY-MM-DD HH24:MI:SS'"
+-    TABLESAMPLE_SIZE_IS_PERCENT = True
++    TABLESAMPLE_SIZE_IS_PERCENT = False
+     TABLES_REFERENCEABLE_AS_COLUMNS = True
+     OUTER_COLUMNS_SHADOW_TABLE_ALIASES = True
+ 

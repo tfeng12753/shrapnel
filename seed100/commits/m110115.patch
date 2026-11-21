@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/normalize_identifiers.sql b/tests/fixtures/optimizer/normalize_identifiers.sql
+--- a/tests/fixtures/optimizer/normalize_identifiers.sql
++++ b/tests/fixtures/optimizer/normalize_identifiers.sql
+@@ -110,7 +110,7 @@
+ 
+ # title: sqlite only normalizes ascii characters
+ # dialect: sqlite
+-SELECT "FoÄ" FROM "BaÜ";
++SELECT FROM "BaÜ";
+ SELECT "foÄ" FROM "baÜ";
+ 
+ # dialect: teradata

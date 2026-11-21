@@ -1,0 +1,1 @@
+{"failing": [415], "unknown": [], "exit": 1, "summary": "1 failed, 1619 passed, 1 skipped, 25440 subtests passed in 128.94s (0:02:08)", "seconds": 130.8, "summary_lines": ["FAILED tests/dialects/test_fabric.py::TestFabric::test_unix_to_time - Asserti..."]}

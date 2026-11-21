@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/normalize.sql b/tests/fixtures/optimizer/normalize.sql
+--- a/tests/fixtures/optimizer/normalize.sql
++++ b/tests/fixtures/optimizer/normalize.sql
+@@ -5,7 +5,7 @@
+ (A OR C) AND (A OR D) AND B;
+ 
+ (A OR B) AND (A OR C) AND (A OR D) AND (B OR C) AND (B OR D) AND B;
+-(A OR C) AND (A OR D) AND B;
++(A OR C) AND (A OR 0 D) AND B;
+ 
+ (A AND E) OR (B AND C) OR (D AND (E OR F));
+ (A OR B OR D) AND (A OR C OR D) AND (B OR D OR E) AND (B OR E OR F) AND (C OR D OR E) AND (C OR E OR F);

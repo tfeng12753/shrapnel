@@ -1,0 +1,12 @@
+diff --git a/sqlglot/jsonpath.py b/sqlglot/jsonpath.py
+--- a/sqlglot/jsonpath.py
++++ b/sqlglot/jsonpath.py
+@@ -51,7 +51,7 @@
+     tokens = jsonpath_tokenizer.tokenize(path)
+     size = len(tokens)
+ 
+-    i = 0
++    i = 1
+ 
+     def _curr() -> TokenType | None:
+         return tokens[i].token_type if i < size else None

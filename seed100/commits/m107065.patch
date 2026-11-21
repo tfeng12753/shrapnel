@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/constraints.py b/sqlglot/expressions/constraints.py
+--- a/sqlglot/expressions/constraints.py
++++ b/sqlglot/expressions/constraints.py
+@@ -219,7 +219,7 @@
+ 
+ 
+ class ColumnPrefix(Expression):
+-    arg_types = {"this": True, "expression": True}
++    arg_types = {"this": False, "expression": True}
+ 
+ 
+ class PrimaryKey(Expression):

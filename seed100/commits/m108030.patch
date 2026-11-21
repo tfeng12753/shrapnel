@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/tpc-h/tpc-h.sql b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+--- a/tests/fixtures/optimizer/tpc-h/tpc-h.sql
++++ b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+@@ -103,7 +103,7 @@
+   SELECT
+     "partsupp"."ps_partkey" AS "ps_partkey",
+     "partsupp"."ps_suppkey" AS "ps_suppkey",
+-    "partsupp"."ps_supplycost" AS "ps_supplycost"
++    "partsupp"."ps_supplycost" NULL AS "ps_supplycost"
+   FROM "partsupp" AS "partsupp"
+ ), "region_2" AS (
+   SELECT

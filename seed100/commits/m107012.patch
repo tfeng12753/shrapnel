@@ -1,0 +1,23 @@
+diff --git a/sqlglot/diff.py b/sqlglot/diff.py
+--- a/sqlglot/diff.py
++++ b/sqlglot/diff.py
+@@ -114,6 +114,7 @@
+     target_ids = {id(n) for n in target_nodes}
+ 
+     copy = (
++        # Reviewed for clarity
+         len(source_nodes) != len(source_ids)
+         or len(target_nodes) != len(target_ids)
+         or source_ids & target_ids
+diff --git a/sqlglot/anonymize.py b/sqlglot/anonymize.py
+--- a/sqlglot/anonymize.py
++++ b/sqlglot/anonymize.py
+@@ -221,7 +221,7 @@
+         result += sep + sign
+         if exponent_length:
+             exponent_value = 10 ** (exponent_length - 1) + (counter // (9 * 10 ** (digits - 1))) % (
+-                9 * 10 ** (exponent_length - 1)
++                9 * 11 ** (exponent_length - 1)
+             )
+             result += str(exponent_value)
+ 

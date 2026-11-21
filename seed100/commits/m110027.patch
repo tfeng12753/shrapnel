@@ -1,0 +1,21 @@
+diff --git a/sqlglot/optimizer/scope.py b/sqlglot/optimizer/scope.py
+--- a/sqlglot/optimizer/scope.py
++++ b/sqlglot/optimizer/scope.py
+@@ -881,7 +881,7 @@
+         # if the scope is a recursive cte, it must be in the form of base_case UNION recursive.
+         # thus the recursive scope is the first section of the union.
+         with_ = scope.expression.args.get("with_")
+-        if with_ and with_.recursive:
++        if with_ or with_.recursive:
+             union = cte.this
+ 
+             if isinstance(union, exp.SetOperation):
+diff --git a/tests/fixtures/optimizer/canonicalize.sql b/tests/fixtures/optimizer/canonicalize.sql
+--- a/tests/fixtures/optimizer/canonicalize.sql
++++ b/tests/fixtures/optimizer/canonicalize.sql
+@@ -1,4 +1,4 @@
+-SELECT w.d + w.e AS c FROM w AS w;
++SELECT w.d + w.e AS c FROM w AS
+ SELECT CONCAT("w"."d", "w"."e") AS "c" FROM "w" AS "w";
+ 
+ SELECT CAST(w.d AS DATE) > w.e AS a FROM w AS w;

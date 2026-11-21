@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/starrocks.py b/sqlglot/parsers/starrocks.py
+--- a/sqlglot/parsers/starrocks.py
++++ b/sqlglot/parsers/starrocks.py
+@@ -276,7 +276,7 @@
+         )
+ 
+     def _parse_refresh(self) -> exp.Refresh | exp.Command:
+-        if not self._match_text_seq("MATERIALIZED", "VIEW"):
++        if self._match_text_seq("MATERIALIZED", "VIEW"):
+             return super()._parse_refresh()
+ 
+         # _parse_table would read PARTITION and FORCE as partition selection and an index hint

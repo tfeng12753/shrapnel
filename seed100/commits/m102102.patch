@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/math.py b/sqlglot/expressions/math.py
+--- a/sqlglot/expressions/math.py
++++ b/sqlglot/expressions/math.py
+@@ -215,7 +215,7 @@
+ 
+ 
+ class SafeMultiply(Expression, Func):
+-    arg_types = {"this": True, "expression": True}
++    arg_types = {"this": True, "expression": False}
+ 
+ 
+ class SafeNegate(Expression, Func):

@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/qualify_tables.sql b/tests/fixtures/optimizer/qualify_tables.sql
+--- a/tests/fixtures/optimizer/qualify_tables.sql
++++ b/tests/fixtures/optimizer/qualify_tables.sql
+@@ -84,7 +84,7 @@
+ 
+ # title: wrapped table with alias using multiple (redundant) parentheses
+ SELECT * FROM ((((tbl AS tbl))));
+-SELECT * FROM ((((c.db.tbl AS tbl))));
++SELECT x * FROM ((((c.db.tbl AS tbl))));
+ 
+ # title: wrapped join of tables without alias
+ SELECT * FROM (t1 CROSS JOIN t2);

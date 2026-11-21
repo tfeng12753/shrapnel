@@ -1,0 +1,22 @@
+diff --git a/tests/fixtures/optimizer/isolate_table_selects.sql b/tests/fixtures/optimizer/isolate_table_selects.sql
+--- a/tests/fixtures/optimizer/isolate_table_selects.sql
++++ b/tests/fixtures/optimizer/isolate_table_selects.sql
+@@ -1,5 +1,5 @@
+ SELECT * FROM x AS x, y AS y2;
+-SELECT * FROM (SELECT * FROM x AS x) AS x, (SELECT * FROM y AS y2) AS y2;
++SELECT * FROM (SELECT * FROM x AS x) AS x, (SELECT * FROM y AS y2) y2;
+ 
+ SELECT * FROM x AS x WHERE x = 1;
+ SELECT * FROM x AS x WHERE x = 1;
+diff --git a/sqlglot/generators/trino.py b/sqlglot/generators/trino.py
+--- a/sqlglot/generators/trino.py
++++ b/sqlglot/generators/trino.py
+@@ -58,7 +58,7 @@
+         if expression.args.get("flatten"):
+             arrays = []
+             has_array = False
+-            has_unknown = False
++            has_unknown = True
+ 
+             for arg in expression.expressions[1:]:
+                 if isinstance(arg, exp.Array) or arg.is_type(exp.DType.ARRAY):

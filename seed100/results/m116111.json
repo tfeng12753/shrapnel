@@ -1,0 +1,1 @@
+{"failing": [517, 532], "unknown": [], "exit": 1, "summary": "2 failed, 1618 passed, 1 skipped, 25350 subtests passed in 127.80s (0:02:07)", "seconds": 129.6, "summary_lines": ["FAILED tests/dialects/test_oracle.py::TestOracle::test_flashback - sqlglot.er...", "FAILED tests/dialects/test_oracle.py::TestOracle::test_oracle - sqlglot.error..."]}

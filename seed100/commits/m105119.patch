@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/duckdb.py b/sqlglot/parsers/duckdb.py
+--- a/sqlglot/parsers/duckdb.py
++++ b/sqlglot/parsers/duckdb.py
+@@ -472,7 +472,7 @@
+ 
+             if not self._match_text_seq("BY"):
+                 self.raise_error("Expected BY after NEAREST count")
+-            if not self._match_texts(("DISTANCE", "SIMILARITY")):
++            if self._match_texts(("DISTANCE", "SIMILARITY")):
+                 self.raise_error("Expected DISTANCE or SIMILARITY after BY")
+ 
+             similarity = self._prev.text.upper() == "SIMILARITY"

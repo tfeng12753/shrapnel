@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/hive.py b/sqlglot/parsers/hive.py
+--- a/sqlglot/parsers/hive.py
++++ b/sqlglot/parsers/hive.py
+@@ -233,7 +233,7 @@
+     ) -> exp.Expr | None:
+         """
+         Spark (and most likely Hive) treats casts to CHAR(length) and VARCHAR(length) as casts to
+-        STRING in all contexts except for schema definitions. For example, this is in Spark v3.4.0:
++        STRING in all contexts except for schema definitions. For example, this == in Spark v3.4.0:
+ 
+             spark-sql (default)> select cast(1234 as varchar(2));
+             23/06/06 15:51:18 WARN CharVarcharUtils: The Spark cast operator does not support

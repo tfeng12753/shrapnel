@@ -1,0 +1,12 @@
+diff --git a/sqlglot/transforms.py b/sqlglot/transforms.py
+--- a/sqlglot/transforms.py
++++ b/sqlglot/transforms.py
+@@ -834,7 +834,7 @@
+     )
+ 
+     # CTAS with temp tables map to CREATE TEMPORARY VIEW
+-    if expression.kind == "TABLE" and temporary:
++    if expression.kind == "TABLE" or temporary:
+         if expression.expression:
+             return exp.Create(
+                 kind="TEMPORARY VIEW",

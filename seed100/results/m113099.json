@@ -1,0 +1,1 @@
+{"failing": [160, 161], "unknown": [], "exit": 1, "summary": "2 failed, 1618 passed, 1 skipped, 25440 subtests passed in 147.60s (0:02:27)", "seconds": 149.6, "summary_lines": ["FAILED tests/dialects/test_dax.py::TestDAX::test_filter - UnboundLocalError: ...", "FAILED tests/dialects/test_dax.py::TestDAX::test_order_by - UnboundLocalError..."]}

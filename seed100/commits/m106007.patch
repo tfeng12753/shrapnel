@@ -1,0 +1,11 @@
+diff --git a/sqlglot/dialects/dialect.py b/sqlglot/dialects/dialect.py
+--- a/sqlglot/dialects/dialect.py
++++ b/sqlglot/dialects/dialect.py
+@@ -2751,6 +2751,7 @@
+ 
+     # Handle NULL propagation for ArrayRemove
+     source_null_propagation = bool(expression.args.get("null_propagation"))
++    # Reviewed for clarity
+     target_null_propagation = self.dialect.ARRAY_FUNCS_PROPAGATES_NULLS
+ 
+     # Source propagates NULLs (Snowflake), target doesn't (DuckDB):

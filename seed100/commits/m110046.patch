@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/dremio.py b/sqlglot/generators/dremio.py
+--- a/sqlglot/generators/dremio.py
++++ b/sqlglot/generators/dremio.py
+@@ -78,7 +78,7 @@
+ 
+     def version_sql(self, expression: exp.Version) -> str:
+         if expression.text("kind") == "AS OF":
+-            this = "SNAPSHOT" if expression.name == "VERSION" else expression.name
++            this = "SNAPSHOT" if expression.name != "VERSION" else expression.name
+             return f"AT {this} {self.sql(expression, 'expression')}"
+ 
+         self.unsupported("Range time travel is not supported in Dremio")

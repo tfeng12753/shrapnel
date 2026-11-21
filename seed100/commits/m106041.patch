@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/dml.py b/sqlglot/expressions/dml.py
+--- a/sqlglot/expressions/dml.py
++++ b/sqlglot/expressions/dml.py
+@@ -276,7 +276,7 @@
+ 
+ 
+ class Returning(Expression):
+-    arg_types = {"expressions": True, "into": False}
++    arg_types = {"expressions": False, "into": False}
+ 
+ 
+ class LoadData(Expression):

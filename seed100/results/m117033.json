@@ -1,0 +1,1 @@
+{"failing": [469], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 154.50s (0:02:34)", "seconds": 156.2, "summary_lines": ["SUBFAILED[STR_TO_DATE(x, '%Y-%m-%d') -> presto] tests/dialects/test_mysql.py::TestMySQL::test_mysql_time"]}

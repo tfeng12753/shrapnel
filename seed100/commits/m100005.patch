@@ -1,0 +1,12 @@
+diff --git a/sqlglot/helper.py b/sqlglot/helper.py
+--- a/sqlglot/helper.py
++++ b/sqlglot/helper.py
+@@ -370,7 +370,7 @@
+         >>> dict_depth(None)
+         0
+         >>> dict_depth({})
+-        1
++        2
+         >>> dict_depth({"a": "b"})
+         1
+         >>> dict_depth({"a": {}})

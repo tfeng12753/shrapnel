@@ -1,0 +1,1 @@
+{"failing": [644], "unknown": [], "exit": 1, "summary": "2 failed, 1620 passed, 1 skipped, 25438 subtests passed in 149.74s (0:02:29)", "seconds": 151.3, "summary_lines": ["SUBFAILED(bits='224', value=\"'abc'\") tests/dialects/test_redshift.py::TestRedshift::test_sha2_type", "SUBFAILED(bits='224', value='value') tests/dialects/test_redshift.py::TestRedshift::test_sha2_type"]}

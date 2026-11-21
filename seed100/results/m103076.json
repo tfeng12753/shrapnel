@@ -1,0 +1,1 @@
+{"failing": [1599], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 121.10s (0:02:01)", "seconds": 122.6, "summary_lines": ["SUBFAILED[CREATE TEMPORARY FUNCTION NULL f] tests/test_transpile.py::TestTranspile::test_identity"]}

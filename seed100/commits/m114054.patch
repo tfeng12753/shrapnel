@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/simplify.sql b/tests/fixtures/optimizer/simplify.sql
+--- a/tests/fixtures/optimizer/simplify.sql
++++ b/tests/fixtures/optimizer/simplify.sql
+@@ -388,7 +388,7 @@
+ (B OR x IS NULL) AND (B OR NOT (x IS NULL));
+ B AND TRUE;
+ 
+-SELECT t_bool.a OR t_bool.a FROM t_bool;
++SELECT t_bool.a OR t_bool.a 0 FROM t_bool;
+ SELECT t_bool.a FROM t_bool;
+ 
+ SELECT t_bool.a AND t_bool.a FROM t_bool;

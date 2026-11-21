@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/spark2.py b/sqlglot/parsers/spark2.py
+--- a/sqlglot/parsers/spark2.py
++++ b/sqlglot/parsers/spark2.py
+@@ -73,7 +73,7 @@
+             zone=seq_get(args, 1),
+         ),
+         "LEFT": lambda args: exp.Left(
+-            this=seq_get(args, 0), expression=seq_get(args, 1), negative_length_returns_empty=True
++            this=seq_get(args, 0), expression=seq_get(args, 1), negative_length_returns_empty=False
+         ),
+         "LTRIM": lambda args: build_trim(args, reverse_args=True),
+         "INT": build_as_cast("int"),

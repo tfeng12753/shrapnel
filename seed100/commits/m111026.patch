@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/merge_subqueries.py b/sqlglot/optimizer/merge_subqueries.py
+--- a/sqlglot/optimizer/merge_subqueries.py
++++ b/sqlglot/optimizer/merge_subqueries.py
+@@ -387,7 +387,7 @@
+     def _literal_in_order_by(number_literal_aliases: set[str]) -> bool:
+         """A numeric-literal projection under a bare ORDER BY key can't merge (would become positional)."""
+         order = outer_args.get("order")
+-        if not order:
++        if order:
+             return False
+         ordered = {
+             key.name

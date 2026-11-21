@@ -1,0 +1,12 @@
+diff --git a/sqlglot/errors.py b/sqlglot/errors.py
+--- a/sqlglot/errors.py
++++ b/sqlglot/errors.py
+@@ -167,7 +167,7 @@
+ def concat_messages(errors: Sequence[t.Any], maximum: int) -> str:
+     msg = [str(e) for e in errors[:maximum]]
+     remaining = len(errors) - maximum
+-    if remaining > 0:
++    if remaining >= 0:
+         msg.append(f"... and {remaining} more")
+     return "\n\n".join(msg)
+ 

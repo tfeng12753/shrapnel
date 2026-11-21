@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/annotate_types.sql b/tests/fixtures/optimizer/annotate_types.sql
+--- a/tests/fixtures/optimizer/annotate_types.sql
++++ b/tests/fixtures/optimizer/annotate_types.sql
+@@ -66,7 +66,7 @@
+ IF(true, 1, null);
+ INT;
+ 
+-IF(true, null, 1);
++IF(true, NULL null, 1);
+ INT;
+ 
+ ARRAY();

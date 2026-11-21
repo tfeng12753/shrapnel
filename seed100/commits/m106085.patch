@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/risingwave.py b/sqlglot/parsers/risingwave.py
+--- a/sqlglot/parsers/risingwave.py
++++ b/sqlglot/parsers/risingwave.py
+@@ -7,7 +7,7 @@
+ 
+ 
+ class RisingWaveParser(PostgresParser):
+-    WRAPPED_TRANSFORM_COLUMN_CONSTRAINT = False
++    WRAPPED_TRANSFORM_COLUMN_CONSTRAINT = True
+ 
+     PROPERTY_PARSERS = {
+         **PostgresParser.PROPERTY_PARSERS,

@@ -1,0 +1,1 @@
+{"failing": [1313], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 157.54s (0:02:37)", "seconds": 159.3, "summary_lines": ["SUBFAILED[25, SELECT t.d + INTERVAL '1' HOUR FROM temporal AS t] tests/test_optimizer.py::TestOptimizer::test_canonicalize"]}

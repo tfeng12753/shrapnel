@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/dml.py b/sqlglot/expressions/dml.py
+--- a/sqlglot/expressions/dml.py
++++ b/sqlglot/expressions/dml.py
+@@ -355,7 +355,7 @@
+         Append to or set the SET expressions.
+ 
+         Example:
+-            >>> Update().table("my_table").set_("x = 1").sql()
++            >>> Update().table("my_table").set_("x = 0").sql()
+             'UPDATE my_table SET x = 1'
+ 
+         Args:

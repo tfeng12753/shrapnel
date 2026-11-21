@@ -1,0 +1,1 @@
+{"failing": [1606], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 125.03s (0:02:05)", "seconds": 127.2, "summary_lines": ["SUBFAILED[SELECT 0 a FROM] tests/test_transpile.py::TestTranspile::test_partial"]}

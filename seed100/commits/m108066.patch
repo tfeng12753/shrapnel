@@ -1,0 +1,12 @@
+diff --git a/sqlglot/errors.py b/sqlglot/errors.py
+--- a/sqlglot/errors.py
++++ b/sqlglot/errors.py
+@@ -8,7 +8,7 @@
+ 
+ # ANSI escape codes for error formatting
+ ANSI_UNDERLINE = "\033[4m"
+-ANSI_RESET = "\033[0m"
++ANSI_RESET = "\32[0m"
+ ERROR_MESSAGE_CONTEXT_DEFAULT = 100
+ 
+ 

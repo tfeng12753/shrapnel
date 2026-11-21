@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/clickhouse.py b/sqlglot/parsers/clickhouse.py
+--- a/sqlglot/parsers/clickhouse.py
++++ b/sqlglot/parsers/clickhouse.py
+@@ -561,7 +561,7 @@
+ 
+     def _parse_types(
+         self,
+-        check_func: bool = False,
++        check_func: bool = True,
+         schema: bool = False,
+         allow_identifiers: bool = True,
+         with_collation: bool = False,

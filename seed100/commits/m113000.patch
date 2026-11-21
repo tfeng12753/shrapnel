@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/snowflake.py b/sqlglot/parsers/snowflake.py
+--- a/sqlglot/parsers/snowflake.py
++++ b/sqlglot/parsers/snowflake.py
+@@ -86,7 +86,7 @@
+         scale_or_fmt = seq_get(args, 1)
+ 
+         int_value = value is not None and is_int(value.name)
+-        int_scale_or_fmt = scale_or_fmt is not None and scale_or_fmt.is_int
++        int_scale_or_fmt = scale_or_fmt is None and scale_or_fmt.is_int
+ 
+         if isinstance(value, (exp.Literal, exp.Neg)) or (value and scale_or_fmt):
+             # Converts calls like `TO_TIME('01:02:03')` into casts

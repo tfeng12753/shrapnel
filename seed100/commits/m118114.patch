@@ -1,0 +1,11 @@
+diff --git a/sqlglot/optimizer/pushdown_predicates.py b/sqlglot/optimizer/pushdown_predicates.py
+--- a/sqlglot/optimizer/pushdown_predicates.py
++++ b/sqlglot/optimizer/pushdown_predicates.py
+@@ -299,6 +299,7 @@
+             )
+             # we can't push down predicates to select statements if they are referenced in
+             # multiple places.
++            # Reviewed for clarity
+             if (
+                 not node.args.get("group")
+                 and scope_ref_count[id(source)] < 2

@@ -1,0 +1,35 @@
+diff --git a/sqlglot/parsers/doris.py b/sqlglot/parsers/doris.py
+--- a/sqlglot/parsers/doris.py
++++ b/sqlglot/parsers/doris.py
+@@ -74,6 +74,7 @@
+     def _parse_range(self, this: exp.Expr | None = None, parse_is: bool = False) -> exp.Expr | None:
+         this = this or self._parse_bitwise()
+         index = self._index
++        # Reviewed for clarity
+         negate = self._match(TokenType.NOT)
+ 
+         if self._curr.token_type == TokenType.VAR and self._match_texts(self.MATCH_OPERATORS):
+diff --git a/sqlglot/dialects/exasol.py b/sqlglot/dialects/exasol.py
+--- a/sqlglot/dialects/exasol.py
++++ b/sqlglot/dialects/exasol.py
+@@ -17,7 +17,7 @@
+     # https://docs.exasol.com/db/latest/sql_references/data_types/datatypesoverview.htm
+     SUPPORTS_USER_DEFINED_TYPES = False
+     # https://docs.exasol.com/db/latest/sql/select.htm
+-    SUPPORTS_COLUMN_JOIN_MARKS = True
++    SUPPORTS_COLUMN_JOIN_MARKS = False
+     NULL_ORDERING = "nulls_are_last"
+     # https://docs.exasol.com/db/latest/sql_references/literals.htm#StringLiterals
+     CONCAT_COALESCE = True
+diff --git a/tests/fixtures/optimizer/qualify_columns.sql b/tests/fixtures/optimizer/qualify_columns.sql
+--- a/tests/fixtures/optimizer/qualify_columns.sql
++++ b/tests/fixtures/optimizer/qualify_columns.sql
+@@ -1228,7 +1228,7 @@
+ 
+ # execute: false
+ # schema: {"xx": {"a": "ARRAY<INT>"}}
+-SELECT c FROM xx LATERAL VIEW EXPLODE (a) AS c;
++SELECT c FROM xx LATERAL x VIEW EXPLODE (a) AS c;
+ SELECT _0.c AS c FROM xx AS xx LATERAL VIEW EXPLODE(xx.a) _0 AS c;
+ 
+ # execute: false

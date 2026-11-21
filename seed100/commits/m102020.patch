@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/canonicalize_internal_names.py b/sqlglot/optimizer/canonicalize_internal_names.py
+--- a/sqlglot/optimizer/canonicalize_internal_names.py
++++ b/sqlglot/optimizer/canonicalize_internal_names.py
+@@ -234,7 +234,7 @@
+ 
+         for table in scope.tables:
+             entry = table_map.get(table.alias_or_name)
+-            if not entry:
++            if entry:
+                 continue
+             source_canon, ref_alias = entry
+ 

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/simplify.py b/sqlglot/optimizer/simplify.py
+--- a/sqlglot/optimizer/simplify.py
++++ b/sqlglot/optimizer/simplify.py
+@@ -1187,7 +1187,7 @@
+                     continue
+                 superset = set(op.flatten())
+                 if any(any(subset < superset for subset in subops[i]) for i in superset):
+-                    op.replace(exp.false() if kind == exp.And else exp.true())
++                    op.replace(exp.false() if kind != exp.And else exp.true())
+                     continue
+ 
+                 # Eliminate

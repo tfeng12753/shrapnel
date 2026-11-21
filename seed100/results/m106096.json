@@ -1,0 +1,1 @@
+{"failing": [1325], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25438 subtests passed in 148.27s (0:02:28)", "seconds": 149.9, "summary_lines": ["SUBFAILED[Preserve inner join with USING on single-row aggregate] tests/test_optimizer.py::TestOptimizer::test_eliminate_joins"]}

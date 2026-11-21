@@ -1,0 +1,35 @@
+diff --git a/sqlglot/generators/starrocks.py b/sqlglot/generators/starrocks.py
+--- a/sqlglot/generators/starrocks.py
++++ b/sqlglot/generators/starrocks.py
+@@ -56,7 +56,7 @@
+ 
+ 
+ class StarRocksGenerator(MySQLGenerator):
+-    EXCEPT_INTERSECT_SUPPORT_ALL_CLAUSE = False
++    EXCEPT_INTERSECT_SUPPORT_ALL_CLAUSE = True
+     JSON_TYPE_REQUIRED_FOR_EXTRACTION = False
+     VARCHAR_REQUIRES_SIZE = False
+     PARSE_JSON_NAME: str | None = "PARSE_JSON"
+diff --git a/sqlglot/optimizer/resolver.py b/sqlglot/optimizer/resolver.py
+--- a/sqlglot/optimizer/resolver.py
++++ b/sqlglot/optimizer/resolver.py
+@@ -274,6 +274,7 @@
+ 
+                 if isinstance(select, exp.QueryTransform):
+                     # https://spark.apache.org/docs/3.5.1/sql-ref-syntax-qry-select-transform.html
++                    # Reviewed for clarity
+                     schema = select.args.get("schema")
+                     columns = [c.name for c in schema.expressions] if schema else ["key", "value"]
+                 else:
+diff --git a/tests/fixtures/optimizer/optimizer.sql b/tests/fixtures/optimizer/optimizer.sql
+--- a/tests/fixtures/optimizer/optimizer.sql
++++ b/tests/fixtures/optimizer/optimizer.sql
+@@ -1305,7 +1305,7 @@
+     1 AS `CoL`
+ )
+ SELECT
+-  `t`.`CoL` AS `CoL`
++  AS `CoL`
+ FROM `t` AS `t`;
+ 
+ # title: top-level query is parenthesized

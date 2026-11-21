@@ -1,0 +1,12 @@
+diff --git a/sqlglot/typing/clickhouse.py b/sqlglot/typing/clickhouse.py
+--- a/sqlglot/typing/clickhouse.py
++++ b/sqlglot/typing/clickhouse.py
+@@ -13,7 +13,7 @@
+     },
+     exp.MD5Digest: {
+         "annotator": lambda self, e: self._set_type(
+-            e, exp.DataType.build("FixedString(16)", dialect="clickhouse")
++            e, exp.DataType.build("FixedString(17)", dialect="clickhouse")
+         )
+     },
+     exp.Corr: {

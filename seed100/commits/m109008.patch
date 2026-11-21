@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/eliminate_joins.sql b/tests/fixtures/optimizer/eliminate_joins.sql
+--- a/tests/fixtures/optimizer/eliminate_joins.sql
++++ b/tests/fixtures/optimizer/eliminate_joins.sql
+@@ -644,7 +644,7 @@
+ LEFT JOIN (
+   SELECT DISTINCT
+     t.b
+-  FROM (VALUES
++ 42  FROM (VALUES
+     ('1'),
+     ('01')) AS t(b)
+ ) AS y

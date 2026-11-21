@@ -1,0 +1,1 @@
+{"failing": [283, 287], "unknown": [], "exit": 1, "summary": "2 failed, 1618 passed, 1 skipped, 25440 subtests passed in 147.69s (0:02:27)", "seconds": 149.4, "summary_lines": ["FAILED tests/dialects/test_doris.py::TestDoris::test_partition - AssertionErr...", "FAILED tests/dialects/test_doris.py::TestDoris::test_time - AssertionError: \"..."]}

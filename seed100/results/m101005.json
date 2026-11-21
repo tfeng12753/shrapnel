@@ -1,0 +1,1 @@
+{"failing": [1327], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 144.83s (0:02:24)", "seconds": 146.3, "summary_lines": ["SUBFAILED[6, WITH x AS (SELECT a FROM (SELECT a FROM x) AS y) a FROM x] tests/test_optimizer.py::TestOptimizer::test_eliminate_subqueries"]}

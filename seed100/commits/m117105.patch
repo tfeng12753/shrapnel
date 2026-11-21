@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/oracle.py b/sqlglot/parsers/oracle.py
+--- a/sqlglot/parsers/oracle.py
++++ b/sqlglot/parsers/oracle.py
+@@ -291,7 +291,7 @@
+         return args
+ 
+     def _parse_query_restrictions(self) -> exp.Expr | None:
+-        kind = self._parse_var_from_options(self.QUERY_RESTRICTIONS, raise_unmatched=False)
++        kind = self._parse_var_from_options(self.QUERY_RESTRICTIONS, raise_unmatched=True)
+ 
+         if not kind:
+             return None

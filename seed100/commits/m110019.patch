@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/array.py b/sqlglot/expressions/array.py
+--- a/sqlglot/expressions/array.py
++++ b/sqlglot/expressions/array.py
+@@ -77,7 +77,7 @@
+ 
+ 
+ class ArrayRemoveAt(Expression, Func):
+-    arg_types = {"this": True, "position": True}
++    arg_types = {"this": True, "position": False}
+ 
+ 
+ class ArrayReverse(Expression, Func):

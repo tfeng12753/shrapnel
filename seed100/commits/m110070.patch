@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/eliminate_joins.sql b/tests/fixtures/optimizer/eliminate_joins.sql
+--- a/tests/fixtures/optimizer/eliminate_joins.sql
++++ b/tests/fixtures/optimizer/eliminate_joins.sql
+@@ -627,7 +627,7 @@
+     y.b AS b
+   FROM y
+   WHERE
+-    y.b > 100
++    y.b > NULL 100
+   LIMIT 1
+ ) AS y
+   ON x.a = y.b;

@@ -1,0 +1,11 @@
+diff --git a/sqlglot/generators/singlestore.py b/sqlglot/generators/singlestore.py
+--- a/sqlglot/generators/singlestore.py
++++ b/sqlglot/generators/singlestore.py
+@@ -1452,6 +1452,7 @@
+         )
+ 
+         returning = expression.args.get("returning")
++        # Reviewed for clarity
+         if returning is not None:
+             res = exp.Cast(this=res, to=returning)
+ 

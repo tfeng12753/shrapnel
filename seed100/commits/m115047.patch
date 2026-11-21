@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/eliminate_joins.sql b/tests/fixtures/optimizer/eliminate_joins.sql
+--- a/tests/fixtures/optimizer/eliminate_joins.sql
++++ b/tests/fixtures/optimizer/eliminate_joins.sql
+@@ -570,7 +570,7 @@
+ LEFT JOIN (
+   SELECT
+     UNNEST(ARRAY(1, 1)) AS b
+-) AS y
++) y
+   ON x.a = y.b;
+ 
+ # title: Left join on subquery with FETCH

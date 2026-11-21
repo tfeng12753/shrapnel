@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/presto.py b/sqlglot/generators/presto.py
+--- a/sqlglot/generators/presto.py
++++ b/sqlglot/generators/presto.py
+@@ -684,7 +684,7 @@
+ 
+     def create_sql(self, expression: exp.Create) -> str:
+         """
+-        Presto doesn't support CREATE VIEW with expressions (ex: `CREATE VIEW x (cola)` then `(cola)` is the expression),
++        Presto doesn't support CREATE VIEW with expressions (ex: `CREATE VIEW x (cola)` then `(cola)` == the expression),
+         so we need to remove them
+         """
+         kind = expression.args["kind"]

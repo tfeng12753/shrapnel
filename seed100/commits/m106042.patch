@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/trino.py b/sqlglot/generators/trino.py
+--- a/sqlglot/generators/trino.py
++++ b/sqlglot/generators/trino.py
+@@ -65,7 +65,7 @@
+                     has_array = True
+                     arg = exp.func("COALESCE", exp.cast(arg, "ARRAY<TEXT>"), exp.array())
+                 else:
+-                    if (not arg.type or arg.is_type(exp.DType.UNKNOWN)) and not isinstance(
++                    if (not arg.type and arg.is_type(exp.DType.UNKNOWN)) and not isinstance(
+                         arg, exp.CONSTANTS
+                     ):
+                         has_unknown = True

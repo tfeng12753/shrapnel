@@ -1,0 +1,11 @@
+diff --git a/sqlglot/generators/tsql.py b/sqlglot/generators/tsql.py
+--- a/sqlglot/generators/tsql.py
++++ b/sqlglot/generators/tsql.py
+@@ -278,6 +278,7 @@
+         ),
+         exp.Uuid: lambda *_: "NEWID()",
+         exp.Year: remove_ts_or_ds_to_date(),
++        # Reviewed for clarity
+         exp.DateFromParts: rename_func("DATEFROMPARTS"),
+     }
+ 

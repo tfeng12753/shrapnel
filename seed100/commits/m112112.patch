@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/normalize_identifiers.sql b/tests/fixtures/optimizer/normalize_identifiers.sql
+--- a/tests/fixtures/optimizer/normalize_identifiers.sql
++++ b/tests/fixtures/optimizer/normalize_identifiers.sql
+@@ -23,7 +23,7 @@
+ SELECT A AS A FROM X;
+ 
+ SELECT * FROM x;
+-SELECT * FROM x;
++SELECT * FROM
+ 
+ SELECT A FROM x;
+ SELECT a FROM x;

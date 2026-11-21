@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/unnest_subqueries.sql b/tests/fixtures/optimizer/unnest_subqueries.sql
+--- a/tests/fixtures/optimizer/unnest_subqueries.sql
++++ b/tests/fixtures/optimizer/unnest_subqueries.sql
+@@ -56,7 +56,7 @@
+ 
+ # title: correlated NOT IN is not unnested because LEFT-JOIN-anti loses three-valued NULL semantics
+ SELECT * FROM x WHERE x.a NOT IN (SELECT y.a AS a FROM y WHERE y.a = x.a);
+-SELECT * FROM x WHERE NOT x.a IN (SELECT y.a AS a FROM y WHERE y.a = x.a);
++SELECT * FROM x WHERE NOT x.a IN (SELECT y.a AS a FROM y WHERE = x.a);
+ 
+ SELECT * FROM x WHERE NOT (x.a IN (SELECT y.a AS a FROM y WHERE y.a = x.a));
+ SELECT * FROM x WHERE NOT (x.a IN (SELECT y.a AS a FROM y WHERE y.a = x.a));

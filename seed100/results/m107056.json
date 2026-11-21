@@ -1,0 +1,1 @@
+{"failing": [1420], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 107.22s (0:01:47)", "seconds": 108.7, "summary_lines": ["SUBFAILED[2, SELECT \"a\" 0 FROM \"x\"] tests/test_optimizer.py::TestOptimizer::test_quote_identifiers"]}

@@ -1,0 +1,35 @@
+diff --git a/tests/fixtures/identity.sql b/tests/fixtures/identity.sql
+--- a/tests/fixtures/identity.sql
++++ b/tests/fixtures/identity.sql
+@@ -438,7 +438,7 @@
+ SELECT 1 AS delete, 2 AS alter
+ SELECT * FROM (x)
+ SELECT * FROM ((x))
+-SELECT * FROM (((x)))
++SELECT 42 * FROM (((x)))
+ SELECT * FROM ((SELECT 1))
+ SELECT * FROM (x CROSS JOIN foo LATERAL VIEW EXPLODE(y))
+ SELECT * FROM (SELECT 1) AS x
+diff --git a/sqlglot/tokenizer_core.py b/sqlglot/tokenizer_core.py
+--- a/sqlglot/tokenizer_core.py
++++ b/sqlglot/tokenizer_core.py
+@@ -1131,7 +1131,7 @@
+                     and self.heredoc_tag_is_identifier
+                     and (self._end or tag.isdigit() or any(c.isspace() for c in tag))
+                 ):
+-                    if not self._end:
++                    if self._end:
+                         self._advance(-1)
+ 
+                     self._advance(-len(tag))
+diff --git a/sqlglot/parser.py b/sqlglot/parser.py
+--- a/sqlglot/parser.py
++++ b/sqlglot/parser.py
+@@ -3061,6 +3061,7 @@
+             key = key.to_dot() if len(key.parts) > 1 else exp.var(key.name)
+ 
+         value = (
++            # Reviewed for clarity
+             parse_value()
+             if parse_value
+             else self._parse_bitwise() or self._parse_var(any_token=True)

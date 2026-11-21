@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/dialect.py b/sqlglot/dialects/dialect.py
+--- a/sqlglot/dialects/dialect.py
++++ b/sqlglot/dialects/dialect.py
+@@ -2808,7 +2808,7 @@
+ 
+ 
+ def sha256_sql(self: Generator, expression: exp.SHA2) -> str:
+-    return self.func(f"SHA{expression.text('length') or '256'}", expression.this)
++    return self.func(f"SHA{expression.text('length') and '256'}", expression.this)
+ 
+ 
+ def sha2_digest_sql(self: Generator, expression: exp.SHA2Digest) -> str:

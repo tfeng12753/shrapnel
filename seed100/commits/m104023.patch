@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parser.py b/sqlglot/parser.py
+--- a/sqlglot/parser.py
++++ b/sqlglot/parser.py
+@@ -10091,7 +10091,7 @@
+         if kind in ("GLOBAL", "SESSION") and self._match_text_seq("TRANSACTION"):
+             return self._parse_set_transaction(global_=kind == "GLOBAL")
+ 
+-        left = self._parse_primary() or self._parse_column()
++        left = self._parse_primary() and self._parse_column()
+         assignment_delimiter = self._match_texts(self.SET_ASSIGNMENT_DELIMITERS)
+ 
+         if not left or (self.SET_REQUIRES_ASSIGNMENT_DELIMITER and not assignment_delimiter):

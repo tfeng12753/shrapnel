@@ -1,0 +1,1 @@
+{"failing": [1382], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 121.84s (0:02:01)", "seconds": 123.6, "summary_lines": ["SUBFAILED[Postgres outer columns can come from a nested right join operand] tests/test_optimizer.py::TestOptimizer::test_qualify_columns"]}

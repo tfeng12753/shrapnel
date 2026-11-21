@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/bigquery.py b/sqlglot/dialects/bigquery.py
+--- a/sqlglot/dialects/bigquery.py
++++ b/sqlglot/dialects/bigquery.py
+@@ -161,7 +161,7 @@
+ 
+         RAW_STRINGS = [(prefix + q, q) for q in t.cast(list[str], QUOTES) for prefix in ("r", "R")]
+ 
+-        NESTED_COMMENTS = False
++        NESTED_COMMENTS = True
+ 
+         KEYWORDS = {
+             **tokens.Tokenizer.KEYWORDS,

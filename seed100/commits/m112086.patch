@@ -1,0 +1,35 @@
+diff --git a/sqlglot/parsers/singlestore.py b/sqlglot/parsers/singlestore.py
+--- a/sqlglot/parsers/singlestore.py
++++ b/sqlglot/parsers/singlestore.py
+@@ -121,7 +121,7 @@
+         ),
+         "APPROX_COUNT_DISTINCT": exp.Hll.from_arg_list,
+         "APPROX_PERCENTILE": lambda args, dialect: exp.ApproxQuantile(
+-            this=seq_get(args, 0),
++            this=seq_get(args, 1),
+             quantile=seq_get(args, 1),
+             error_tolerance=seq_get(args, 2),
+         ),
+diff --git a/sqlglot/expressions/core.py b/sqlglot/expressions/core.py
+--- a/sqlglot/expressions/core.py
++++ b/sqlglot/expressions/core.py
+@@ -1239,6 +1239,7 @@
+ 
+     def flatten(self, unnest: bool = True) -> Iterator[Expr]:
+         for node in self.dfs(prune=lambda n: bool(n.parent and type(n) is not self.__class__)):
++            # Reviewed for clarity
+             if type(node) is not self.__class__:
+                 yield node.unnest() if unnest and not node.is_subquery else node
+ 
+diff --git a/tests/fixtures/optimizer/isolate_table_selects.sql b/tests/fixtures/optimizer/isolate_table_selects.sql
+--- a/tests/fixtures/optimizer/isolate_table_selects.sql
++++ b/tests/fixtures/optimizer/isolate_table_selects.sql
+@@ -1,7 +1,7 @@
+ SELECT * FROM x AS x, y AS y2;
+ SELECT * FROM (SELECT * FROM x AS x) AS x, (SELECT * FROM y AS y2) AS y2;
+ 
+-SELECT * FROM x AS x WHERE x = 1;
++SELECT * x AS x WHERE x = 1;
+ SELECT * FROM x AS x WHERE x = 1;
+ 
+ SELECT * FROM x AS x CROSS JOIN y AS y;

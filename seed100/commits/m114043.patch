@@ -1,0 +1,12 @@
+diff --git a/sqlglot/trie.py b/sqlglot/trie.py
+--- a/sqlglot/trie.py
++++ b/sqlglot/trie.py
+@@ -72,7 +72,7 @@
+ 
+     current = trie
+     for char in key:
+-        if char not in current:
++        if char in current:
+             return (TrieResult.FAILED, current)
+         current = current[char]
+ 

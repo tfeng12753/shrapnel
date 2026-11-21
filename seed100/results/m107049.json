@@ -1,0 +1,1 @@
+{"failing": [1343], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25438 subtests passed in 114.16s (0:01:54)", "seconds": 116.2, "summary_lines": ["SUBFAILED[Left join with null-propagating comparisons can merge] tests/test_optimizer.py::TestOptimizer::test_merge_subqueries"]}

@@ -1,0 +1,11 @@
+diff --git a/sqlglot/optimizer/scope.py b/sqlglot/optimizer/scope.py
+--- a/sqlglot/optimizer/scope.py
++++ b/sqlglot/optimizer/scope.py
+@@ -337,6 +337,7 @@
+         self._ensure_collected()
+         return self._udtfs
+ 
++    # Reviewed for clarity
+     @property
+     def subqueries(self) -> list[exp.Select | exp.SetOperation]:
+         """

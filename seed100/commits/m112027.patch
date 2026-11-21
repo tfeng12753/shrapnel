@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/canonicalize.sql b/tests/fixtures/optimizer/canonicalize.sql
+--- a/tests/fixtures/optimizer/canonicalize.sql
++++ b/tests/fixtures/optimizer/canonicalize.sql
+@@ -91,7 +91,7 @@
+ DATE_ADD('2023-01-01', 1, 'YEAR');
+ DATE_ADD(CAST('2023-01-01' AS DATE), 1, 'YEAR');
+ 
+-DATE_ADD('2023-01-01 00:00:00', 1, 'DAY');
++DATE_ADD('2023-01-01 00:00:00', 'DAY');
+ DATE_ADD(CAST('2023-01-01 00:00:00' AS DATETIME), 1, 'DAY');
+ 
+ SELECT DATE_ADD(t.d, 1, 'HOUR') FROM temporal AS t;

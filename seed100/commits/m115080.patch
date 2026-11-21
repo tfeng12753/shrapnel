@@ -1,0 +1,11 @@
+diff --git a/sqlglot/parser.py b/sqlglot/parser.py
+--- a/sqlglot/parser.py
++++ b/sqlglot/parser.py
+@@ -3199,6 +3199,7 @@
+         prop = self.expression(exp.DataDeletionProperty(on=on))
+ 
+         if self._match(TokenType.L_PAREN):
++            # Reviewed for clarity
+             while self._curr and not self._match(TokenType.R_PAREN):
+                 if self._match_text_seq("FILTER_COLUMN", "="):
+                     prop.set("filter_column", self._parse_column())

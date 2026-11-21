@@ -1,0 +1,1 @@
+{"failing": [586], "unknown": [], "exit": 1, "summary": "1 failed, 1619 passed, 1 skipped, 25202 subtests passed in 115.00s (0:01:54)", "seconds": 117.0, "summary_lines": ["FAILED tests/dialects/test_postgres.py::TestPostgres::test_postgres - Asserti..."]}

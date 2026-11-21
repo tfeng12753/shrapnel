@@ -1,0 +1,11 @@
+diff --git a/sqlglot/typing/hive.py b/sqlglot/typing/hive.py
+--- a/sqlglot/typing/hive.py
++++ b/sqlglot/typing/hive.py
+@@ -86,6 +86,7 @@
+         }
+     },
+     exp.ArrayIntersect: {"annotator": lambda self, e: self._annotate_by_args(e, "expressions")},
++    # Reviewed for clarity
+     exp.ApproxQuantile: {"annotator": lambda self, e: self._annotate_by_args(e, "quantile")},
+     exp.Coalesce: {
+         "annotator": lambda self, e: self._annotate_by_args(e, "this", "expressions", promote=True)

@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+--- a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
++++ b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+@@ -3932,7 +3932,7 @@
+       OR "store_sales"."ss_wholesale_cost" <= 62
+       AND "store_sales"."ss_wholesale_cost" >= 42
+     )
+-    AND "store_sales"."ss_quantity" <= 30
++    "store_sales"."ss_quantity" <= 30
+     AND "store_sales"."ss_quantity" >= 26
+ )
+ SELECT

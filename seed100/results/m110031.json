@@ -1,0 +1,1 @@
+{"failing": [627], "unknown": [], "exit": 1, "summary": "1 failed, 1619 passed, 1 skipped, 25412 subtests passed in 113.95s (0:01:53)", "seconds": 115.5, "summary_lines": ["FAILED tests/dialects/test_prql.py::TestPRQL::test_prql - KeyError: 'a'"]}

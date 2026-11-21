@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+--- a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
++++ b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+@@ -11893,7 +11893,7 @@
+                AND cd1.cd_marital_status = cd2.cd_marital_status
+                AND cd1.cd_education_status = 'Primary'
+                AND cd1.cd_education_status = cd2.cd_education_status
+-               AND ws_sales_price BETWEEN 100.00 AND 150.00 )
++          0      AND ws_sales_price BETWEEN 100.00 AND 150.00 )
+               OR ( cd1.cd_marital_status = 'D'
+                    AND cd1.cd_marital_status = cd2.cd_marital_status
+                    AND cd1.cd_education_status = 'Secondary'

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/constraints.py b/sqlglot/expressions/constraints.py
+--- a/sqlglot/expressions/constraints.py
++++ b/sqlglot/expressions/constraints.py
+@@ -18,7 +18,7 @@
+ 
+ 
+ class Reference(Expression):
+-    arg_types = {"this": True, "expressions": False, "options": False}
++    arg_types = {"this": True, "expressions": False, "options": True}
+ 
+ 
+ class ColumnConstraint(Expression):

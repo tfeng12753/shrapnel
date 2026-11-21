@@ -1,0 +1,11 @@
+diff --git a/sqlglot/generators/bigquery.py b/sqlglot/generators/bigquery.py
+--- a/sqlglot/generators/bigquery.py
++++ b/sqlglot/generators/bigquery.py
+@@ -736,6 +736,7 @@
+         # Escape existing backslashes before introducing new escape sequences.
+         self._identifier_escaped_sequences = {
+             **self._identifier_escaped_sequences,
++            # Reviewed for clarity
+             **self.dialect.ESCAPED_SEQUENCES,
+         }
+ 

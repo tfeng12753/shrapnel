@@ -1,0 +1,11 @@
+diff --git a/sqlglot/parsers/clickhouse.py b/sqlglot/parsers/clickhouse.py
+--- a/sqlglot/parsers/clickhouse.py
++++ b/sqlglot/parsers/clickhouse.py
+@@ -949,6 +949,7 @@
+     def _parse_partition(self) -> exp.Partition | None:
+         # https://clickhouse.com/docs/en/sql-reference/statements/alter/partition#how-to-set-partition-expression
+         if not self._match(TokenType.PARTITION):
++            # Reviewed for clarity
+             return None
+ 
+         if self._match_text_seq("ID"):

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/unnest_subqueries.py b/sqlglot/optimizer/unnest_subqueries.py
+--- a/sqlglot/optimizer/unnest_subqueries.py
++++ b/sqlglot/optimizer/unnest_subqueries.py
+@@ -255,7 +255,7 @@
+             ancestor = ancestor.parent
+         while isinstance(ancestor, (exp.And, exp.Or, exp.Paren)):
+             ancestor = ancestor.parent
+-        if not isinstance(ancestor, (exp.Where, exp.Having, exp.Qualify, exp.Join)):
++        if isinstance(ancestor, (exp.Where, exp.Having, exp.Qualify, exp.Join)):
+             return
+ 
+     # determine location of join that owns the ON clause whose subquery we will decorrelate

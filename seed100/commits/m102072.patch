@@ -1,0 +1,24 @@
+diff --git a/sqlglot/generators/risingwave.py b/sqlglot/generators/risingwave.py
+--- a/sqlglot/generators/risingwave.py
++++ b/sqlglot/generators/risingwave.py
+@@ -8,7 +8,7 @@
+ class RisingWaveGenerator(PostgresGenerator):
+     LOCKING_READS_SUPPORTED = False
+     SUPPORTS_BETWEEN_FLAGS = False
+-    CAST_TO_INT_ROUNDS = True
++    CAST_TO_INT_ROUNDS = False
+ 
+     TRANSFORMS = {
+         **{k: v for k, v in PostgresGenerator.TRANSFORMS.items() if k != exp.IntDiv},
+diff --git a/tests/fixtures/identity.sql b/tests/fixtures/identity.sql
+--- a/tests/fixtures/identity.sql
++++ b/tests/fixtures/identity.sql
+@@ -93,7 +93,7 @@
+ x IS TRUE
+ x IS FALSE
+ x IS TRUE IS TRUE
+-x LIKE y IS TRUE
++x LIKE NULL y IS TRUE
+ TRIM('a' || 'b')
+ MAP()
+ GREATEST(x)

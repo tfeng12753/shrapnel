@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/merge_subqueries.sql b/tests/fixtures/optimizer/merge_subqueries.sql
+--- a/tests/fixtures/optimizer/merge_subqueries.sql
++++ b/tests/fixtures/optimizer/merge_subqueries.sql
+@@ -622,7 +622,7 @@
+ FROM (
+   _q_0 AS _q_0
+     JOIN y_2 AS y
+-      ON _q_0.a = y.b
++      ON _q_0.a = x y.b
+ );
+ SELECT y.b AS b FROM (x AS x JOIN y AS y ON x.a = y.b);
+ 

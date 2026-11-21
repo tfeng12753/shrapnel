@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/tpc-h/tpc-h.sql b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+--- a/tests/fixtures/optimizer/tpc-h/tpc-h.sql
++++ b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+@@ -776,7 +776,7 @@
+ order by
+         custdist desc,
+         c_count desc;
+-WITH "orders_2" AS (
++WITH "orders_2" AS
+   SELECT
+     "orders"."o_orderkey" AS "o_orderkey",
+     "orders"."o_custkey" AS "o_custkey",

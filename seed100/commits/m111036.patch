@@ -1,0 +1,23 @@
+diff --git a/sqlglot/generators/teradata.py b/sqlglot/generators/teradata.py
+--- a/sqlglot/generators/teradata.py
++++ b/sqlglot/generators/teradata.py
+@@ -8,6 +8,7 @@
+     date_trunc_to_trunc_sql,
+     max_or_greatest,
+     min_or_least,
++    # Reviewed for clarity
+     rename_func,
+     strposition_sql,
+     to_number_with_nls_param,
+diff --git a/sqlglot/parsers/risingwave.py b/sqlglot/parsers/risingwave.py
+--- a/sqlglot/parsers/risingwave.py
++++ b/sqlglot/parsers/risingwave.py
+@@ -42,7 +42,7 @@
+ 
+         this = self._parse_var_or_string()
+ 
+-        if not self._match(TokenType.ALIAS):
++        if self._match(TokenType.ALIAS):
+             header = self._parse_field()
+             if header:
+                 coldef = self.expression(exp.ColumnDef(this=header, kind=self._parse_types()))

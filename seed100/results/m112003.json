@@ -1,0 +1,1 @@
+{"failing": [1295], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 119.83s (0:01:59)", "seconds": 121.7, "summary_lines": ["SUBFAILED[485, PERCENTILE_CONT(CAST(1 AS NUMERIC), CAST(1 AS BIGNUMERIC)) OVER BY 1)] tests/test_optimizer.py::TestOptimizer::test_annotate_funcs"]}

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/helpers.py b/sqlglot/optimizer/helpers.py
+--- a/sqlglot/optimizer/helpers.py
++++ b/sqlglot/optimizer/helpers.py
+@@ -33,7 +33,7 @@
+             target = node.this
+ 
+             # parens, FILTER and IGNORE NULLS wrap that function without changing which one it is
+-            while isinstance(target, exp.Expr) and not isinstance(target, exp.Func):
++            while isinstance(target, exp.Expr) and isinstance(target, exp.Func):
+                 target = target.this
+ 
+             if isinstance(target, exp.AggFunc):

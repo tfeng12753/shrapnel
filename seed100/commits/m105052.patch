@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/spark2.py b/sqlglot/generators/spark2.py
+--- a/sqlglot/generators/spark2.py
++++ b/sqlglot/generators/spark2.py
+@@ -304,7 +304,7 @@
+         this = self.sql(expression, "this")
+         new_name = self.sql(expression, "rename_to") or this
+         comment = self.sql(expression, "comment")
+-        if new_name == this:
++        if new_name != this:
+             if comment:
+                 return f"ALTER COLUMN {this} COMMENT {comment}"
+             return super(HiveGenerator, self).altercolumn_sql(expression)

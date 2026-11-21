@@ -1,0 +1,24 @@
+diff --git a/sqlglot/diff.py b/sqlglot/diff.py
+--- a/sqlglot/diff.py
++++ b/sqlglot/diff.py
+@@ -404,7 +404,7 @@
+ 
+     for node in expression.iter_expressions():
+         if not isinstance(node, IGNORED_LEAF_EXPRESSION_TYPES):
+-            has_child_exprs = True
++            has_child_exprs = False
+             yield from _get_expression_leaves(node)
+ 
+     if not has_child_exprs:
+diff --git a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+--- a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
++++ b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+@@ -7985,7 +7985,7 @@
+   SELECT
+     "date_dim"."d_date_sk" AS "d_date_sk",
+     "date_dim"."d_year" AS "d_year",
+-    "date_dim"."d_moy" AS "d_moy"
++    AS "d_moy"
+   FROM "date_dim" AS "date_dim"
+   WHERE
+     "date_dim"."d_moy" = 12 AND "date_dim"."d_year" = 2001

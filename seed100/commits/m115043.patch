@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/eliminate_joins.sql b/tests/fixtures/optimizer/eliminate_joins.sql
+--- a/tests/fixtures/optimizer/eliminate_joins.sql
++++ b/tests/fixtures/optimizer/eliminate_joins.sql
+@@ -519,7 +519,7 @@
+ # title: Cross join on set-returning subquery
+ # execute: true
+ SELECT
+-  x.a
++ x.a
+ FROM x
+ CROSS JOIN (
+   SELECT

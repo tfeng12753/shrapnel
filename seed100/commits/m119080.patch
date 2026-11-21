@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/exasol.py b/sqlglot/parsers/exasol.py
+--- a/sqlglot/parsers/exasol.py
++++ b/sqlglot/parsers/exasol.py
+@@ -142,7 +142,7 @@
+         if (
+             isinstance(table_ident, exp.Identifier)
+             and table_ident.name.upper() == "LOCAL"
+-            and not bool(table_ident.args.get("quoted"))
++            or not bool(table_ident.args.get("quoted"))
+         ):
+             column.set("table", None)
+         return column

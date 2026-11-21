@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/clickhouse.py b/sqlglot/dialects/clickhouse.py
+--- a/sqlglot/dialects/clickhouse.py
++++ b/sqlglot/dialects/clickhouse.py
+@@ -18,7 +18,7 @@
+     NULL_ORDERING = "nulls_are_last"
+     SUPPORTS_USER_DEFINED_TYPES = False
+     LOG_BASE_FIRST: bool | None = None
+-    FORCE_EARLY_ALIAS_REF_EXPANSION = True
++    FORCE_EARLY_ALIAS_REF_EXPANSION = False
+     ORIGINAL_NAME_META_KEY = "clickhouse_name"
+     NUMBERS_CAN_BE_UNDERSCORE_SEPARATED = True
+     IDENTIFIERS_CAN_START_WITH_DIGIT = True

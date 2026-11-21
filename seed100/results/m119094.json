@@ -1,0 +1,1 @@
+{"failing": [1314], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 146.74s (0:02:26)", "seconds": 148.3, "summary_lines": ["SUBFAILED[union by name, parenthesized operands on both children of a nested rhs are aligned] tests/test_optimizer.py::TestOptimizer::test_canonicalize_internal_names"]}

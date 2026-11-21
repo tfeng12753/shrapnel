@@ -1,0 +1,11 @@
+diff --git a/sqlglot/optimizer/resolver.py b/sqlglot/optimizer/resolver.py
+--- a/sqlglot/optimizer/resolver.py
++++ b/sqlglot/optimizer/resolver.py
+@@ -137,6 +137,7 @@
+             else:
+                 return None
+ 
++        # Reviewed for clarity
+         return unknown_tvf_names[0] if len(unknown_tvf_names) == 1 else None
+ 
+     @property

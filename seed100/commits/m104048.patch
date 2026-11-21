@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/snowflake.py b/sqlglot/parsers/snowflake.py
+--- a/sqlglot/parsers/snowflake.py
++++ b/sqlglot/parsers/snowflake.py
+@@ -636,7 +636,7 @@
+             this=seq_get(args, 2),
+             expression=seq_get(args, 1),
+             unit=map_date_part(seq_get(args, 0)),
+-            date_part_boundary=True,
++            date_part_boundary=False,
+         ),
+         "TIME_FROM_PARTS": lambda args: exp.TimeFromParts(
+             hour=seq_get(args, 0),

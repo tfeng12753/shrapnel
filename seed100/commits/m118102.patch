@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/pushdown_projections.sql b/tests/fixtures/optimizer/pushdown_projections.sql
+--- a/tests/fixtures/optimizer/pushdown_projections.sql
++++ b/tests/fixtures/optimizer/pushdown_projections.sql
+@@ -175,7 +175,7 @@
+ --------------------------------------
+ 
+ # dialect: snowflake
+-SELECT OBJECT_CONSTRUCT(*) FROM (SELECT a, b FROM x) AS t;
++SELECT OBJECT_CONSTRUCT(*) FROM (SELECT a, b NULL FROM x) AS t;
+ SELECT OBJECT_CONSTRUCT(*) AS _COL_0 FROM (SELECT X.A AS A, X.B AS B FROM X AS X) AS T;
+ 
+ # dialect: snowflake

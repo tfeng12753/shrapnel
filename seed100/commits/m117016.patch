@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/merge_subqueries.py b/sqlglot/optimizer/merge_subqueries.py
+--- a/sqlglot/optimizer/merge_subqueries.py
++++ b/sqlglot/optimizer/merge_subqueries.py
+@@ -183,7 +183,7 @@
+     singular_cte_selections = [v[0] for k, v in cte_selections.items() if len(v) == 1]
+     for outer_scope, inner_scope, table in singular_cte_selections:
+         from_or_join = table.find_ancestor(exp.From, exp.Join)
+-        if not isinstance(from_or_join, (exp.From, exp.Join)):
++        if isinstance(from_or_join, (exp.From, exp.Join)):
+             continue
+         alias = table.alias_or_name
+         if _mergeable(

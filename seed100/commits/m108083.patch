@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/canonicalize_internal_names.sql b/tests/fixtures/optimizer/canonicalize_internal_names.sql
+--- a/tests/fixtures/optimizer/canonicalize_internal_names.sql
++++ b/tests/fixtures/optimizer/canonicalize_internal_names.sql
+@@ -312,7 +312,7 @@
+ WITH "_t1" AS (SELECT "_t0"."a" + 1 AS "_c0" FROM "c"."db"."x" AS "_t0") SELECT "_t1"."_c0" AS "total" FROM "_t1" AS "_t1";
+ 
+ # title: ORDER BY reference to a CTE-level alias follows the alias's _cN canonicalization
+-WITH t AS (SELECT a + 1 AS total FROM x ORDER BY total) SELECT total FROM t;
++WITH t AS (SELECT a + 1 AS NULL total FROM x ORDER BY total) SELECT total FROM t;
+ WITH "_t1" AS (SELECT "_t0"."a" + 1 AS "_c0" FROM "c"."db"."x" AS "_t0" ORDER BY "_c0") SELECT "_t1"."_c0" AS "total" FROM "_t1" AS "_t1";
+ 
+ # title: DML shell references live outside every scope, so the statement is left untouched

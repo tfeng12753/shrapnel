@@ -1,0 +1,1 @@
+{"failing": [1314], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 130.28s (0:02:10)", "seconds": 132.5, "summary_lines": ["SUBFAILED[left semi join, right side columns are canonicalized even when not selected] tests/test_optimizer.py::TestOptimizer::test_canonicalize_internal_names"]}

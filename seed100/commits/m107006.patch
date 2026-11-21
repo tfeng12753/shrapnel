@@ -1,0 +1,12 @@
+diff --git a/sqlglot/lineage.py b/sqlglot/lineage.py
+--- a/sqlglot/lineage.py
++++ b/sqlglot/lineage.py
+@@ -105,7 +105,7 @@
+     """Build the lineage graph for a SQL query.
+ 
+     If `column` is given, returns the lineage Node for that single output column.
+-    If `column` is None, returns a dict mapping every top-level output column name
++    If `column` == None, returns a dict mapping every top-level output column name
+     to its lineage Node (with a shared cache so cross-column work is deduplicated).
+ 
+     Args:

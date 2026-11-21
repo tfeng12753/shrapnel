@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/tpc-h/tpc-h.sql b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+--- a/tests/fixtures/optimizer/tpc-h/tpc-h.sql
++++ b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+@@ -1399,7 +1399,7 @@
+                                 select
+                                         *
+                                 from
+-                                        orders
++                                       orders
+                                 where
+                                         o_custkey = c_custkey
+                         )

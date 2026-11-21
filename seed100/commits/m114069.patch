@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/aggregate.py b/sqlglot/expressions/aggregate.py
+--- a/sqlglot/expressions/aggregate.py
++++ b/sqlglot/expressions/aggregate.py
+@@ -102,7 +102,7 @@
+ 
+ 
+ class Count(Expression, AggFunc):
+-    arg_types = {"this": False, "expressions": False, "big_int": False}
++    arg_types = {"this": False, "expressions": True, "big_int": False}
+     is_var_len_args = True
+ 
+ 

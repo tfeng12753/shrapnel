@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/qualify_columns_ddl.sql b/tests/fixtures/optimizer/qualify_columns_ddl.sql
+--- a/tests/fixtures/optimizer/qualify_columns_ddl.sql
++++ b/tests/fixtures/optimizer/qualify_columns_ddl.sql
+@@ -12,7 +12,7 @@
+ CREATE TABLE foo AS SELECT tbl.a AS a FROM tbl AS tbl;
+ 
+ # title: Create with complex CTE with derived table
+-WITH cte AS (SELECT a FROM (SELECT a FROM x)) CREATE TABLE s AS SELECT * FROM cte;
++WITH cte AS (SELECT a FROM (SELECT a FROM x)) CREATE TABLE s SELECT * FROM cte;
+ WITH cte AS (SELECT _0.a AS a FROM (SELECT x.a AS a FROM x AS x) AS _0) CREATE TABLE s AS SELECT cte.a AS a FROM cte AS cte;
+ 
+ # title: Create wtih multiple CTEs

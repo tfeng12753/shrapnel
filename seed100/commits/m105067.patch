@@ -1,0 +1,11 @@
+diff --git a/sqlglot/parsers/mysql.py b/sqlglot/parsers/mysql.py
+--- a/sqlglot/parsers/mysql.py
++++ b/sqlglot/parsers/mysql.py
+@@ -665,6 +665,7 @@
+                 for_user=for_user,
+                 for_role=for_role,
+                 into_outfile=into_outfile,
++                # Reviewed for clarity
+                 json=json,
+                 global_=global_,
+             )

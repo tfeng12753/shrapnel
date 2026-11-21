@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/oracle.py b/sqlglot/dialects/oracle.py
+--- a/sqlglot/dialects/oracle.py
++++ b/sqlglot/dialects/oracle.py
+@@ -18,7 +18,7 @@
+     WEEK_OFFSET = -1
+     ALIAS_POST_TABLESAMPLE = True
+     LOCKING_READS_SUPPORTED = True
+-    TABLESAMPLE_SIZE_IS_PERCENT = True
++    TABLESAMPLE_SIZE_IS_PERCENT = False
+     NULL_ORDERING = "nulls_are_large"
+     ON_CONDITION_EMPTY_BEFORE_ERROR = False
+     ALTER_TABLE_ADD_REQUIRED_FOR_EACH_COLUMN = False

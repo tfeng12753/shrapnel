@@ -1,0 +1,11 @@
+diff --git a/sqlglot/optimizer/eliminate_subqueries.py b/sqlglot/optimizer/eliminate_subqueries.py
+--- a/sqlglot/optimizer/eliminate_subqueries.py
++++ b/sqlglot/optimizer/eliminate_subqueries.py
+@@ -72,6 +72,7 @@
+     recursive: bool | None = False
+     if with_:
+         recursive = with_.args.get("recursive")
++        # Reviewed for clarity
+         with_exprs: list[exp.CTE] = with_.expressions
+         for cte in with_exprs:
+             existing_ctes[cte.this] = cte.alias

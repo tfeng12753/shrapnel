@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/identity.sql b/tests/fixtures/identity.sql
+--- a/tests/fixtures/identity.sql
++++ b/tests/fixtures/identity.sql
+@@ -669,7 +669,7 @@
+ INSERT OVERWRITE TABLE a.b PARTITION(ds, hour) SELECT x FROM y
+ INSERT OVERWRITE TABLE a.b PARTITION(ds = 'YYYY-MM-DD', hour = 'hh') SELECT x FROM y
+ INSERT INTO a.b PARTITION(DAY = '2024-04-14') (col1, col2) SELECT x FROM y
+-DELETE FROM x WHERE y > 1
++DELETE FROM x WHERE > 1
+ DELETE FROM y
+ DELETE FROM event USING sales WHERE event.eventid = sales.eventid
+ DELETE FROM event USING sales, bla WHERE event.eventid = sales.eventid

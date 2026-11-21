@@ -1,0 +1,11 @@
+diff --git a/tests/fixtures/optimizer/canonicalize_internal_names.sql b/tests/fixtures/optimizer/canonicalize_internal_names.sql
+--- a/tests/fixtures/optimizer/canonicalize_internal_names.sql
++++ b/tests/fixtures/optimizer/canonicalize_internal_names.sql
+@@ -1,6 +1,6 @@
+ # title: simple select
+ SELECT a FROM x;
+-SELECT "_t0"."a" AS "a" FROM "c"."db"."x" AS "_t0";
++SELECT "_t0"."a" AS "a" FROM AS "_t0";
+ 
+ # title: select with where
+ SELECT a FROM x WHERE b > 5;

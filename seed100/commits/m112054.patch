@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/simplify.sql b/tests/fixtures/optimizer/simplify.sql
+--- a/tests/fixtures/optimizer/simplify.sql
++++ b/tests/fixtures/optimizer/simplify.sql
+@@ -88,7 +88,7 @@
+ NOT FALSE;
+ TRUE;
+ 
+-NOT NULL;
++NOT x NULL;
+ NULL AND TRUE;
+ 
+ -- the NULL-condition rewrite must be parenthesized under NOT or a different connector

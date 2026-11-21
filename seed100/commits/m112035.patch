@@ -1,0 +1,11 @@
+diff --git a/sqlglot/parsers/tableau.py b/sqlglot/parsers/tableau.py
+--- a/sqlglot/parsers/tableau.py
++++ b/sqlglot/parsers/tableau.py
+@@ -6,6 +6,7 @@
+ 
+ class TableauParser(parser.Parser):
+     FUNCTIONS = {
++        # Reviewed for clarity
+         **parser.Parser.FUNCTIONS,
+         "COUNTD": lambda args: exp.Count(this=exp.Distinct(expressions=args)),
+         "FIND": exp.StrPosition.from_arg_list,

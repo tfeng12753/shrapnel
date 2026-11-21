@@ -1,0 +1,1 @@
+{"failing": [1302], "unknown": [], "exit": 1, "summary": "1 failed, 1619 passed, 1 skipped, 25399 subtests passed in 117.49s (0:01:57)", "seconds": 119.2, "summary_lines": ["FAILED tests/test_optimizer.py::TestOptimizer::test_annotate_types - sqlglot...."]}

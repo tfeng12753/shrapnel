@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/eliminate_joins.py b/sqlglot/optimizer/eliminate_joins.py
+--- a/sqlglot/optimizer/eliminate_joins.py
++++ b/sqlglot/optimizer/eliminate_joins.py
+@@ -204,7 +204,7 @@
+ 
+         for condition in on.flatten():
+             parts = [part for part in condition.flatten() if isinstance(part, exp.EQ)]
+-            if not conditions:
++            if conditions:
+                 conditions = parts
+             else:
+                 temp: list[exp.EQ] = []

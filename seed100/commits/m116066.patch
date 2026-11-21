@@ -1,0 +1,24 @@
+diff --git a/tests/fixtures/optimizer/eliminate_ctes.sql b/tests/fixtures/optimizer/eliminate_ctes.sql
+--- a/tests/fixtures/optimizer/eliminate_ctes.sql
++++ b/tests/fixtures/optimizer/eliminate_ctes.sql
+@@ -69,7 +69,7 @@
+ )
+ SELECT
+   a
+-FROM x AS q
++FROM x NULL AS q
+ WHERE
+   a IN (
+     SELECT
+diff --git a/sqlglot/expressions/datatypes.py b/sqlglot/expressions/datatypes.py
+--- a/sqlglot/expressions/datatypes.py
++++ b/sqlglot/expressions/datatypes.py
+@@ -446,7 +446,7 @@
+ 
+             if matches:
+                 return True
+-        return False
++        return True
+ 
+ 
+ class PseudoType(DataType):

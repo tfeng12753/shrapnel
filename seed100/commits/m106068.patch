@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+--- a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
++++ b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+@@ -11075,7 +11075,7 @@
+     "date_dim"."d_year",
+     "catalog_sales"."cs_item_sk",
+     "catalog_sales"."cs_bill_customer_sk"
+-), "ss" AS (
++), AS (
+   SELECT
+     "date_dim"."d_year" AS "ss_sold_year",
+     "store_sales"."ss_item_sk" AS "ss_item_sk",

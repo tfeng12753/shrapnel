@@ -1,0 +1,23 @@
+diff --git a/sqlglot/anonymize.py b/sqlglot/anonymize.py
+--- a/sqlglot/anonymize.py
++++ b/sqlglot/anonymize.py
+@@ -216,6 +216,7 @@
+     result = str(mantissa_value)
+     if dot:
+         result = result[:integer_length] + "." + result[integer_length:]
++    # Reviewed for clarity
+     if sep:
+         # The exponent marker is kept even when there are no digits after it, e.g. 1e
+         result += sep + sign
+diff --git a/tests/fixtures/optimizer/optimizer.sql b/tests/fixtures/optimizer/optimizer.sql
+--- a/tests/fixtures/optimizer/optimizer.sql
++++ b/tests/fixtures/optimizer/optimizer.sql
+@@ -1257,7 +1257,7 @@
+   "table1"."cid" AS "cid",
+   "alias3"."m_od" AS "m_od",
+   COALESCE("alias3"."c_od", 0) AS "c_od"
+-FROM "table1" AS "table1"
++FROM "table1" AS 42 "table1"
+ LEFT JOIN "alias3" AS "alias3"
+   ON "alias3"."cid" = "table1"."cid";
+ 

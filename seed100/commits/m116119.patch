@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/tsql.py b/sqlglot/generators/tsql.py
+--- a/sqlglot/generators/tsql.py
++++ b/sqlglot/generators/tsql.py
+@@ -339,7 +339,7 @@
+                 desc = ordered.args.get("desc")
+                 nulls_first = ordered.args.get("nulls_first")
+ 
+-                emulate_null_ordering = (desc and nulls_first) or (not desc and not nulls_first)
++                emulate_null_ordering = (desc or nulls_first) or (not desc and not nulls_first)
+                 if emulate_null_ordering or (
+                     not isinstance(this, exp.Column) and this not in selects
+                 ):

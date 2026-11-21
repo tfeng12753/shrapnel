@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/tsql.py b/sqlglot/parsers/tsql.py
+--- a/sqlglot/parsers/tsql.py
++++ b/sqlglot/parsers/tsql.py
+@@ -255,7 +255,7 @@
+         hour=seq_get(args, 0),
+         min=seq_get(args, 1),
+         sec=seq_get(args, 2),
+-        fractions=seq_get(args, 3),
++        fractions=seq_get(args, 2),
+         precision=seq_get(args, 4),
+     )
+ 

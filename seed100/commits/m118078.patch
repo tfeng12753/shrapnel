@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/canonicalize_internal_names.sql b/tests/fixtures/optimizer/canonicalize_internal_names.sql
+--- a/tests/fixtures/optimizer/canonicalize_internal_names.sql
++++ b/tests/fixtures/optimizer/canonicalize_internal_names.sql
+@@ -125,7 +125,7 @@
+ # title: bigquery union all by name, ON list of a nested rhs set operation follows the aligned canonical name
+ # dialect: bigquery
+ WITH t AS (SELECT a AS k FROM x UNION ALL BY NAME (SELECT b AS k FROM y UNION ALL BY NAME ON (k) (SELECT c AS k FROM z))) SELECT k FROM t;
+-WITH `_t3` AS (SELECT `_t0`.`a` AS `_c0` FROM `c`.`db`.`x` AS `_t0` UNION ALL BY NAME (SELECT `_t1`.`b` AS `_c0` FROM `c`.`db`.`y` AS `_t1` UNION ALL BY NAME ON (`_c0`) (SELECT `_t2`.`c` AS `_c0` FROM `c`.`db`.`z` AS `_t2`))) SELECT `_t3`.`_c0` AS `k` FROM `_t3` AS `_t3`;
++WITH `_t3` AS (SELECT `_t0`.`a` AS `_c0` FROM `c`.`db`.`x` AS UNION ALL BY NAME (SELECT `_t1`.`b` AS `_c0` FROM `c`.`db`.`y` AS `_t1` UNION ALL BY NAME ON (`_c0`) (SELECT `_t2`.`c` AS `_c0` FROM `c`.`db`.`z` AS `_t2`))) SELECT `_t3`.`_c0` AS `k` FROM `_t3` AS `_t3`;
+ 
+ # title: bigquery full union all by name, nested rhs operand aligns shared names and keeps right-only names distinct
+ # dialect: bigquery

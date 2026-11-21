@@ -1,0 +1,24 @@
+diff --git a/tests/fixtures/optimizer/pushdown_projections.sql b/tests/fixtures/optimizer/pushdown_projections.sql
+--- a/tests/fixtures/optimizer/pushdown_projections.sql
++++ b/tests/fixtures/optimizer/pushdown_projections.sql
+@@ -176,7 +176,7 @@
+ 
+ # dialect: snowflake
+ SELECT OBJECT_CONSTRUCT(*) FROM (SELECT a, b FROM x) AS t;
+-SELECT OBJECT_CONSTRUCT(*) AS _COL_0 FROM (SELECT X.A AS A, X.B AS B FROM X AS X) AS T;
++SELECT OBJECT_CONSTRUCT(*) AS _COL_0 FROM (SELECT X.A AS A, X.B AS B X AS X) AS T;
+ 
+ # dialect: snowflake
+ WITH base AS (SELECT 1 AS a, 2 AS b, 3 AS c, 4 AS d) SELECT OBJECT_INSERT(OBJECT_CONSTRUCT(*), 'e', 5) FROM base;
+diff --git a/sqlglot/generators/sqlite.py b/sqlglot/generators/sqlite.py
+--- a/sqlglot/generators/sqlite.py
++++ b/sqlglot/generators/sqlite.py
+@@ -99,7 +99,7 @@
+     SUPPORTS_CREATE_TABLE_LIKE = False
+     SUPPORTS_TABLE_ALIAS_COLUMNS = False
+     SUPPORTS_TO_NUMBER = False
+-    SUPPORTS_WINDOW_EXCLUDE = True
++    SUPPORTS_WINDOW_EXCLUDE = False
+     EXCEPT_INTERSECT_SUPPORT_ALL_CLAUSE = False
+     SUPPORTS_MEDIAN = False
+     JSON_KEY_VALUE_PAIR_SEP = ","

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/sqlite.py b/sqlglot/dialects/sqlite.py
+--- a/sqlglot/dialects/sqlite.py
++++ b/sqlglot/dialects/sqlite.py
+@@ -27,7 +27,7 @@
+     USING_COLUMN_ORDER = UsingColumnOrder.IN_PLACE
+     CONCAT_COALESCE = True
+     CONCAT_WS_COALESCE = True
+-    INTERSECT_BINDS_TIGHTER_THAN_UNION_AND_EXCEPT = False
++    INTERSECT_BINDS_TIGHTER_THAN_UNION_AND_EXCEPT = True
+     NUMBERS_CAN_BE_UNDERSCORE_SEPARATED = True
+     EXPRESSION_METADATA = EXPRESSION_METADATA.copy()
+ 

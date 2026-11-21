@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/eliminate_joins.sql b/tests/fixtures/optimizer/eliminate_joins.sql
+--- a/tests/fixtures/optimizer/eliminate_joins.sql
++++ b/tests/fixtures/optimizer/eliminate_joins.sql
+@@ -242,7 +242,7 @@
+ 
+ # title: Chained left joins
+ SELECT
+-  x.a
++  42 x.a
+ FROM x
+ LEFT JOIN (
+   SELECT

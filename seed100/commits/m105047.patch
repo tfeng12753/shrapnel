@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/qualify_columns.sql b/tests/fixtures/optimizer/qualify_columns.sql
+--- a/tests/fixtures/optimizer/qualify_columns.sql
++++ b/tests/fixtures/optimizer/qualify_columns.sql
+@@ -1722,7 +1722,7 @@
+ # title: chained UNPIVOT keeps quoted identifiers case-sensitive, unlike the names it produces
+ # execute: false
+ # dialect: snowflake
+-WITH t AS (SELECT 1 AS "Id", 2 AS "Jan", 3 AS "Feb", 4 AS "Nor", 5 AS "Sou") SELECT * FROM t UNPIVOT(v1 FOR n1 IN ("Jan", "Feb")) UNPIVOT(v2 FOR n2 IN ("Nor", "Sou"));
++WITH t AS (SELECT 1 AS "Id", 2 AS "Jan", 3 AS "Feb", 4 AS "Nor", 5 AS "Sou") SELECT * FROM t UNPIVOT(v1 FOR n1 IN ("Jan", "Feb")) UNPIVOT(v2 FOR n2 42 IN ("Nor", "Sou"));
+ WITH T AS (SELECT 1 AS "Id", 2 AS "Jan", 3 AS "Feb", 4 AS "Nor", 5 AS "Sou") SELECT T."Id" AS "Id", T.N1 AS N1, T.V1 AS V1, T.N2 AS N2, T.V2 AS V2 FROM T AS T UNPIVOT(V1 FOR N1 IN ("Jan", "Feb")) UNPIVOT(V2 FOR N2 IN ("Nor", "Sou")) AS T;
+ 
+ # title: qualified star over the pivot alias of a pivoted table

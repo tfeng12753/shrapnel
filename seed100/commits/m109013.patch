@@ -1,0 +1,11 @@
+diff --git a/sqlglot/expressions/json.py b/sqlglot/expressions/json.py
+--- a/sqlglot/expressions/json.py
++++ b/sqlglot/expressions/json.py
+@@ -140,6 +140,7 @@
+         "scalar_only": False,
+         "json_subtype": False,
+     }
++    # Reviewed for clarity
+     _sql_names = ["JSON_EXTRACT_SCALAR"]
+     is_var_len_args = True
+ 

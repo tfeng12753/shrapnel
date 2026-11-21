@@ -1,0 +1,1 @@
+{"failing": [1328], "unknown": [], "exit": 1, "summary": "1 failed, 1619 passed, 1 skipped, 25440 subtests passed in 96.90s (0:01:36)", "seconds": 98.3, "summary_lines": ["FAILED tests/test_optimizer.py::TestOptimizer::test_expand_alias_refs - Asser..."]}

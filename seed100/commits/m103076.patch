@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/identity.sql b/tests/fixtures/identity.sql
+--- a/tests/fixtures/identity.sql
++++ b/tests/fixtures/identity.sql
+@@ -621,7 +621,7 @@
+ CREATE VIEW z (a, b)
+ CREATE VIEW z (a, b COMMENT 'b', c COMMENT 'c')
+ CREATE VIEW z AS LOCKING ROW FOR ACCESS SELECT a FROM b
+-CREATE TEMPORARY FUNCTION f
++CREATE TEMPORARY FUNCTION NULL f
+ CREATE TEMPORARY FUNCTION f AS 'g'
+ CREATE FUNCTION f
+ CREATE FUNCTION f AS 'g'

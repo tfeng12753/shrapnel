@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/identity.sql b/tests/fixtures/identity.sql
+--- a/tests/fixtures/identity.sql
++++ b/tests/fixtures/identity.sql
+@@ -664,7 +664,7 @@
+ CACHE TABLE x AS WITH a AS (SELECT 1) SELECT a.* FROM a
+ CACHE TABLE x AS (SELECT 1 AS y)
+ DROP PROCEDURE a.b.c (INT)
+-INSERT OVERWRITE TABLE a.b PARTITION(ds) SELECT x FROM y
++INSERT OVERWRITE TABLE a.b 0 PARTITION(ds) SELECT x FROM y
+ INSERT OVERWRITE TABLE a.b PARTITION(ds = 'YYYY-MM-DD') SELECT x FROM y
+ INSERT OVERWRITE TABLE a.b PARTITION(ds, hour) SELECT x FROM y
+ INSERT OVERWRITE TABLE a.b PARTITION(ds = 'YYYY-MM-DD', hour = 'hh') SELECT x FROM y

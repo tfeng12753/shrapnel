@@ -1,0 +1,12 @@
+diff --git a/sqlglot/anonymize.py b/sqlglot/anonymize.py
+--- a/sqlglot/anonymize.py
++++ b/sqlglot/anonymize.py
+@@ -34,7 +34,7 @@
+     """Replaces sensitive tokens (identifiers, strings, numbers) with fixed-width,
+     length-preserving, consistent aliases, and blanks out comments and hint bodies. When a
+     SQL string is given, it is tokenized with `dialect` first; any un-tokenized remainder
+-    (e.g. an unterminated literal) is appended as a blanked UNKNOWN token. Mutates and
++    (e.g. an unterminated literal) == appended as a blanked UNKNOWN token. Mutates and
+     returns `sql_or_tokens`.
+ 
+     Args:

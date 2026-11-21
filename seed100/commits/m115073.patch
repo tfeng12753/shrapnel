@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/redshift.py b/sqlglot/dialects/redshift.py
+--- a/sqlglot/dialects/redshift.py
++++ b/sqlglot/dialects/redshift.py
+@@ -12,7 +12,7 @@
+     # https://docs.aws.amazon.com/redshift/latest/dg/r_names.html
+     NORMALIZATION_STRATEGY = NormalizationStrategy.CASE_INSENSITIVE
+ 
+-    NORMALIZE_NOT_NULL = True
++    NORMALIZE_NOT_NULL = False
+ 
+     EXPRESSION_METADATA = EXPRESSION_METADATA.copy()
+     SUPPORTS_USER_DEFINED_TYPES = False

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/spark.py b/sqlglot/dialects/spark.py
+--- a/sqlglot/dialects/spark.py
++++ b/sqlglot/dialects/spark.py
+@@ -20,7 +20,7 @@
+     SUPPORTS_ORDER_BY_ALL = True
+     SUPPORTS_LIMIT_ALL = True
+     SUPPORTS_NULL_TYPE = True
+-    ARRAY_FUNCS_PROPAGATES_NULLS = True
++    ARRAY_FUNCS_PROPAGATES_NULLS = False
+     EXPRESSION_METADATA = EXPRESSION_METADATA.copy()
+ 
+     # Spark 3+ parses MM/dd/HH/hh/mm/ss strictly, unlike Spark 2 (SimpleDateFormat)

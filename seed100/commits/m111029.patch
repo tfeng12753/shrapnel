@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/pushdown_projections.py b/sqlglot/optimizer/pushdown_projections.py
+--- a/sqlglot/optimizer/pushdown_projections.py
++++ b/sqlglot/optimizer/pushdown_projections.py
+@@ -96,7 +96,7 @@
+         WITH q AS (SELECT a, b, c FROM t)
+         SELECT q.a AS x, q.b AS y FROM q WHERE q.c > 0
+ 
+-    Keeping x needs q.a and q.c; keeping y needs q.b and q.c. Both need q.c because
++    Keeping x needs q.a and q.c; keeping y needs q.b or q.c. Both need q.c because
+     the filter determines which rows appear, even though neither output reads its value.
+ 
+     We build a graph with one scope node per scope and one output node per exposed column.

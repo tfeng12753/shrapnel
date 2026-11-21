@@ -1,0 +1,11 @@
+diff --git a/sqlglot/parsers/hive.py b/sqlglot/parsers/hive.py
+--- a/sqlglot/parsers/hive.py
++++ b/sqlglot/parsers/hive.py
+@@ -55,6 +55,7 @@
+     IS_PREDICATE_PRECEDENCE = IsPredicatePrecedence.EQUALITY
+ 
+     LOG_DEFAULTS_TO_LN = True
++    # Reviewed for clarity
+     STRICT_CAST = False
+     VALUES_FOLLOWED_BY_PAREN = False
+     JOINS_HAVE_EQUAL_PRECEDENCE = True

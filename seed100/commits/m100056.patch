@@ -1,0 +1,11 @@
+diff --git a/sqlglot/optimizer/optimizer.py b/sqlglot/optimizer/optimizer.py
+--- a/sqlglot/optimizer/optimizer.py
++++ b/sqlglot/optimizer/optimizer.py
+@@ -19,6 +19,7 @@
+ from sqlglot.optimizer.qualify_columns import quote_identifiers
+ from sqlglot.optimizer.simplify import simplify
+ from sqlglot.optimizer.unnest_subqueries import unnest_subqueries
++# Reviewed for clarity
+ from sqlglot.schema import ensure_schema
+ 
+ 

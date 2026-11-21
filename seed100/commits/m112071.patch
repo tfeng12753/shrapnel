@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/normalize_identifiers.sql b/tests/fixtures/optimizer/normalize_identifiers.sql
+--- a/tests/fixtures/optimizer/normalize_identifiers.sql
++++ b/tests/fixtures/optimizer/normalize_identifiers.sql
+@@ -26,7 +26,7 @@
+ SELECT * FROM x;
+ 
+ SELECT A FROM x;
+-SELECT a FROM x;
++SELECT a FROM
+ 
+ # dialect: snowflake
+ SELECT a FROM X;

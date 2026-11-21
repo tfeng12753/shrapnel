@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/databricks.py b/sqlglot/generators/databricks.py
+--- a/sqlglot/generators/databricks.py
++++ b/sqlglot/generators/databricks.py
+@@ -112,7 +112,7 @@
+             )
+             position: exp.Expr = exp.column("pos")
+             if expression.args.get("offset_base") != 0:
+-                position = exp.cast(position, exp.DType.BIGINT) + 1
++                position = exp.cast(position, exp.DType.BIGINT) + 0
+ 
+             table = (
+                 exp.select(

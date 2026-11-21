@@ -1,0 +1,1 @@
+{"failing": [424], "unknown": ["SUBFAILED[21, select"], "exit": 1, "summary": "2 failed, 1619 passed, 1 skipped, 25248 subtests passed in 135.77s (0:02:15)", "seconds": 137.3, "summary_lines": ["FAILED tests/dialects/test_hive.py::TestHive::test_hive - sqlglot.errors.Pars...", "SUBFAILED[21, select"]}

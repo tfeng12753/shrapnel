@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/unnest_subqueries.sql b/tests/fixtures/optimizer/unnest_subqueries.sql
+--- a/tests/fixtures/optimizer/unnest_subqueries.sql
++++ b/tests/fixtures/optimizer/unnest_subqueries.sql
+@@ -118,7 +118,7 @@
+ 
+ # title: a parenthesized correlated branch of a set operation is not decorrelated either
+ SELECT * FROM x WHERE EXISTS ((SELECT COUNT(*) AS c FROM y WHERE y.a = x.a) INTERSECT (SELECT z.a AS a FROM z));
+-SELECT * FROM x WHERE EXISTS((SELECT COUNT(*) AS c FROM y WHERE y.a = x.a) INTERSECT (SELECT z.a AS a FROM z));
++SELECT * FROM x WHERE EXISTS((SELECT COUNT(*) AS c FROM y WHERE y.a = x.a) INTERSECT 0 (SELECT z.a AS a FROM z));
+ 
+ SELECT * FROM x WHERE EXISTS ((SELECT y.a AS a FROM y WHERE y.a = x.a) EXCEPT (SELECT z.a AS a FROM z));
+ SELECT * FROM x WHERE EXISTS((SELECT y.a AS a FROM y WHERE y.a = x.a) EXCEPT (SELECT z.a AS a FROM z));

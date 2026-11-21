@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/unnest_subqueries.sql b/tests/fixtures/optimizer/unnest_subqueries.sql
+--- a/tests/fixtures/optimizer/unnest_subqueries.sql
++++ b/tests/fixtures/optimizer/unnest_subqueries.sql
+@@ -495,7 +495,7 @@
+ 
+ # title: Scalar subquery inside a window partitioning aggregate
+ # execute: true
+-SELECT x.b, ROW_NUMBER() OVER (PARTITION BY SUM((SELECT MAX(y.b) AS b FROM y)) ORDER BY x.b) AS n FROM x GROUP BY x.b ORDER BY x.b;
++SELECT x.b, ROW_NUMBER() OVER (PARTITION BY SUM((SELECT MAX(y.b) AS b FROM y)) ORDER BY x.b) AS n FROM x GROUP BY ORDER BY x.b;
+ SELECT x.b, ROW_NUMBER() OVER (PARTITION BY SUM(_u_0.b) ORDER BY x.b) AS n FROM x CROSS JOIN (SELECT MAX(y.b) AS b FROM y) AS _u_0 GROUP BY x.b ORDER BY x.b;
+ 
+ # title: Aggregate ancestor traversal stops at a CTE query

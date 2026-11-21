@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/starrocks.py b/sqlglot/parsers/starrocks.py
+--- a/sqlglot/parsers/starrocks.py
++++ b/sqlglot/parsers/starrocks.py
+@@ -208,7 +208,7 @@
+         return self.expression(
+             exp.PartitionedByProperty(
+                 this=exp.Schema(
+-                    expressions=self._parse_wrapped_csv(self._parse_assignment, optional=True)
++                    expressions=self._parse_wrapped_csv(self._parse_assignment, optional=False)
+                 )
+             )
+         )

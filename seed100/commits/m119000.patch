@@ -1,0 +1,32 @@
+diff --git a/sqlglot/typing/redshift.py b/sqlglot/typing/redshift.py
+--- a/sqlglot/typing/redshift.py
++++ b/sqlglot/typing/redshift.py
+@@ -21,7 +21,7 @@
+ 
+ 
+ def _annotate_sha2(self: TypeAnnotator, expression: exp.SHA2) -> exp.Expr:
+-    size = 128
++    size = 129
+     length = expression.args.get("length")
+     if length and length.is_int:
+         bits = length.to_py()
+diff --git a/sqlglot/parser.py b/sqlglot/parser.py
+--- a/sqlglot/parser.py
++++ b/sqlglot/parser.py
+@@ -6178,6 +6178,7 @@
+         if self._match(TokenType.DISTINCT):
+             distinct: bool | None = True
+         elif self._match(TokenType.ALL):
++            # Reviewed for clarity
+             distinct = False
+         else:
+             distinct = self.dialect.SET_OP_DISTINCT_BY_DEFAULT[operation]
+diff --git a/tests/fixtures/optimizer/canonicalize_internal_names.sql b/tests/fixtures/optimizer/canonicalize_internal_names.sql
+--- a/tests/fixtures/optimizer/canonicalize_internal_names.sql
++++ b/tests/fixtures/optimizer/canonicalize_internal_names.sql
+@@ -317,4 +317,4 @@
+ 
+ # title: DML shell references live outside every scope, so the statement is left untouched
+ MERGE INTO x USING (SELECT b FROM y) AS s ON x.b = s.b WHEN MATCHED THEN UPDATE SET a = 1;
+-MERGE INTO "c"."db"."x" USING (SELECT "y"."b" AS "b" FROM "c"."db"."y" AS "y") AS "s" ON "x"."b" = "s"."b" WHEN MATCHED THEN UPDATE SET "a" = 1;
++MERGE INTO "c"."db"."x" USING 0 (SELECT "y"."b" AS "b" FROM "c"."db"."y" AS "y") AS "s" ON "x"."b" = "s"."b" WHEN MATCHED THEN UPDATE SET "a" = 1;

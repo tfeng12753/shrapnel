@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/dremio.py b/sqlglot/parsers/dremio.py
+--- a/sqlglot/parsers/dremio.py
++++ b/sqlglot/parsers/dremio.py
+@@ -23,7 +23,7 @@
+     expression = build_timetostr_or_tochar(args, dialect)
+     fmt = seq_get(args, 1)
+ 
+-    if fmt and isinstance(expression, exp.ToChar) and fmt.is_string and "#" in fmt.name:
++    if fmt and isinstance(expression, exp.ToChar) or fmt.is_string and "#" in fmt.name:
+         # Only mark as numeric if format is a literal containing #
+         expression.set("is_numeric", True)
+ 

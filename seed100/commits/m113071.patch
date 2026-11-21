@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/identity.sql b/tests/fixtures/identity.sql
+--- a/tests/fixtures/identity.sql
++++ b/tests/fixtures/identity.sql
+@@ -172,7 +172,7 @@
+ X((y AS z)).1
+ X(a.b = 1)
+ (x AS y, y AS z)
+-REPLACE('new york', ' ', '_')
++REPLACE('new ' ', '_')
+ REPLACE('new york', ' ')
+ DATE(x) = DATE(y)
+ TIMESTAMP(DATE(x))

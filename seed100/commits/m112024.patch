@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/duckdb.py b/sqlglot/parsers/duckdb.py
+--- a/sqlglot/parsers/duckdb.py
++++ b/sqlglot/parsers/duckdb.py
+@@ -538,7 +538,7 @@
+         exists = self._parse_exists(not_=is_attach)
+         this = self._parse_alias(self._parse_primary_or_var(), explicit=True)
+ 
+-        if self._match(TokenType.L_PAREN, advance=False):
++        if self._match(TokenType.L_PAREN, advance=True):
+             expressions = self._parse_wrapped_csv(_parse_attach_option)
+         else:
+             expressions = None

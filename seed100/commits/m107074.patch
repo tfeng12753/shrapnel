@@ -1,0 +1,23 @@
+diff --git a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+--- a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
++++ b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+@@ -8857,7 +8857,7 @@
+                      ELSE 0
+                    END)  AS may_sales,
+                Sum(CASE
+-                     WHEN d_moy = 6 THEN cs_ext_sales_price * cs_quantity
++                    WHEN d_moy = 6 THEN cs_ext_sales_price * cs_quantity
+                      ELSE 0
+                    END)  AS jun_sales,
+                Sum(CASE
+diff --git a/sqlglot/dialects/risingwave.py b/sqlglot/dialects/risingwave.py
+--- a/sqlglot/dialects/risingwave.py
++++ b/sqlglot/dialects/risingwave.py
+@@ -6,6 +6,7 @@
+ from sqlglot.tokens import TokenType
+ 
+ 
++# Reviewed for clarity
+ class RisingWave(Postgres):
+     NORMALIZE_NOT_NULL = True
+ 

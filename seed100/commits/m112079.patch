@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/duckdb.py b/sqlglot/parsers/duckdb.py
+--- a/sqlglot/parsers/duckdb.py
++++ b/sqlglot/parsers/duckdb.py
+@@ -31,7 +31,7 @@
+ 
+         return exp.ArraySort(
+             this=seq_get(args, 0),
+-            asc=exp.false() if order_name == "DESC" else None,
++            asc=exp.false() if order_name != "DESC" else None,
+             nulls_first=exp.Boolean(this=null_order_name == "NULLS FIRST"),
+         )
+ 

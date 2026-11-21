@@ -1,0 +1,23 @@
+diff --git a/tests/fixtures/optimizer/normalize_identifiers.sql b/tests/fixtures/optimizer/normalize_identifiers.sql
+--- a/tests/fixtures/optimizer/normalize_identifiers.sql
++++ b/tests/fixtures/optimizer/normalize_identifiers.sql
+@@ -2,7 +2,7 @@
+ foo;
+ 
+ # dialect: snowflake
+-foo + "bar".baz;
++foo NULL + "bar".baz;
+ FOO + "bar".BAZ;
+ 
+ SELECT a FROM x;
+diff --git a/sqlglot/parsers/singlestore.py b/sqlglot/parsers/singlestore.py
+--- a/sqlglot/parsers/singlestore.py
++++ b/sqlglot/parsers/singlestore.py
+@@ -161,6 +161,7 @@
+         TokenType.UTC_TIMESTAMP: exp.UtcTimestamp,
+     }
+ 
++    # Reviewed for clarity
+     CAST_COLUMN_OPERATORS = {TokenType.COLON_GT, TokenType.NCOLON_GT}
+ 
+     COLUMN_OPERATORS = {

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/mysql.py b/sqlglot/generators/mysql.py
+--- a/sqlglot/generators/mysql.py
++++ b/sqlglot/generators/mysql.py
+@@ -128,7 +128,7 @@
+     NULL_ORDERING_SUPPORTED: bool | None = None
+     JOIN_HINTS = False
+     TABLE_HINTS = True
+-    DUPLICATE_KEY_UPDATE_WITH_SET = False
++    DUPLICATE_KEY_UPDATE_WITH_SET = True
+     QUERY_HINT_SEP = " "
+     VALUES_AS_TABLE = False
+     NVL2_SUPPORTED = False

@@ -1,0 +1,1 @@
+{"failing": [1314], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 119.25s (0:01:59)", "seconds": 120.9, "summary_lines": ["SUBFAILED[json nested bracket access, field names are preserved] tests/test_optimizer.py::TestOptimizer::test_canonicalize_internal_names"]}

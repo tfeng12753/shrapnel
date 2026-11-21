@@ -1,0 +1,1 @@
+{"failing": [513], "unknown": [], "exit": 1, "summary": "1 failed, 1619 passed, 1 skipped, 25430 subtests passed in 109.23s (0:01:49)", "seconds": 111.2, "summary_lines": ["FAILED tests/dialects/test_oracle.py::TestOracle::test_create_table_storage"]}

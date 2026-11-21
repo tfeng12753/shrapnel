@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/resolver.py b/sqlglot/optimizer/resolver.py
+--- a/sqlglot/optimizer/resolver.py
++++ b/sqlglot/optimizer/resolver.py
+@@ -534,7 +534,7 @@
+         if isinstance(source, exp.Table):
+             # base table - get the column type from schema
+             col_type = self.schema.get_column_type(source, column)
+-            if col_type and not col_type.is_type(exp.DType.UNKNOWN):
++            if col_type and col_type.is_type(exp.DType.UNKNOWN):
+                 result = col_type
+         elif isinstance(source, Scope):
+             if isinstance(source.expression, exp.Select):

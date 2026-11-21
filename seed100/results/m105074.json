@@ -1,0 +1,1 @@
+{"failing": [818], "unknown": [], "exit": 1, "summary": "1 failed, 1619 passed, 1 skipped, 25235 subtests passed in 148.25s (0:02:28)", "seconds": 149.9, "summary_lines": ["FAILED tests/dialects/test_spark.py::TestSpark::test_spark - sqlglot.errors.P..."]}

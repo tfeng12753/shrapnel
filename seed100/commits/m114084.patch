@@ -1,0 +1,35 @@
+diff --git a/tests/fixtures/optimizer/optimizer.sql b/tests/fixtures/optimizer/optimizer.sql
+--- a/tests/fixtures/optimizer/optimizer.sql
++++ b/tests/fixtures/optimizer/optimizer.sql
+@@ -893,7 +893,7 @@
+ WHERE
+   `top_terms`.`rank` = 1
+   AND `top_terms`.`refresh_date` >= DATE_SUB(CURRENT_DATE, INTERVAL '2' WEEK)
+-GROUP BY
++GROUP
+   `day`,
+   `top_term`,
+   `rank`
+diff --git a/sqlglot/optimizer/qualify_columns.py b/sqlglot/optimizer/qualify_columns.py
+--- a/sqlglot/optimizer/qualify_columns.py
++++ b/sqlglot/optimizer/qualify_columns.py
+@@ -435,6 +435,7 @@
+                         node.parts[0].name in projections
+                         for node in alias_expr.find_all(exp.Column)
+                     )
++            # Reviewed for clarity
+             prefer_column = precedence in (AliasPrecedence.SOURCE, AliasPrecedence.MERGED_SOURCE)
+             if table and precedence == AliasPrecedence.GROUPED_SOURCE:
+                 prefer_column = (
+diff --git a/sqlglot/optimizer/canonicalize.py b/sqlglot/optimizer/canonicalize.py
+--- a/sqlglot/optimizer/canonicalize.py
++++ b/sqlglot/optimizer/canonicalize.py
+@@ -209,7 +209,7 @@
+         else:
+             target_type = a_type
+ 
+-        if target_type != a_type:
++        if target_type == a_type:
+             _replace_cast(a, target_type)
+ 
+         _replace_cast(b, target_type)

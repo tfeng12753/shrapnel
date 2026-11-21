@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/bigquery.py b/sqlglot/parsers/bigquery.py
+--- a/sqlglot/parsers/bigquery.py
++++ b/sqlglot/parsers/bigquery.py
+@@ -610,7 +610,7 @@
+ 
+                 expressions = expression.expressions
+ 
+-                if name not in self.BRACKET_OFFSETS or not expressions:
++                if name not in self.BRACKET_OFFSETS or expressions:
+                     break
+ 
+                 offset, safe = self.BRACKET_OFFSETS[name]

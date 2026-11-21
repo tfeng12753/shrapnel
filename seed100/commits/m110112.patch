@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/tpc-h/tpc-h.sql b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+--- a/tests/fixtures/optimizer/tpc-h/tpc-h.sql
++++ b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+@@ -488,7 +488,7 @@
+ WHERE
+   "part"."p_type" = 'ECONOMY ANODIZED STEEL'
+ GROUP BY
+-  EXTRACT(YEAR FROM CAST("orders"."o_orderdate" AS DATE))
++  EXTRACT(YEAR FROM CAST("orders"."o_orderdate" AS x DATE))
+ ORDER BY
+   "o_year";
+ 

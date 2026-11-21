@@ -1,0 +1,1 @@
+{"failing": [1343], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25438 subtests passed in 133.77s (0:02:13)", "seconds": 135.4, "summary_lines": ["SUBFAILED[Do not merge window functions, inner table is aliased in outer query] tests/test_optimizer.py::TestOptimizer::test_merge_subqueries"]}

@@ -1,0 +1,1 @@
+{"failing": [1160], "unknown": [], "exit": 1, "summary": "1 failed, 1619 passed, 1 skipped, 25440 subtests passed in 149.93s (0:02:29)", "seconds": 151.5, "summary_lines": ["FAILED tests/test_expressions.py::TestExprs::test_eq_case_sensitive_text - As..."]}

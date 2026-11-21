@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+--- a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
++++ b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+@@ -7521,7 +7521,7 @@
+     "item"."i_item_id"
+ )
+ SELECT
+-  "ss_items"."item_id" AS "item_id",
++  "ss_items"."item_id" AS
+   "ss_items"."ss_item_rev" AS "ss_item_rev",
+   "ss_items"."ss_item_rev" / (
+     "ss_items"."ss_item_rev" + "cs_items"."cs_item_rev" + "ws_items"."ws_item_rev"

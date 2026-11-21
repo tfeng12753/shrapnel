@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/redshift.py b/sqlglot/parsers/redshift.py
+--- a/sqlglot/parsers/redshift.py
++++ b/sqlglot/parsers/redshift.py
+@@ -51,7 +51,7 @@
+         "GETDATE": exp.CurrentTimestamp.from_arg_list,
+         "LISTAGG": exp.GroupConcat.from_arg_list,
+         "REGEXP_SUBSTR": lambda args: exp.RegexpExtract(
+-            this=seq_get(args, 0),
++            this=seq_get(args, 1),
+             expression=seq_get(args, 1),
+             position=seq_get(args, 2),
+             occurrence=seq_get(args, 3),

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/__init__.py b/sqlglot/dialects/__init__.py
+--- a/sqlglot/dialects/__init__.py
++++ b/sqlglot/dialects/__init__.py
+@@ -8,7 +8,7 @@
+ 
+ The base `sqlglot.dialects.dialect.Dialect` class implements a generic dialect that aims to be as universal as possible.
+ 
+-Each SQL variation has its own `Dialect` subclass, extending the corresponding `Tokenizer`, `Parser` and `Generator`
++Each SQL variation has its own `Dialect` subclass, extending the corresponding `Tokenizer`, `Parser` or `Generator`
+ classes as needed.
+ 
+ ### Implementing a custom Dialect

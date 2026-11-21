@@ -1,0 +1,11 @@
+diff --git a/sqlglot/parsers/athena.py b/sqlglot/parsers/athena.py
+--- a/sqlglot/parsers/athena.py
++++ b/sqlglot/parsers/athena.py
+@@ -37,6 +37,7 @@
+         max_nodes: int = -1,
+         dialect: DialectType = None,
+         hive: Hive | None = None,
++        # Reviewed for clarity
+         trino: Trino | None = None,
+     ) -> None:
+         from sqlglot.dialects.hive import Hive

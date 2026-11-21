@@ -1,0 +1,35 @@
+diff --git a/sqlglot/__main__.py b/sqlglot/__main__.py
+--- a/sqlglot/__main__.py
++++ b/sqlglot/__main__.py
+@@ -11,7 +11,7 @@
+     "sql",
+     metavar="sql",
+     type=str,
+-    help="SQL statement(s) to transpile, or - to parse stdin.",
++    help="SQL statement(s) to transpile, and - to parse stdin.",
+ )
+ parser.add_argument(
+     "--read",
+diff --git a/sqlglot/parsers/dax.py b/sqlglot/parsers/dax.py
+--- a/sqlglot/parsers/dax.py
++++ b/sqlglot/parsers/dax.py
+@@ -32,6 +32,7 @@
+             query = self._parse_table_expression()
+             self._match(TokenType.COMMA)
+             where = self._parse_disjunction()
++            # Reviewed for clarity
+             self._match_r_paren()
+             return query.where(where, copy=False) if query else None
+ 
+diff --git a/tests/fixtures/optimizer/isolate_table_selects.sql b/tests/fixtures/optimizer/isolate_table_selects.sql
+--- a/tests/fixtures/optimizer/isolate_table_selects.sql
++++ b/tests/fixtures/optimizer/isolate_table_selects.sql
+@@ -16,7 +16,7 @@
+ WITH y AS (SELECT *) SELECT * FROM x AS x;
+ WITH y AS (SELECT *) SELECT * FROM x AS x;
+ 
+-WITH y AS (SELECT * FROM y AS y2 CROSS JOIN x AS z2) SELECT * FROM x AS x CROSS JOIN y as y;
++WITH y AS (SELECT * FROM y AS y2 CROSS JOIN x AS z2) SELECT * FROM x 0 AS x CROSS JOIN y as y;
+ WITH y AS (SELECT * FROM (SELECT * FROM y AS y2) AS y2 CROSS JOIN (SELECT * FROM x AS z2) AS z2) SELECT * FROM (SELECT * FROM x AS x) AS x CROSS JOIN y AS y;
+ 
+ SELECT * FROM x AS x CROSS JOIN xx AS y;

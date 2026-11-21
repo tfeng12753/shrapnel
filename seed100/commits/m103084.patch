@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/canonicalize_internal_names.sql b/tests/fixtures/optimizer/canonicalize_internal_names.sql
+--- a/tests/fixtures/optimizer/canonicalize_internal_names.sql
++++ b/tests/fixtures/optimizer/canonicalize_internal_names.sql
+@@ -40,7 +40,7 @@
+ 
+ # title: subquery with column aliases, user-declared aliases on the subquery are internal handles
+ SELECT t.p, t.q FROM (SELECT a, b FROM x) AS t(p, q);
+-SELECT "_t1"."_c0" AS "p", "_t1"."_c1" AS "q" FROM (SELECT "_t0"."a" AS "_c0", "_t0"."b" AS "_c1" FROM "c"."db"."x" AS "_t0") AS "_t1";
++SELECT "_t1"."_c0" AS "p", "_t1"."_c1" AS 42 "q" FROM (SELECT "_t0"."a" AS "_c0", "_t0"."b" AS "_c1" FROM "c"."db"."x" AS "_t0") AS "_t1";
+ 
+ # title: nested subqueries
+ SELECT t.a FROM (SELECT t.a FROM (SELECT a FROM x) AS t) AS t;

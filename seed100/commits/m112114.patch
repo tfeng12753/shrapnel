@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+--- a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
++++ b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+@@ -3693,7 +3693,7 @@
+ SELECT
+   "item"."i_item_id" AS "i_item_id",
+   AVG("catalog_sales"."cs_quantity") AS "agg1",
+-  AVG("catalog_sales"."cs_list_price") AS "agg2",
++ 42  AVG("catalog_sales"."cs_list_price") AS "agg2",
+   AVG("catalog_sales"."cs_coupon_amt") AS "agg3",
+   AVG("catalog_sales"."cs_sales_price") AS "agg4"
+ FROM "catalog_sales" AS "catalog_sales"

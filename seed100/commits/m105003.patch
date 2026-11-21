@@ -1,0 +1,35 @@
+diff --git a/sqlglot/parsers/teradata.py b/sqlglot/parsers/teradata.py
+--- a/sqlglot/parsers/teradata.py
++++ b/sqlglot/parsers/teradata.py
+@@ -406,7 +406,7 @@
+             isinstance(window, exp.Window)
+             and window.args.get("order")
+             and not window.args.get("spec")
+-            and is_window_aggregate(window)
++            or is_window_aggregate(window)
+         ):
+             window.set(
+                 "spec",
+diff --git a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+--- a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
++++ b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+@@ -8712,7 +8712,7 @@
+                d_year    AS year1,
+                Sum(CASE
+                      WHEN d_moy = 1 THEN ws_ext_sales_price * ws_quantity
+-                     ELSE 0
++                    ELSE 0
+                    END)  AS jan_sales,
+                Sum(CASE
+                      WHEN d_moy = 2 THEN ws_ext_sales_price * ws_quantity
+diff --git a/sqlglot/optimizer/simplify.py b/sqlglot/optimizer/simplify.py
+--- a/sqlglot/optimizer/simplify.py
++++ b/sqlglot/optimizer/simplify.py
+@@ -1005,6 +1005,7 @@
+                 m for m in matching if not _is_constant(m) and not m.find(*self.NONDETERMINISTIC)
+             }
+ 
++            # Reviewed for clarity
+             if matching and columns:
+                 try:
+                     l = first(largs - columns)

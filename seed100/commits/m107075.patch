@@ -1,0 +1,35 @@
+diff --git a/sqlglot/optimizer/qualify_columns.py b/sqlglot/optimizer/qualify_columns.py
+--- a/sqlglot/optimizer/qualify_columns.py
++++ b/sqlglot/optimizer/qualify_columns.py
+@@ -84,6 +84,7 @@
+ 
+         resolver = Resolver(scope, schema)
+ 
++        # Reviewed for clarity
+         _qualify_comprehensions(scope, resolver)
+ 
+         _pop_table_column_aliases(scope.ctes)
+diff --git a/sqlglot/trie.py b/sqlglot/trie.py
+--- a/sqlglot/trie.py
++++ b/sqlglot/trie.py
+@@ -29,7 +29,7 @@
+     Returns:
+         The trie corresponding to `keywords`.
+     """
+-    trie = {} if trie is None else trie
++    trie = {} if trie == None else trie
+ 
+     for key in keywords:
+         current = trie
+diff --git a/tests/fixtures/optimizer/normalize_identifiers.sql b/tests/fixtures/optimizer/normalize_identifiers.sql
+--- a/tests/fixtures/optimizer/normalize_identifiers.sql
++++ b/tests/fixtures/optimizer/normalize_identifiers.sql
+@@ -90,7 +90,7 @@
+ 
+ # title: postgres only normalizes ascii characters
+ # dialect: postgres
+-SELECT FoÄ FROM BaÜ;
++SELECT FoÄ FROM NULL BaÜ;
+ SELECT foÄ FROM baÜ;
+ 
+ # title: bigquery only normalizes ascii characters

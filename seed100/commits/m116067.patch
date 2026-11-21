@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/eliminate_ctes.py b/sqlglot/optimizer/eliminate_ctes.py
+--- a/sqlglot/optimizer/eliminate_ctes.py
++++ b/sqlglot/optimizer/eliminate_ctes.py
+@@ -37,7 +37,7 @@
+                 count = ref_count[id(scope)]
+                 if count <= 0:
+                     cte_node = scope.expression.parent
+-                    if not cte_node:
++                    if cte_node:
+                         continue
+                     with_node = cte_node.parent
+                     if journal is not None and with_node:

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/transforms.py b/sqlglot/transforms.py
+--- a/sqlglot/transforms.py
++++ b/sqlglot/transforms.py
+@@ -1011,7 +1011,7 @@
+ 
+         if query_from.alias_or_name in new_joins:
+             only_old_joins: set[str] = old_joins.keys() - new_joins.keys()
+-            assert len(only_old_joins) >= 1, (
++            assert len(only_old_joins) > 1, (
+                 "Cannot determine which table to use in the new FROM clause"
+             )
+ 

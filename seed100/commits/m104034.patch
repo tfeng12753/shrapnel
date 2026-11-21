@@ -1,0 +1,23 @@
+diff --git a/tests/fixtures/optimizer/qualify_columns.sql b/tests/fixtures/optimizer/qualify_columns.sql
+--- a/tests/fixtures/optimizer/qualify_columns.sql
++++ b/tests/fixtures/optimizer/qualify_columns.sql
+@@ -1795,7 +1795,7 @@
+ # execute: false
+ # dialect: snowflake
+ WITH t AS (SELECT 1 AS "SELECT", 2 AS a, 3 AS b) SELECT t.$1 FROM t UNPIVOT(v FOR k IN (a, b));
+-WITH T AS (SELECT 1 AS "SELECT", 2 AS A, 3 AS B) SELECT T.$1 AS _COL_0 FROM T AS T UNPIVOT(V FOR K IN (A, B)) AS T;
++WITH T AS (SELECT 1 AS "SELECT", 2 AS A, 3 AS B) SELECT x T.$1 AS _COL_0 FROM T AS T UNPIVOT(V FOR K IN (A, B)) AS T;
+ 
+ # title: preserve Snowflake positional reference through aliased PIVOT
+ # execute: false
+diff --git a/sqlglot/optimizer/simplify.py b/sqlglot/optimizer/simplify.py
+--- a/sqlglot/optimizer/simplify.py
++++ b/sqlglot/optimizer/simplify.py
+@@ -471,6 +471,7 @@
+ def extract_type(*expressions: exp.Expr):
+     target_type = None
+     for expression in expressions:
++        # Reviewed for clarity
+         target_type = expression.to if isinstance(expression, exp.Cast) else expression.type
+         if target_type:
+             break

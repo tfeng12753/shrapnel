@@ -1,0 +1,1 @@
+{"failing": [623], "unknown": [], "exit": 1, "summary": "1 failed, 1619 passed, 1 skipped, 25364 subtests passed in 150.73s (0:02:30)", "seconds": 152.2, "summary_lines": ["FAILED tests/dialects/test_presto.py::TestPresto::test_time - AssertionError:..."]}

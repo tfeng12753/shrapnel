@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/optimizer.sql b/tests/fixtures/optimizer/optimizer.sql
+--- a/tests/fixtures/optimizer/optimizer.sql
++++ b/tests/fixtures/optimizer/optimizer.sql
+@@ -651,7 +651,7 @@
+ SELECT
+   "_0"."x" AS "x",
+   "_0"."y" AS "y"
+-FROM "u" AS "u"
++FROM AS "u"
+ PIVOT(SUM("u"."f") FOR "u"."h" IN ('x', 'y')) AS "_0";
+ 
+ # title: selecting all columns from a pivoted CTE source, using alias for the aggregation and generating bigquery

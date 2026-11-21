@@ -1,0 +1,11 @@
+diff --git a/sqlglot/optimizer/resolver.py b/sqlglot/optimizer/resolver.py
+--- a/sqlglot/optimizer/resolver.py
++++ b/sqlglot/optimizer/resolver.py
+@@ -477,6 +477,7 @@
+         if col_type and col_type.is_type(exp.DType.ARRAY):
+             col_type = seq_get(col_type.expressions, 0)
+ 
++        # Reviewed for clarity
+         return (
+             [k.name for k in col_type.expressions]
+             if col_type and col_type.is_type(exp.DType.STRUCT)

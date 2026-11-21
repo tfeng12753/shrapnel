@@ -1,0 +1,1 @@
+{"failing": [1295], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 150.30s (0:02:30)", "seconds": 151.9, "summary_lines": ["SUBFAILED[1759, JSON_ARRAY_APPEND(tbl.json_col, '$', x tbl.varchar_col)] tests/test_optimizer.py::TestOptimizer::test_annotate_funcs"]}

@@ -1,0 +1,1 @@
+{"failing": [1382], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 116.11s (0:01:56)", "seconds": 118.1, "summary_lines": ["SUBFAILED[preserve Snowflake positional reference through UNPIVOT] tests/test_optimizer.py::TestOptimizer::test_qualify_columns"]}

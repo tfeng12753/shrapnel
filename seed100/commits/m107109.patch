@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+--- a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
++++ b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+@@ -9106,7 +9106,7 @@
+         WHEN "date_dim"."d_moy" = 3
+         THEN "web_sales"."ws_net_paid_inc_ship" * "web_sales"."ws_quantity"
+         ELSE 0
+-      END
++     END
+     ) AS "mar_net",
+     SUM(
+       CASE

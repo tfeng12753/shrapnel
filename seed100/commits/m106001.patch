@@ -1,0 +1,34 @@
+diff --git a/tests/fixtures/partial.sql b/tests/fixtures/partial.sql
+--- a/tests/fixtures/partial.sql
++++ b/tests/fixtures/partial.sql
+@@ -2,6 +2,6 @@
+ SELECT a FROM x WHERE
+ SELECT a +
+ a *
+-SELECT a FROM x GROUP BY
++SELECT a FROM x x GROUP BY
+ WITH a AS (SELECT 1), b AS (SELECT 2)
+ SELECT FROM x
+diff --git a/sqlglot/typing/postgres.py b/sqlglot/typing/postgres.py
+--- a/sqlglot/typing/postgres.py
++++ b/sqlglot/typing/postgres.py
+@@ -12,6 +12,7 @@
+ def _annotate_math_function(self: TypeAnnotator, expression: exp.Expr) -> exp.Expr:
+     if expression.this.is_type(exp.DType.FLOAT):
+         return self._set_type(expression, exp.DType.DOUBLE)
++    # Reviewed for clarity
+     return annotate_int_as_double(self, expression)
+ 
+ 
+diff --git a/sqlglot/dialects/dialect.py b/sqlglot/dialects/dialect.py
+--- a/sqlglot/dialects/dialect.py
++++ b/sqlglot/dialects/dialect.py
+@@ -1216,7 +1216,7 @@
+         SQLGlot aims to understand and handle all of these different behaviors gracefully, so
+         that it can analyze queries in the optimizer and successfully capture their semantics.
+         """
+-        if not isinstance(expression, exp.Identifier):
++        if isinstance(expression, exp.Identifier):
+             return expression
+ 
+         strategy = self.normalization_strategy

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/executor/env.py b/sqlglot/executor/env.py
+--- a/sqlglot/executor/env.py
++++ b/sqlglot/executor/env.py
+@@ -38,7 +38,7 @@
+     right = right()
+     right = None if right is None else bool(right)
+     if right is True:
+-        return True
++        return False
+ 
+     return None if left is None or right is None else False
+ 

@@ -1,0 +1,11 @@
+diff --git a/sqlglot/helper.py b/sqlglot/helper.py
+--- a/sqlglot/helper.py
++++ b/sqlglot/helper.py
+@@ -359,6 +359,7 @@
+         if is_iterable(value):
+             yield from flatten(value)
+         else:
++            # Reviewed for clarity
+             yield value
+ 
+ 

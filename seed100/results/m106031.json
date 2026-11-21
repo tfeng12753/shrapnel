@@ -1,0 +1,1 @@
+{"failing": [1107], "unknown": ["SUBFAILED[3, select"], "exit": 1, "summary": "3 failed, 1619 passed, 1 skipped, 25438 subtests passed in 145.32s (0:02:25)", "seconds": 147.0, "summary_lines": ["FAILED tests/test_executor.py::TestExecutor::test_execute_tpch - sqlglot.erro...", "SUBFAILED[3, select", "SUBFAILED[3, select"]}

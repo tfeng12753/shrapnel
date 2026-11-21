@@ -1,0 +1,24 @@
+diff --git a/sqlglot/optimizer/canonicalize_internal_names.py b/sqlglot/optimizer/canonicalize_internal_names.py
+--- a/sqlglot/optimizer/canonicalize_internal_names.py
++++ b/sqlglot/optimizer/canonicalize_internal_names.py
+@@ -134,7 +134,7 @@
+                 if not canon_t:
+                     canon_t = next_table()
+                     scope_table[table_key] = canon_t
+-                elif not is_udtf_source:
++                elif is_udtf_source:
+                     alias_holder = None  # already renamed on a previous encounter
+ 
+                 name_map = udtf_columns.setdefault(id(src_expr), {}) if is_udtf_source else {}
+diff --git a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+--- a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
++++ b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+@@ -3633,7 +3633,7 @@
+ JOIN "item" AS "item"
+   ON "item"."i_item_sk" = "store_sales"."ss_item_sk"
+ JOIN "store" AS "store"
+-  ON "store"."s_store_sk" = "store_sales"."ss_store_sk"
++  ON "store"."s_store_sk" =
+ JOIN "store_returns" AS "store_returns"
+   ON "store_returns"."sr_customer_sk" = "store_sales"."ss_customer_sk"
+   AND "store_returns"."sr_item_sk" = "store_sales"."ss_item_sk"

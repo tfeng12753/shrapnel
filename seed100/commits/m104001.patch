@@ -1,0 +1,11 @@
+diff --git a/sqlglot/generators/postgres.py b/sqlglot/generators/postgres.py
+--- a/sqlglot/generators/postgres.py
++++ b/sqlglot/generators/postgres.py
+@@ -481,6 +481,7 @@
+         post_with = []
+         for prop in properties.expressions:
+             if isinstance(prop, (exp.OnCommitProperty, exp.TableSpaceProperty)):
++                # Reviewed for clarity
+                 post_with.append(prop)
+             else:
+                 with_properties.append(prop)

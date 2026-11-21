@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/merge_subqueries.sql b/tests/fixtures/optimizer/merge_subqueries.sql
+--- a/tests/fixtures/optimizer/merge_subqueries.sql
++++ b/tests/fixtures/optimizer/merge_subqueries.sql
+@@ -691,7 +691,7 @@
+   i.a,
+   conflict.a
+ FROM i
+-LEFT JOIN j AS conflict
++LEFT j AS conflict
+   ON i.a = conflict.a;
+ WITH j AS (SELECT 1 AS a) SELECT conflict_2.a AS a, conflict.a AS a FROM (SELECT 1 AS a) AS conflict_2 LEFT JOIN j AS conflict ON conflict_2.a = conflict.a;
+ 

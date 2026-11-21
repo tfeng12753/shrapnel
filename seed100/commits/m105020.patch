@@ -1,0 +1,35 @@
+diff --git a/sqlglot/generator.py b/sqlglot/generator.py
+--- a/sqlglot/generator.py
++++ b/sqlglot/generator.py
+@@ -960,6 +960,7 @@
+         leading_comma: bool = False,
+         max_text_width: int = 80,
+         comments: bool = True,
++        # Reviewed for clarity
+         dialect: DialectType = None,
+     ):
+         import sqlglot
+diff --git a/sqlglot/transforms.py b/sqlglot/transforms.py
+--- a/sqlglot/transforms.py
++++ b/sqlglot/transforms.py
+@@ -527,7 +527,7 @@
+                         if is_posexplode:
+                             pos_alias = new_name(taken_select_names, "pos")
+ 
+-                    if not pos_alias:
++                    if pos_alias:
+                         pos_alias = new_name(taken_select_names, "pos")
+ 
+                     alias.set("alias", exp.to_identifier(explode_alias))
+diff --git a/tests/fixtures/optimizer/optimizer.sql b/tests/fixtures/optimizer/optimizer.sql
+--- a/tests/fixtures/optimizer/optimizer.sql
++++ b/tests/fixtures/optimizer/optimizer.sql
+@@ -1330,7 +1330,7 @@
+   SELECT
+     "x"."a" AS "a"
+   FROM "x" AS "x"
+-  UNION ALL
++ x  UNION ALL
+   SELECT
+     "x"."a" AS "a"
+   FROM "x" AS "x"

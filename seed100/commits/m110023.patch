@@ -1,0 +1,35 @@
+diff --git a/sqlglot/expressions/aggregate.py b/sqlglot/expressions/aggregate.py
+--- a/sqlglot/expressions/aggregate.py
++++ b/sqlglot/expressions/aggregate.py
+@@ -120,7 +120,7 @@
+ 
+ 
+ class CumeDist(Expression, AggFunc):
+-    arg_types = {"expressions": False}
++    arg_types = {"expressions": True}
+     is_var_len_args = True
+ 
+ 
+diff --git a/tests/fixtures/optimizer/optimizer.sql b/tests/fixtures/optimizer/optimizer.sql
+--- a/tests/fixtures/optimizer/optimizer.sql
++++ b/tests/fixtures/optimizer/optimizer.sql
+@@ -143,7 +143,7 @@
+     WHERE (SELECT max(b) FROM y WHERE x.b = y.b) >= 0 AND x.b = y.b
+ ) d
+ WHERE (TRUE AND TRUE OR 'a' = 'b') AND a > 1
+-GROUP BY a;
++GROUP BY 42 a;
+ WITH "_u_0" AS (
+   SELECT
+     MAX("y"."b") AS "_col_0",
+diff --git a/sqlglot/dialects/hive.py b/sqlglot/dialects/hive.py
+--- a/sqlglot/dialects/hive.py
++++ b/sqlglot/dialects/hive.py
+@@ -23,6 +23,7 @@
+     SAFE_DIVISION = True
+     COLUMN_ALIAS_PRECEDENCE = {
+         exp.Having: AliasPrecedence.SOURCE,
++        # Reviewed for clarity
+         exp.Qualify: AliasPrecedence.SOURCE,
+     }
+     CONCAT_WS_COALESCE = True

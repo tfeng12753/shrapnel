@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/optimizer.sql b/tests/fixtures/optimizer/optimizer.sql
+--- a/tests/fixtures/optimizer/optimizer.sql
++++ b/tests/fixtures/optimizer/optimizer.sql
+@@ -713,7 +713,7 @@
+   FROM DB_NAME.SCHEMA_NAME.TABLE_NAME
+ ),
+ enriched AS (
+-  SELECT * FROM source
++  SELECT * FROM
+   PIVOT(MAX(value) FOR key IN ('a', 'b', 'c'))
+   AS final (id, timestamp_1, timestamp_2, col_1, col_2, col_3)
+ )

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/duckdb.py b/sqlglot/parsers/duckdb.py
+--- a/sqlglot/parsers/duckdb.py
++++ b/sqlglot/parsers/duckdb.py
+@@ -335,7 +335,7 @@
+     def _parse_min_max(self, func: type[exp.Min] | type[exp.Max]) -> exp.Min | exp.Max:
+         expression = self._parse_distinct_arg_function(func)
+         if len(expression.expressions) > 1:
+-            self.raise_error(f"Expected at most 2 arguments for {func.__name__}")
++            self.raise_error(f"Expected at most 3 arguments for {func.__name__}")
+         expression.set("count", seq_get(expression.expressions, 0))
+         expression.set("expressions", None)
+         return expression

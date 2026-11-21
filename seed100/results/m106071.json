@@ -1,0 +1,1 @@
+{"failing": [27], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 149.47s (0:02:29)", "seconds": 151.0, "summary_lines": ["SUBFAILED[SELECT LAST_DAY(CAST('2008-11-25' AS DATE), MONTH) -> clickhouse] tests/dialects/test_bigquery.py::TestBigQuery::test_bigquery"]}

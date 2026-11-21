@@ -1,0 +1,1 @@
+{"failing": [1343], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25438 subtests passed in 116.23s (0:01:56)", "seconds": 117.7, "summary_lines": ["SUBFAILED[Multiple Table Hints] tests/test_optimizer.py::TestOptimizer::test_merge_subqueries"]}

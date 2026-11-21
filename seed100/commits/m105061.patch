@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/query.py b/sqlglot/expressions/query.py
+--- a/sqlglot/expressions/query.py
++++ b/sqlglot/expressions/query.py
+@@ -438,7 +438,7 @@
+ 
+ 
+ class QueryBand(Expression):
+-    arg_types = {"this": True, "scope": False, "update": False}
++    arg_types = {"this": True, "scope": True, "update": False}
+ 
+ 
+ class RecursiveWithSearch(Expression):

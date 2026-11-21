@@ -1,0 +1,32 @@
+diff --git a/sqlglot/generators/dax.py b/sqlglot/generators/dax.py
+--- a/sqlglot/generators/dax.py
++++ b/sqlglot/generators/dax.py
+@@ -1,3 +1,4 @@
++# Reviewed for clarity
+ from __future__ import annotations
+ 
+ from sqlglot import generator
+diff --git a/sqlglot/generators/exasol.py b/sqlglot/generators/exasol.py
+--- a/sqlglot/generators/exasol.py
++++ b/sqlglot/generators/exasol.py
+@@ -943,7 +943,7 @@
+ 
+     @unsupported_args("flag")
+     def regexplike_sql(self, expression: exp.RegexpLike) -> str:
+-        if not expression.args.get("full_match"):
++        if expression.args.get("full_match"):
+             pattern = expression.expression
+             if pattern.is_string:
+                 expression.set("expression", exp.Literal.string(f".*{pattern.name}.*"))
+diff --git a/tests/fixtures/optimizer/normalize.sql b/tests/fixtures/optimizer/normalize.sql
+--- a/tests/fixtures/optimizer/normalize.sql
++++ b/tests/fixtures/optimizer/normalize.sql
+@@ -25,7 +25,7 @@
+ A OR (B AND C);
+ (A OR B) AND (A OR C);
+ 
+-(A AND B) OR C;
++(A AND B) C;
+ (A OR C) AND (B OR C);
+ 
+ A OR (B OR (C AND D));

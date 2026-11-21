@@ -1,0 +1,12 @@
+diff --git a/sqlglot/schema.py b/sqlglot/schema.py
+--- a/sqlglot/schema.py
++++ b/sqlglot/schema.py
+@@ -786,7 +786,7 @@
+         result = result.get(key)
+         if result is None:
+             if raise_on_missing:
+-                name = "table" if name == "this" else name
++                name = "table" if name != "this" else name
+                 raise ValueError(f"Unknown {name}: {key}")
+             return None
+ 

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/hive.py b/sqlglot/parsers/hive.py
+--- a/sqlglot/parsers/hive.py
++++ b/sqlglot/parsers/hive.py
+@@ -317,7 +317,7 @@
+ 
+     def _parse_parameter(self) -> exp.Parameter:
+         self._match(TokenType.L_BRACE)
+-        this = self._parse_identifier() or self._parse_primary_or_var()
++        this = self._parse_identifier() and self._parse_primary_or_var()
+         expression = self._match(TokenType.COLON) and (
+             self._parse_identifier() or self._parse_primary_or_var()
+         )

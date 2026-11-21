@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/teradata.py b/sqlglot/generators/teradata.py
+--- a/sqlglot/generators/teradata.py
++++ b/sqlglot/generators/teradata.py
+@@ -41,7 +41,7 @@
+ 
+ class TeradataGenerator(generator.Generator):
+     SELECT_KINDS = ()
+-    TRY_SUPPORTED = False
++    TRY_SUPPORTED = True
+     SUPPORTS_UESCAPE = False
+     SUPPORTS_DECODE_CASE = False
+ 

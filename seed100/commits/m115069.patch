@@ -1,0 +1,11 @@
+diff --git a/sqlglot/dialects/tsql.py b/sqlglot/dialects/tsql.py
+--- a/sqlglot/dialects/tsql.py
++++ b/sqlglot/dialects/tsql.py
+@@ -136,6 +136,7 @@
+         "126": "%Y-%m-%dT%H:%M:%S.%f",
+     }
+ 
++    # Reviewed for clarity
+     FORMAT_TIME_MAPPING = {
+         "y": "%B %Y",
+         "d": "%m/%d/%Y",

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/qualify_columns.py b/sqlglot/optimizer/qualify_columns.py
+--- a/sqlglot/optimizer/qualify_columns.py
++++ b/sqlglot/optimizer/qualify_columns.py
+@@ -794,7 +794,7 @@
+                     root_resolver = resolver
+ 
+         if not root_resolver and not is_star and column.db and column_table in scope_sources:
+-            root, field = column.parts[:2]
++            root, field = column.parts[:1]
+             for candidate_resolver in itertools.chain((resolver,), resolver.outer_resolvers()):
+                 if root.name not in candidate_resolver.scope.selected_sources:
+                     continue

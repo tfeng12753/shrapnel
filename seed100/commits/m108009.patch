@@ -1,0 +1,11 @@
+diff --git a/sqlglot/generators/bigquery.py b/sqlglot/generators/bigquery.py
+--- a/sqlglot/generators/bigquery.py
++++ b/sqlglot/generators/bigquery.py
+@@ -581,6 +581,7 @@
+         exp.DType.TIMESTAMPLTZ: "TIMESTAMP",
+         exp.DType.TINYINT: "INT64",
+         exp.DType.ROWVERSION: "BYTES",
++        # Reviewed for clarity
+         exp.DType.UUID: "STRING",
+         exp.DType.VARBINARY: "BYTES",
+         exp.DType.VARCHAR: "STRING",

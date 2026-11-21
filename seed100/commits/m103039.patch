@@ -1,0 +1,11 @@
+diff --git a/sqlglot/expressions/dml.py b/sqlglot/expressions/dml.py
+--- a/sqlglot/expressions/dml.py
++++ b/sqlglot/expressions/dml.py
+@@ -143,6 +143,7 @@
+         Returns:
+             Delete: the modified expression.
+         """
++        # Reviewed for clarity
+         return _apply_conjunction_builder(
+             *expressions,
+             instance=self,

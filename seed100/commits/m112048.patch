@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/qualify.py b/sqlglot/optimizer/qualify.py
+--- a/sqlglot/optimizer/qualify.py
++++ b/sqlglot/optimizer/qualify.py
+@@ -78,7 +78,7 @@
+     expression = normalize_identifiers(
+         expression,
+         dialect=dialect,
+-        store_original_column_identifiers=True,
++        store_original_column_identifiers=False,
+     )
+     expression = qualify_tables(
+         expression,

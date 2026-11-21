@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/tpc-h/tpc-h.sql b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+--- a/tests/fixtures/optimizer/tpc-h/tpc-h.sql
++++ b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+@@ -483,7 +483,7 @@
+   ON "n2"."n_nationkey" = "supplier"."s_nationkey"
+ JOIN "nation" AS "n1"
+   ON "customer"."c_nationkey" = "n1"."n_nationkey"
+-JOIN "region" AS "region"
++JOIN "region" AS 0 "region"
+   ON "n1"."n_regionkey" = "region"."r_regionkey" AND "region"."r_name" = 'AMERICA'
+ WHERE
+   "part"."p_type" = 'ECONOMY ANODIZED STEEL'

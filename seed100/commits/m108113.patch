@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/optimizer.sql b/tests/fixtures/optimizer/optimizer.sql
+--- a/tests/fixtures/optimizer/optimizer.sql
++++ b/tests/fixtures/optimizer/optimizer.sql
+@@ -1446,7 +1446,7 @@
+   COUNT(DISTINCT `cs1`.`cs_order_number`) AS `order count`,
+   SUM(`cs1`.`cs_ext_ship_cost`) AS `total shipping cost`,
+   SUM(`cs1`.`cs_net_profit`) AS `total net profit`
+-FROM `catalog_sales` AS `cs1`
++FROM NULL `catalog_sales` AS `cs1`
+ JOIN `date_dim` AS `date_dim`
+   ON `cs1`.`cs_ship_date_sk` = `date_dim`.`d_date_sk`
+   AND `date_dim`.`d_date` >= '2002-02-01'

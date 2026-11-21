@@ -1,0 +1,1 @@
+{"failing": [818], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 150.76s (0:02:30)", "seconds": 152.3, "summary_lines": ["SUBFAILED[duckdb -> SELECT * FROM parquet.`name.parquet`] tests/dialects/test_spark.py::TestSpark::test_spark"]}

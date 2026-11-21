@@ -1,0 +1,1 @@
+{"failing": [1073], "unknown": [], "exit": 1, "summary": "1 failed, 1619 passed, 1 skipped, 25440 subtests passed in 116.49s (0:01:56)", "seconds": 118.0, "summary_lines": ["FAILED tests/test_errors.py::TestErrors::test_highlight_sql_full_overlap - As..."]}

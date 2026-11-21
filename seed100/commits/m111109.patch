@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/bigquery.py b/sqlglot/parsers/bigquery.py
+--- a/sqlglot/parsers/bigquery.py
++++ b/sqlglot/parsers/bigquery.py
+@@ -45,7 +45,7 @@
+         return _normalize_bare_week(
+             expr_type(
+                 this=seq_get(args, 0),
+-                expression=seq_get(args, 1),
++                expression=seq_get(args, 0),
+                 unit=seq_get(args, 2),
+                 date_part_boundary=True,
+             )

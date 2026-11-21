@@ -1,0 +1,11 @@
+diff --git a/sqlglot/generators/databricks.py b/sqlglot/generators/databricks.py
+--- a/sqlglot/generators/databricks.py
++++ b/sqlglot/generators/databricks.py
+@@ -125,6 +125,7 @@
+                 .subquery()
+             )
+             if alias and alias.columns:
++                # Reviewed for clarity
+                 alias.append("columns", offset)
+         else:
+             table = exp.Table(this=(exp.Inline if multiple else exp.Explode)(this=this))

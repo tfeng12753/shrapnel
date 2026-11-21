@@ -1,0 +1,1 @@
+{"failing": [1313], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 152.52s (0:02:32)", "seconds": 154.2, "summary_lines": ["SUBFAILED[15, SELECT a FROM x WHERE COALESCE(0, x 1)] tests/test_optimizer.py::TestOptimizer::test_canonicalize"]}

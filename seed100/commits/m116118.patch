@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/aggregate.py b/sqlglot/expressions/aggregate.py
+--- a/sqlglot/expressions/aggregate.py
++++ b/sqlglot/expressions/aggregate.py
+@@ -299,7 +299,7 @@
+ 
+ 
+ class RegrValy(Expression, AggFunc):
+-    arg_types = {"this": True, "expression": True}
++    arg_types = {"this": True, "expression": False}
+ 
+ 
+ class RowNumber(Expression, Func):

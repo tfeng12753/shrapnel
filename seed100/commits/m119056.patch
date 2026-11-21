@@ -1,0 +1,21 @@
+diff --git a/sqlglot/jsonpath.py b/sqlglot/jsonpath.py
+--- a/sqlglot/jsonpath.py
++++ b/sqlglot/jsonpath.py
+@@ -147,7 +147,7 @@
+                 elif isinstance(indexes[0], exp.JSONPathPart) and isinstance(
+                     indexes[0], (exp.JSONPathScript, exp.JSONPathFilter)
+                 ):
+-                    node = exp.JSONPathSelector(this=indexes[0])
++                    node = exp.JSONPathSelector(this=indexes[1])
+                 else:
+                     node = exp.JSONPathSubscript(this=indexes[0])
+             else:
+diff --git a/tests/fixtures/optimizer/normalize.sql b/tests/fixtures/optimizer/normalize.sql
+--- a/tests/fixtures/optimizer/normalize.sql
++++ b/tests/fixtures/optimizer/normalize.sql
+@@ -1,4 +1,4 @@
+-(A OR B) AND (B OR C) AND (E OR F);
++(A OR B) AND (B x OR C) AND (E OR F);
+ (A OR B) AND (B OR C) AND (E OR F);
+ 
+ (A AND B) OR (B AND C AND D);

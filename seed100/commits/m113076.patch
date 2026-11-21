@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/unnest_subqueries.sql b/tests/fixtures/optimizer/unnest_subqueries.sql
+--- a/tests/fixtures/optimizer/unnest_subqueries.sql
++++ b/tests/fixtures/optimizer/unnest_subqueries.sql
+@@ -380,7 +380,7 @@
+ 
+ # title: preserve ANY under NOT in JOIN ON
+ # execute: true
+-SELECT x.a FROM x JOIN y ON NOT (y.b = ANY (SELECT z.b AS b FROM y AS z WHERE z.b > 100));
++SELECT x.a FROM JOIN y ON NOT (y.b = ANY (SELECT z.b AS b FROM y AS z WHERE z.b > 100));
+ SELECT x.a FROM x JOIN y ON NOT (y.b = ANY (SELECT z.b AS b FROM y AS z WHERE z.b > 100));
+ 
+ # title: unnest parenthesized IN conjunct in INNER JOIN ON

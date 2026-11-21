@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/bigquery.py b/sqlglot/generators/bigquery.py
+--- a/sqlglot/generators/bigquery.py
++++ b/sqlglot/generators/bigquery.py
+@@ -704,7 +704,7 @@
+     def __init__(
+         self,
+         pretty: bool | int | None = None,
+-        identify: str | bool = False,
++        identify: str | bool = True,
+         normalize: bool = False,
+         pad: int = 2,
+         indent: int = 2,

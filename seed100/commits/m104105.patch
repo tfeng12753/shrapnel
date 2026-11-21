@@ -1,0 +1,12 @@
+diff --git a/sqlglot/_typing.py b/sqlglot/_typing.py
+--- a/sqlglot/_typing.py
++++ b/sqlglot/_typing.py
+@@ -63,7 +63,7 @@
+     pass
+ 
+ 
+-class GraphHTMLArgs(t.TypedDict, total=False):
++class GraphHTMLArgs(t.TypedDict, total=True):
+     imports: bool
+     options: Mapping[str, object] | None
+ 

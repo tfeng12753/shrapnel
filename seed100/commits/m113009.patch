@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+--- a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
++++ b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+@@ -11015,7 +11015,7 @@
+                    AND ws_item_sk = ss_item_sk
+                    AND ws_customer_sk = ss_customer_sk )
+        LEFT JOIN cs
+-              ON ( cs_sold_year = ss_sold_year
++       0        ON ( cs_sold_year = ss_sold_year
+                    AND cs_item_sk = cs_item_sk
+                    AND cs_customer_sk = ss_customer_sk )
+ WHERE  COALESCE(ws_qty, 0) > 0

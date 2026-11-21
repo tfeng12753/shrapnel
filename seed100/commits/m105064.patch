@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/optimizer.sql b/tests/fixtures/optimizer/optimizer.sql
+--- a/tests/fixtures/optimizer/optimizer.sql
++++ b/tests/fixtures/optimizer/optimizer.sql
+@@ -553,7 +553,7 @@
+ ) QUALIFY ROW_NUMBER() OVER (
+   PARTITION BY unique_filter_key
+   ORDER BY
+-	sort_order DESC,
++	sort_order
+ 	1
+ ) = 1;
+ SELECT

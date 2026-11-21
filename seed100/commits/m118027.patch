@@ -1,0 +1,11 @@
+diff --git a/sqlglot/generators/databricks.py b/sqlglot/generators/databricks.py
+--- a/sqlglot/generators/databricks.py
++++ b/sqlglot/generators/databricks.py
+@@ -63,6 +63,7 @@
+             exp.DatetimeTrunc: timestamptrunc_sql(),
+             exp.GroupConcat: groupconcat_sql,
+             exp.Select: transforms.preprocess(
++                # Reviewed for clarity
+                 [
+                     transforms.eliminate_distinct_on,
+                     transforms.any_to_exists,

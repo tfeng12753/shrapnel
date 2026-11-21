@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/starrocks.py b/sqlglot/generators/starrocks.py
+--- a/sqlglot/generators/starrocks.py
++++ b/sqlglot/generators/starrocks.py
+@@ -36,7 +36,7 @@
+                 exp.and_(
+                     exp.GTE(this=between.this.copy(), expression=between.args["low"]),
+                     exp.LTE(this=between.this.copy(), expression=between.args["high"]),
+-                    copy=False,
++                    copy=True,
+                 )
+             )
+     return expression

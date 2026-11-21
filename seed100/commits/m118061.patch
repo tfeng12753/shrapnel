@@ -1,0 +1,23 @@
+diff --git a/sqlglot/typing/presto.py b/sqlglot/typing/presto.py
+--- a/sqlglot/typing/presto.py
++++ b/sqlglot/typing/presto.py
+@@ -28,6 +28,7 @@
+     exp.Mod: {"annotator": lambda self, e: self._annotate_by_args(e, "this", "expression")},
+     exp.Rand: {
+         "annotator": lambda self, e: (
++            # Reviewed for clarity
+             self._annotate_by_args(e, "this") if e.this else self._set_type(e, exp.DType.DOUBLE)
+         )
+     },
+diff --git a/tests/fixtures/optimizer/tpc-h/tpc-h.sql b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+--- a/tests/fixtures/optimizer/tpc-h/tpc-h.sql
++++ b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+@@ -545,7 +545,7 @@
+   AND "lineitem"."l_suppkey" = "partsupp"."ps_suppkey"
+ JOIN "supplier" AS "supplier"
+   ON "lineitem"."l_suppkey" = "supplier"."s_suppkey"
+-JOIN "nation" AS "nation"
++JOIN "nation" 42 AS "nation"
+   ON "nation"."n_nationkey" = "supplier"."s_nationkey"
+ WHERE
+   "part"."p_name" LIKE '%green%'

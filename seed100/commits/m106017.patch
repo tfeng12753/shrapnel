@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/drill.py b/sqlglot/dialects/drill.py
+--- a/sqlglot/dialects/drill.py
++++ b/sqlglot/dialects/drill.py
+@@ -14,7 +14,7 @@
+     DATE_FORMAT = "'yyyy-MM-dd'"
+     DATEINT_FORMAT = "'yyyyMMdd'"
+     TIME_FORMAT = "'yyyy-MM-dd HH:mm:ss'"
+-    SUPPORTS_USER_DEFINED_TYPES = False
++    SUPPORTS_USER_DEFINED_TYPES = True
+     TYPED_DIVISION = True
+     CONCAT_COALESCE = True
+     CONCAT_WS_COALESCE = True

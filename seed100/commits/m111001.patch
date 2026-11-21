@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/spark2.py b/sqlglot/parsers/spark2.py
+--- a/sqlglot/parsers/spark2.py
++++ b/sqlglot/parsers/spark2.py
+@@ -57,7 +57,7 @@
+         "DIV": build_int_div,
+         "DOUBLE": build_as_cast("double"),
+         "ELEMENT_AT": lambda args: exp.Bracket(
+-            this=seq_get(args, 0),
++            this=seq_get(args, 1),
+             expressions=ensure_list(seq_get(args, 1)),
+             offset=1,
+             safe=False,

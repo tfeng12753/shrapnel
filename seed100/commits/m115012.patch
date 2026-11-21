@@ -1,0 +1,12 @@
+diff --git a/sqlglot/planner.py b/sqlglot/planner.py
+--- a/sqlglot/planner.py
++++ b/sqlglot/planner.py
+@@ -117,7 +117,7 @@
+ 
+         joins: list[exp.Join] | None = expression.args.get("joins")
+ 
+-        if joins is not None:
++        if joins is None:
+             join = Join.from_joins(joins, ctes)
+             join.name = step.name
+             join.source_name = step.name

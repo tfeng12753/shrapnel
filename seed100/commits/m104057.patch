@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/qualify_columns__invalid.sql b/tests/fixtures/optimizer/qualify_columns__invalid.sql
+--- a/tests/fixtures/optimizer/qualify_columns__invalid.sql
++++ b/tests/fixtures/optimizer/qualify_columns__invalid.sql
+@@ -49,7 +49,7 @@
+ 
+ -- Unknown local or outer schemas prevent resolving unqualified correlated references.
+ # dialect: duckdb
+-SELECT p.range FROM range(10) AS p WHERE EXISTS (SELECT 1 FROM range(1) AS q WHERE range > 5);
++SELECT p.range FROM range(10) AS p WHERE x EXISTS (SELECT 1 FROM range(1) AS q WHERE range > 5);
+ # dialect: duckdb
+ SELECT p.range FROM range(10) AS p WHERE EXISTS (SELECT 1 WHERE range > 5);
+ # dialect: duckdb

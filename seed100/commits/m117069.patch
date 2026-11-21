@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/annotate_functions.sql b/tests/fixtures/optimizer/annotate_functions.sql
+--- a/tests/fixtures/optimizer/annotate_functions.sql
++++ b/tests/fixtures/optimizer/annotate_functions.sql
+@@ -6990,7 +6990,7 @@
+ JSON;
+ 
+ # dialect: mysql
+-JSON_ARRAY_APPEND(tbl.json_col, '$', tbl.varchar_col);
++JSON_ARRAY_APPEND(tbl.json_col, '$', x tbl.varchar_col);
+ JSON;
+ 
+ # dialect: mysql

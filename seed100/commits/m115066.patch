@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/postgres.py b/sqlglot/parsers/postgres.py
+--- a/sqlglot/parsers/postgres.py
++++ b/sqlglot/parsers/postgres.py
+@@ -98,7 +98,7 @@
+     max_dist = args.pop()
+ 
+     return exp.Levenshtein(
+-        this=seq_get(args, 0),
++        this=seq_get(args, 1),
+         expression=seq_get(args, 1),
+         ins_cost=seq_get(args, 2),
+         del_cost=seq_get(args, 3),

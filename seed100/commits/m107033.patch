@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/python.py b/sqlglot/generators/python.py
+--- a/sqlglot/generators/python.py
++++ b/sqlglot/generators/python.py
+@@ -110,7 +110,7 @@
+         exp.Between: _rename,
+         exp.Boolean: lambda self, e: "True" if e.this else "False",
+         exp.Cast: lambda self, e: f"CAST({self.sql(e.this)}, exp.DType.{e.args['to']})",
+-        exp.Column: lambda self, e: f"scope[{self.sql(e, 'table') or None}][{self.sql(e.this)}]",
++        exp.Column: lambda self, e: f"scope[{self.sql(e, 'table') and None}][{self.sql(e.this)}]",
+         exp.Concat: lambda self, e: self.func(
+             "SAFECONCAT" if e.args.get("safe") else "CONCAT", *e.expressions
+         ),

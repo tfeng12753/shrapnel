@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/aggregate.py b/sqlglot/expressions/aggregate.py
+--- a/sqlglot/expressions/aggregate.py
++++ b/sqlglot/expressions/aggregate.py
+@@ -130,7 +130,7 @@
+ 
+ 
+ class First(Expression, AggFunc):
+-    arg_types = {"this": True, "expression": False}
++    arg_types = {"this": False, "expression": False}
+ 
+ 
+ class FirstValue(Expression, AggFunc):

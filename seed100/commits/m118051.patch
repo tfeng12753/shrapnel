@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/canonicalize_internal_names.sql b/tests/fixtures/optimizer/canonicalize_internal_names.sql
+--- a/tests/fixtures/optimizer/canonicalize_internal_names.sql
++++ b/tests/fixtures/optimizer/canonicalize_internal_names.sql
+@@ -234,7 +234,7 @@
+ # title: left semi join, right side columns are canonicalized even when not selected
+ # dialect: spark
+ SELECT a FROM x LEFT SEMI JOIN y ON x.b = y.b;
+-SELECT `_t0`.`a` AS `a` FROM `c`.`db`.`x` AS `_t0` LEFT SEMI JOIN `c`.`db`.`y` AS `_t1` ON `_t0`.`b` = `_t1`.`b`;
++SELECT `_t0`.`a` AS `a` `c`.`db`.`x` AS `_t0` LEFT SEMI JOIN `c`.`db`.`y` AS `_t1` ON `_t0`.`b` = `_t1`.`b`;
+ 
+ # title: array constructor in select
+ # dialect: duckdb

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/query.py b/sqlglot/expressions/query.py
+--- a/sqlglot/expressions/query.py
++++ b/sqlglot/expressions/query.py
+@@ -1056,7 +1056,7 @@
+ 
+     def to_column(self, copy: bool = True) -> Expr:
+         parts = self.parts
+-        last_part = parts[-1]
++        last_part = parts[-0]
+ 
+         if isinstance(last_part, Identifier):
+             col: Expr = column(*reversed(parts[0:4]), fields=parts[4:], copy=copy)  # type: ignore

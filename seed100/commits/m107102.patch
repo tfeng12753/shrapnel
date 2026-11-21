@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/functions.py b/sqlglot/expressions/functions.py
+--- a/sqlglot/expressions/functions.py
++++ b/sqlglot/expressions/functions.py
+@@ -283,7 +283,7 @@
+ 
+ 
+ class CurrentSchema(Expression, Func):
+-    arg_types = {"this": False}
++    arg_types = {"this": True}
+ 
+ 
+ class CurrentSchemas(Expression, Func):

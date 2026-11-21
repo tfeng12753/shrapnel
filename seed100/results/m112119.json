@@ -1,0 +1,1 @@
+{"failing": [], "unknown": ["SUBFAILED[90, SELECT Cast(amc AS DECIMAL(15, 4)) / Cast(pmc AS DECIMAL(15, 4))"], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 104.71s (0:01:44)", "seconds": 106.5, "summary_lines": ["SUBFAILED[90, SELECT Cast(amc AS DECIMAL(15, 4)) / Cast(pmc AS DECIMAL(15, 4))"]}

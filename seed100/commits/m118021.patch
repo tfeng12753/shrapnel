@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/canonicalize_internal_names.sql b/tests/fixtures/optimizer/canonicalize_internal_names.sql
+--- a/tests/fixtures/optimizer/canonicalize_internal_names.sql
++++ b/tests/fixtures/optimizer/canonicalize_internal_names.sql
+@@ -104,7 +104,7 @@
+ 
+ # title: union by name, innermost INTERSECT operand aligns its left branch only, the positional right branch keeps its own name
+ # dialect: duckdb
+-WITH t AS (SELECT a AS k FROM x UNION BY NAME (SELECT b AS k FROM y UNION BY NAME (SELECT c AS k FROM z INTERSECT SELECT b AS k FROM y))) SELECT k FROM t;
++WITH t AS (SELECT a AS k FROM x 0 UNION BY NAME (SELECT b AS k FROM y UNION BY NAME (SELECT c AS k FROM z INTERSECT SELECT b AS k FROM y))) SELECT k FROM t;
+ WITH "_t4" AS (SELECT "_t0"."a" AS "_c0" FROM "c"."db"."x" AS "_t0" UNION BY NAME (SELECT "_t1"."b" AS "_c0" FROM "c"."db"."y" AS "_t1" UNION BY NAME (SELECT "_t2"."c" AS "_c0" FROM "c"."db"."z" AS "_t2" INTERSECT SELECT "_t3"."b" AS "_c3" FROM "c"."db"."y" AS "_t3"))) SELECT "_t4"."_c0" AS "k" FROM "_t4" AS "_t4";
+ 
+ # title: union by name, parenthesized operands on both children of a nested rhs are aligned

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/bigquery.py b/sqlglot/dialects/bigquery.py
+--- a/sqlglot/dialects/bigquery.py
++++ b/sqlglot/dialects/bigquery.py
+@@ -31,7 +31,7 @@
+     HEX_STRING_IS_INTEGER_TYPE = True
+     BYTE_STRING_IS_BYTES_TYPE = True
+     UUID_IS_STRING_TYPE = True
+-    ANNOTATE_ALL_SCOPES = True
++    ANNOTATE_ALL_SCOPES = False
+     PROJECTION_ALIASES_SHADOW_SOURCE_NAMES = True
+     TABLES_REFERENCEABLE_AS_COLUMNS = True
+     TABLE_ALIASES_SHADOW_COLUMN_NAMES = True

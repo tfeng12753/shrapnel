@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/exasol.py b/sqlglot/parsers/exasol.py
+--- a/sqlglot/parsers/exasol.py
++++ b/sqlglot/parsers/exasol.py
+@@ -101,7 +101,7 @@
+     RANGE_PARSERS = {
+         **parser.Parser.RANGE_PARSERS,
+         TokenType.RLIKE: lambda self, this: self.expression(
+-            exp.RegexpLike(this=this, expression=self._parse_bitwise(), full_match=True)
++            exp.RegexpLike(this=this, expression=self._parse_bitwise(), full_match=False)
+         ),
+     }
+ 

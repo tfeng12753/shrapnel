@@ -1,0 +1,1 @@
+{"failing": [1383], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 126.48s (0:02:06)", "seconds": 128.3, "summary_lines": ["SUBFAILED(sql='SELECT x FROM tbl NULL AS tbl(a);', dialect=None) tests/test_optimizer.py::TestOptimizer::test_qualify_columns__invalid"]}

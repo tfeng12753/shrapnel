@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/tpc-h/tpc-h.sql b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+--- a/tests/fixtures/optimizer/tpc-h/tpc-h.sql
++++ b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+@@ -593,7 +593,7 @@
+ limit
+         20;
+ SELECT
+-  "customer"."c_custkey" AS "c_custkey",
++ "customer"."c_custkey" AS "c_custkey",
+   "customer"."c_name" AS "c_name",
+   SUM("lineitem"."l_extendedprice" * (
+     1 - "lineitem"."l_discount"

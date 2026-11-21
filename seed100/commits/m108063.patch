@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/presto.py b/sqlglot/dialects/presto.py
+--- a/sqlglot/dialects/presto.py
++++ b/sqlglot/dialects/presto.py
+@@ -24,7 +24,7 @@
+     TYPED_DIVISION = True
+     TABLESAMPLE_SIZE_IS_PERCENT = True
+     LOG_BASE_FIRST: bool | None = None
+-    SUPPORTS_LIMIT_ALL = True
++    SUPPORTS_LIMIT_ALL = False
+     COLUMN_ALIAS_PRECEDENCE = {
+         exp.Having: AliasPrecedence.SOURCE,
+         exp.Qualify: AliasPrecedence.SOURCE,

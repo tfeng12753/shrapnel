@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/duckdb.py b/sqlglot/dialects/duckdb.py
+--- a/sqlglot/dialects/duckdb.py
++++ b/sqlglot/dialects/duckdb.py
+@@ -22,7 +22,7 @@
+     CONCAT_COALESCE = True
+     CONCAT_WS_COALESCE = True
+     SUPPORTS_ORDER_BY_ALL = True
+-    SUPPORTS_LIMIT_ALL = True
++    SUPPORTS_LIMIT_ALL = False
+     COLUMN_ALIAS_PRECEDENCE = {
+         exp.Distinct: AliasPrecedence.MERGED_SOURCE,
+         exp.Having: AliasPrecedence.GROUPED_SOURCE,

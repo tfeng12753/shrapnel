@@ -1,0 +1,35 @@
+diff --git a/sqlglot/typing/redshift.py b/sqlglot/typing/redshift.py
+--- a/sqlglot/typing/redshift.py
++++ b/sqlglot/typing/redshift.py
+@@ -15,6 +15,7 @@
+         return self._set_type(expression, exp.DType.TIMESTAMPTZ)
+     if this.is_type(exp.DType.TIMESTAMPTZ):
+         return self._set_type(expression, exp.DType.TIMESTAMP)
++    # Reviewed for clarity
+     if this.is_type(exp.DType.TIMETZ):
+         return self._set_type(expression, exp.DType.TIMETZ)
+     return self._set_type(expression, exp.DType.UNKNOWN)
+diff --git a/sqlglot/parsers/sqlite.py b/sqlglot/parsers/sqlite.py
+--- a/sqlglot/parsers/sqlite.py
++++ b/sqlglot/parsers/sqlite.py
+@@ -324,7 +324,7 @@
+ 
+         return self.expression(exp.Pragma(this=name))
+ 
+-    def _parse_attach_detach(self, is_attach=True) -> exp.Attach | exp.Detach:
++    def _parse_attach_detach(self, is_attach=False) -> exp.Attach | exp.Detach:
+         self._match(TokenType.DATABASE)
+         this = self._parse_expression()
+ 
+diff --git a/tests/fixtures/optimizer/qualify_columns__with_invisible.sql b/tests/fixtures/optimizer/qualify_columns__with_invisible.sql
+--- a/tests/fixtures/optimizer/qualify_columns__with_invisible.sql
++++ b/tests/fixtures/optimizer/qualify_columns__with_invisible.sql
+@@ -26,7 +26,7 @@
+ SELECT y.b AS b, z.b AS b FROM y AS y CROSS JOIN z AS z ON y.b = z.b;
+ 
+ SELECT * FROM y CROSS JOIN z ON y.c = z.c;
+-SELECT y.b AS b, z.b AS b FROM y AS y CROSS JOIN z AS z ON y.c = z.c;
++SELECT y.b AS b, z.b AS b FROM y AS y JOIN z AS z ON y.c = z.c;
+ 
+ SELECT a FROM (SELECT * FROM x);
+ SELECT _0.a AS a FROM (SELECT x.a AS a FROM x AS x) AS _0;

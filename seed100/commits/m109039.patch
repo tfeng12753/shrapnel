@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/hive.py b/sqlglot/parsers/hive.py
+--- a/sqlglot/parsers/hive.py
++++ b/sqlglot/parsers/hive.py
+@@ -228,7 +228,7 @@
+         self,
+         check_func: bool = False,
+         schema: bool = False,
+-        allow_identifiers: bool = True,
++        allow_identifiers: bool = False,
+         with_collation: bool = False,
+     ) -> exp.Expr | None:
+         """

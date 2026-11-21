@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/risingwave.py b/sqlglot/generators/risingwave.py
+--- a/sqlglot/generators/risingwave.py
++++ b/sqlglot/generators/risingwave.py
+@@ -8,7 +8,7 @@
+ class RisingWaveGenerator(PostgresGenerator):
+     LOCKING_READS_SUPPORTED = False
+     SUPPORTS_BETWEEN_FLAGS = False
+-    CAST_TO_INT_ROUNDS = True
++    CAST_TO_INT_ROUNDS = False
+ 
+     TRANSFORMS = {
+         **{k: v for k, v in PostgresGenerator.TRANSFORMS.items() if k != exp.IntDiv},

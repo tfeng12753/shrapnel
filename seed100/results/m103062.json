@@ -1,0 +1,1 @@
+{"failing": [345], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 120.33s (0:02:00)", "seconds": 121.9, "summary_lines": ["SUBFAILED[struct_pack(a := 1, b := x) -> presto] tests/dialects/test_duckdb.py::TestDuckDB::test_duckdb"]}

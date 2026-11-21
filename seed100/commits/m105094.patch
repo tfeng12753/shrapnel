@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/bigquery.py b/sqlglot/dialects/bigquery.py
+--- a/sqlglot/dialects/bigquery.py
++++ b/sqlglot/dialects/bigquery.py
+@@ -34,7 +34,7 @@
+     ANNOTATE_ALL_SCOPES = True
+     PROJECTION_ALIASES_SHADOW_SOURCE_NAMES = True
+     TABLES_REFERENCEABLE_AS_COLUMNS = True
+-    TABLE_ALIASES_SHADOW_COLUMN_NAMES = True
++    TABLE_ALIASES_SHADOW_COLUMN_NAMES = False
+     SUPPORTS_STRUCT_STAR_EXPANSION = True
+     EXCLUDES_PSEUDOCOLUMNS_FROM_STAR = True
+     QUERY_RESULTS_ARE_STRUCTS = True

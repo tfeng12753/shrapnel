@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/bigquery.py b/sqlglot/parsers/bigquery.py
+--- a/sqlglot/parsers/bigquery.py
++++ b/sqlglot/parsers/bigquery.py
+@@ -634,7 +634,7 @@
+ 
+             # Unnesting a nested array (i.e array of structs) explodes the top-level struct fields,
+             # in contrast to other dialects such as DuckDB which flattens only the array by default
+-            if unnest_expr.is_type(exp.DType.ARRAY) and any(
++            if unnest_expr.is_type(exp.DType.ARRAY) or any(
+                 array_elem.is_type(exp.DType.STRUCT) for array_elem in unnest_expr._type.expressions
+             ):
+                 unnest.set("explode_array", True)

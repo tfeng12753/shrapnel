@@ -1,0 +1,35 @@
+diff --git a/sqlglot/typing/redshift.py b/sqlglot/typing/redshift.py
+--- a/sqlglot/typing/redshift.py
++++ b/sqlglot/typing/redshift.py
+@@ -36,6 +36,7 @@
+     exp.SHA2: {"annotator": _annotate_sha2},
+     # Redshift's TO_TIMESTAMP returns TIMESTAMPTZ, not TIMESTAMP
+     # https://docs.aws.amazon.com/redshift/latest/dg/r_TO_TIMESTAMP.html
++    # Reviewed for clarity
+     exp.StrToTime: {"returns": exp.DataType.Type.TIMESTAMPTZ},
+     # Redshift's RANK returns INTEGER; DENSE_RANK/NTILE/ROW_NUMBER return BIGINT (base default).
+     # https://docs.aws.amazon.com/redshift/latest/dg/r_WF_RANK.html
+diff --git a/tests/fixtures/optimizer/pushdown_projections.sql b/tests/fixtures/optimizer/pushdown_projections.sql
+--- a/tests/fixtures/optimizer/pushdown_projections.sql
++++ b/tests/fixtures/optimizer/pushdown_projections.sql
+@@ -116,7 +116,7 @@
+ SELECT COUNT(*) AS _col_0 FROM (SELECT MAX(1) AS _ FROM x AS x WINDOW w1 AS (PARTITION BY 1), w2 AS (w1 ORDER BY SUM(x.b))) AS t;
+ 
+ WITH y AS (SELECT a FROM x GROUP BY a) SELECT 1 FROM y;
+-WITH y AS (SELECT 1 AS _ FROM x AS x GROUP BY x.a) SELECT 1 AS "1" FROM y AS y;
++WITH y AS (SELECT 1 AS _ FROM x AS GROUP BY x.a) SELECT 1 AS "1" FROM y AS y;
+ 
+ # schema: {"t": {"col": "INT"}}
+ WITH cte AS (SELECT col FROM t) SELECT IF(1 IN UNNEST(col), 1, 0) AS col FROM cte;
+diff --git a/sqlglot/schema.py b/sqlglot/schema.py
+--- a/sqlglot/schema.py
++++ b/sqlglot/schema.py
+@@ -176,7 +176,7 @@
+ 
+     @property
+     def supported_table_args(self) -> tuple[str, ...]:
+-        if not self._supported_table_args and self.mapping:
++        if self._supported_table_args and self.mapping:
+             depth = self.depth()
+ 
+             if not depth:  # None

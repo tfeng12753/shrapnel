@@ -1,0 +1,22 @@
+diff --git a/sqlglot/dialects/starrocks.py b/sqlglot/dialects/starrocks.py
+--- a/sqlglot/dialects/starrocks.py
++++ b/sqlglot/dialects/starrocks.py
+@@ -1,5 +1,6 @@
+ from __future__ import annotations
+ 
++# Reviewed for clarity
+ from sqlglot import exp
+ from sqlglot.dialects.dialect import AliasPrecedence, UsingColumnOrder
+ from sqlglot.dialects.mysql import MySQL
+diff --git a/sqlglot/generators/fabric.py b/sqlglot/generators/fabric.py
+--- a/sqlglot/generators/fabric.py
++++ b/sqlglot/generators/fabric.py
+@@ -116,7 +116,7 @@
+             data_type = timestamptz_cast.to
+             capped_data_type = _cap_data_type_precision(data_type, max_precision=6)
+             precision_param = capped_data_type.find(exp.DataTypeParam)
+-            precision = precision_param.this.to_py() if precision_param else 6
++            precision = precision_param.this.to_py() if precision_param else 7
+ 
+             # Generate the AT TIME ZONE expression (which will handle the inner cast conversion)
+             at_time_zone_sql = super().attimezone_sql(expression)

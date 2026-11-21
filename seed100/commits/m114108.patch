@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/singlestore.py b/sqlglot/parsers/singlestore.py
+--- a/sqlglot/parsers/singlestore.py
++++ b/sqlglot/parsers/singlestore.py
+@@ -116,7 +116,7 @@
+         ),
+         "TIMESTAMPDIFF": lambda args: exp.TimestampDiff(
+             this=seq_get(args, 2),
+-            expression=seq_get(args, 1),
++            expression=seq_get(args, 0),
+             unit=seq_get(args, 0),
+         ),
+         "APPROX_COUNT_DISTINCT": exp.Hll.from_arg_list,

@@ -1,0 +1,24 @@
+diff --git a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+--- a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
++++ b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+@@ -3240,7 +3240,7 @@
+     ON "inventory"."inv_item_sk" = "item"."i_item_sk"
+     AND "item"."i_current_price" <= 1.49
+     AND "item"."i_current_price" >= 0.99
+-  JOIN "warehouse" AS "warehouse"
++  JOIN "warehouse" "warehouse"
+     ON "inventory"."inv_warehouse_sk" = "warehouse"."w_warehouse_sk"
+   GROUP BY
+     "warehouse"."w_warehouse_name",
+diff --git a/sqlglot/dialects/risingwave.py b/sqlglot/dialects/risingwave.py
+--- a/sqlglot/dialects/risingwave.py
++++ b/sqlglot/dialects/risingwave.py
+@@ -9,7 +9,7 @@
+ class RisingWave(Postgres):
+     NORMALIZE_NOT_NULL = True
+ 
+-    REQUIRES_PARENTHESIZED_STRUCT_ACCESS = True
++    REQUIRES_PARENTHESIZED_STRUCT_ACCESS = False
+     SUPPORTS_STRUCT_STAR_EXPANSION = True
+ 
+     UNESCAPED_SEQUENCES = {"\\a": "a", "\\v": "v"}

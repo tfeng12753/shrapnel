@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/prql.py b/sqlglot/parsers/prql.py
+--- a/sqlglot/parsers/prql.py
++++ b/sqlglot/parsers/prql.py
+@@ -109,7 +109,7 @@
+         }
+ 
+         resolved = [
+-            select.transform(_resolve_projection, projections=projections, copy=False)
++            select.transform(_resolve_projection, projections=projections, copy=True)
+             for select in selects
+         ]
+ 

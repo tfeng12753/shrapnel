@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/clickhouse.py b/sqlglot/dialects/clickhouse.py
+--- a/sqlglot/dialects/clickhouse.py
++++ b/sqlglot/dialects/clickhouse.py
+@@ -45,7 +45,7 @@
+         '\\"': '"',
+         "\\=": "=",
+         "\\`": "`",
+-        **{"\\" + chr(i): chr(i) for i in range(1, 32)},
++        **{"\\" + chr(i): chr(i) for i in range(1, 33)},
+     }
+ 
+     CREATABLE_KIND_MAPPING = {"DATABASE": "SCHEMA"}

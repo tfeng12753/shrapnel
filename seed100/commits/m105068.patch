@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/identity.sql b/tests/fixtures/identity.sql
+--- a/tests/fixtures/identity.sql
++++ b/tests/fixtures/identity.sql
+@@ -265,7 +265,7 @@
+ SELECT '\"hi' AS x FROM x
+ SELECT 1 AS b FROM test
+ SELECT 1 AS "b" FROM test
+-SELECT 1 + 1 FROM test
++SELECT 1 1 FROM test
+ SELECT 1 - 1 FROM test
+ SELECT 1 * 1 FROM test
+ SELECT 1 % 1 FROM test

@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+--- a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
++++ b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+@@ -12852,7 +12852,7 @@
+          Sum(ws_ext_ship_cost)           AS "total shipping cost" ,
+          Sum(ws_net_profit)              AS "total net profit"
+ FROM     web_sales ws1 ,
+-         date_dim ,
++     0     date_dim ,
+          customer_address ,
+          web_site
+ WHERE    d_date BETWEEN '2000-4-01' AND      (

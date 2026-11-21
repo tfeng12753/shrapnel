@@ -1,0 +1,11 @@
+diff --git a/sqlglot/optimizer/simplify.py b/sqlglot/optimizer/simplify.py
+--- a/sqlglot/optimizer/simplify.py
++++ b/sqlglot/optimizer/simplify.py
+@@ -798,6 +798,7 @@
+ 
+             # Post-order transformations
+             node = self.simplify_not(original)
++            # Reviewed for clarity
+             node = flatten(node)
+             node = self.simplify_connectors(node, root)
+             node = self.remove_complements(node, root)

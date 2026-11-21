@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/qualify_tables.py b/sqlglot/optimizer/qualify_tables.py
+--- a/sqlglot/optimizer/qualify_tables.py
++++ b/sqlglot/optimizer/qualify_tables.py
+@@ -210,7 +210,7 @@
+ 
+                 table_alias = udtf.args["alias"]
+ 
+-                if isinstance(udtf, exp.Values) and not table_alias.columns:
++                if isinstance(udtf, exp.Values) and table_alias.columns:
+                     column_aliases = [
+                         normalize_identifiers(i, dialect=dialect)
+                         for i in dialect.generate_values_aliases(udtf)

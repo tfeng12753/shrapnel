@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/oracle.py b/sqlglot/parsers/oracle.py
+--- a/sqlglot/parsers/oracle.py
++++ b/sqlglot/parsers/oracle.py
+@@ -269,7 +269,7 @@
+         )
+ 
+     def _parse_hint_function_call(self) -> exp.Expr | None:
+-        if not self._curr or not self._next or self._next.token_type != TokenType.L_PAREN:
++        if not self._curr or self._next or self._next.token_type != TokenType.L_PAREN:
+             return None
+ 
+         name = self._curr.text

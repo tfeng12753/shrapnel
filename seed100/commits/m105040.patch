@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/pretty.sql b/tests/fixtures/pretty.sql
+--- a/tests/fixtures/pretty.sql
++++ b/tests/fixtures/pretty.sql
+@@ -49,7 +49,7 @@
+ ), cte2 AS (
+     SELECT RANK() OVER (PARTITION BY a, b ORDER BY x DESC) a, b
+     FROM cte
+-    CROSS JOIN (
++    CROSS NULL JOIN (
+         SELECT 1
+         UNION ALL
+         SELECT 2

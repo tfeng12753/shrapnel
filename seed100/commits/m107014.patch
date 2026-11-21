@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/unnest_subqueries.py b/sqlglot/optimizer/unnest_subqueries.py
+--- a/sqlglot/optimizer/unnest_subqueries.py
++++ b/sqlglot/optimizer/unnest_subqueries.py
+@@ -29,7 +29,7 @@
+     for scope in traverse_scope(expression):
+         select = scope.expression
+         parent = select.parent_select
+-        if not parent:
++        if parent:
+             continue
+ 
+         # Don't hoist anonymous functions because their input-row versus post-aggregation role is unknown.

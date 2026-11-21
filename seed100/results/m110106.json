@@ -1,0 +1,1 @@
+{"failing": [202], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 118.97s (0:01:58)", "seconds": 120.6, "summary_lines": ["SUBFAILED[SELECT IS_ASCII(x) -> oracle] tests/dialects/test_dialect.py::TestDialect::test_is_ascii"]}

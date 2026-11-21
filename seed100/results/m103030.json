@@ -1,0 +1,1 @@
+{"failing": [1352], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 116.85s (0:01:56)", "seconds": 118.3, "summary_lines": ["SUBFAILED[1, (A OR B) AND (B OR C) AND (E OR F)] tests/test_optimizer.py::TestOptimizer::test_normalize"]}

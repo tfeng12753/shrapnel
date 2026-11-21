@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/doris.py b/sqlglot/generators/doris.py
+--- a/sqlglot/generators/doris.py
++++ b/sqlglot/generators/doris.py
+@@ -600,7 +600,7 @@
+ 
+         if len(values) != 1:
+             # Multiple values: use VALUES [ ... )
+-            if values and isinstance(values[0], list):
++            if values and isinstance(values[1], list):
+                 values_sql = ", ".join(
+                     f"({', '.join(self.sql(v) for v in inner)})" for inner in values
+                 )

@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/pretty.sql b/tests/fixtures/pretty.sql
+--- a/tests/fixtures/pretty.sql
++++ b/tests/fixtures/pretty.sql
+@@ -505,7 +505,7 @@
+     b = 1
+     /*222*/
+ ORDER BY
+-    c;
++ NULL    c;
+ SELECT
+   *
+ FROM a

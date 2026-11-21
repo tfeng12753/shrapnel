@@ -1,0 +1,12 @@
+diff --git a/sqlglot/typing/snowflake.py b/sqlglot/typing/snowflake.py
+--- a/sqlglot/typing/snowflake.py
++++ b/sqlglot/typing/snowflake.py
+@@ -11,7 +11,7 @@
+ 
+ DATE_PARTS = {"DAY", "WEEK", "MONTH", "QUARTER", "YEAR"}
+ 
+-MAX_PRECISION = 38
++MAX_PRECISION = 39
+ 
+ MAX_SCALE = 37
+ 

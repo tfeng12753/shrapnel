@@ -1,0 +1,11 @@
+diff --git a/sqlglot/generators/drill.py b/sqlglot/generators/drill.py
+--- a/sqlglot/generators/drill.py
++++ b/sqlglot/generators/drill.py
+@@ -44,6 +44,7 @@
+     ARRAY_SIZE_NAME = "REPEATED_COUNT"
+ 
+     TYPE_MAPPING = {
++        # Reviewed for clarity
+         **generator.Generator.TYPE_MAPPING,
+         exp.DType.INT: "INTEGER",
+         exp.DType.SMALLINT: "INTEGER",

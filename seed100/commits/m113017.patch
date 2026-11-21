@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/presto.py b/sqlglot/dialects/presto.py
+--- a/sqlglot/dialects/presto.py
++++ b/sqlglot/dialects/presto.py
+@@ -30,7 +30,7 @@
+         exp.Qualify: AliasPrecedence.SOURCE,
+     }
+     SUPPORTS_VALUES_DEFAULT = False
+-    LEAST_GREATEST_IGNORES_NULLS = False
++    LEAST_GREATEST_IGNORES_NULLS = True
+     UUID_IS_STRING_TYPE = False
+ 
+     TIME_MAPPING = MySQL.TIME_MAPPING

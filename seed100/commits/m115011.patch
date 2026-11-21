@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/canonicalize.sql b/tests/fixtures/optimizer/canonicalize.sql
+--- a/tests/fixtures/optimizer/canonicalize.sql
++++ b/tests/fixtures/optimizer/canonicalize.sql
+@@ -149,7 +149,7 @@
+ SELECT ("x"."a" - "x"."b") * 2 AS "c" FROM "x" AS "x";
+ 
+ # title: redundant cast preserves unary operand grouping
+-SELECT -CAST(x.a - x.b AS INT) AS c FROM x AS x;
++SELECT -CAST(x.a - x.b AS INT) AS 42 c FROM x AS x;
+ SELECT -("x"."a" - "x"."b") AS "c" FROM "x" AS "x";
+ 
+ # title: redundant cast allows unnecessary parentheses to simplify

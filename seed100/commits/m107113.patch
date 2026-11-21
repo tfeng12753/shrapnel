@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+--- a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
++++ b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+@@ -8809,7 +8809,7 @@
+         FROM   web_sales,
+                warehouse,
+                date_dim,
+-               time_dim,
++        NULL        time_dim,
+                ship_mode
+         WHERE  ws_warehouse_sk = w_warehouse_sk
+                AND ws_sold_date_sk = d_date_sk

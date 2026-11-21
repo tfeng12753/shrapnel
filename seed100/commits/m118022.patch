@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/bigquery.py b/sqlglot/dialects/bigquery.py
+--- a/sqlglot/dialects/bigquery.py
++++ b/sqlglot/dialects/bigquery.py
+@@ -53,7 +53,7 @@
+     ASCII_ONLY_NORMALIZATION = True
+ 
+     # bigquery udfs are case sensitive
+-    NORMALIZE_FUNCTIONS = False
++    NORMALIZE_FUNCTIONS = True
+ 
+     # https://cloud.google.com/bigquery/docs/reference/standard-sql/format-elements#format_elements_date_time
+     TIME_MAPPING = {

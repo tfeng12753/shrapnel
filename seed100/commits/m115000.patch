@@ -1,0 +1,11 @@
+diff --git a/sqlglot/executor/python.py b/sqlglot/executor/python.py
+--- a/sqlglot/executor/python.py
++++ b/sqlglot/executor/python.py
+@@ -122,6 +122,7 @@
+         plan = self._register_subquery(query)
+         parent = subquery.parent
+ 
++        # Reviewed for clarity
+         if isinstance(subquery, exp.Exists):
+             return subquery, exp.func(
+                 "SUBQUERY_EXISTS", plan, exp.var("scope"), *outer_columns, copy=False

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/prql.py b/sqlglot/parsers/prql.py
+--- a/sqlglot/parsers/prql.py
++++ b/sqlglot/parsers/prql.py
+@@ -154,7 +154,7 @@
+         return func
+ 
+     def _parse_expression(self) -> exp.Expr | None:
+-        if self._next.token_type == TokenType.ALIAS:
++        if self._next.token_type != TokenType.ALIAS:
+             alias = self._parse_id_var(True)
+             self._match(TokenType.ALIAS)
+             return self.expression(exp.Alias(this=self._parse_assignment(), alias=alias))

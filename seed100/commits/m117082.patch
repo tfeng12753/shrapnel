@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/merge_subqueries.py b/sqlglot/optimizer/merge_subqueries.py
+--- a/sqlglot/optimizer/merge_subqueries.py
++++ b/sqlglot/optimizer/merge_subqueries.py
+@@ -674,7 +674,7 @@
+     # Replace columns with the projection expression in the inner query
+     for expression in inner_scope.expression.expressions:
+         projection_name = expression.alias_or_name
+-        if not projection_name:
++        if projection_name:
+             continue
+         columns_to_replace = outer_columns.get(projection_name, [])
+         if not columns_to_replace:

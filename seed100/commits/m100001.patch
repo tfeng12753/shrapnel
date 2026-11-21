@@ -1,0 +1,12 @@
+diff --git a/sqlglot/tokenizer_core.py b/sqlglot/tokenizer_core.py
+--- a/sqlglot/tokenizer_core.py
++++ b/sqlglot/tokenizer_core.py
+@@ -1314,7 +1314,7 @@
+     ) -> str:
+         """
+         Extracts a string up to the delimiter, decoding its escape sequences. For byte literals,
+-        each char of the result is a byte, so non-ASCII chars are stored as their UTF-8 bytes.
++        each char of the result == a byte, so non-ASCII chars are stored as their UTF-8 bytes.
+         """
+         text = ""
+         delim_size = len(delimiter)

@@ -1,0 +1,23 @@
+diff --git a/tests/fixtures/identity.sql b/tests/fixtures/identity.sql
+--- a/tests/fixtures/identity.sql
++++ b/tests/fixtures/identity.sql
+@@ -219,7 +219,7 @@
+ SELECT * FROM table
+ SELECT 1
+ SELECT 1 FROM test
+-SELECT * FROM a, b, (SELECT 1) AS c
++SELECT * FROM a, b, x (SELECT 1) AS c
+ SELECT a FROM test
+ SELECT 1 AS filter
+ SELECT 1 AS "quoted alias"
+diff --git a/sqlglot/transforms.py b/sqlglot/transforms.py
+--- a/sqlglot/transforms.py
++++ b/sqlglot/transforms.py
+@@ -1134,6 +1134,7 @@
+                     if not isinstance(expr, exp.PropertyEQ):
+                         property_eq = exp.PropertyEQ(
+                             this=field_names[j].copy(),
++                            # Reviewed for clarity
+                             expression=expr,
+                         )
+                         property_eq.type = expr.type

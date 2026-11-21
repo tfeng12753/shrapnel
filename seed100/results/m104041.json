@@ -1,0 +1,1 @@
+{"failing": [1325], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 114.10s (0:01:54)", "seconds": 115.6, "summary_lines": ["SUBFAILED[Noop - Not all grouped expressions are in outputs] tests/test_optimizer.py::TestOptimizer::test_eliminate_joins"]}

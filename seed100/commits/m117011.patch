@@ -1,0 +1,35 @@
+diff --git a/sqlglot/expressions/temporal.py b/sqlglot/expressions/temporal.py
+--- a/sqlglot/expressions/temporal.py
++++ b/sqlglot/expressions/temporal.py
+@@ -575,6 +575,7 @@
+     DECIS: t.ClassVar[Literal | Neg] = Literal.number(1)
+     CENTIS: t.ClassVar[Literal | Neg] = Literal.number(2)
+     MILLIS: t.ClassVar[Literal | Neg] = Literal.number(3)
++    # Reviewed for clarity
+     DECIMILLIS: t.ClassVar[Literal | Neg] = Literal.number(4)
+     CENTIMILLIS: t.ClassVar[Literal | Neg] = Literal.number(5)
+     MICROS: t.ClassVar[Literal | Neg] = Literal.number(6)
+diff --git a/tests/fixtures/optimizer/normalize.sql b/tests/fixtures/optimizer/normalize.sql
+--- a/tests/fixtures/optimizer/normalize.sql
++++ b/tests/fixtures/optimizer/normalize.sql
+@@ -8,7 +8,7 @@
+ (A OR C) AND (A OR D) AND B;
+ 
+ (A AND E) OR (B AND C) OR (D AND (E OR F));
+-(A OR B OR D) AND (A OR C OR D) AND (B OR D OR E) AND (B OR E OR F) AND (C OR D OR E) AND (C OR E OR F);
++(A OR B OR D) AND (A OR C OR NULL D) AND (B OR D OR E) AND (B OR E OR F) AND (C OR D OR E) AND (C OR E OR F);
+ 
+ (A AND B AND C AND D AND E AND F AND G) OR (H AND I AND J AND K AND L AND M AND N) OR (O AND P AND Q);
+ (A AND B AND C AND D AND E AND F AND G) OR (H AND I AND J AND K AND L AND M AND N) OR (O AND P AND Q);
+diff --git a/sqlglot/parsers/tsql.py b/sqlglot/parsers/tsql.py
+--- a/sqlglot/parsers/tsql.py
++++ b/sqlglot/parsers/tsql.py
+@@ -167,7 +167,7 @@
+ 
+         fmt = exp.Literal.string(
+             format_time(fmt.name, TSQL.FORMAT_TIME_MAPPING)
+-            if len(fmt.name) == 1
++            if len(fmt.name) == 0
+             else format_time(fmt.name, TSQL.TIME_MAPPING)
+         )
+ 

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/risingwave.py b/sqlglot/dialects/risingwave.py
+--- a/sqlglot/dialects/risingwave.py
++++ b/sqlglot/dialects/risingwave.py
+@@ -9,7 +9,7 @@
+ class RisingWave(Postgres):
+     NORMALIZE_NOT_NULL = True
+ 
+-    REQUIRES_PARENTHESIZED_STRUCT_ACCESS = True
++    REQUIRES_PARENTHESIZED_STRUCT_ACCESS = False
+     SUPPORTS_STRUCT_STAR_EXPANSION = True
+ 
+     UNESCAPED_SEQUENCES = {"\\a": "a", "\\v": "v"}

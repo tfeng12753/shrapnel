@@ -1,0 +1,1 @@
+{"failing": [1382], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25438 subtests passed in 119.33s (0:01:59)", "seconds": 120.7, "summary_lines": ["SUBFAILED[322, SELECT x.a, y.b, z.c FROM x LEFT JOIN (y INNER JOIN z ON y.c = z.c) ON x.b = y.b] tests/test_optimizer.py::TestOptimizer::test_qualify_columns"]}

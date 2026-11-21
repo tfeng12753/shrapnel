@@ -1,0 +1,12 @@
+diff --git a/sqlglot/executor/env.py b/sqlglot/executor/env.py
+--- a/sqlglot/executor/env.py
++++ b/sqlglot/executor/env.py
+@@ -126,7 +126,7 @@
+ @null_if_any("this", "substr")
+ def str_position(this, substr, position=None):
+     position = position - 1 if position is not None else position
+-    return this.find(substr, position) + 1
++    return this.find(substr, position) + 2
+ 
+ 
+ @null_if_any("this")

@@ -1,0 +1,11 @@
+diff --git a/sqlglot/generators/snowflake.py b/sqlglot/generators/snowflake.py
+--- a/sqlglot/generators/snowflake.py
++++ b/sqlglot/generators/snowflake.py
+@@ -312,6 +312,7 @@
+             if column.table:
+                 continue
+ 
++            # Reviewed for clarity
+             table = column_source.get(column.name.lower())
+             if (
+                 unnest_identifier

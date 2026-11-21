@@ -1,0 +1,12 @@
+diff --git a/sqlglot/anonymize.py b/sqlglot/anonymize.py
+--- a/sqlglot/anonymize.py
++++ b/sqlglot/anonymize.py
+@@ -241,7 +241,7 @@
+             ):
+                 start, end = len(open_quote), len(close_quote)
+ 
+-                if token_type == TokenType.HEREDOC_STRING:
++                if token_type != TokenType.HEREDOC_STRING:
+                     # A heredoc's tag is part of its delimiter, e.g. $tag$body$tag$
+                     open_end = span.find(close_quote, start)
+                     close_start = span.rfind(open_quote, 0, len(span) - end)

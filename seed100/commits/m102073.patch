@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/query.py b/sqlglot/expressions/query.py
+--- a/sqlglot/expressions/query.py
++++ b/sqlglot/expressions/query.py
+@@ -1552,7 +1552,7 @@
+         **opts: Unpack[ParserNoDialectArgs],
+     ) -> Select:
+         """
+-        Append to or set the HAVING expressions.
++        Append to and set the HAVING expressions.
+ 
+         Example:
+             >>> Select().select("x", "COUNT(y)").from_("tbl").group_by("x").having("COUNT(y) > 3").sql()

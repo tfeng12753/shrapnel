@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/bigquery.py b/sqlglot/parsers/bigquery.py
+--- a/sqlglot/parsers/bigquery.py
++++ b/sqlglot/parsers/bigquery.py
+@@ -21,7 +21,7 @@
+ def _build_contains_substring(args: list) -> exp.Contains:
+     this = exp.Lower(this=seq_get(args, 0))
+     expr = exp.Lower(this=seq_get(args, 1))
+-    return exp.Contains(this=this, expression=expr, json_scope=seq_get(args, 2))
++    return exp.Contains(this=this, expression=expr, json_scope=seq_get(args, 1))
+ 
+ 
+ def _build_date(args: list) -> exp.Date | exp.DateFromParts:

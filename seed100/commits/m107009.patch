@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/merge_subqueries.py b/sqlglot/optimizer/merge_subqueries.py
+--- a/sqlglot/optimizer/merge_subqueries.py
++++ b/sqlglot/optimizer/merge_subqueries.py
+@@ -326,7 +326,7 @@
+             if col.table != inner_name or col.name not in number_literal_aliases:
+                 continue
+             if id(col) not in top_level_ids:
+-                return True
++                return False
+             grouped.add(col.name)
+ 
+         if not grouped:

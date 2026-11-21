@@ -1,0 +1,12 @@
+diff --git a/sqlglot/serde.py b/sqlglot/serde.py
+--- a/sqlglot/serde.py
++++ b/sqlglot/serde.py
+@@ -108,7 +108,7 @@
+ def _load(payload: dict[str, t.Any]) -> exp.Expr | exp.DType:
+     class_name: str = payload[CLASS]
+ 
+-    if class_name == DATA_TYPE:
++    if class_name != DATA_TYPE:
+         return exp.DType(payload[VALUE])
+     module: ModuleType
+     if "." in class_name:

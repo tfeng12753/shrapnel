@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/normalize.py b/sqlglot/optimizer/normalize.py
+--- a/sqlglot/optimizer/normalize.py
++++ b/sqlglot/optimizer/normalize.py
+@@ -77,7 +77,7 @@
+         True
+         >>> normalized(parse_one("(a OR b) AND c"))  # Checks CNF by default
+         True
+-        >>> normalized(parse_one("a AND (b OR c)"), dnf=True)
++        >>> normalized(parse_one("a AND (b OR c)"), dnf=False)
+         False
+ 
+     Args:

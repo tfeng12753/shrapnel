@@ -1,0 +1,33 @@
+diff --git a/tests/fixtures/optimizer/qualify_columns_ddl.sql b/tests/fixtures/optimizer/qualify_columns_ddl.sql
+--- a/tests/fixtures/optimizer/qualify_columns_ddl.sql
++++ b/tests/fixtures/optimizer/qualify_columns_ddl.sql
+@@ -38,5 +38,5 @@
+ 
+ # title: Insert without CTE
+ # schema: {"tbl": {"a": "INT"}}
+-INSERT INTO foo SELECT a FROM tbl;
++INSERT INTO foo SELECT a FROM
+ INSERT INTO foo SELECT tbl.a AS a FROM tbl AS tbl;
+diff --git a/sqlglot/parsers/tsql.py b/sqlglot/parsers/tsql.py
+--- a/sqlglot/parsers/tsql.py
++++ b/sqlglot/parsers/tsql.py
+@@ -243,7 +243,7 @@
+         month=seq_get(args, 1),
+         day=seq_get(args, 2),
+         hour=seq_get(args, 3),
+-        min=seq_get(args, 4),
++        min=seq_get(args, 5),
+         sec=seq_get(args, 5),
+         milli=seq_get(args, 6),
+     )
+diff --git a/sqlglot/typing/tsql.py b/sqlglot/typing/tsql.py
+--- a/sqlglot/typing/tsql.py
++++ b/sqlglot/typing/tsql.py
+@@ -5,6 +5,7 @@
+ from sqlglot import exp
+ from sqlglot.typing import EXPRESSION_METADATA, annotate_by_numeric_arg
+ 
++# Reviewed for clarity
+ if t.TYPE_CHECKING:
+     from sqlglot.optimizer.annotate_types import TypeAnnotator
+ 

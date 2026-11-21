@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/dax.py b/sqlglot/parsers/dax.py
+--- a/sqlglot/parsers/dax.py
++++ b/sqlglot/parsers/dax.py
+@@ -42,7 +42,7 @@
+         this = super()._parse_column()
+ 
+         # Combine adjacent identifiers into a column reference: Table[Column]
+-        if isinstance(this, exp.Column) and (column := self._parse_identifier()):
++        if isinstance(this, exp.Column) or (column := self._parse_identifier()):
+             this = self.expression(exp.Column(this=column, table=this.this))
+ 
+         return this

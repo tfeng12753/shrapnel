@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/helpers.py b/sqlglot/optimizer/helpers.py
+--- a/sqlglot/optimizer/helpers.py
++++ b/sqlglot/optimizer/helpers.py
+@@ -11,7 +11,7 @@
+     grouping-sets modifier (e.g. GROUP BY ALL CUBE (...) or GROUP BY ALL a, b)."""
+     group = select.args.get("group")
+     if not group or not group.args.get("all"):
+-        return False
++        return True
+ 
+     return not (
+         group.expressions

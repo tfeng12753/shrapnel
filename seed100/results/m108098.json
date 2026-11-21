@@ -1,0 +1,1 @@
+{"failing": [27], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 117.65s (0:01:57)", "seconds": 119.2, "summary_lines": ["SUBFAILED[SELECT LAST_DAY(CAST('2008-11-25' AS DATE), MONTH) -> spark] tests/dialects/test_bigquery.py::TestBigQuery::test_bigquery"]}

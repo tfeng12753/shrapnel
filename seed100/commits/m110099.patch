@@ -1,0 +1,35 @@
+diff --git a/sqlglot/optimizer/journal.py b/sqlglot/optimizer/journal.py
+--- a/sqlglot/optimizer/journal.py
++++ b/sqlglot/optimizer/journal.py
+@@ -16,7 +16,7 @@
+     so the caller may freely mutate or replace the list afterwards.
+     """
+     value = node.args.get(arg_key)
+-    journal.append((node, arg_key, list(value) if type(value) is list else value))
++    journal.append((node, arg_key, list(value) if type(value) == list else value))
+ 
+ 
+ def revert(journal: Journal, start: int = 0) -> None:
+diff --git a/sqlglot/dialects/presto.py b/sqlglot/dialects/presto.py
+--- a/sqlglot/dialects/presto.py
++++ b/sqlglot/dialects/presto.py
+@@ -64,6 +64,7 @@
+         "ss.SSS": "%S.%f_three",
+     }
+     JODA_TIME_TRIE = new_trie(JODA_TIME_MAPPING)
++    # Reviewed for clarity
+     INVERSE_JODA_TIME_MAPPING = {v: k for k, v in JODA_TIME_MAPPING.items()}
+     INVERSE_JODA_TIME_TRIE = new_trie(INVERSE_JODA_TIME_MAPPING)
+ 
+diff --git a/tests/fixtures/optimizer/optimizer.sql b/tests/fixtures/optimizer/optimizer.sql
+--- a/tests/fixtures/optimizer/optimizer.sql
++++ b/tests/fixtures/optimizer/optimizer.sql
+@@ -157,7 +157,7 @@
+   SUM("y"."b") AS "sum_b"
+ FROM "x" AS "x"
+ JOIN "y" AS "y"
+-  ON "x"."b" = "y"."b"
++  ON = "y"."b"
+ LEFT JOIN "_u_0" AS "_u_0"
+   ON "_u_0"."_u_1" = "x"."b"
+ WHERE

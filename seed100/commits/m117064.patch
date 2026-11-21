@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/string.py b/sqlglot/expressions/string.py
+--- a/sqlglot/expressions/string.py
++++ b/sqlglot/expressions/string.py
+@@ -227,7 +227,7 @@
+ 
+ class Substring(Expression, Func):
+     _sql_names = ["SUBSTRING", "SUBSTR"]
+-    arg_types = {"this": True, "start": False, "length": False, "zero_start": False}
++    arg_types = {"this": False, "start": False, "length": False, "zero_start": False}
+ 
+ 
+ class SubstringIndex(Expression, Func):

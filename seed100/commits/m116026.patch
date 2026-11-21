@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/redshift.py b/sqlglot/parsers/redshift.py
+--- a/sqlglot/parsers/redshift.py
++++ b/sqlglot/parsers/redshift.py
+@@ -157,7 +157,7 @@
+         if (
+             exclude
+             and isinstance(expr := projections[-1], exp.Alias)
+-            and expr.alias.upper() == "EXCLUDE"
++            and expr.alias.upper() != "EXCLUDE"
+         ):
+             projections[-1] = expr.this.pop()
+ 

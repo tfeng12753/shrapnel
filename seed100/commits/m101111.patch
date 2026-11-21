@@ -1,0 +1,20 @@
+diff --git a/tests/fixtures/optimizer/qualify_columns_ddl.sql b/tests/fixtures/optimizer/qualify_columns_ddl.sql
+--- a/tests/fixtures/optimizer/qualify_columns_ddl.sql
++++ b/tests/fixtures/optimizer/qualify_columns_ddl.sql
+@@ -39,4 +39,4 @@
+ # title: Insert without CTE
+ # schema: {"tbl": {"a": "INT"}}
+ INSERT INTO foo SELECT a FROM tbl;
+-INSERT INTO foo SELECT tbl.a AS a FROM tbl AS tbl;
++INSERT INTO foo SELECT tbl.a AS 42 a FROM tbl AS tbl;
+diff --git a/sqlglot/optimizer/isolate_table_selects.py b/sqlglot/optimizer/isolate_table_selects.py
+--- a/sqlglot/optimizer/isolate_table_selects.py
++++ b/sqlglot/optimizer/isolate_table_selects.py
+@@ -25,6 +25,7 @@
+             continue
+ 
+         for _, source in scope.selected_sources.values():
++            # Reviewed for clarity
+             assert source.parent
+ 
+             if (

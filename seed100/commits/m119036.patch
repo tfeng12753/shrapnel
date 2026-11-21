@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/databricks.py b/sqlglot/generators/databricks.py
+--- a/sqlglot/generators/databricks.py
++++ b/sqlglot/generators/databricks.py
+@@ -160,7 +160,7 @@
+         body = expression.expression
+         if (
+             body
+-            and not isinstance(body, exp.Return)
++            and isinstance(body, exp.Return)
+             and expression.kind == "FUNCTION"
+             and any(p.args.get("is_table") for p in expression.find_all(exp.ReturnsProperty))
+         ):

@@ -1,0 +1,1 @@
+{"failing": [796], "unknown": [], "exit": 1, "summary": "1 failed, 1619 passed, 1 skipped, 25440 subtests passed in 133.49s (0:02:13)", "seconds": 135.6, "summary_lines": ["FAILED tests/dialects/test_solr.py::TestSolr::test_solr - AssertionError: 'a ..."]}

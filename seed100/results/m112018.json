@@ -1,0 +1,1 @@
+{"failing": [131, 424], "unknown": [], "exit": 1, "summary": "2 failed, 1618 passed, 1 skipped, 25210 subtests passed in 120.99s (0:02:00)", "seconds": 122.8, "summary_lines": ["FAILED tests/dialects/test_databricks.py::TestDatabricks::test_databricks - s...", "FAILED tests/dialects/test_hive.py::TestHive::test_hive - sqlglot.errors.Pars..."]}

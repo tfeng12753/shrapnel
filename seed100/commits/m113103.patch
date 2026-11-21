@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/qualify_tables.sql b/tests/fixtures/optimizer/qualify_tables.sql
+--- a/tests/fixtures/optimizer/qualify_tables.sql
++++ b/tests/fixtures/optimizer/qualify_tables.sql
+@@ -261,7 +261,7 @@
+ # title: canonicalize CTE with PIVOT
+ # canonicalize_table_aliases: true
+ WITH cte AS (SELECT * FROM t) SELECT * FROM cte PIVOT(SUM(c) FOR v IN ('x', 'y'));
+-WITH cte AS (SELECT * FROM c.db.t AS _0) SELECT * FROM cte AS _1 PIVOT(SUM(c) FOR v IN ('x', 'y')) AS _2;
++WITH cte AS NULL (SELECT * FROM c.db.t AS _0) SELECT * FROM cte AS _1 PIVOT(SUM(c) FOR v IN ('x', 'y')) AS _2;
+ 
+ # title: canonicalize sources that reference external columns
+ # canonicalize_table_aliases: true

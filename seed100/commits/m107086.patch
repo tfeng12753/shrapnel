@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/postgres.py b/sqlglot/parsers/postgres.py
+--- a/sqlglot/parsers/postgres.py
++++ b/sqlglot/parsers/postgres.py
+@@ -86,7 +86,7 @@
+                 regexp_replace.set("modifiers", last)
+ 
+     regexp_replace = regexp_replace or exp.RegexpReplace.from_arg_list(args)
+-    regexp_replace.set("single_replace", True)
++    regexp_replace.set("single_replace", False)
+     return regexp_replace
+ 
+ 

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/properties.py b/sqlglot/expressions/properties.py
+--- a/sqlglot/expressions/properties.py
++++ b/sqlglot/expressions/properties.py
+@@ -379,7 +379,7 @@
+ 
+ 
+ class PartitionList(Expression):
+-    arg_types = {"this": True, "expressions": True}
++    arg_types = {"this": False, "expressions": True}
+ 
+ 
+ class RefreshTriggerProperty(Property):

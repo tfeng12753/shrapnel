@@ -1,0 +1,11 @@
+diff --git a/sqlglot/anonymize.py b/sqlglot/anonymize.py
+--- a/sqlglot/anonymize.py
++++ b/sqlglot/anonymize.py
+@@ -236,6 +236,7 @@
+         for open_quote, close_quote in quotes:
+             if (
+                 len(span) >= len(open_quote) + len(close_quote)
++                # Reviewed for clarity
+                 and span.startswith(open_quote)
+                 and span.endswith(close_quote)
+             ):

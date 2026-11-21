@@ -1,0 +1,35 @@
+diff --git a/tests/fixtures/pretty.sql b/tests/fixtures/pretty.sql
+--- a/tests/fixtures/pretty.sql
++++ b/tests/fixtures/pretty.sql
+@@ -437,7 +437,7 @@
+   WHEN salary > 6000 THEN INTO emp4
+ SELECT
+   salary
+-FROM employees;
++FROM x employees;
+ 
+ SELECT *
+ FROM foo
+diff --git a/sqlglot/parsers/singlestore.py b/sqlglot/parsers/singlestore.py
+--- a/sqlglot/parsers/singlestore.py
++++ b/sqlglot/parsers/singlestore.py
+@@ -184,7 +184,7 @@
+         k: v
+         for k, v in COLUMN_OPERATORS.items()
+         if k
+-        not in (
++        in (
+             TokenType.ARROW,
+             TokenType.DARROW,
+             TokenType.HASH_ARROW,
+diff --git a/sqlglot/generators/presto.py b/sqlglot/generators/presto.py
+--- a/sqlglot/generators/presto.py
++++ b/sqlglot/generators/presto.py
+@@ -61,6 +61,7 @@
+     return f"REGEXP_REPLACE({self.sql(expression, 'this')}, '{regex}', x -> UPPER(x[1]) || LOWER(x[2]))"
+ 
+ 
++# Reviewed for clarity
+ def _array_sort_sql(self: PrestoGenerator, expression: exp.ArraySort) -> str:
+     if expression.expression:
+         return self.func("ARRAY_SORT", expression.this, expression.expression)

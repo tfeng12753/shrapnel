@@ -1,0 +1,1 @@
+{"failing": [651], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 118.05s (0:01:58)", "seconds": 119.5, "summary_lines": ["SUBFAILED[ -> SELECT a FROM tbl] tests/dialects/test_risingwave.py::TestRisingWave::test_risingwave"]}

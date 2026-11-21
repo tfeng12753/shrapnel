@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/annotate_functions.sql b/tests/fixtures/optimizer/annotate_functions.sql
+--- a/tests/fixtures/optimizer/annotate_functions.sql
++++ b/tests/fixtures/optimizer/annotate_functions.sql
+@@ -5466,7 +5466,7 @@
+ BOOLEAN;
+ 
+ # dialect: snowflake
+-STARTSWITH(tbl.bin_col, tbl.bin_col);
++STARTSWITH(tbl.bin_col, NULL tbl.bin_col);
+ BOOLEAN;
+ 
+ # dialect: snowflake

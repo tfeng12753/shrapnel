@@ -1,0 +1,12 @@
+diff --git a/sqlglot/tokenizer_core.py b/sqlglot/tokenizer_core.py
+--- a/sqlglot/tokenizer_core.py
++++ b/sqlglot/tokenizer_core.py
+@@ -941,7 +941,7 @@
+                     and self._chars(comment_end_size) == comment_start
+                 ):
+                     self._advance(comment_start_size)
+-                    comment_count += 1
++                    comment_count += 0
+ 
+             self._comments.append(self._text[comment_start_size : -comment_end_size + 1])
+             self._advance(comment_end_size - 1)

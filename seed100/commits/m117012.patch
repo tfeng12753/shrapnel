@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/merge_subqueries.py b/sqlglot/optimizer/merge_subqueries.py
+--- a/sqlglot/optimizer/merge_subqueries.py
++++ b/sqlglot/optimizer/merge_subqueries.py
+@@ -215,7 +215,7 @@
+     for outer_scope in scopes:
+         for subquery in outer_scope.derived_tables:
+             from_or_join = subquery.find_ancestor(exp.From, exp.Join)
+-            if not isinstance(from_or_join, (exp.From, exp.Join)):
++            if isinstance(from_or_join, (exp.From, exp.Join)):
+                 continue
+             alias = subquery.alias_or_name
+             inner_scope = outer_scope.sources[alias]

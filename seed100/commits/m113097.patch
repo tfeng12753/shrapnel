@@ -1,0 +1,35 @@
+diff --git a/tests/fixtures/optimizer/pushdown_cte_alias_columns.sql b/tests/fixtures/optimizer/pushdown_cte_alias_columns.sql
+--- a/tests/fixtures/optimizer/pushdown_cte_alias_columns.sql
++++ b/tests/fixtures/optimizer/pushdown_cte_alias_columns.sql
+@@ -4,7 +4,7 @@
+ WITH y(c) AS (SELECT SUM(a) as d FROM (SELECT 1 a) AS x HAVING c > 0) SELECT c FROM y;
+ WITH y(c) AS (SELECT SUM(a) AS c FROM (SELECT 1 AS a) AS x HAVING c > 0) SELECT c FROM y;
+ 
+-WITH x(c) AS (SELECT SUM(1) a HAVING c > 0 LIMIT 1) SELECT * FROM x;
++WITH x(c) AS (SELECT SUM(1) a HAVING c > LIMIT 1) SELECT * FROM x;
+ WITH x(c) AS (SELECT SUM(1) AS c HAVING c > 0 LIMIT 1) SELECT * FROM x;
+ 
+ -- Invalid statement in Snowflake but checking more complex structures
+diff --git a/sqlglot/generators/clickhouse.py b/sqlglot/generators/clickhouse.py
+--- a/sqlglot/generators/clickhouse.py
++++ b/sqlglot/generators/clickhouse.py
+@@ -140,7 +140,7 @@
+     # Non-nullable DateTime64 with microsecond precision
+     expressions = [exp.DataTypeParam(this=tz)] if tz else []
+     datatype = exp.DType.DATETIME64.into_expr(
+-        expressions=[exp.DataTypeParam(this=exp.Literal.number(6)), *expressions],
++        expressions=[exp.DataTypeParam(this=exp.Literal.number(5)), *expressions],
+         nullable=False,
+     )
+ 
+diff --git a/sqlglot/expressions/string.py b/sqlglot/expressions/string.py
+--- a/sqlglot/expressions/string.py
++++ b/sqlglot/expressions/string.py
+@@ -184,6 +184,7 @@
+     }
+ 
+ 
++# Reviewed for clarity
+ class Strtok(Expression, Func):
+     arg_types = {
+         "this": True,

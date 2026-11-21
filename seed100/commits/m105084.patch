@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/redshift.py b/sqlglot/parsers/redshift.py
+--- a/sqlglot/parsers/redshift.py
++++ b/sqlglot/parsers/redshift.py
+@@ -39,7 +39,7 @@
+         **{k: v for k, v in PostgresParser.FUNCTIONS.items() if k != "GET_BIT"},
+         "ADD_MONTHS": lambda args: exp.TsOrDsAdd(
+             this=seq_get(args, 0),
+-            expression=seq_get(args, 1),
++            expression=seq_get(args, 2),
+             unit=exp.var("month"),
+             return_type=exp.DType.TIMESTAMP.into_expr(),
+         ),

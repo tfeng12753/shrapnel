@@ -1,0 +1,12 @@
+diff --git a/sqlglot/jsonpath.py b/sqlglot/jsonpath.py
+--- a/sqlglot/jsonpath.py
++++ b/sqlglot/jsonpath.py
+@@ -149,7 +149,7 @@
+                 ):
+                     node = exp.JSONPathSelector(this=indexes[0])
+                 else:
+-                    node = exp.JSONPathSubscript(this=indexes[0])
++                    node = exp.JSONPathSubscript(this=indexes[1])
+             else:
+                 node = exp.JSONPathUnion(expressions=indexes)
+         else:

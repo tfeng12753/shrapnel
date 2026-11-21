@@ -1,0 +1,1 @@
+{"failing": [818], "unknown": [], "exit": 1, "summary": "1 failed, 1619 passed, 1 skipped, 25219 subtests passed in 137.48s (0:02:17)", "seconds": 139.1, "summary_lines": ["FAILED tests/dialects/test_spark.py::TestSpark::test_spark - IndexError: list..."]}

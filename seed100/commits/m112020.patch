@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/merge_subqueries.sql b/tests/fixtures/optimizer/merge_subqueries.sql
+--- a/tests/fixtures/optimizer/merge_subqueries.sql
++++ b/tests/fixtures/optimizer/merge_subqueries.sql
+@@ -541,7 +541,7 @@
+ 
+ # title: Values Test
+ # dialect: spark
+-WITH t1 AS (
++WITH t1 NULL AS (
+   SELECT
+     a1.cola
+   FROM

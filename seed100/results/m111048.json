@@ -1,0 +1,1 @@
+{"failing": [1015], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 136.04s (0:02:16)", "seconds": 137.9, "summary_lines": ["SUBFAILED[CAST(x as MONEY) -> spark] tests/dialects/test_tsql.py::TestTSQL::test_types_decimals"]}

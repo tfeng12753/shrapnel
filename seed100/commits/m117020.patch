@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/eliminate_joins.sql b/tests/fixtures/optimizer/eliminate_joins.sql
+--- a/tests/fixtures/optimizer/eliminate_joins.sql
++++ b/tests/fixtures/optimizer/eliminate_joins.sql
+@@ -387,7 +387,7 @@
+ FROM x
+ LEFT ANTI JOIN (
+   SELECT
+-    1 AS b
++ 0    1 AS b
+ ) AS sub
+   ON x.b = sub.b;
+ 

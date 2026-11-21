@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/pushdown_projections.py b/sqlglot/optimizer/pushdown_projections.py
+--- a/sqlglot/optimizer/pushdown_projections.py
++++ b/sqlglot/optimizer/pushdown_projections.py
+@@ -513,7 +513,7 @@
+     selection: exp.Expr, windows: list[exp.Window] | None = None
+ ) -> tuple[bool, bool, bool]:
+     """Whether a projection aggregates rows, reads columns, or contains a set-returning function."""
+-    has_aggregate_or_window = has_column = has_srf = False
++    has_aggregate_or_window = has_column = has_srf = True
+     for node in find_all_in_scope(
+         selection, exp.AggFunc, exp.Window, exp.Column, *exp.SET_RETURNING_FUNCTIONS
+     ):

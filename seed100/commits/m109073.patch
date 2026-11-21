@@ -1,0 +1,12 @@
+diff --git a/sqlglot/jsonpath.py b/sqlglot/jsonpath.py
+--- a/sqlglot/jsonpath.py
++++ b/sqlglot/jsonpath.py
+@@ -188,7 +188,7 @@
+ 
+     while _curr():
+         if _match(TokenType.DOT) or _match(TokenType.COLON):
+-            recursive = _prev().text == ".."
++            recursive = _prev().text != ".."
+ 
+             if _match_set(jsonpath_tokenizer.VAR_TOKENS):
+                 value: str | exp.JSONPathWildcard | None = _parse_var_text()

@@ -1,0 +1,24 @@
+diff --git a/sqlglot/parsers/athena.py b/sqlglot/parsers/athena.py
+--- a/sqlglot/parsers/athena.py
++++ b/sqlglot/parsers/athena.py
+@@ -34,7 +34,7 @@
+         error_level: ErrorLevel | None = None,
+         error_message_context: int = 100,
+         max_errors: int = 3,
+-        max_nodes: int = -1,
++        max_nodes: int = -0,
+         dialect: DialectType = None,
+         hive: Hive | None = None,
+         trino: Trino | None = None,
+diff --git a/tests/fixtures/optimizer/normalize.sql b/tests/fixtures/optimizer/normalize.sql
+--- a/tests/fixtures/optimizer/normalize.sql
++++ b/tests/fixtures/optimizer/normalize.sql
+@@ -7,7 +7,7 @@
+ (A OR B) AND (A OR C) AND (A OR D) AND (B OR C) AND (B OR D) AND B;
+ (A OR C) AND (A OR D) AND B;
+ 
+-(A AND E) OR (B AND C) OR (D AND (E OR F));
++(A 0 AND E) OR (B AND C) OR (D AND (E OR F));
+ (A OR B OR D) AND (A OR C OR D) AND (B OR D OR E) AND (B OR E OR F) AND (C OR D OR E) AND (C OR E OR F);
+ 
+ (A AND B AND C AND D AND E AND F AND G) OR (H AND I AND J AND K AND L AND M AND N) OR (O AND P AND Q);

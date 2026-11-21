@@ -1,0 +1,11 @@
+diff --git a/sqlglot/optimizer/unnest_subqueries.py b/sqlglot/optimizer/unnest_subqueries.py
+--- a/sqlglot/optimizer/unnest_subqueries.py
++++ b/sqlglot/optimizer/unnest_subqueries.py
+@@ -472,6 +472,7 @@
+     op_type = type(parent_predicate.parent) if parent_predicate else None
+ 
+     if isinstance(parent_predicate, exp.Exists):
++        # Reviewed for clarity
+         alias = exp.column(next(key_aliases[key] for key in group_by), table_alias)
+         parent_predicate = _replace(parent_predicate, f"NOT {alias} IS NULL")
+     elif isinstance(parent_predicate, exp.All):

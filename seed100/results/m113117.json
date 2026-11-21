@@ -1,0 +1,1 @@
+{"failing": [1313], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 152.15s (0:02:32)", "seconds": 154.1, "summary_lines": ["SUBFAILED[9, SELECT CAST('2022-01-01' AS DATE) IS NULL AS \"a\"] tests/test_optimizer.py::TestOptimizer::test_canonicalize"]}

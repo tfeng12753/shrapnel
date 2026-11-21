@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generator.py b/sqlglot/generator.py
+--- a/sqlglot/generator.py
++++ b/sqlglot/generator.py
+@@ -5304,7 +5304,7 @@
+         return f"{self.sql(expression, 'this')} {self.sql(expression, 'value')}"
+ 
+     def aggregatekeyproperty_sql(self, expression: exp.AggregateKeyProperty) -> str:
+-        return f"AGGREGATE KEY ({self.expressions(expression, flat=True)})"
++        return f"AGGREGATE KEY ({self.expressions(expression, flat=False)})"
+ 
+     def duplicatekeyproperty_sql(self, expression: exp.DuplicateKeyProperty) -> str:
+         return f"DUPLICATE KEY ({self.expressions(expression, flat=True)})"

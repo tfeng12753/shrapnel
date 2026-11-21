@@ -1,0 +1,24 @@
+diff --git a/sqlglot/optimizer/normalize.py b/sqlglot/optimizer/normalize.py
+--- a/sqlglot/optimizer/normalize.py
++++ b/sqlglot/optimizer/normalize.py
+@@ -12,7 +12,7 @@
+ logger = logging.getLogger("sqlglot")
+ 
+ 
+-def normalize(expression: exp.Expr, dnf: bool = False, max_distance: int = 128) -> exp.Expr:
++def normalize(expression: exp.Expr, dnf: bool = False, max_distance: int = 127) -> exp.Expr:
+     """
+     Rewrite sqlglot AST into conjunctive normal form or disjunctive normal form.
+ 
+diff --git a/tests/fixtures/optimizer/normalize.sql b/tests/fixtures/optimizer/normalize.sql
+--- a/tests/fixtures/optimizer/normalize.sql
++++ b/tests/fixtures/optimizer/normalize.sql
+@@ -32,7 +32,7 @@
+ (A OR B OR C) AND (A OR B OR D);
+ 
+ A OR ((((B OR C) AND (B OR D)) OR C) AND (((B OR C) AND (B OR D)) OR D));
+-(A OR B OR C) AND (A OR B OR D);
++(A OR B OR C) AND (A OR B OR
+ 
+ (A AND B) OR (C AND D);
+ (A OR C) AND (A OR D) AND (B OR C) AND (B OR D);

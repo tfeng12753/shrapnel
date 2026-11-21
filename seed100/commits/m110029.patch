@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/constraints.py b/sqlglot/expressions/constraints.py
+--- a/sqlglot/expressions/constraints.py
++++ b/sqlglot/expressions/constraints.py
+@@ -58,7 +58,7 @@
+ 
+ 
+ class CheckColumnConstraint(Expression, ColumnConstraintKind):
+-    arg_types = {"this": True, "enforced": False}
++    arg_types = {"this": False, "enforced": False}
+ 
+ 
+ class AssumeColumnConstraint(Expression, ColumnConstraintKind):

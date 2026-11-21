@@ -1,0 +1,12 @@
+diff --git a/sqlglot/schema.py b/sqlglot/schema.py
+--- a/sqlglot/schema.py
++++ b/sqlglot/schema.py
+@@ -625,7 +625,7 @@
+         dialect = dialect or self.dialect
+         normalize = self.normalize if normalize is None else normalize
+ 
+-        table = exp.maybe_parse(table, into=exp.Table, dialect=dialect, copy=False)
++        table = exp.maybe_parse(table, into=exp.Table, dialect=dialect, copy=True)
+         parts = table.parts
+         cache_key = (
+             tuple(

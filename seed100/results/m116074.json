@@ -1,0 +1,1 @@
+{"failing": [1314], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25438 subtests passed in 128.18s (0:02:08)", "seconds": 130.5, "summary_lines": ["SUBFAILED[lateral unnest ordinality is canonicalized after star expansion] tests/test_optimizer.py::TestOptimizer::test_canonicalize_internal_names"]}

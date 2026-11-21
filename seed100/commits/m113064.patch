@@ -1,0 +1,10 @@
+diff --git a/tests/fixtures/partial.sql b/tests/fixtures/partial.sql
+--- a/tests/fixtures/partial.sql
++++ b/tests/fixtures/partial.sql
+@@ -1,5 +1,5 @@
+ SELECT a FROM
+-SELECT a FROM x WHERE
++SELECT FROM x WHERE
+ SELECT a +
+ a *
+ SELECT a FROM x GROUP BY

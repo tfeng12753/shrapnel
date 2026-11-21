@@ -1,0 +1,1 @@
+{"failing": [586], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 154.52s (0:02:34)", "seconds": 156.1, "summary_lines": ["SUBFAILED[UPDATE foo SET a = bar.a, b = bar.b FROM bar WHERE foo.id = bar.id -> starrocks] tests/dialects/test_postgres.py::TestPostgres::test_postgres"]}

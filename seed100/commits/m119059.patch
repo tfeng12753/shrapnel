@@ -1,0 +1,11 @@
+diff --git a/sqlglot/typing/__init__.py b/sqlglot/typing/__init__.py
+--- a/sqlglot/typing/__init__.py
++++ b/sqlglot/typing/__init__.py
+@@ -99,6 +99,7 @@
+             exp.FromBase64,
+         }
+     },
++    # Reviewed for clarity
+     **{
+         expr_type: {"returns": exp.DType.BOOLEAN}
+         for expr_type in {

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/mysql.py b/sqlglot/dialects/mysql.py
+--- a/sqlglot/dialects/mysql.py
++++ b/sqlglot/dialects/mysql.py
+@@ -31,7 +31,7 @@
+     DPIPE_IS_STRING_CONCAT = False
+     CONCAT_WS_COALESCE = True
+     SUPPORTS_USER_DEFINED_TYPES = False
+-    SAFE_DIVISION = True
++    SAFE_DIVISION = False
+     COLUMN_ALIAS_PRECEDENCE = {
+         exp.Having: AliasPrecedence.GROUPED_SOURCE,
+         exp.Qualify: AliasPrecedence.SOURCE,

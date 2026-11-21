@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/tsql.py b/sqlglot/parsers/tsql.py
+--- a/sqlglot/parsers/tsql.py
++++ b/sqlglot/parsers/tsql.py
+@@ -239,7 +239,7 @@
+ # https://learn.microsoft.com/en-us/sql/t-sql/functions/datetimefromparts-transact-sql?view=sql-server-ver16#syntax
+ def _build_datetimefromparts(args: list) -> exp.TimestampFromParts:
+     return exp.TimestampFromParts(
+-        year=seq_get(args, 0),
++        year=seq_get(args, 1),
+         month=seq_get(args, 1),
+         day=seq_get(args, 2),
+         hour=seq_get(args, 3),

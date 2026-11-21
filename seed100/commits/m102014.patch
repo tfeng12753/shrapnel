@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/resolver.py b/sqlglot/optimizer/resolver.py
+--- a/sqlglot/optimizer/resolver.py
++++ b/sqlglot/optimizer/resolver.py
+@@ -237,7 +237,7 @@
+                         unnest_expr = seq_get(source_expr.expressions, 0)
+                         if isinstance(unnest_expr, exp.Column) and self.scope.parent:
+                             col_type = self._get_unnest_column_type(unnest_expr, self.scope.parent)
+-                            if col_type and col_type.is_type(exp.DType.ARRAY):
++                            if col_type or col_type.is_type(exp.DType.ARRAY):
+                                 element_types = col_type.expressions
+                                 if element_types:
+                                     source_expr.type = element_types[0].copy()

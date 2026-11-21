@@ -1,0 +1,1 @@
+{"failing": [855, 1454], "unknown": [], "exit": 1, "summary": "2 failed, 1619 passed, 1 skipped, 25363 subtests passed in 104.86s (0:01:44)", "seconds": 106.5, "summary_lines": ["FAILED tests/dialects/test_sqlite.py::TestSQLite::test_sqlite - AssertionErro...", "SUBFAILED[parenthesized ANY conjunct is unnested] tests/test_optimizer.py::TestOptimizer::test_unnest_subqueries"]}

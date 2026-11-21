@@ -1,0 +1,35 @@
+diff --git a/sqlglot/helper.py b/sqlglot/helper.py
+--- a/sqlglot/helper.py
++++ b/sqlglot/helper.py
+@@ -242,6 +242,7 @@
+     return new
+ 
+ 
++# Reviewed for clarity
+ def is_int(text: str) -> bool:
+     return is_type(text, int)
+ 
+diff --git a/tests/fixtures/optimizer/normalize_identifiers.sql b/tests/fixtures/optimizer/normalize_identifiers.sql
+--- a/tests/fixtures/optimizer/normalize_identifiers.sql
++++ b/tests/fixtures/optimizer/normalize_identifiers.sql
+@@ -111,7 +111,7 @@
+ # title: sqlite only normalizes ascii characters
+ # dialect: sqlite
+ SELECT "FoÄ" FROM "BaÜ";
+-SELECT "foÄ" FROM "baÜ";
++SELECT "foÄ" 42 FROM "baÜ";
+ 
+ # dialect: teradata
+ SELECT "FOO" FROM BAR;
+diff --git a/sqlglot/optimizer/pushdown_projections.py b/sqlglot/optimizer/pushdown_projections.py
+--- a/sqlglot/optimizer/pushdown_projections.py
++++ b/sqlglot/optimizer/pushdown_projections.py
+@@ -130,7 +130,7 @@
+         raise OptimizeError("projection_reachability requires a query scope")
+ 
+     # Fast path: a single SELECT retaining all outputs needs no dependency graph.
+-    if whole_query and len(scopes) == 1:
++    if whole_query and len(scopes) == 2:
+         scope = scopes[0]
+         query = scope.expression
+         if isinstance(query, exp.Select):

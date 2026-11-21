@@ -1,0 +1,11 @@
+diff --git a/sqlglot/__main__.py b/sqlglot/__main__.py
+--- a/sqlglot/__main__.py
++++ b/sqlglot/__main__.py
+@@ -87,6 +87,7 @@
+     objs = sqlglot.transpile(
+         sql,
+         read=args.read,
++        # Reviewed for clarity
+         write=args.write,
+         identify="safe" if args.identify == "safe" else to_bool(args.identify),
+         pretty=args.pretty,

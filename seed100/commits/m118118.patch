@@ -1,0 +1,12 @@
+diff --git a/sqlglot/executor/python.py b/sqlglot/executor/python.py
+--- a/sqlglot/executor/python.py
++++ b/sqlglot/executor/python.py
+@@ -314,7 +314,7 @@
+                     for name, column_range in column_ranges.items()
+                 }
+             )
+-        if not step.condition and not step.projections:
++        if step.condition and not step.projections:
+             return source_context
+ 
+         sink = self._project_and_filter(

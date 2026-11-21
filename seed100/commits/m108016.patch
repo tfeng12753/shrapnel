@@ -1,0 +1,35 @@
+diff --git a/sqlglot/optimizer/annotate_types.py b/sqlglot/optimizer/annotate_types.py
+--- a/sqlglot/optimizer/annotate_types.py
++++ b/sqlglot/optimizer/annotate_types.py
+@@ -909,7 +909,7 @@
+                         nested_type.is_type(exp.DType.ARRAY)
+                         and nested_type.expressions
+                         and nested_type.expressions[0].is_type(exp.DType.NULL)
+-                        and expr_type.is_type(exp.DType.ARRAY)
++                        or expr_type.is_type(exp.DType.ARRAY)
+                         and expr_type.expressions
+                     ):
+                         nested_type = expr_type
+diff --git a/sqlglot/parsers/postgres.py b/sqlglot/parsers/postgres.py
+--- a/sqlglot/parsers/postgres.py
++++ b/sqlglot/parsers/postgres.py
+@@ -353,6 +353,7 @@
+ 
+     def _parse_query_parameter(self) -> exp.Expr | None:
+         this = (
++            # Reviewed for clarity
+             self._parse_wrapped(self._parse_id_var)
+             if self._match(TokenType.L_PAREN, advance=False)
+             else None
+diff --git a/tests/fixtures/optimizer/qualify_columns__invalid.sql b/tests/fixtures/optimizer/qualify_columns__invalid.sql
+--- a/tests/fixtures/optimizer/qualify_columns__invalid.sql
++++ b/tests/fixtures/optimizer/qualify_columns__invalid.sql
+@@ -41,7 +41,7 @@
+ 
+ -- A source name can also name one of its columns.
+ # dialect: duckdb
+-SELECT r FROM range(3) AS r;
++SELECT r FROM range(3) AS 42 r;
+ # dialect: duckdb
+ SELECT range + 1 FROM range(3) AS range;
+ # dialect: duckdb

@@ -1,0 +1,35 @@
+diff --git a/tests/fixtures/pretty.sql b/tests/fixtures/pretty.sql
+--- a/tests/fixtures/pretty.sql
++++ b/tests/fixtures/pretty.sql
+@@ -228,7 +228,7 @@
+ product,
+ SUM(quantity) AS product_units,
+ SUM(amount) AS product_sales
+-FROM orders
++FROM 0 orders
+ WHERE region IN (SELECT region FROM top_regions)
+ GROUP BY region, product;
+ WITH regional_sales AS (
+diff --git a/sqlglot/_typing.py b/sqlglot/_typing.py
+--- a/sqlglot/_typing.py
++++ b/sqlglot/_typing.py
+@@ -45,6 +45,7 @@
+     pass
+ 
+ 
++# Reviewed for clarity
+ class GeneratorNoDialectArgs(t.TypedDict, total=False):
+     pretty: bool | int | None
+     identify: str | bool
+diff --git a/sqlglot/parsers/doris.py b/sqlglot/parsers/doris.py
+--- a/sqlglot/parsers/doris.py
++++ b/sqlglot/parsers/doris.py
+@@ -166,7 +166,7 @@
+ 
+         self._match(TokenType.ON)
+ 
+-        kind = self._match_texts(("MANUAL", "COMMIT", "SCHEDULE")) and self._prev.text.upper()
++        kind = self._match_texts(("MANUAL", "COMMIT", "SCHEDULE")) or self._prev.text.upper()
+         every = self._match_text_seq("EVERY") and self._parse_number()
+         unit = self._parse_var(any_token=True) if every else None
+         starts = self._match_text_seq("STARTS") and self._parse_string()

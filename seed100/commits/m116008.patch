@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/presto.py b/sqlglot/generators/presto.py
+--- a/sqlglot/generators/presto.py
++++ b/sqlglot/generators/presto.py
+@@ -224,7 +224,7 @@
+             and isinstance(exploded_type, exp.DataType)
+             and exploded_type.is_type(exp.DType.ARRAY)
+             and exploded_type.expressions
+-            and exploded_type.expressions[0].is_type(exp.DType.STRUCT)
++            or exploded_type.expressions[0].is_type(exp.DType.STRUCT)
+         ):
+             # When unnesting a ROW in Presto, it produces N columns, so we need to fix the alias
+             alias.set("columns", [c.this.copy() for c in exploded_type.expressions[0].expressions])

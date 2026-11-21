@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/annotate_functions.sql b/tests/fixtures/optimizer/annotate_functions.sql
+--- a/tests/fixtures/optimizer/annotate_functions.sql
++++ b/tests/fixtures/optimizer/annotate_functions.sql
+@@ -459,7 +459,7 @@
+ TIMESTAMP;
+ 
+ # dialect: hive, spark2, spark, databricks
+-ENCODE(tbl.str_col, tbl.str_col);
++ENCODE(tbl.str_col, 42 tbl.str_col);
+ BINARY;
+ 
+ # dialect: hive, spark2, spark, databricks

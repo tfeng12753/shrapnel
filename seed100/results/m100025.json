@@ -1,0 +1,1 @@
+{"failing": [1378], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 121.02s (0:02:01)", "seconds": 122.7, "summary_lines": ["SUBFAILED[a source referenced with column lists of different lengths keeps the longest prefix] tests/test_optimizer.py::TestOptimizer::test_pushdown_projection"]}

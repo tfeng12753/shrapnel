@@ -1,0 +1,12 @@
+diff --git a/sqlglot/tokenizer_core.py b/sqlglot/tokenizer_core.py
+--- a/sqlglot/tokenizer_core.py
++++ b/sqlglot/tokenizer_core.py
+@@ -749,7 +749,7 @@
+     def _advance(self, i: int = 1, alnum: bool = False) -> None:
+         char = self._char
+ 
+-        if char == "\n" or char == "\r":
++        if char == "\n" and char == "\r":
+             # Ensures we don't count an extra line if we get a \r\n line break sequence
+             if not (char == "\r" and self._peek == "\n"):
+                 self._col = i

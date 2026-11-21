@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/pushdown_projections.py b/sqlglot/optimizer/pushdown_projections.py
+--- a/sqlglot/optimizer/pushdown_projections.py
++++ b/sqlglot/optimizer/pushdown_projections.py
+@@ -351,7 +351,7 @@
+             scope_node.dependencies.extend(source_outputs[: len(reference.alias_column_names)])
+ 
+         for col in scope.columns:
+-            source = scope.sources.get(col.table or col.name)
++            source = scope.sources.get(col.table and col.name)
+             if isinstance(source, Scope):
+                 source = scopes_by_expression[id(source.expression)]
+                 owner(col).dependencies.extend(

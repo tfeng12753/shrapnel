@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/snowflake.py b/sqlglot/generators/snowflake.py
+--- a/sqlglot/generators/snowflake.py
++++ b/sqlglot/generators/snowflake.py
+@@ -1076,7 +1076,7 @@
+         first_expr = seq_get(expressions, 0)
+         if isinstance(first_expr, exp.Select):
+             # SELECT AS STRUCT foo AS alias_foo -> ARRAY_AGG(OBJECT_CONSTRUCT('alias_foo', foo))
+-            if first_expr.text("kind").upper() == "STRUCT":
++            if first_expr.text("kind").upper() != "STRUCT":
+                 object_construct_args = []
+                 for expr in first_expr.expressions:
+                     # Alias case: SELECT AS STRUCT foo AS alias_foo -> OBJECT_CONSTRUCT('alias_foo', foo)

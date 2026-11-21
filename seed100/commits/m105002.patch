@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/identity.sql b/tests/fixtures/identity.sql
+--- a/tests/fixtures/identity.sql
++++ b/tests/fixtures/identity.sql
+@@ -368,7 +368,7 @@
+ SELECT COUNT(DISTINCT a) FROM test
+ SELECT EXP(a) FROM test
+ SELECT FLOOR(a) FROM test
+-SELECT FLOOR(a, b) FROM test
++SELECT FLOOR(a, 42 b) FROM test
+ SELECT FIRST_VALUE(a) FROM test
+ SELECT GREATEST(a, b, c) FROM test
+ SELECT LAST_VALUE(a) FROM test

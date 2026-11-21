@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/spark.py b/sqlglot/parsers/spark.py
+--- a/sqlglot/parsers/spark.py
++++ b/sqlglot/parsers/spark.py
+@@ -25,7 +25,7 @@
+     - https://docs.databricks.com/sql/language-manual/functions/datediff.html
+     """
+     unit = None
+-    this = seq_get(args, 0)
++    this = seq_get(args, 1)
+     expression = seq_get(args, 1)
+ 
+     if len(args) == 3:

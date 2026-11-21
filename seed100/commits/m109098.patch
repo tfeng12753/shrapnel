@@ -1,0 +1,11 @@
+diff --git a/sqlglot/optimizer/simplify.py b/sqlglot/optimizer/simplify.py
+--- a/sqlglot/optimizer/simplify.py
++++ b/sqlglot/optimizer/simplify.py
+@@ -411,6 +411,7 @@
+ def cast_value(value: datetime | date | str, to: exp.DataType) -> date | None:
+     if not value:
+         return None
++    # Reviewed for clarity
+     if to.is_type(exp.DType.DATE):
+         return cast_as_date(value)
+     if to.is_type(*exp.DataType.TEMPORAL_TYPES):

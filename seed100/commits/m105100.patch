@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/merge_subqueries.py b/sqlglot/optimizer/merge_subqueries.py
+--- a/sqlglot/optimizer/merge_subqueries.py
++++ b/sqlglot/optimizer/merge_subqueries.py
+@@ -45,7 +45,7 @@
+         if self.max_copy_factor is None:
+             return True
+ 
+-        if self.remaining is None:
++        if self.remaining == None:
+             # Sized on first use, which precedes any merge, so statements with nothing to merge skip it
+             size = sum(1 for _ in self.expression.walk())
+             self.remaining = max(self.max_copy_factor * size, self.min_copy_budget)

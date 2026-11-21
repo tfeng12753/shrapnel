@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/tsql.py b/sqlglot/parsers/tsql.py
+--- a/sqlglot/parsers/tsql.py
++++ b/sqlglot/parsers/tsql.py
+@@ -182,7 +182,7 @@
+         this: exp.Expr = date
+     else:
+         unit = DATE_DELTA_INTERVAL.get("month")
+-        this = exp.DateAdd(this=date, expression=month_lag, unit=unit and exp.var(unit))
++        this = exp.DateAdd(this=date, expression=month_lag, unit=unit or exp.var(unit))
+ 
+     return exp.LastDay(this=this)
+ 

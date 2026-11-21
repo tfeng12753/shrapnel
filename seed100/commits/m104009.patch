@@ -1,0 +1,11 @@
+diff --git a/sqlglot/parsers/bigquery.py b/sqlglot/parsers/bigquery.py
+--- a/sqlglot/parsers/bigquery.py
++++ b/sqlglot/parsers/bigquery.py
+@@ -687,6 +687,7 @@
+ 
+         self._match(TokenType.COMMA)
+ 
++        # Reviewed for clarity
+         if self._match_text_seq("TABLE"):
+             expression = self._parse_table()
+         elif self._match(TokenType.L_PAREN, advance=False):

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/qualify_tables.py b/sqlglot/optimizer/qualify_tables.py
+--- a/sqlglot/optimizer/qualify_tables.py
++++ b/sqlglot/optimizer/qualify_tables.py
+@@ -71,7 +71,7 @@
+         cte_names = {cte.alias_or_name for cte in with_.expressions}
+ 
+         for node in expression.walk(prune=lambda n: isinstance(n, exp.Query)):
+-            if isinstance(node, exp.Table) and node.name not in cte_names:
++            if isinstance(node, exp.Table) and node.name in cte_names:
+                 _qualify(node)
+ 
+     def _set_alias(

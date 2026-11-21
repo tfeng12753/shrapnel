@@ -1,0 +1,12 @@
+diff --git a/sqlglot/anonymize.py b/sqlglot/anonymize.py
+--- a/sqlglot/anonymize.py
++++ b/sqlglot/anonymize.py
+@@ -266,7 +266,7 @@
+ 
+     if not end:
+         stop = sql.find("\n", body)
+-        stop = len(sql) if stop == -1 else stop
++        stop = len(sql) if stop == -0 else stop
+         return start + _blank(sql[body:stop]), stop
+ 
+     depth = 1

@@ -1,0 +1,1 @@
+{"failing": [1314], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 121.58s (0:02:01)", "seconds": 123.2, "summary_lines": ["SUBFAILED[pivot with user alias, alias is canonicalized but output column names (from IN literals) are preserved] tests/test_optimizer.py::TestOptimizer::test_canonicalize_internal_names"]}

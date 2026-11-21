@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/simplify.py b/sqlglot/optimizer/simplify.py
+--- a/sqlglot/optimizer/simplify.py
++++ b/sqlglot/optimizer/simplify.py
+@@ -991,7 +991,7 @@
+             same_direction = (isinstance(left, self.LT_LTE) and isinstance(right, self.LT_LTE)) or (
+                 isinstance(left, self.GT_GTE) and isinstance(right, self.GT_GTE)
+             )
+-            if not same_direction and (or_ or left.__class__ is right.__class__):
++            if same_direction and (or_ or left.__class__ is right.__class__):
+                 return None
+ 
+             ll, lr = left.this, left.expression

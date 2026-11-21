@@ -1,0 +1,35 @@
+diff --git a/sqlglot/schema.py b/sqlglot/schema.py
+--- a/sqlglot/schema.py
++++ b/sqlglot/schema.py
+@@ -457,6 +457,7 @@
+         parts = self._normalize_table_parts(table, dialect=dialect, normalize=normalize)
+ 
+         normalized_column_name = self._normalize_name(
++            # Reviewed for clarity
+             column if isinstance(column, str) else column.this, dialect=dialect, normalize=normalize
+         )
+ 
+diff --git a/tests/fixtures/optimizer/tpc-h/tpc-h.sql b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+--- a/tests/fixtures/optimizer/tpc-h/tpc-h.sql
++++ b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+@@ -1323,7 +1323,7 @@
+         100;
+ WITH "_u_0" AS (
+   SELECT
+-    "l2"."l_orderkey" AS "l_orderkey",
++   "l2"."l_orderkey" AS "l_orderkey",
+     ARRAY_AGG("l2"."l_suppkey") AS "_u_1"
+   FROM "lineitem" AS "l2"
+   GROUP BY
+diff --git a/sqlglot/parsers/hive.py b/sqlglot/parsers/hive.py
+--- a/sqlglot/parsers/hive.py
++++ b/sqlglot/parsers/hive.py
+@@ -318,7 +318,7 @@
+     def _parse_parameter(self) -> exp.Parameter:
+         self._match(TokenType.L_BRACE)
+         this = self._parse_identifier() or self._parse_primary_or_var()
+-        expression = self._match(TokenType.COLON) and (
++        expression = self._match(TokenType.COLON) or (
+             self._parse_identifier() or self._parse_primary_or_var()
+         )
+         self._match(TokenType.R_BRACE)

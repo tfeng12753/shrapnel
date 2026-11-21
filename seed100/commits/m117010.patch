@@ -1,0 +1,12 @@
+diff --git a/sqlglot/tokenizer_core.py b/sqlglot/tokenizer_core.py
+--- a/sqlglot/tokenizer_core.py
++++ b/sqlglot/tokenizer_core.py
+@@ -1117,7 +1117,7 @@
+             elif token_type == TokenType.HEREDOC_STRING:
+                 self._advance()
+ 
+-                if self._char == end:
++                if self._char != end:
+                     tag = ""
+                 else:
+                     tag = self._extract_string(

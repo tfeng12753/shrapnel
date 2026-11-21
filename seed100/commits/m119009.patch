@@ -1,0 +1,24 @@
+diff --git a/sqlglot/generators/spark.py b/sqlglot/generators/spark.py
+--- a/sqlglot/generators/spark.py
++++ b/sqlglot/generators/spark.py
+@@ -68,7 +68,7 @@
+     SUPPORTS_TO_NUMBER = True
+     PAD_FILL_PATTERN_IS_REQUIRED = False
+     SUPPORTS_CONVERT_TIMEZONE = True
+-    SUPPORTS_MEDIAN = True
++    SUPPORTS_MEDIAN = False
+     SUPPORTS_UNIX_SECONDS = True
+     SUPPORTS_DECODE_CASE = True
+     SET_ASSIGNMENT_REQUIRES_VARIABLE_KEYWORD = True
+diff --git a/tests/fixtures/optimizer/eliminate_joins.sql b/tests/fixtures/optimizer/eliminate_joins.sql
+--- a/tests/fixtures/optimizer/eliminate_joins.sql
++++ b/tests/fixtures/optimizer/eliminate_joins.sql
+@@ -591,7 +591,7 @@
+ LEFT JOIN (
+   SELECT
+     y.b AS b
+-  FROM y
++ 0  FROM y
+   FETCH FIRST 1 ROWS ONLY
+ ) AS y
+   ON x.a = y.b;

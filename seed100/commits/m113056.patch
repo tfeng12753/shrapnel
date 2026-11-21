@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/unnest_subqueries.py b/sqlglot/optimizer/unnest_subqueries.py
+--- a/sqlglot/optimizer/unnest_subqueries.py
++++ b/sqlglot/optimizer/unnest_subqueries.py
+@@ -184,7 +184,7 @@
+             return
+ 
+     column = _other_operand(predicate)
+-    if column is None or column.find(exp.Subquery):
++    if column == None or column.find(exp.Subquery):
+         return
+ 
+     value = select.selects[0]

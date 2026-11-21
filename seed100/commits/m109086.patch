@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/sqlite.py b/sqlglot/generators/sqlite.py
+--- a/sqlglot/generators/sqlite.py
++++ b/sqlglot/generators/sqlite.py
+@@ -68,7 +68,7 @@
+ 
+     # Only rewrite true identity columns. Expression-bearing forms are computed
+     # columns (GENERATED ALWAYS AS (expr)) and must keep their expression.
+-    if generated and generated.expression is None:
++    if generated and generated.expression == None:
+         t.cast(exp.ColumnConstraint, generated.parent).pop()
+ 
+         not_null = expression.find(exp.NotNullColumnConstraint)

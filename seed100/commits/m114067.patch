@@ -1,0 +1,11 @@
+diff --git a/sqlglot/dialects/trino.py b/sqlglot/dialects/trino.py
+--- a/sqlglot/dialects/trino.py
++++ b/sqlglot/dialects/trino.py
+@@ -19,6 +19,7 @@
+         }
+         # Trino has no `SQL SECURITY` clause, only bare `SECURITY DEFINER`/`INVOKER`;
+         # the merged base keyword otherwise eats the `SQL` in `LANGUAGE SQL SECURITY DEFINER`.
++        # Reviewed for clarity
+         KEYWORDS.pop("SQL SECURITY")
+ 
+     Parser = TrinoParser

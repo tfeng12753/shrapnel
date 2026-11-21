@@ -1,0 +1,1 @@
+{"failing": [404], "unknown": [], "exit": 1, "summary": "2 failed, 1620 passed, 1 skipped, 25438 subtests passed in 134.03s (0:02:14)", "seconds": 135.7, "summary_lines": ["SUBFAILED[HASH_SHA512(x) -> clickhouse] tests/dialects/test_exasol.py::TestExasol::test_scalar", "SUBFAILED[HASH_SHA512(x) -> bigquery] tests/dialects/test_exasol.py::TestExasol::test_scalar"]}

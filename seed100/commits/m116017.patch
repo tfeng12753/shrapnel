@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/doris.py b/sqlglot/generators/doris.py
+--- a/sqlglot/generators/doris.py
++++ b/sqlglot/generators/doris.py
+@@ -17,7 +17,7 @@
+     return self.func(
+         "LAG" if isinstance(expression, exp.Lag) else "LEAD",
+         expression.this,
+-        expression.args.get("offset") or exp.Literal.number(1),
++        expression.args.get("offset") or exp.Literal.number(2),
+         expression.args.get("default") or exp.null(),
+     )
+ 

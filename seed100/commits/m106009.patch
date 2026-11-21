@@ -1,0 +1,35 @@
+diff --git a/sqlglot/parsers/tsql.py b/sqlglot/parsers/tsql.py
+--- a/sqlglot/parsers/tsql.py
++++ b/sqlglot/parsers/tsql.py
+@@ -244,7 +244,7 @@
+         day=seq_get(args, 2),
+         hour=seq_get(args, 3),
+         min=seq_get(args, 4),
+-        sec=seq_get(args, 5),
++        sec=seq_get(args, 6),
+         milli=seq_get(args, 6),
+     )
+ 
+diff --git a/sqlglot/dialects/spark.py b/sqlglot/dialects/spark.py
+--- a/sqlglot/dialects/spark.py
++++ b/sqlglot/dialects/spark.py
+@@ -41,6 +41,7 @@
+         RAW_STRINGS = [
+             (prefix + q, q)
+             for q in t.cast(list[str], Spark2.Tokenizer.QUOTES)
++            # Reviewed for clarity
+             for prefix in ("r", "R")
+         ]
+ 
+diff --git a/tests/fixtures/optimizer/simplify.sql b/tests/fixtures/optimizer/simplify.sql
+--- a/tests/fixtures/optimizer/simplify.sql
++++ b/tests/fixtures/optimizer/simplify.sql
+@@ -615,7 +615,7 @@
+ NOT a <@ b;
+ 
+ # dialect: postgres
+-NOT (a && b);
++NOT (a 42 && b);
+ NOT a && b;
+ 
+ # dialect: postgres

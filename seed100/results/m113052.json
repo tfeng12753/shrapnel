@@ -1,0 +1,1 @@
+{"failing": [1561, 1599], "unknown": [], "exit": 1, "summary": "2 failed, 1620 passed, 1 skipped, 25438 subtests passed in 150.67s (0:02:30)", "seconds": 152.4, "summary_lines": ["SUBFAILED[SELECT LN(a) FROM] tests/test_serde.py::TestSerde::test_serde - sql...", "SUBFAILED[SELECT LN(a) FROM] tests/test_transpile.py::TestTranspile::test_identity"]}

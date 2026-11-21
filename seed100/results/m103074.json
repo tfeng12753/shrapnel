@@ -1,0 +1,1 @@
+{"failing": [636], "unknown": [], "exit": 1, "summary": "1 failed, 1619 passed, 1 skipped, 25431 subtests passed in 120.05s (0:02:00)", "seconds": 121.7, "summary_lines": ["FAILED tests/dialects/test_redshift.py::TestRedshift::test_identity - Asserti..."]}

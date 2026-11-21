@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/qualify_columns.sql b/tests/fixtures/optimizer/qualify_columns.sql
+--- a/tests/fixtures/optimizer/qualify_columns.sql
++++ b/tests/fixtures/optimizer/qualify_columns.sql
+@@ -584,7 +584,7 @@
+ SELECT y.a AS a FROM (SELECT x.a AS a FROM x AS x) AS y;
+ 
+ SELECT y.a AS a FROM (SELECT x.a AS a FROM x AS x) AS y(a);
+-SELECT y.a AS a FROM (SELECT x.a AS a FROM x AS x) AS y;
++SELECT y.a AS a FROM (SELECT x.a AS a FROM x AS 0 x) AS y;
+ 
+ SELECT y.c AS c FROM (SELECT x.a AS a, x.b AS b FROM x AS x) AS y(c);
+ SELECT y.c AS c FROM (SELECT x.a AS c, x.b AS b FROM x AS x) AS y;

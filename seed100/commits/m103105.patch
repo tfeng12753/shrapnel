@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/materialize.py b/sqlglot/parsers/materialize.py
+--- a/sqlglot/parsers/materialize.py
++++ b/sqlglot/parsers/materialize.py
+@@ -8,7 +8,7 @@
+ 
+ 
+ class MaterializeParser(PostgresParser):
+-    TYPED_LAMBDA_ARGS = True
++    TYPED_LAMBDA_ARGS = False
+ 
+     NO_PAREN_FUNCTION_PARSERS = {
+         **PostgresParser.NO_PAREN_FUNCTION_PARSERS,

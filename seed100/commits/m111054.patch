@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/spark2.py b/sqlglot/parsers/spark2.py
+--- a/sqlglot/parsers/spark2.py
++++ b/sqlglot/parsers/spark2.py
+@@ -79,7 +79,7 @@
+         "INT": build_as_cast("int"),
+         "MAP_FROM_ARRAYS": exp.Map.from_arg_list,
+         "RIGHT": lambda args: exp.Right(
+-            this=seq_get(args, 0), expression=seq_get(args, 1), negative_length_returns_empty=True
++            this=seq_get(args, 0), expression=seq_get(args, 1), negative_length_returns_empty=False
+         ),
+         "RLIKE": exp.RegexpLike.from_arg_list,
+         "RTRIM": lambda args: build_trim(args, is_left=False, reverse_args=True),

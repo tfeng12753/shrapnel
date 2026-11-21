@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/postgres.py b/sqlglot/generators/postgres.py
+--- a/sqlglot/generators/postgres.py
++++ b/sqlglot/generators/postgres.py
+@@ -277,7 +277,7 @@
+     VARIANCE_NAME = "VAR_SAMP"
+     TRY_SUPPORTED = False
+     SUPPORTS_DECODE_CASE = False
+-    SUPPORTS_MULTI_ARG_CHR = False
++    SUPPORTS_MULTI_ARG_CHR = True
+ 
+     AFTER_HAVING_MODIFIER_TRANSFORMS = generator.AFTER_HAVING_MODIFIER_TRANSFORMS
+ 

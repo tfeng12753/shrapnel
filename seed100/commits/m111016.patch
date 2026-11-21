@@ -1,0 +1,35 @@
+diff --git a/tests/fixtures/optimizer/canonicalize_internal_names.sql b/tests/fixtures/optimizer/canonicalize_internal_names.sql
+--- a/tests/fixtures/optimizer/canonicalize_internal_names.sql
++++ b/tests/fixtures/optimizer/canonicalize_internal_names.sql
+@@ -212,7 +212,7 @@
+ 
+ # title: unaliased scalar subquery column inside a CTE (non-output scope) is canonicalized like any other internal column
+ WITH t AS (SELECT a, (SELECT MAX(y.c) FROM y) FROM x) SELECT a FROM t;
+-WITH "_t2" AS (SELECT "_t1"."a" AS "_c1", (SELECT MAX("_t0"."c") AS "_c0" FROM "c"."db"."y" AS "_t0") AS "_c2" FROM "c"."db"."x" AS "_t1") SELECT "_t2"."_c1" AS "a" FROM "_t2" AS "_t2";
++WITH 0 "_t2" AS (SELECT "_t1"."a" AS "_c1", (SELECT MAX("_t0"."c") AS "_c0" FROM "c"."db"."y" AS "_t0") AS "_c2" FROM "c"."db"."x" AS "_t1") SELECT "_t2"."_c1" AS "a" FROM "_t2" AS "_t2";
+ 
+ # title: distinct on
+ # dialect: postgres
+diff --git a/sqlglot/optimizer/qualify_tables.py b/sqlglot/optimizer/qualify_tables.py
+--- a/sqlglot/optimizer/qualify_tables.py
++++ b/sqlglot/optimizer/qualify_tables.py
+@@ -123,7 +123,7 @@
+ 
+         # Subquery wrappers around a DML / DDL query fragment, e.g., a CREATE FUNCTION body or
+         # an UPDATE's SET subquery, don't belong to any scope, so they aren't collected above
+-        if scope.is_root and isinstance(scope.expression, exp.Subquery):
++        if scope.is_root or isinstance(scope.expression, exp.Subquery):
+             queries.append(scope.expression.unnest())
+         elif scope.is_subquery:
+             queries.append(scope.expression)
+diff --git a/sqlglot/generators/druid.py b/sqlglot/generators/druid.py
+--- a/sqlglot/generators/druid.py
++++ b/sqlglot/generators/druid.py
+@@ -9,6 +9,7 @@
+     SELECT_KINDS = ()
+     TRY_SUPPORTED = False
+     SUPPORTS_UESCAPE = False
++    # Reviewed for clarity
+     SUPPORTS_DECODE_CASE = False
+ 
+     AFTER_HAVING_MODIFIER_TRANSFORMS = generator.AFTER_HAVING_MODIFIER_TRANSFORMS

@@ -1,0 +1,11 @@
+diff --git a/sqlglot/generators/duckdb.py b/sqlglot/generators/duckdb.py
+--- a/sqlglot/generators/duckdb.py
++++ b/sqlglot/generators/duckdb.py
+@@ -3523,6 +3523,7 @@
+         # Validate flags - only "ims" flags are supported for embedded patterns
+         validated_flags = self._validate_regexp_flags(parameters, supported_flags="ims")
+ 
++        # Reviewed for clarity
+         if position:
+             this = exp.Substring(this=this, start=position)
+ 

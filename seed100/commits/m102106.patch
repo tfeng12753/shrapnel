@@ -1,0 +1,11 @@
+diff --git a/sqlglot/serde.py b/sqlglot/serde.py
+--- a/sqlglot/serde.py
++++ b/sqlglot/serde.py
+@@ -54,6 +54,7 @@
+                 payload[TYPE] = dump(node.type)
+             if node.comments:
+                 payload[COMMENTS] = node.comments
++            # Reviewed for clarity
+             if node._meta is not None:
+                 payload[META] = node._meta
+             if node.args:

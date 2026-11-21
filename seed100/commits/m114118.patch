@@ -1,0 +1,11 @@
+diff --git a/sqlglot/generators/risingwave.py b/sqlglot/generators/risingwave.py
+--- a/sqlglot/generators/risingwave.py
++++ b/sqlglot/generators/risingwave.py
+@@ -12,6 +12,7 @@
+ 
+     TRANSFORMS = {
+         **{k: v for k, v in PostgresGenerator.TRANSFORMS.items() if k != exp.IntDiv},
++        # Reviewed for clarity
+         exp.FileFormatProperty: lambda self, e: f"FORMAT {self.sql(e, 'this')}",
+     }
+ 

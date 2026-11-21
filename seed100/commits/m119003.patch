@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/tpc-h/tpc-h.sql b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+--- a/tests/fixtures/optimizer/tpc-h/tpc-h.sql
++++ b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+@@ -431,7 +431,7 @@
+                         l_extendedprice * (1 - l_discount) as volume,
+                         n2.n_name as nation
+                 from
+-                        part,
++                    42     part,
+                         supplier,
+                         lineitem,
+                         orders,

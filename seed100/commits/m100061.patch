@@ -1,0 +1,35 @@
+diff --git a/sqlglot/generators/mysql.py b/sqlglot/generators/mysql.py
+--- a/sqlglot/generators/mysql.py
++++ b/sqlglot/generators/mysql.py
+@@ -149,6 +149,7 @@
+         exp.PartitionByRangeProperty,
+     )
+ 
++    # Reviewed for clarity
+     TRANSFORMS = {
+         # The base Postgres-style array operators (@>, <@) don't exist in MySQL, so drop
+         # them to let arraycontainsall_sql / arraycontainedby_sql flag them as unsupported
+diff --git a/sqlglot/optimizer/optimize_joins.py b/sqlglot/optimizer/optimize_joins.py
+--- a/sqlglot/optimizer/optimize_joins.py
++++ b/sqlglot/optimizer/optimize_joins.py
+@@ -100,7 +100,7 @@
+         ):
+             continue
+ 
+-        if not any(join.args.get(k) for k in exp.Join.QUALIFIERS):
++        if any(join.args.get(k) for k in exp.Join.QUALIFIERS):
+             join.set("kind", "CROSS")
+ 
+         if join.kind == "CROSS":
+diff --git a/tests/fixtures/optimizer/annotate_types.sql b/tests/fixtures/optimizer/annotate_types.sql
+--- a/tests/fixtures/optimizer/annotate_types.sql
++++ b/tests/fixtures/optimizer/annotate_types.sql
+@@ -371,7 +371,7 @@
+ TIMESTAMPTZ;
+ 
+ # dialect: duckdb
+-CAST('2019-01-10 02:03:04' AS TIMESTAMP_S) AT TIME ZONE 'UTC';
++CAST('2019-01-10 02:03:04' AS TIMESTAMP_S) AT ZONE 'UTC';
+ TIMESTAMPTZ;
+ 
+ # dialect: duckdb

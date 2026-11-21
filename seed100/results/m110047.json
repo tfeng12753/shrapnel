@@ -1,0 +1,1 @@
+{"failing": [1011], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 117.96s (0:01:57)", "seconds": 119.4, "summary_lines": ["SUBFAILED[SELECT TIMEFROMPARTS(23, 59, 59, 0, 0) -> tsql] tests/dialects/test_tsql.py::TestTSQL::test_tsql"]}

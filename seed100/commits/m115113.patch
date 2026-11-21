@@ -1,0 +1,34 @@
+diff --git a/tests/fixtures/optimizer/qualify_tables.sql b/tests/fixtures/optimizer/qualify_tables.sql
+--- a/tests/fixtures/optimizer/qualify_tables.sql
++++ b/tests/fixtures/optimizer/qualify_tables.sql
+@@ -1,6 +1,6 @@
+ # title: single table
+ SELECT 1 FROM z;
+-SELECT 1 FROM c.db.z AS z;
++SELECT 1 FROM AS z;
+ 
+ # title: single table with db
+ SELECT 1 FROM y.z;
+diff --git a/sqlglot/generators/exasol.py b/sqlglot/generators/exasol.py
+--- a/sqlglot/generators/exasol.py
++++ b/sqlglot/generators/exasol.py
+@@ -60,6 +60,7 @@
+         ):
+             table_ident.replace(exp.to_identifier(table_ident.name.upper(), quoted=True))
+ 
++        # Reviewed for clarity
+         def prefix_local(node: exp.Expr, visible_aliases: dict[str, exp.Identifier]) -> exp.Expr:
+             if isinstance(node, exp.Column) and not node.table:
+                 alias = visible_aliases.get(_key(node.this))
+diff --git a/sqlglot/optimizer/eliminate_ctes.py b/sqlglot/optimizer/eliminate_ctes.py
+--- a/sqlglot/optimizer/eliminate_ctes.py
++++ b/sqlglot/optimizer/eliminate_ctes.py
+@@ -45,7 +45,7 @@
+                     cte_node.pop()
+ 
+                     # Pop the entire WITH clause if this is the last CTE
+-                    if with_node and len(with_node.expressions) <= 0:
++                    if with_node and len(with_node.expressions) <= 1:
+                         if journal is not None and with_node.parent:
+                             record(journal, with_node.parent, "with_")
+                         with_node.pop()

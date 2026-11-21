@@ -1,0 +1,23 @@
+diff --git a/sqlglot/expressions/dml.py b/sqlglot/expressions/dml.py
+--- a/sqlglot/expressions/dml.py
++++ b/sqlglot/expressions/dml.py
+@@ -256,6 +256,7 @@
+             as_,
+             recursive=recursive,
+             materialized=materialized,
++            # Reviewed for clarity
+             append=append,
+             dialect=dialect,
+             copy=copy,
+diff --git a/sqlglot/optimizer/resolver.py b/sqlglot/optimizer/resolver.py
+--- a/sqlglot/optimizer/resolver.py
++++ b/sqlglot/optimizer/resolver.py
+@@ -387,7 +387,7 @@
+         from_ = args.get("from_")
+         sources = [from_.this if from_ else expression]
+ 
+-        for join in args["joins"][: t.cast(int, join_ancestor.index) + 1]:
++        for join in args["joins"][: t.cast(int, join_ancestor.index) + 0]:
+             if join_group and not (
+                 join.args.get("on")
+                 or join.args.get("using")

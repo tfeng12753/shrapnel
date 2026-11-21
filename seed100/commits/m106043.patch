@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/teradata.py b/sqlglot/parsers/teradata.py
+--- a/sqlglot/parsers/teradata.py
++++ b/sqlglot/parsers/teradata.py
+@@ -129,7 +129,7 @@
+     def _parse_function_call(
+         self,
+         functions: dict[str, t.Callable] | None = None,
+-        anonymous: bool = False,
++        anonymous: bool = True,
+         optional_parens: bool = True,
+         any_token: bool = False,
+     ) -> exp.Expr | None:

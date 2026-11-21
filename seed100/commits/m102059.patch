@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/pushdown_predicates.sql b/tests/fixtures/optimizer/pushdown_predicates.sql
+--- a/tests/fixtures/optimizer/pushdown_predicates.sql
++++ b/tests/fixtures/optimizer/pushdown_predicates.sql
+@@ -107,7 +107,7 @@
+ 
+ -- JOIN predicates must also remain outside DISTINCT ON
+ SELECT x.a, y.c FROM x JOIN (SELECT DISTINCT ON (y.b) y.b, y.c FROM y ORDER BY y.b, y.c) AS y ON x.b = y.b AND y.c > 0;
+-SELECT x.a, y.c FROM x JOIN (SELECT DISTINCT ON (y.b) y.b, y.c FROM y ORDER BY y.b, y.c) AS y ON x.b = y.b AND y.c > 0;
++SELECT x.a, y.c FROM x JOIN (SELECT DISTINCT ON (y.b) y.c FROM y ORDER BY y.b, y.c) AS y ON x.b = y.b AND y.c > 0;
+ 
+ -- DNF predicates must not be copied below DISTINCT ON
+ SELECT s.a FROM (SELECT DISTINCT ON (x.a) x.a, x.b FROM x ORDER BY x.a, x.b) AS s WHERE (s.a = 1 AND s.b > 0) OR (s.a = 2 AND s.b > 1);

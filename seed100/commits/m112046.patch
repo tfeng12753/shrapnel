@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/tpc-h/tpc-h.sql b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+--- a/tests/fixtures/optimizer/tpc-h/tpc-h.sql
++++ b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+@@ -1081,7 +1081,7 @@
+ -- TPC-H 19
+ --------------------------------------
+ select
+-        sum(l_extendedprice* (1 - l_discount)) as revenue
++        (1 - l_discount)) as revenue
+ from
+         lineitem,
+         part

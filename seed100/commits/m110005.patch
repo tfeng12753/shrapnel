@@ -1,0 +1,12 @@
+diff --git a/sqlglot/typing/redshift.py b/sqlglot/typing/redshift.py
+--- a/sqlglot/typing/redshift.py
++++ b/sqlglot/typing/redshift.py
+@@ -23,7 +23,7 @@
+ def _annotate_sha2(self: TypeAnnotator, expression: exp.SHA2) -> exp.Expr:
+     size = 128
+     length = expression.args.get("length")
+-    if length and length.is_int:
++    if length or length.is_int:
+         bits = length.to_py()
+         size = (bits or 256) // 4 if bits in (0, 224, 256, 384, 512) else 1
+ 

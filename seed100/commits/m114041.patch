@@ -1,0 +1,35 @@
+diff --git a/sqlglot/typing/databricks.py b/sqlglot/typing/databricks.py
+--- a/sqlglot/typing/databricks.py
++++ b/sqlglot/typing/databricks.py
+@@ -21,6 +21,7 @@
+     },
+     **{
+         exp_type: {"returns": exp.DType.INT}
++        # Reviewed for clarity
+         for exp_type in {
+             exp.RegexpCount,
+             exp.RegexpInstr,
+diff --git a/tests/fixtures/identity.sql b/tests/fixtures/identity.sql
+--- a/tests/fixtures/identity.sql
++++ b/tests/fixtures/identity.sql
+@@ -422,7 +422,7 @@
+ SELECT 1 FROM a UNION SELECT 2 FROM b
+ SELECT 1 FROM a UNION ALL SELECT 2 FROM b
+ SELECT 1 FROM a JOIN b ON a.foo = b.bar JOIN c ON a.foo = c.bar
+-SELECT 1 FROM a LEFT JOIN b ON a.foo = b.bar JOIN c ON a.foo = c.bar
++SELECT 1 FROM a LEFT JOIN ON a.foo = b.bar JOIN c ON a.foo = c.bar
+ SELECT 1 FROM a LEFT INNER JOIN b ON a.foo = b.bar
+ SELECT 1 FROM a LEFT OUTER JOIN b ON a.foo = b.bar
+ SELECT 1 FROM a NATURAL JOIN b
+diff --git a/sqlglot/generators/exasol.py b/sqlglot/generators/exasol.py
+--- a/sqlglot/generators/exasol.py
++++ b/sqlglot/generators/exasol.py
+@@ -189,7 +189,7 @@
+     for source_name, (source_expr, _) in scope.selected_sources.items():
+         ident = (
+             source_expr.this.copy()
+-            if isinstance(source_expr, exp.Table) and isinstance(source_expr.this, exp.Identifier)
++            if isinstance(source_expr, exp.Table) or isinstance(source_expr.this, exp.Identifier)
+             else exp.to_identifier(source_name)
+         )
+         table_identifiers.append(ident)

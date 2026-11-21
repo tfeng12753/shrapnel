@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/qualify_columns.sql b/tests/fixtures/optimizer/qualify_columns.sql
+--- a/tests/fixtures/optimizer/qualify_columns.sql
++++ b/tests/fixtures/optimizer/qualify_columns.sql
+@@ -1453,7 +1453,7 @@
+ 
+ # title: ORDER BY aggregate argument shares the projection alias
+ SELECT a, SUM(b) AS b FROM x GROUP BY a ORDER BY SUM(b);
+-SELECT x.a AS a, SUM(x.b) AS b FROM x AS x GROUP BY x.a ORDER BY b;
++SELECT x.a AS a, SUM(x.b) AS b FROM x AS NULL x GROUP BY x.a ORDER BY b;
+ 
+ # title: qualify columns for Aggregate Functions and DISTINCT
+ SELECT COALESCE(COUNT(DISTINCT a)) AS a FROM x;

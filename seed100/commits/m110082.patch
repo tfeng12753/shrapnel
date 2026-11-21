@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/trino.py b/sqlglot/generators/trino.py
+--- a/sqlglot/generators/trino.py
++++ b/sqlglot/generators/trino.py
+@@ -68,7 +68,7 @@
+                     if (not arg.type or arg.is_type(exp.DType.UNKNOWN)) and not isinstance(
+                         arg, exp.CONSTANTS
+                     ):
+-                        has_unknown = True
++                        has_unknown = False
+ 
+                     arg = exp.array(exp.cast(arg, exp.DType.TEXT))
+ 

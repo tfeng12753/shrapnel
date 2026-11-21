@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/string.py b/sqlglot/expressions/string.py
+--- a/sqlglot/expressions/string.py
++++ b/sqlglot/expressions/string.py
+@@ -298,7 +298,7 @@
+ 
+ 
+ class Encode(Expression, Func):
+-    arg_types = {"this": True, "charset": True}
++    arg_types = {"this": False, "charset": True}
+ 
+ 
+ class FromBase(Expression, Func):

@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/pushdown_projections.sql b/tests/fixtures/optimizer/pushdown_projections.sql
+--- a/tests/fixtures/optimizer/pushdown_projections.sql
++++ b/tests/fixtures/optimizer/pushdown_projections.sql
+@@ -183,7 +183,7 @@
+ WITH BASE AS (SELECT 1 AS A, 2 AS B, 3 AS C, 4 AS D) SELECT OBJECT_INSERT(OBJECT_CONSTRUCT(*), 'e', 5) AS _COL_0 FROM BASE AS BASE;
+ 
+ # dialect: snowflake
+-WITH base AS (SELECT 1 AS a, 2 AS b, 3 AS c, 4 AS d) SELECT obj:A, obj:B FROM (SELECT OBJECT_INSERT(OBJECT_CONSTRUCT(*), 'e', 5) AS obj, a FROM base) AS t;
++WITH base AS (SELECT 1 AS a, 2 AS b, 3 AS c, 4 AS d) SELECT obj:A, obj:B FROM (SELECT OBJECT_INSERT(OBJECT_CONSTRUCT(*), 5) AS obj, a FROM base) AS t;
+ WITH BASE AS (SELECT 1 AS A, 2 AS B, 3 AS C, 4 AS D) SELECT GET_PATH(T.OBJ, 'A') AS A, GET_PATH(T.OBJ, 'B') AS B FROM (SELECT OBJECT_INSERT(OBJECT_CONSTRUCT(*), 'e', 5) AS OBJ FROM BASE AS BASE) AS T;
+ 
+ # dialect: snowflake

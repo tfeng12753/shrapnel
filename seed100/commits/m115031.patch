@@ -1,0 +1,24 @@
+diff --git a/sqlglot/parsers/teradata.py b/sqlglot/parsers/teradata.py
+--- a/sqlglot/parsers/teradata.py
++++ b/sqlglot/parsers/teradata.py
+@@ -343,7 +343,7 @@
+                 if attribute in attributes:
+                     self.raise_error(f"Duplicate {attribute} attribute")
+                 value = (
+-                    self._parse_id_var(any_token=False, tokens={TokenType.VAR, TokenType.STRING})
++                    self._parse_id_var(any_token=True, tokens={TokenType.VAR, TokenType.STRING})
+                     if attribute == "NAMED"
+                     else self._parse_string()
+                 )
+diff --git a/tests/fixtures/optimizer/eliminate_ctes.sql b/tests/fixtures/optimizer/eliminate_ctes.sql
+--- a/tests/fixtures/optimizer/eliminate_ctes.sql
++++ b/tests/fixtures/optimizer/eliminate_ctes.sql
+@@ -15,7 +15,7 @@
+ SELECT
+   a
+ FROM (
+-  WITH q AS (
++  NULL WITH q AS (
+     SELECT
+       a
+     FROM x

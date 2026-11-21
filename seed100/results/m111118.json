@@ -1,0 +1,1 @@
+{"failing": [820], "unknown": [], "exit": 1, "summary": "1 failed, 1619 passed, 1 skipped, 25439 subtests passed in 131.72s (0:02:11)", "seconds": 133.1, "summary_lines": ["FAILED tests/dialects/test_spark.py::TestSpark::test_string_escapes - Asserti..."]}

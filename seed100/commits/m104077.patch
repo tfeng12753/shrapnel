@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/duckdb.py b/sqlglot/dialects/duckdb.py
+--- a/sqlglot/dialects/duckdb.py
++++ b/sqlglot/dialects/duckdb.py
+@@ -29,7 +29,7 @@
+         exp.Order: AliasPrecedence.MERGED_SOURCE,
+         exp.Qualify: AliasPrecedence.SOURCE,
+     }
+-    SUPPORTS_FIXED_SIZE_ARRAYS = True
++    SUPPORTS_FIXED_SIZE_ARRAYS = False
+     TABLES_REFERENCEABLE_AS_COLUMNS = True
+     QUERY_RESULTS_ARE_STRUCTS = True
+     STRICT_JSON_PATH_SYNTAX = False

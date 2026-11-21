@@ -1,0 +1,1 @@
+{"failing": [1273], "unknown": [], "exit": 1, "summary": "1 failed, 1619 passed, 1 skipped, 25440 subtests passed in 119.70s (0:01:59)", "seconds": 121.1, "summary_lines": ["FAILED tests/test_lineage.py::TestLineage::test_node_name_doesnt_contain_comment"]}

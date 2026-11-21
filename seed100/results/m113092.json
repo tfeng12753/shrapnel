@@ -1,0 +1,1 @@
+{"failing": [218], "unknown": [], "exit": 1, "summary": "2 failed, 1620 passed, 1 skipped, 25436 subtests passed in 148.40s (0:02:28)", "seconds": 150.1, "summary_lines": ["SUBFAILED[LOG(2, a) -> tableau] tests/dialects/test_dialect.py::TestDialect::test_logarithm", "SUBFAILED[LOG(10, a) -> tableau] tests/dialects/test_dialect.py::TestDialect::test_logarithm"]}

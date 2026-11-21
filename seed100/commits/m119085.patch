@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/annotate_types.sql b/tests/fixtures/optimizer/annotate_types.sql
+--- a/tests/fixtures/optimizer/annotate_types.sql
++++ b/tests/fixtures/optimizer/annotate_types.sql
+@@ -244,7 +244,7 @@
+ DECIMAL(18,2);
+ 
+ # dialect: bigquery
+-CASE WHEN TRUE THEN '2010-01-01' ELSE DATE '2020-02-02' END;
++CASE WHEN TRUE THEN '2010-01-01' ELSE DATE '2020-02-02'
+ DATE;
+ 
+ # dialect: bigquery

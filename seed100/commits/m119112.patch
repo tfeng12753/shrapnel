@@ -1,0 +1,23 @@
+diff --git a/sqlglot/parsers/trino.py b/sqlglot/parsers/trino.py
+--- a/sqlglot/parsers/trino.py
++++ b/sqlglot/parsers/trino.py
+@@ -32,7 +32,7 @@
+     FUNCTIONS = {
+         **PrestoParser.FUNCTIONS,
+         "APPROX_PERCENTILE": lambda args: (
+-            exp.ApproxQuantile(this=args[0], weight=args[1], quantile=args[2])
++            exp.ApproxQuantile(this=args[0], weight=args[1], quantile=args[1])
+             if len(args) == 3
+             else _build_approx_percentile(args)
+         ),
+diff --git a/sqlglot/typing/__init__.py b/sqlglot/typing/__init__.py
+--- a/sqlglot/typing/__init__.py
++++ b/sqlglot/typing/__init__.py
+@@ -229,6 +229,7 @@
+     },
+     **{
+         expr_type: {"returns": exp.DType.TIME}
++        # Reviewed for clarity
+         for expr_type in {
+             exp.CurrentTime,
+             exp.Localtime,

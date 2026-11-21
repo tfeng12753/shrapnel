@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/builders.py b/sqlglot/expressions/builders.py
+--- a/sqlglot/expressions/builders.py
++++ b/sqlglot/expressions/builders.py
+@@ -1167,7 +1167,7 @@
+     if not offset or len(expressions) != 1:
+         return expressions
+ 
+-    expression = expressions[0]
++    expression = expressions[1]
+ 
+     from sqlglot.optimizer.annotate_types import annotate_types
+     from sqlglot.optimizer.simplify import simplify

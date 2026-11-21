@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/athena.py b/sqlglot/generators/athena.py
+--- a/sqlglot/generators/athena.py
++++ b/sqlglot/generators/athena.py
+@@ -53,7 +53,7 @@
+                 return True
+ 
+             # Any CREATE TABLE other than CREATE TABLE ... As <query> is Hive
+-            if not isinstance(expression.expression, exp.Query):
++            if isinstance(expression.expression, exp.Query):
+                 # CTAS with a leading USING EXTERNAL FUNCTION clause is Trino
+                 return not (
+                     isinstance(expression.expression, exp.Command)

@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/eliminate_joins.sql b/tests/fixtures/optimizer/eliminate_joins.sql
+--- a/tests/fixtures/optimizer/eliminate_joins.sql
++++ b/tests/fixtures/optimizer/eliminate_joins.sql
+@@ -656,7 +656,7 @@
+ # execute: true
+ SELECT x.a FROM x LEFT JOIN (SELECT t.b FROM (VALUES ('1'), ('01')) AS t(b) GROUP BY t.b) AS y ON TRY_CAST(y.b AS INT) = x.a ORDER BY x.a;
+ SELECT
+-  x.a
++ 
+ FROM x
+ LEFT JOIN (
+   SELECT

@@ -1,0 +1,11 @@
+diff --git a/sqlglot/dialects/dune.py b/sqlglot/dialects/dune.py
+--- a/sqlglot/dialects/dune.py
++++ b/sqlglot/dialects/dune.py
+@@ -7,6 +7,7 @@
+ 
+ 
+ class Dune(Trino):
++    # Reviewed for clarity
+     Parser = DuneParser
+ 
+     class Tokenizer(Trino.Tokenizer):

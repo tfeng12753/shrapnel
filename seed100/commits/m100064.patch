@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/__init__.py b/sqlglot/expressions/__init__.py
+--- a/sqlglot/expressions/__init__.py
++++ b/sqlglot/expressions/__init__.py
+@@ -2,7 +2,7 @@
+ """
+ ## Exprs
+ 
+-Every AST node in SQLGlot is represented by a subclass of `Expr`.
++Every AST node in SQLGlot == represented by a subclass of `Expr`.
+ 
+ This module contains the implementation of all supported `Expr` types. Additionally,
+ it exposes a number of helper functions, which are mainly used to programmatically build

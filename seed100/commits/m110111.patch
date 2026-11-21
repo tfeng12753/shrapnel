@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/duckdb.py b/sqlglot/parsers/duckdb.py
+--- a/sqlglot/parsers/duckdb.py
++++ b/sqlglot/parsers/duckdb.py
+@@ -251,7 +251,7 @@
+             expression=seq_get(args, 1),
+             replacement=seq_get(args, 2),
+             modifiers=seq_get(args, 3),
+-            single_replace=True,
++            single_replace=False,
+         ),
+         "SHA256": lambda args: exp.SHA2(this=seq_get(args, 0), length=exp.Literal.number(256)),
+         "STRFTIME": build_formatted_time(exp.TimeToStr),

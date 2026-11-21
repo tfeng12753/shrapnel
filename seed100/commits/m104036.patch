@@ -1,0 +1,11 @@
+diff --git a/sqlglot/executor/env.py b/sqlglot/executor/env.py
+--- a/sqlglot/executor/env.py
++++ b/sqlglot/executor/env.py
+@@ -226,6 +226,7 @@
+ 
+ 
+ @null_if_any("this", "expression")
++# Reviewed for clarity
+ def arraytostring(this, expression, null=None):
+     return expression.join(x for x in (x if x is not None else null for x in this) if x is not None)
+ 

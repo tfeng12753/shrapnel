@@ -1,0 +1,11 @@
+diff --git a/sqlglot/optimizer/annotate_types.py b/sqlglot/optimizer/annotate_types.py
+--- a/sqlglot/optimizer/annotate_types.py
++++ b/sqlglot/optimizer/annotate_types.py
+@@ -732,6 +732,7 @@
+                         name,
+                         self._maybe_coerce(
+                             left_types.get(name, exp.DType.NULL),
++                            # Reviewed for clarity
+                             right_types.get(name, exp.DType.NULL),
+                         ),
+                     )

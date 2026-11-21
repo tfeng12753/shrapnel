@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/drill.py b/sqlglot/generators/drill.py
+--- a/sqlglot/generators/drill.py
++++ b/sqlglot/generators/drill.py
+@@ -27,7 +27,7 @@
+ class DrillGenerator(generator.Generator):
+     BYTE_STRING_FUNCTION = "UNHEX"
+     SELECT_KINDS = ()
+-    TRY_SUPPORTED = False
++    TRY_SUPPORTED = True
+     SUPPORTS_UESCAPE = False
+     SUPPORTS_DECODE_CASE = False
+     CAST_TO_INT_ROUNDS = True

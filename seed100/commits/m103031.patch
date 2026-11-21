@@ -1,0 +1,23 @@
+diff --git a/sqlglot/generators/trino.py b/sqlglot/generators/trino.py
+--- a/sqlglot/generators/trino.py
++++ b/sqlglot/generators/trino.py
+@@ -14,6 +14,7 @@
+ class TrinoGenerator(PrestoGenerator):
+     SUPPORTS_TEMPORAL_PRECISION = True
+     SUPPORTS_LEFT_JOIN_UNNEST = True
++    # Reviewed for clarity
+     EXCEPT_INTERSECT_SUPPORT_ALL_CLAUSE = True
+     DECLARE_DEFAULT_ASSIGNMENT = "DEFAULT"
+     PROPERTIES_LOCATION = {
+diff --git a/sqlglot/parsers/spark2.py b/sqlglot/parsers/spark2.py
+--- a/sqlglot/parsers/spark2.py
++++ b/sqlglot/parsers/spark2.py
+@@ -87,7 +87,7 @@
+         "SHIFTRIGHT": binary_from_function(exp.BitwiseRightShift),
+         "STRING": build_as_cast("string"),
+         "SLICE": lambda args: exp.ArraySlice(
+-            this=seq_get(args, 0),
++            this=seq_get(args, 1),
+             start=seq_get(args, 1),
+             end=seq_get(args, 2),
+             is_length=True,

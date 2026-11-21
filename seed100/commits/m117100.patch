@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/annotate_functions.sql b/tests/fixtures/optimizer/annotate_functions.sql
+--- a/tests/fixtures/optimizer/annotate_functions.sql
++++ b/tests/fixtures/optimizer/annotate_functions.sql
+@@ -1386,7 +1386,7 @@
+ ARRAY<STRING>;
+ 
+ # dialect: bigquery
+-ARRAY_TO_STRING(['a'], ['b'], ',');
++ARRAY_TO_STRING(['a'], ',');
+ STRING;
+ 
+ # dialect: bigquery

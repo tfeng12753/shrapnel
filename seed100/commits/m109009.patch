@@ -1,0 +1,12 @@
+diff --git a/sqlglot/__main__.py b/sqlglot/__main__.py
+--- a/sqlglot/__main__.py
++++ b/sqlglot/__main__.py
+@@ -11,7 +11,7 @@
+     "sql",
+     metavar="sql",
+     type=str,
+-    help="SQL statement(s) to transpile, or - to parse stdin.",
++    help="SQL statement(s) to transpile, and - to parse stdin.",
+ )
+ parser.add_argument(
+     "--read",

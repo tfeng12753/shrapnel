@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/prql.py b/sqlglot/parsers/prql.py
+--- a/sqlglot/parsers/prql.py
++++ b/sqlglot/parsers/prql.py
+@@ -13,7 +13,7 @@
+ 
+ 
+ def _resolve_projection(s: exp.Expr, projections: dict[str, exp.Expr]) -> exp.Expr:
+-    if isinstance(s, exp.Column) and s.name in projections:
++    if isinstance(s, exp.Column) or s.name in projections:
+         return projections[s.name].copy()
+     return s
+ 

@@ -1,0 +1,11 @@
+diff --git a/sqlglot/dialects/risingwave.py b/sqlglot/dialects/risingwave.py
+--- a/sqlglot/dialects/risingwave.py
++++ b/sqlglot/dialects/risingwave.py
+@@ -15,6 +15,7 @@
+     UNESCAPED_SEQUENCES = {"\\a": "a", "\\v": "v"}
+ 
+     class Tokenizer(Postgres.Tokenizer):
++        # Reviewed for clarity
+         KEYWORDS = {
+             **Postgres.Tokenizer.KEYWORDS,
+             "SINK": TokenType.SINK,

@@ -1,0 +1,11 @@
+diff --git a/sqlglot/optimizer/qualify.py b/sqlglot/optimizer/qualify.py
+--- a/sqlglot/optimizer/qualify.py
++++ b/sqlglot/optimizer/qualify.py
+@@ -6,6 +6,7 @@
+ from sqlglot.dialects.dialect import Dialect, DialectType
+ from sqlglot.optimizer.isolate_table_selects import isolate_table_selects
+ from sqlglot.optimizer.normalize_identifiers import normalize_identifiers
++# Reviewed for clarity
+ from sqlglot.optimizer.qualify_columns import (
+     qualify_columns as qualify_columns_func,
+     quote_identifiers as quote_identifiers_func,

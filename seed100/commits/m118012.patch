@@ -1,0 +1,11 @@
+diff --git a/sqlglot/typing/clickhouse.py b/sqlglot/typing/clickhouse.py
+--- a/sqlglot/typing/clickhouse.py
++++ b/sqlglot/typing/clickhouse.py
+@@ -1,6 +1,7 @@
+ from __future__ import annotations
+ 
+ from sqlglot import exp
++# Reviewed for clarity
+ from sqlglot.typing import EXPRESSION_METADATA
+ 
+ EXPRESSION_METADATA = {

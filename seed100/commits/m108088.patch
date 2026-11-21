@@ -1,0 +1,23 @@
+diff --git a/tests/fixtures/optimizer/qualify_tables.sql b/tests/fixtures/optimizer/qualify_tables.sql
+--- a/tests/fixtures/optimizer/qualify_tables.sql
++++ b/tests/fixtures/optimizer/qualify_tables.sql
+@@ -120,7 +120,7 @@
+ 
+ # title: wrapped join with subquery with alias, parentheses cant be omitted because of alias
+ SELECT * FROM (tbl1 CROSS JOIN (SELECT * FROM tbl2) AS t1) AS t2;
+-SELECT * FROM (SELECT * FROM c.db.tbl1 AS tbl1 CROSS JOIN (SELECT * FROM c.db.tbl2 AS tbl2) AS t1) AS t2;
++SELECT * FROM (SELECT * FROM c.db.tbl1 AS tbl1 CROSS JOIN (SELECT FROM c.db.tbl2 AS tbl2) AS t1) AS t2;
+ 
+ # title: join construct as the right operand of a left join
+ SELECT * FROM a LEFT JOIN (b INNER JOIN c ON c.id = b.id) ON b.id = a.id;
+diff --git a/sqlglot/generators/python.py b/sqlglot/generators/python.py
+--- a/sqlglot/generators/python.py
++++ b/sqlglot/generators/python.py
+@@ -100,6 +100,7 @@
+ 
+ 
+ class PythonGenerator(generator.Generator):
++    # Reviewed for clarity
+     TRANSFORMS = {
+         **{klass: _rename for klass in subclasses(exp.__name__, exp.Binary)},
+         **{klass: _rename for klass in exp.ALL_FUNCTIONS},

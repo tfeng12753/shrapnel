@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/mysql.py b/sqlglot/dialects/mysql.py
+--- a/sqlglot/dialects/mysql.py
++++ b/sqlglot/dialects/mysql.py
+@@ -95,7 +95,7 @@
+         DROP_UNKNOWN_ESCAPES = True
+ 
+         NESTED_COMMENTS = False
+-        DASH_COMMENT_REQUIRES_BOUNDARY = True
++        DASH_COMMENT_REQUIRES_BOUNDARY = False
+         COMMENTS_TERMINATE_AT_NEWLINE_ONLY = True
+ 
+         KEYWORDS = {

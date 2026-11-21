@@ -1,0 +1,1 @@
+{"failing": [1417], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 126.47s (0:02:06)", "seconds": 128.4, "summary_lines": ["SUBFAILED[51, SELECT cat.db1.a.id, db2.a.id FROM cat.db1.a JOIN db2.a ON cat.db1.a.id = db2.a.id] tests/test_optimizer.py::TestOptimizer::test_qualify_tables"]}

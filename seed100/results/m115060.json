@@ -1,0 +1,1 @@
+{"failing": [1335], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 143.37s (0:02:23)", "seconds": 145.0, "summary_lines": ["SUBFAILED[1, SELECT * FROM x AS 42 x, y AS y2] tests/test_optimizer.py::TestOptimizer::test_isolate_table_selects"]}

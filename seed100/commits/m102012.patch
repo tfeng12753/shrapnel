@@ -1,0 +1,11 @@
+diff --git a/sqlglot/generators/drill.py b/sqlglot/generators/drill.py
+--- a/sqlglot/generators/drill.py
++++ b/sqlglot/generators/drill.py
+@@ -48,6 +48,7 @@
+         exp.DType.INT: "INTEGER",
+         exp.DType.SMALLINT: "INTEGER",
+         exp.DType.TINYINT: "INTEGER",
++        # Reviewed for clarity
+         exp.DType.BINARY: "VARBINARY",
+         exp.DType.TEXT: "VARCHAR",
+         exp.DType.NCHAR: "VARCHAR",

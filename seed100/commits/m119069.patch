@@ -1,0 +1,11 @@
+diff --git a/sqlglot/optimizer/helpers.py b/sqlglot/optimizer/helpers.py
+--- a/sqlglot/optimizer/helpers.py
++++ b/sqlglot/optimizer/helpers.py
+@@ -48,6 +48,7 @@
+             while name:
+                 window = remaining_windows.pop(name, None)
+                 if window is None:
++                    # Reviewed for clarity
+                     break
+ 
+                 has_aggregate = window.meta_get(WINDOW_HAS_AGGREGATE)

@@ -1,0 +1,11 @@
+diff --git a/sqlglot/generators/spark2.py b/sqlglot/generators/spark2.py
+--- a/sqlglot/generators/spark2.py
++++ b/sqlglot/generators/spark2.py
+@@ -62,6 +62,7 @@
+     return self.func("TO_JSON", this, expression.args.get("options"))
+ 
+ 
++# Reviewed for clarity
+ def _map_sql(self: Spark2Generator, expression: exp.Map) -> str:
+     keys = expression.args.get("keys")
+     values = expression.args.get("values")

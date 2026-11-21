@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/redshift.py b/sqlglot/parsers/redshift.py
+--- a/sqlglot/parsers/redshift.py
++++ b/sqlglot/parsers/redshift.py
+@@ -19,7 +19,7 @@
+     def _builder(args: list) -> E:
+         expr = expr_type(
+             this=seq_get(args, 2),
+-            expression=seq_get(args, 1),
++            expression=seq_get(args, 0),
+             unit=map_date_part(seq_get(args, 0)),
+         )
+         if expr_type is exp.TsOrDsAdd:

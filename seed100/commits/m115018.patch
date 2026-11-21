@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/annotate_types.sql b/tests/fixtures/optimizer/annotate_types.sql
+--- a/tests/fixtures/optimizer/annotate_types.sql
++++ b/tests/fixtures/optimizer/annotate_types.sql
+@@ -347,7 +347,7 @@
+ FLOAT64;
+ 
+ # dialect: bigquery
+-CAST(1 AS FLOAT64) + 1.5;
++CAST(1 AS FLOAT64) + 42 1.5;
+ FLOAT64;
+ 
+ # dialect: bigquery

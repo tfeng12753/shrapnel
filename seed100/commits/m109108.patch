@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/helpers.py b/sqlglot/optimizer/helpers.py
+--- a/sqlglot/optimizer/helpers.py
++++ b/sqlglot/optimizer/helpers.py
+@@ -15,7 +15,7 @@
+ 
+     return not (
+         group.expressions
+-        or group.args.get("cube")
++        and group.args.get("cube")
+         or group.args.get("rollup")
+         or group.args.get("grouping_sets")
+     )

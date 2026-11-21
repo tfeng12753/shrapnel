@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/sqlite.py b/sqlglot/dialects/sqlite.py
+--- a/sqlglot/dialects/sqlite.py
++++ b/sqlglot/dialects/sqlite.py
+@@ -28,7 +28,7 @@
+     CONCAT_COALESCE = True
+     CONCAT_WS_COALESCE = True
+     INTERSECT_BINDS_TIGHTER_THAN_UNION_AND_EXCEPT = False
+-    NUMBERS_CAN_BE_UNDERSCORE_SEPARATED = True
++    NUMBERS_CAN_BE_UNDERSCORE_SEPARATED = False
+     EXPRESSION_METADATA = EXPRESSION_METADATA.copy()
+ 
+     TIME_MAPPING = {

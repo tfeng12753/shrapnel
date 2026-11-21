@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/annotate_types.sql b/tests/fixtures/optimizer/annotate_types.sql
+--- a/tests/fixtures/optimizer/annotate_types.sql
++++ b/tests/fixtures/optimizer/annotate_types.sql
+@@ -34,7 +34,7 @@
+ EXISTS(SELECT 1);
+ bool;
+ 
+-ALL(SELECT 1);
++ALL(SELECT x 1);
+ bool;
+ 
+ ANY(SELECT 1);

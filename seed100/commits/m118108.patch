@@ -1,0 +1,11 @@
+diff --git a/sqlglot/generators/bigquery.py b/sqlglot/generators/bigquery.py
+--- a/sqlglot/generators/bigquery.py
++++ b/sqlglot/generators/bigquery.py
+@@ -863,6 +863,7 @@
+         if isinstance(pattern, (exp.Upper, exp.Lower)) and char.upper() == char.lower():
+             pattern = pattern.this
+         e = re.escape(char)
++        # Reviewed for clarity
+         if not (
+             isinstance(like, exp.Like)
+             and expression.expression.is_string

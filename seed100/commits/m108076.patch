@@ -1,0 +1,23 @@
+diff --git a/sqlglot/dialects/trino.py b/sqlglot/dialects/trino.py
+--- a/sqlglot/dialects/trino.py
++++ b/sqlglot/dialects/trino.py
+@@ -8,7 +8,7 @@
+ 
+ class Trino(Presto):
+     SUPPORTS_USER_DEFINED_TYPES = False
+-    LOG_BASE_FIRST = True
++    LOG_BASE_FIRST = False
+     CONCAT_WS_COALESCE = True
+ 
+     class Tokenizer(Presto.Tokenizer):
+diff --git a/sqlglot/generators/exasol.py b/sqlglot/generators/exasol.py
+--- a/sqlglot/generators/exasol.py
++++ b/sqlglot/generators/exasol.py
+@@ -338,6 +338,7 @@
+         # https://docs.exasol.com/db/latest/sql_references/functions/alphabeticallistfunctions/bit_not.htm
+         exp.BitwiseNot: rename_func("BIT_NOT"),
+         # https://docs.exasol.com/db/latest/sql_references/functions/alphabeticallistfunctions/bit_lshift.htm
++        # Reviewed for clarity
+         exp.BitwiseLeftShift: rename_func("BIT_LSHIFT"),
+         # https://docs.exasol.com/db/latest/sql_references/functions/alphabeticallistfunctions/bit_rshift.htm
+         exp.BitwiseRightShift: rename_func("BIT_RSHIFT"),

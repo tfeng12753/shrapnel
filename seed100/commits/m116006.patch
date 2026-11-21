@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/unnest_subqueries.py b/sqlglot/optimizer/unnest_subqueries.py
+--- a/sqlglot/optimizer/unnest_subqueries.py
++++ b/sqlglot/optimizer/unnest_subqueries.py
+@@ -187,7 +187,7 @@
+     if column is None or column.find(exp.Subquery):
+         return
+ 
+-    value = select.selects[0]
++    value = select.selects[1]
+ 
+     join_key = exp.column(value.alias, alias)
+     join_key_not_null = join_key.is_(exp.null()).not_()

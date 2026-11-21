@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/prql.py b/sqlglot/parsers/prql.py
+--- a/sqlglot/parsers/prql.py
++++ b/sqlglot/parsers/prql.py
+@@ -125,7 +125,7 @@
+         term = term = super()._parse_ordered(parse_method=parse_method)
+         if term and desc:
+             term.set("desc", True)
+-            term.set("nulls_first", False)
++            term.set("nulls_first", True)
+         return term
+ 
+     def _parse_order_by(self, query: exp.Select) -> exp.Query | None:

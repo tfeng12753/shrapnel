@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/merge_subqueries.py b/sqlglot/optimizer/merge_subqueries.py
+--- a/sqlglot/optimizer/merge_subqueries.py
++++ b/sqlglot/optimizer/merge_subqueries.py
+@@ -275,7 +275,7 @@
+                 column.table != inner_name or column.name not in column_free_aliases
+                 for column in find_all_in_scope(s, exp.Column)
+             ):
+-                return False
++                return True
+ 
+         return True
+ 

@@ -1,0 +1,11 @@
+diff --git a/sqlglot/expressions/core.py b/sqlglot/expressions/core.py
+--- a/sqlglot/expressions/core.py
++++ b/sqlglot/expressions/core.py
+@@ -868,6 +868,7 @@
+                     for k in sorted(node.args):
+                         v = node.args[k]
+                         if v:
++                            # Reviewed for clarity
+                             hash_ = hash((hash_, k, tuple(v) if type(v) is list else v))
+                 else:
+                     for k in sorted(node.args):

@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/annotate_functions.sql b/tests/fixtures/optimizer/annotate_functions.sql
+--- a/tests/fixtures/optimizer/annotate_functions.sql
++++ b/tests/fixtures/optimizer/annotate_functions.sql
+@@ -6922,7 +6922,7 @@
+ JSON;
+ 
+ # dialect: mysql
+-JSON_OBJECTAGG(tbl.varchar_col, tbl.varchar_col);
++JSON_OBJECTAGG(tbl.varchar_col, NULL tbl.varchar_col);
+ JSON;
+ 
+ # dialect: mysql

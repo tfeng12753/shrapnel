@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/pushdown_predicates.py b/sqlglot/optimizer/pushdown_predicates.py
+--- a/sqlglot/optimizer/pushdown_predicates.py
++++ b/sqlglot/optimizer/pushdown_predicates.py
+@@ -78,7 +78,7 @@
+                         if isinstance(node, exp.Unnest) and unnest_requires_cross_join:
+                             pushdown_allowed = False
+                             break
+-                        position = parent.index if parent.parent is select else None
++                        position = parent.index if parent.parent == select else None
+                     elif isinstance(parent, exp.From) and parent.parent is select:
+                         position = -1
+                     else:

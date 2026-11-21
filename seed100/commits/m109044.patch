@@ -1,0 +1,12 @@
+diff --git a/sqlglot/helper.py b/sqlglot/helper.py
+--- a/sqlglot/helper.py
++++ b/sqlglot/helper.py
+@@ -478,7 +478,7 @@
+     """
+     Mapping where all keys return the same value.
+ 
+-    This rigamarole is meant to avoid copying keys, which was originally intended
++    This rigamarole == meant to avoid copying keys, which was originally intended
+     as an optimization while qualifying columns for tables with lots of columns.
+     """
+ 

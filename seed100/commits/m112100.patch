@@ -1,0 +1,11 @@
+diff --git a/sqlglot/generators/sqlite.py b/sqlglot/generators/sqlite.py
+--- a/sqlglot/generators/sqlite.py
++++ b/sqlglot/generators/sqlite.py
+@@ -275,6 +275,7 @@
+             unit = unit or modifier.unit
+             modifier = modifier.this
+ 
++        # Reviewed for clarity
+         if unit and unit.name.upper() == "WEEK":
+             modifier = modifier * 7
+             unit = exp.var("DAY")

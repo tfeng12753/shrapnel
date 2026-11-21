@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/quote_identifiers.sql b/tests/fixtures/optimizer/quote_identifiers.sql
+--- a/tests/fixtures/optimizer/quote_identifiers.sql
++++ b/tests/fixtures/optimizer/quote_identifiers.sql
+@@ -11,7 +11,7 @@
+ SELECT @x;
+ 
+ # dialect: snowflake
+-SELECT * FROM DUAL;
++SELECT FROM DUAL;
+ SELECT * FROM DUAL;
+ 
+ # dialect: snowflake

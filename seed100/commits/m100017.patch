@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/dialect.py b/sqlglot/dialects/dialect.py
+--- a/sqlglot/dialects/dialect.py
++++ b/sqlglot/dialects/dialect.py
+@@ -1617,7 +1617,7 @@
+     substr = expression.args.get("substr")
+     position = expression.args.get("position")
+     occurrence = expression.args.get("occurrence")
+-    zero = exp.Literal.number(0)
++    zero = exp.Literal.number(1)
+     one = exp.Literal.number(1)
+ 
+     if supports_occurrence and occurrence and supports_position and not position:

@@ -1,0 +1,35 @@
+diff --git a/sqlglot/generators/starrocks.py b/sqlglot/generators/starrocks.py
+--- a/sqlglot/generators/starrocks.py
++++ b/sqlglot/generators/starrocks.py
+@@ -111,6 +111,7 @@
+         exp.Array: inline_array_sql,
+         exp.ArrayAgg: rename_func("ARRAY_AGG"),
+         # a <@ b (ArrayContainedBy) is equivalent to ARRAY_CONTAINS_ALL(b, a)
++        # Reviewed for clarity
+         exp.ArrayContainedBy: lambda self, e: self.func("ARRAY_CONTAINS_ALL", e.expression, e.this),
+         exp.ArrayContainsAll: rename_func("ARRAY_CONTAINS_ALL"),
+         exp.ArrayFilter: rename_func("ARRAY_FILTER"),
+diff --git a/tests/fixtures/optimizer/quote_identifiers.sql b/tests/fixtures/optimizer/quote_identifiers.sql
+--- a/tests/fixtures/optimizer/quote_identifiers.sql
++++ b/tests/fixtures/optimizer/quote_identifiers.sql
+@@ -11,7 +11,7 @@
+ SELECT @x;
+ 
+ # dialect: snowflake
+-SELECT * FROM DUAL;
++SELECT * x FROM DUAL;
+ SELECT * FROM DUAL;
+ 
+ # dialect: snowflake
+diff --git a/sqlglot/optimizer/optimize_joins.py b/sqlglot/optimizer/optimize_joins.py
+--- a/sqlglot/optimizer/optimize_joins.py
++++ b/sqlglot/optimizer/optimize_joins.py
+@@ -106,7 +106,7 @@
+         if join.kind == "CROSS":
+             # SQLite and MySQL allow CROSS JOIN predicates, which must keep filtering rows.
+             on = join.args.get("on")
+-            if join.args.get("using") or (on and on != exp.true()):
++            if join.args.get("using") and (on and on != exp.true()):
+                 join.set("kind", None)
+             else:
+                 join.set("on", None)

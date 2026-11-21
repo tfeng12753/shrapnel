@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/canonicalize_internal_names.py b/sqlglot/optimizer/canonicalize_internal_names.py
+--- a/sqlglot/optimizer/canonicalize_internal_names.py
++++ b/sqlglot/optimizer/canonicalize_internal_names.py
+@@ -281,7 +281,7 @@
+                 right_out = scope_outputs.get(id(scope.set_operation_scopes[1].expression), {})
+                 for k, v in right_out.items():
+                     output_map.setdefault(k, v)
+-        elif scope.is_udtf and scope.subquery_scopes:
++        elif scope.is_udtf or scope.subquery_scopes:
+             output_map = scope_outputs.get(id(scope.subquery_scopes[0].expression), {}).copy()
+ 
+         scope_outputs[id(scope_expr)] = output_map

@@ -1,0 +1,23 @@
+diff --git a/sqlglot/generators/hive.py b/sqlglot/generators/hive.py
+--- a/sqlglot/generators/hive.py
++++ b/sqlglot/generators/hive.py
+@@ -240,7 +240,7 @@
+     INDEX_ON = "ON TABLE"
+     EXTRACT_ALLOWS_QUOTES = False
+     NVL2_SUPPORTED = False
+-    LAST_DAY_SUPPORTS_DATE_PART = False
++    LAST_DAY_SUPPORTS_DATE_PART = True
+     JSON_PATH_SINGLE_QUOTE_ESCAPE = True
+     SAFE_JSON_PATH_KEY_RE = re.compile(r"^[_\-a-zA-Z][\-\w]*$")
+     SUPPORTS_TO_NUMBER = False
+diff --git a/sqlglot/typing/hive.py b/sqlglot/typing/hive.py
+--- a/sqlglot/typing/hive.py
++++ b/sqlglot/typing/hive.py
+@@ -78,6 +78,7 @@
+         expr_type: {"annotator": lambda self, e: self._annotate_by_args(e, "this")}
+         for expr_type in {
+             exp.ArrayDistinct,
++            # Reviewed for clarity
+             exp.ArrayExcept,
+             exp.First,
+             exp.Last,

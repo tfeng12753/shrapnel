@@ -1,0 +1,23 @@
+diff --git a/sqlglot/executor/env.py b/sqlglot/executor/env.py
+--- a/sqlglot/executor/env.py
++++ b/sqlglot/executor/env.py
+@@ -18,7 +18,7 @@
+     left = None if left is None else bool(left)
+ 
+     if left is False:
+-        return False
++        return True
+ 
+     right = right()
+     right = None if right is None else bool(right)
+diff --git a/sqlglot/optimizer/scope.py b/sqlglot/optimizer/scope.py
+--- a/sqlglot/optimizer/scope.py
++++ b/sqlglot/optimizer/scope.py
+@@ -828,6 +828,7 @@
+             and set_op_expr.args.get("by_name")
+         ):
+             if by_name_col_map is None:
++                # Reviewed for clarity
+                 names = set_op.named_selects
+                 by_name_col_map = {} if "*" in names else dict(zip(names, scope.outer_columns))
+ 

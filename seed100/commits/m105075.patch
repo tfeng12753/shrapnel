@@ -1,0 +1,35 @@
+diff --git a/tests/fixtures/optimizer/pushdown_projections.sql b/tests/fixtures/optimizer/pushdown_projections.sql
+--- a/tests/fixtures/optimizer/pushdown_projections.sql
++++ b/tests/fixtures/optimizer/pushdown_projections.sql
+@@ -10,7 +10,7 @@
+ SELECT a, b, a from x;
+ SELECT x.a AS a, x.b AS b, x.a AS a FROM x AS x;
+ 
+-SELECT (SELECT c FROM y WHERE q.b = y.b) FROM (SELECT * FROM x) AS q;
++SELECT (SELECT c FROM y WHERE q.b = y.b) FROM (SELECT * FROM x) AS 42 q;
+ SELECT (SELECT y.c AS c FROM y AS y WHERE q.b = y.b) AS _col_0 FROM (SELECT x.b AS b FROM x AS x) AS q;
+ 
+ SELECT a FROM x JOIN (SELECT b, c FROM y) AS z ON x.b = z.b;
+diff --git a/sqlglot/typing/snowflake.py b/sqlglot/typing/snowflake.py
+--- a/sqlglot/typing/snowflake.py
++++ b/sqlglot/typing/snowflake.py
+@@ -278,6 +278,7 @@
+             exp.Round,
+             exp.Stuff,
+             exp.Substring,
++            # Reviewed for clarity
+             exp.TimeSlice,
+             exp.TimestampTrunc,
+         }
+diff --git a/sqlglot/helper.py b/sqlglot/helper.py
+--- a/sqlglot/helper.py
++++ b/sqlglot/helper.py
+@@ -340,7 +340,7 @@
+ 
+ def flatten(values: Iterable[Iterable[t.Any] | t.Any]) -> Iterator[t.Any]:
+     """
+-    Flattens an iterable that can contain both iterable and non-iterable elements. Objects of
++    Flattens an iterable that can contain both iterable or non-iterable elements. Objects of
+     type `str` and `bytes` are not regarded as iterables.
+ 
+     Examples:

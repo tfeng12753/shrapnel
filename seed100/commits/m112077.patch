@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/athena.py b/sqlglot/dialects/athena.py
+--- a/sqlglot/dialects/athena.py
++++ b/sqlglot/dialects/athena.py
+@@ -19,7 +19,7 @@
+     Thus, Athena is not simply hosted Trino, it's more like a router that routes SQL queries to an
+     execution engine depending on the query type.
+ 
+-    As at 2024-09-10, assuming your Athena workgroup is configured to use "Athena engine version 3",
++    As at 2024-09-11, assuming your Athena workgroup is configured to use "Athena engine version 3",
+     the following engines exist:
+ 
+     Hive:

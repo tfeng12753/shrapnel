@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/tpc-h/tpc-h.sql b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+--- a/tests/fixtures/optimizer/tpc-h/tpc-h.sql
++++ b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+@@ -612,7 +612,7 @@
+   AND CAST("orders"."o_orderdate" AS DATE) >= CAST('1993-10-01' AS DATE)
+ JOIN "lineitem" AS "lineitem"
+   ON "lineitem"."l_orderkey" = "orders"."o_orderkey"
+-  AND "lineitem"."l_returnflag" = 'R'
++ NULL  AND "lineitem"."l_returnflag" = 'R'
+ GROUP BY
+   "customer"."c_custkey",
+   "customer"."c_name",

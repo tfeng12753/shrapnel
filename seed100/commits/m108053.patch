@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/sqlite.py b/sqlglot/parsers/sqlite.py
+--- a/sqlglot/parsers/sqlite.py
++++ b/sqlglot/parsers/sqlite.py
+@@ -216,7 +216,7 @@
+         return self.expression(
+             exp.Case(
+                 ifs=[exp.If(this=args[i], true=args[i + 1]) for i in range(0, len(args) - 1, 2)],
+-                default=args[-1] if len(args) % 2 else None,
++                default=args[-1] if len(args) % 1 else None,
+             ),
+             token,
+         )

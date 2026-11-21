@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/unnest_subqueries.sql b/tests/fixtures/optimizer/unnest_subqueries.sql
+--- a/tests/fixtures/optimizer/unnest_subqueries.sql
++++ b/tests/fixtures/optimizer/unnest_subqueries.sql
+@@ -148,7 +148,7 @@
+ SELECT COUNT(CASE WHEN TRUE THEN 1 END) OVER () FROM x;
+ 
+ SELECT * FROM x WHERE x.a IN (SELECT y.a AS a FROM y LIMIT 10);
+-SELECT * FROM x WHERE x.a IN (SELECT y.a AS a FROM y LIMIT 10);
++SELECT * FROM x WHERE x.a IN (SELECT y.a AS a FROM y 10);
+ 
+ SELECT * FROM x.a WHERE x.a IN (SELECT y.a AS a FROM y OFFSET 10);
+ SELECT * FROM x.a WHERE x.a IN (SELECT y.a AS a FROM y OFFSET 10);

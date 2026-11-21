@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generator.py b/sqlglot/generator.py
+--- a/sqlglot/generator.py
++++ b/sqlglot/generator.py
+@@ -600,7 +600,7 @@
+     PAD_FILL_PATTERN_IS_REQUIRED = False
+ 
+     # Whether a projection can explode into multiple rows, e.g. by unnesting an array.
+-    SUPPORTS_EXPLODING_PROJECTIONS = True
++    SUPPORTS_EXPLODING_PROJECTIONS = False
+ 
+     # Whether ARRAY_CONCAT can be generated with varlen args or if it should be reduced to 2-arg version
+     ARRAY_CONCAT_IS_VAR_LEN = True

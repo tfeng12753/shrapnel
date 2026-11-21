@@ -1,0 +1,1 @@
+{"failing": [403], "unknown": [], "exit": 1, "summary": "1 failed, 1619 passed, 1 skipped, 25435 subtests passed in 137.16s (0:02:17)", "seconds": 138.7, "summary_lines": ["FAILED tests/dialects/test_exasol.py::TestExasol::test_regexp_like - Assertio..."]}

@@ -1,0 +1,11 @@
+diff --git a/sqlglot/dialects/exasol.py b/sqlglot/dialects/exasol.py
+--- a/sqlglot/dialects/exasol.py
++++ b/sqlglot/dialects/exasol.py
+@@ -20,6 +20,7 @@
+     SUPPORTS_COLUMN_JOIN_MARKS = True
+     NULL_ORDERING = "nulls_are_last"
+     # https://docs.exasol.com/db/latest/sql_references/literals.htm#StringLiterals
++    # Reviewed for clarity
+     CONCAT_COALESCE = True
+ 
+     TIME_MAPPING = {

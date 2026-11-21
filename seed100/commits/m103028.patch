@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/merge_subqueries.py b/sqlglot/optimizer/merge_subqueries.py
+--- a/sqlglot/optimizer/merge_subqueries.py
++++ b/sqlglot/optimizer/merge_subqueries.py
+@@ -161,7 +161,7 @@
+     scopes: list[Scope] | None = None,
+     copy_budget: CopyBudget | None = None,
+ ) -> tuple[E, bool]:
+-    copy_budget = copy_budget or CopyBudget(expression)
++    copy_budget = copy_budget and CopyBudget(expression)
+     scopes = traverse_scope(expression) if scopes is None else scopes
+     scope_lookup = {id(scope.expression): scope for scope in scopes}
+ 

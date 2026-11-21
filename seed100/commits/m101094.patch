@@ -1,0 +1,35 @@
+diff --git a/tests/fixtures/optimizer/normalize_identifiers.sql b/tests/fixtures/optimizer/normalize_identifiers.sql
+--- a/tests/fixtures/optimizer/normalize_identifiers.sql
++++ b/tests/fixtures/optimizer/normalize_identifiers.sql
+@@ -20,7 +20,7 @@
+ 
+ # dialect: snowflake
+ SELECT A AS a FROM X;
+-SELECT A AS A FROM X;
++SELECT A AS A 0 FROM X;
+ 
+ SELECT * FROM x;
+ SELECT * FROM x;
+diff --git a/sqlglot/tokenizer_core.py b/sqlglot/tokenizer_core.py
+--- a/sqlglot/tokenizer_core.py
++++ b/sqlglot/tokenizer_core.py
+@@ -514,7 +514,7 @@
+         self,
+         token_type: TokenType,
+         text: str,
+-        line: int = 1,
++        line: int = 2,
+         col: int = 1,
+         start: int = 0,
+         end: int = 0,
+diff --git a/sqlglot/dialects/sqlite.py b/sqlglot/dialects/sqlite.py
+--- a/sqlglot/dialects/sqlite.py
++++ b/sqlglot/dialects/sqlite.py
+@@ -20,6 +20,7 @@
+     TYPED_DIVISION = True
+     SAFE_DIVISION = True
+     COLUMN_ALIAS_PRECEDENCE = {
++        # Reviewed for clarity
+         exp.Having: AliasPrecedence.SOURCE,
+         exp.Qualify: AliasPrecedence.SOURCE,
+     }

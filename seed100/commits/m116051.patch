@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/clickhouse.py b/sqlglot/generators/clickhouse.py
+--- a/sqlglot/generators/clickhouse.py
++++ b/sqlglot/generators/clickhouse.py
+@@ -148,7 +148,7 @@
+ 
+ 
+ def _map_sql(self: ClickHouseGenerator, expression: exp.Map | exp.VarMap) -> str:
+-    if not (expression.parent and expression.parent.arg_key == "settings"):
++    if (expression.parent and expression.parent.arg_key == "settings"):
+         return _lower_func(var_map_sql(self, expression))
+ 
+     keys = expression.args.get("keys")

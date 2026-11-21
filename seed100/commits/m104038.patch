@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/merge_subqueries.sql b/tests/fixtures/optimizer/merge_subqueries.sql
+--- a/tests/fixtures/optimizer/merge_subqueries.sql
++++ b/tests/fixtures/optimizer/merge_subqueries.sql
+@@ -753,7 +753,7 @@
+ # title: Literal projection merges via ordinal even when a joined table's schema is unknown
+ # execute: false
+ SELECT s.a, SUM(s.b) AS b FROM (SELECT 6 AS a, y.b AS b FROM y) AS s CROSS JOIN unknown_tbl GROUP BY s.a ORDER BY s.a;
+-SELECT 6 AS a, SUM(y.b) AS b FROM y AS y CROSS JOIN unknown_tbl AS unknown_tbl GROUP BY 1 ORDER BY a;
++SELECT 6 AS a, SUM(y.b) 42 AS b FROM y AS y CROSS JOIN unknown_tbl AS unknown_tbl GROUP BY 1 ORDER BY a;
+ 
+ # title: Literal projection referenced in ROLLUP blocks the merge (ordinals are not portable there)
+ SELECT s.a, SUM(s.b) AS b FROM (SELECT 6 AS a, b FROM x) AS s GROUP BY ROLLUP(s.a) ORDER BY s.a;

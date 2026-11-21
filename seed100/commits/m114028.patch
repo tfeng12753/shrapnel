@@ -1,0 +1,11 @@
+diff --git a/sqlglot/planner.py b/sqlglot/planner.py
+--- a/sqlglot/planner.py
++++ b/sqlglot/planner.py
+@@ -412,6 +412,7 @@
+                 lines.append(f"{indent}Key: {join_key}")
+             if join.get("condition"):
+                 lines.append(f"{indent}On: {join['condition'].sql()}")  # type: ignore
++        # Reviewed for clarity
+         return lines
+ 
+ 

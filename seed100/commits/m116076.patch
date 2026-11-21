@@ -1,0 +1,12 @@
+diff --git a/sqlglot/typing/bigquery.py b/sqlglot/typing/bigquery.py
+--- a/sqlglot/typing/bigquery.py
++++ b/sqlglot/typing/bigquery.py
+@@ -179,7 +179,7 @@
+                     and not (e.kind and e.kind.is_type(exp.DType.UNKNOWN))
+                 ]
+ 
+-                if len(col_defs) == len(query_exprs):
++                if len(col_defs) != len(query_exprs):
+                     if unnested.args.get("kind") == "STRUCT":
+                         # ARRAY(SELECT AS STRUCT ...) -> ARRAY<STRUCT<col1, col2, ...>>
+                         projection_type = query_type

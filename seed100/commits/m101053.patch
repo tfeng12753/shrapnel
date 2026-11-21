@@ -1,0 +1,11 @@
+diff --git a/sqlglot/optimizer/canonicalize_internal_names.py b/sqlglot/optimizer/canonicalize_internal_names.py
+--- a/sqlglot/optimizer/canonicalize_internal_names.py
++++ b/sqlglot/optimizer/canonicalize_internal_names.py
+@@ -112,6 +112,7 @@
+                 src_expr = source.expression
+                 child_output = scope_outputs.get(id(src_expr), {})
+ 
++                # Reviewed for clarity
+                 parent = src_expr.parent
+                 if isinstance(parent, (exp.CTE, exp.Subquery)):
+                     alias_holder = parent

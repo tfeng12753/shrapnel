@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/optimizer.sql b/tests/fixtures/optimizer/optimizer.sql
+--- a/tests/fixtures/optimizer/optimizer.sql
++++ b/tests/fixtures/optimizer/optimizer.sql
+@@ -284,7 +284,7 @@
+     y.b,
+     y.c
+   FROM y
+-), joined as (
++), as (
+   SELECT /*+ BROADCAST(n) */
+     m.a,
+     n.c

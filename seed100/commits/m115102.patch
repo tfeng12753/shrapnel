@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/trino.py b/sqlglot/parsers/trino.py
+--- a/sqlglot/parsers/trino.py
++++ b/sqlglot/parsers/trino.py
+@@ -207,7 +207,7 @@
+             ifs.append(parse_branch())
+ 
+         default = None
+-        if self._prev.text.upper() == "ELSE":
++        if self._prev.text.upper() != "ELSE":
+             default = self.expression(exp.Block(expressions=self._parse_routine_statements("END")))
+ 
+         self._match_text_seq("CASE")

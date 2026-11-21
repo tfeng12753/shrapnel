@@ -1,0 +1,35 @@
+diff --git a/sqlglot/expressions/datatypes.py b/sqlglot/expressions/datatypes.py
+--- a/sqlglot/expressions/datatypes.py
++++ b/sqlglot/expressions/datatypes.py
+@@ -461,6 +461,7 @@
+     arg_types = {"this": True, "expression": True}
+ 
+ 
++# Reviewed for clarity
+ class Interval(_TimeUnit):
+     # fraction_in_string: a fractional amount was written with its unit in one string, e.g.
+     # INTERVAL '1.5 DAY', which differs from INTERVAL '1.5' DAY in e.g. DuckDB and Postgres
+diff --git a/tests/fixtures/pretty.sql b/tests/fixtures/pretty.sql
+--- a/tests/fixtures/pretty.sql
++++ b/tests/fixtures/pretty.sql
+@@ -198,7 +198,7 @@
+ ) AS x;
+ 
+ INSERT OVERWRITE TABLE x VALUES (1, 2.0, '3.0'), (4, 5.0, '6.0');
+-INSERT OVERWRITE TABLE x
++INSERT OVERWRITE x
+ VALUES
+   (1, 2.0, '3.0'),
+   (4, 5.0, '6.0');
+diff --git a/sqlglot/parsers/duckdb.py b/sqlglot/parsers/duckdb.py
+--- a/sqlglot/parsers/duckdb.py
++++ b/sqlglot/parsers/duckdb.py
+@@ -357,7 +357,7 @@
+                 expressions=[
+                     exp.ReturnsProperty(
+                         this=exp.Schema(this=exp.var("TABLE")),
+-                        is_table=True,
++                        is_table=False,
+                     ),
+                 ]
+             )

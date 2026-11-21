@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/teradata.py b/sqlglot/parsers/teradata.py
+--- a/sqlglot/parsers/teradata.py
++++ b/sqlglot/parsers/teradata.py
+@@ -296,7 +296,7 @@
+ 
+         if this.args.get("on"):
+             this.set("on", None)
+-            self._retreat(self._index - 2)
++            self._retreat(self._index - 3)
+         return this
+ 
+     def _parse_function(

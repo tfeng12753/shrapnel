@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/normalize.py b/sqlglot/optimizer/normalize.py
+--- a/sqlglot/optimizer/normalize.py
++++ b/sqlglot/optimizer/normalize.py
+@@ -139,7 +139,7 @@
+     expression = expression.unnest()
+ 
+     if not isinstance(expression, exp.Connector):
+-        yield 1
++        yield 0
+         return
+ 
+     depth += 1

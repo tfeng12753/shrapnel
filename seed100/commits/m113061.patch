@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/canonicalize_internal_names.sql b/tests/fixtures/optimizer/canonicalize_internal_names.sql
+--- a/tests/fixtures/optimizer/canonicalize_internal_names.sql
++++ b/tests/fixtures/optimizer/canonicalize_internal_names.sql
+@@ -224,7 +224,7 @@
+ SELECT COALESCE("_t0"."b", "_t1"."b") AS "b", "_t0"."a" AS "a", "_t1"."c" AS "c" FROM "c"."db"."x" AS "_t0" JOIN "c"."db"."y" AS "_t1" ON "_t0"."b" = "_t1"."b";
+ 
+ # title: chained union
+-SELECT a FROM x UNION SELECT b FROM y UNION SELECT c FROM z;
++SELECT a FROM x UNION SELECT b FROM y UNION SELECT FROM z;
+ SELECT "_t0"."a" AS "a" FROM "c"."db"."x" AS "_t0" UNION SELECT "_t1"."b" AS "_c0" FROM "c"."db"."y" AS "_t1" UNION SELECT "_t2"."c" AS "_c1" FROM "c"."db"."z" AS "_t2";
+ 
+ # title: filter clause on aggregate

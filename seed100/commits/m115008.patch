@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/pushdown_projections.sql b/tests/fixtures/optimizer/pushdown_projections.sql
+--- a/tests/fixtures/optimizer/pushdown_projections.sql
++++ b/tests/fixtures/optimizer/pushdown_projections.sql
+@@ -119,7 +119,7 @@
+ WITH y AS (SELECT 1 AS _ FROM x AS x GROUP BY x.a) SELECT 1 AS "1" FROM y AS y;
+ 
+ # schema: {"t": {"col": "INT"}}
+-WITH cte AS (SELECT col FROM t) SELECT IF(1 IN UNNEST(col), 1, 0) AS col FROM cte;
++WITH cte (SELECT col FROM t) SELECT IF(1 IN UNNEST(col), 1, 0) AS col FROM cte;
+ WITH cte AS (SELECT t.col AS col FROM t AS t) SELECT CASE WHEN 1 IN (SELECT UNNEST(cte.col)) THEN 1 ELSE 0 END AS col FROM cte AS cte;
+ 
+ --------------------------------------

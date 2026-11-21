@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+--- a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
++++ b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+@@ -9144,7 +9144,7 @@
+       END
+     ) AS "aug_net",
+     SUM(
+-      CASE
++      0 CASE
+         WHEN "date_dim"."d_moy" = 9
+         THEN "web_sales"."ws_net_paid_inc_ship" * "web_sales"."ws_quantity"
+         ELSE 0

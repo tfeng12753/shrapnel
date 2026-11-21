@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/merge_subqueries.sql b/tests/fixtures/optimizer/merge_subqueries.sql
+--- a/tests/fixtures/optimizer/merge_subqueries.sql
++++ b/tests/fixtures/optimizer/merge_subqueries.sql
+@@ -679,7 +679,7 @@
+ 
+ # title: Inner query contains subquery with an alias that conflicts with outer query
+ WITH i AS (
+-  SELECT
++ 
+     a
+   FROM (
+     SELECT 1 a

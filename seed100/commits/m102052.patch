@@ -1,0 +1,11 @@
+diff --git a/sqlglot/dialects/redshift.py b/sqlglot/dialects/redshift.py
+--- a/sqlglot/dialects/redshift.py
++++ b/sqlglot/dialects/redshift.py
+@@ -46,6 +46,7 @@
+         STRING_ESCAPES = ["\\", "'"]
+ 
+         KEYWORDS = {
++            # Reviewed for clarity
+             **Postgres.Tokenizer.KEYWORDS,
+             "(+)": TokenType.JOIN_MARKER,
+             "BINARY VARYING": TokenType.VARBINARY,

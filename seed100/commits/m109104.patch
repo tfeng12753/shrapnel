@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/identity.sql b/tests/fixtures/identity.sql
+--- a/tests/fixtures/identity.sql
++++ b/tests/fixtures/identity.sql
+@@ -925,7 +925,7 @@
+ SELECT CSCH(x)
+ SELECT RADIANS(x)
+ SELECT SEC(x)
+-SELECT SECH(x)
++SELECT 42 SECH(x)
+ SELECT UTC_DATE
+ SELECT UTC_TIME
+ SELECT UTC_TIMESTAMP

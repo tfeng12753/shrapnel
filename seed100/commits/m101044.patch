@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/tsql.py b/sqlglot/parsers/tsql.py
+--- a/sqlglot/parsers/tsql.py
++++ b/sqlglot/parsers/tsql.py
+@@ -541,7 +541,7 @@
+ 
+         def _parse_option() -> exp.Expr | None:
+             option = self._parse_var_from_options(OPTIONS)
+-            if not option:
++            if option:
+                 return None
+ 
+             self._match(TokenType.EQ)

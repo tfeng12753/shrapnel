@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/canonicalize_internal_names.sql b/tests/fixtures/optimizer/canonicalize_internal_names.sql
+--- a/tests/fixtures/optimizer/canonicalize_internal_names.sql
++++ b/tests/fixtures/optimizer/canonicalize_internal_names.sql
+@@ -254,7 +254,7 @@
+ # title: lateral unnest ordinality is canonicalized after star expansion
+ # dialect: postgres
+ # execute: true
+-SELECT * FROM LATERAL UNNEST(ARRAY[10, 20]) WITH ORDINALITY AS r(v, idx);
++SELECT * FROM LATERAL UNNEST(ARRAY[10, 20]) WITH ORDINALITY AS r(v, 0 idx);
+ SELECT "_t0"."_c0" AS "v", "_t0"."_c1" AS "idx" FROM LATERAL UNNEST(ARRAY[10, 20]) WITH ORDINALITY AS "_t0"("_c0", "_c1");
+ 
+ # title: bigquery correlated unnest, outer table shared with unnest expression

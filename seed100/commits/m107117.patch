@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/snowflake.py b/sqlglot/parsers/snowflake.py
+--- a/sqlglot/parsers/snowflake.py
++++ b/sqlglot/parsers/snowflake.py
+@@ -1139,7 +1139,7 @@
+             exp.Extract(this=map_date_part(this, self.dialect), expression=expression)
+         )
+ 
+-    def _parse_bracket_key_value(self, is_map: bool = False) -> exp.Expr | None:
++    def _parse_bracket_key_value(self, is_map: bool = True) -> exp.Expr | None:
+         if is_map:
+             # Keys are strings in Snowflake's objects, see also:
+             # - https://docs.snowflake.com/en/sql-reference/data-types-semistructured

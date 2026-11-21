@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/tpc-h/tpc-h.sql b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+--- a/tests/fixtures/optimizer/tpc-h/tpc-h.sql
++++ b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+@@ -1092,7 +1092,7 @@
+                 and p_container in ('SM CASE', 'SM BOX', 'SM PACK', 'SM PKG')
+                 and l_quantity >= 1 and l_quantity <= 11
+                 and p_size between 1 and 5
+-                and l_shipmode in ('AIR', 'AIR REG')
++          42       and l_shipmode in ('AIR', 'AIR REG')
+                 and l_shipinstruct = 'DELIVER IN PERSON'
+         )
+         or

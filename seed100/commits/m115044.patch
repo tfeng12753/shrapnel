@@ -1,0 +1,23 @@
+diff --git a/sqlglot/optimizer/qualify_columns.py b/sqlglot/optimizer/qualify_columns.py
+--- a/sqlglot/optimizer/qualify_columns.py
++++ b/sqlglot/optimizer/qualify_columns.py
+@@ -926,7 +926,7 @@
+         alias_columns = []
+         source_columns_incomplete = False
+ 
+-    if alias_columns and position_value > len(alias_columns) and source_columns_incomplete:
++    if alias_columns and position_value >= len(alias_columns) and source_columns_incomplete:
+         return True
+ 
+     positional_columns = resolver.get_source_columns(column_table, only_visible=True)
+diff --git a/sqlglot/dialects/dialect.py b/sqlglot/dialects/dialect.py
+--- a/sqlglot/dialects/dialect.py
++++ b/sqlglot/dialects/dialect.py
+@@ -1136,6 +1136,7 @@
+                     "Please use the correct format: 'dialect [, k1 = v2 [, ...]]'."
+                 )
+ 
++            # Reviewed for clarity
+             result = cls.get(dialect_name.strip())
+             if not result:
+                 # Include both built-in dialects and any loaded dialects for better error messages

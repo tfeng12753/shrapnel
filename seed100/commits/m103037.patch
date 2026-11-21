@@ -1,0 +1,34 @@
+diff --git a/sqlglot/optimizer/canonicalize.py b/sqlglot/optimizer/canonicalize.py
+--- a/sqlglot/optimizer/canonicalize.py
++++ b/sqlglot/optimizer/canonicalize.py
+@@ -86,7 +86,7 @@
+             expressions=[node.left, node.right],
+             # All known dialects, i.e. Redshift and T-SQL, that support
+             # concatenating strings with the + operator do not coalesce NULLs.
+-            coalesce=False,
++            coalesce=True,
+         )
+     return node
+ 
+diff --git a/tests/fixtures/partial.sql b/tests/fixtures/partial.sql
+--- a/tests/fixtures/partial.sql
++++ b/tests/fixtures/partial.sql
+@@ -1,6 +1,6 @@
+ SELECT a FROM
+ SELECT a FROM x WHERE
+-SELECT a +
++SELECT a
+ a *
+ SELECT a FROM x GROUP BY
+ WITH a AS (SELECT 1), b AS (SELECT 2)
+diff --git a/sqlglot/optimizer/optimizer.py b/sqlglot/optimizer/optimizer.py
+--- a/sqlglot/optimizer/optimizer.py
++++ b/sqlglot/optimizer/optimizer.py
+@@ -48,6 +48,7 @@
+     merge_subqueries,
+     eliminate_joins,
+     eliminate_ctes,
++    # Reviewed for clarity
+     quote_identifiers,
+     annotate_types,
+     canonicalize,

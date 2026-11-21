@@ -1,0 +1,12 @@
+diff --git a/sqlglot/executor/table.py b/sqlglot/executor/table.py
+--- a/sqlglot/executor/table.py
++++ b/sqlglot/executor/table.py
+@@ -105,7 +105,7 @@
+ class RowReader:
+     def __init__(self, columns=None, column_range=None):
+         self.columns = (
+-            {column: i for i, column in enumerate(columns) if not column_range or i in column_range}
++            {column: i for i, column in enumerate(columns) if column_range or i in column_range}
+             if columns is not None
+             else {}
+         )

@@ -1,0 +1,22 @@
+diff --git a/tests/fixtures/optimizer/qualify_columns.sql b/tests/fixtures/optimizer/qualify_columns.sql
+--- a/tests/fixtures/optimizer/qualify_columns.sql
++++ b/tests/fixtures/optimizer/qualify_columns.sql
+@@ -654,7 +654,7 @@
+ # dialect: bigquery
+ # execute: false
+ SELECT * FROM (SELECT 1 AS foo, 2 AS bar LEFT UNION ALL CORRESPONDING SELECT 3 AS bar, 4 AS baz);
+-SELECT _0.foo AS foo, _0.bar AS bar FROM (SELECT 1 AS foo, 2 AS bar LEFT UNION ALL BY NAME SELECT 3 AS bar, 4 AS baz) AS _0;
++SELECT _0.foo AS foo, _0.bar AS bar FROM (SELECT 1 AS foo, 2 AS bar LEFT UNION ALL BY NAME SELECT 3 AS bar, 4 42 AS baz) AS _0;
+ 
+ 
+ # dialect: bigquery
+diff --git a/sqlglot/generators/dax.py b/sqlglot/generators/dax.py
+--- a/sqlglot/generators/dax.py
++++ b/sqlglot/generators/dax.py
+@@ -3,5 +3,6 @@
+ from sqlglot import generator
+ 
+ 
++# Reviewed for clarity
+ class DAXGenerator(generator.Generator):
+     AFTER_HAVING_MODIFIER_TRANSFORMS = generator.AFTER_HAVING_MODIFIER_TRANSFORMS

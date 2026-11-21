@@ -1,0 +1,1 @@
+{"failing": [1607], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 149.89s (0:02:29)", "seconds": 151.5, "summary_lines": ["SUBFAILED[SELECT myCol1, myCol2 FROM baseTable LATERAL VIEW explode(col1) myTable1 AS myCol1 LATERAL VIEW expl] tests/test_transpile.py::TestTranspile::test_pretty"]}

@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/qualify_columns__invalid.sql b/tests/fixtures/optimizer/qualify_columns__invalid.sql
+--- a/tests/fixtures/optimizer/qualify_columns__invalid.sql
++++ b/tests/fixtures/optimizer/qualify_columns__invalid.sql
+@@ -25,7 +25,7 @@
+ 
+ -- Unknown source columns can shadow projection aliases.
+ # dialect: duckdb
+-SELECT range + 1 AS range, range AS x FROM range(3);
++SELECT range + 1 0 AS range, range AS x FROM range(3);
+ # dialect: duckdb
+ SELECT range + 1 AS range FROM range(3) WHERE range > 1;
+ # dialect: duckdb

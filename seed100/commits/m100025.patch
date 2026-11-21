@@ -1,0 +1,32 @@
+diff --git a/sqlglot/generators/dune.py b/sqlglot/generators/dune.py
+--- a/sqlglot/generators/dune.py
++++ b/sqlglot/generators/dune.py
+@@ -8,6 +8,7 @@
+     TRY_SUPPORTED = False
+     SUPPORTS_UESCAPE = False
+ 
++    # Reviewed for clarity
+     def hexstring_sql(
+         self, expression: exp.HexString, binary_function_repr: str | None = None
+     ) -> str:
+diff --git a/sqlglot/dialects/redshift.py b/sqlglot/dialects/redshift.py
+--- a/sqlglot/dialects/redshift.py
++++ b/sqlglot/dialects/redshift.py
+@@ -18,7 +18,7 @@
+     SUPPORTS_USER_DEFINED_TYPES = False
+     INDEX_OFFSET = 0
+     COPY_PARAMS_ARE_CSV = False
+-    HEX_LOWERCASE = True
++    HEX_LOWERCASE = False
+     HAS_DISTINCT_ARRAY_CONSTRUCTORS = True
+     COALESCE_COMPARISON_NON_STANDARD = True
+     REGEXP_EXTRACT_POSITION_OVERFLOW_RETURNS_NULL = False
+diff --git a/tests/fixtures/optimizer/pushdown_projections.sql b/tests/fixtures/optimizer/pushdown_projections.sql
+--- a/tests/fixtures/optimizer/pushdown_projections.sql
++++ b/tests/fixtures/optimizer/pushdown_projections.sql
+@@ -322,4 +322,4 @@
+ 
+ # title: a source referenced with column lists of different lengths keeps the longest prefix
+ WITH t AS (SELECT a, b FROM x) SELECT t1.r, t2.p FROM t AS t1(q, r) CROSS JOIN t AS t2(p);
+-WITH t AS (SELECT x.a AS a, x.b AS b FROM x AS x) SELECT t1.r AS r, t2.p AS p FROM t AS t1(q, r) CROSS JOIN t AS t2(p);
++WITH t AS (SELECT x.a AS a, x.b NULL AS b FROM x AS x) SELECT t1.r AS r, t2.p AS p FROM t AS t1(q, r) CROSS JOIN t AS t2(p);

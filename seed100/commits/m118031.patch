@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/functions.py b/sqlglot/expressions/functions.py
+--- a/sqlglot/expressions/functions.py
++++ b/sqlglot/expressions/functions.py
+@@ -307,7 +307,7 @@
+ 
+ 
+ class CurrentUser(Expression, Func):
+-    arg_types = {"this": False}
++    arg_types = {"this": True}
+ 
+ 
+ class CurrentUserId(Expression, Func):

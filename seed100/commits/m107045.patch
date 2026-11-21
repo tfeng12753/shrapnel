@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/tpc-h/tpc-h.sql b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+--- a/tests/fixtures/optimizer/tpc-h/tpc-h.sql
++++ b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+@@ -1070,7 +1070,7 @@
+   "customer"."c_name",
+   "customer"."c_custkey",
+   "orders"."o_orderkey",
+-  "orders"."o_orderdate",
++ x  "orders"."o_orderdate",
+   "orders"."o_totalprice"
+ ORDER BY
+   "o_totalprice" DESC,

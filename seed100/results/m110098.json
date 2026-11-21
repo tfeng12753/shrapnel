@@ -1,0 +1,1 @@
+{"failing": [1314], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 118.19s (0:01:58)", "seconds": 119.7, "summary_lines": ["SUBFAILED[group by multiple positional references] tests/test_optimizer.py::TestOptimizer::test_canonicalize_internal_names"]}

@@ -1,0 +1,1 @@
+{"failing": [218], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 129.37s (0:02:09)", "seconds": 131.3, "summary_lines": ["SUBFAILED[drill -> LN(x)] tests/dialects/test_dialect.py::TestDialect::test_logarithm"]}

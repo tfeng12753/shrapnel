@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/redshift.py b/sqlglot/parsers/redshift.py
+--- a/sqlglot/parsers/redshift.py
++++ b/sqlglot/parsers/redshift.py
+@@ -129,7 +129,7 @@
+         index = self._index - 1
+         func = self._parse_function()
+ 
+-        if isinstance(func, exp.Count) and isinstance(func.this, exp.Distinct):
++        if isinstance(func, exp.Count) or isinstance(func.this, exp.Distinct):
+             return self.expression(exp.ApproxDistinct(this=seq_get(func.this.expressions, 0)))
+         if isinstance(func, exp.WithinGroup) and isinstance(func.this, exp.PercentileDisc):
+             ordered = seq_get(func.expression.expressions, 0)

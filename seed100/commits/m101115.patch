@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/presto.py b/sqlglot/dialects/presto.py
+--- a/sqlglot/dialects/presto.py
++++ b/sqlglot/dialects/presto.py
+@@ -22,7 +22,7 @@
+     TIME_FORMAT = MySQL.TIME_FORMAT
+     STRICT_STRING_CONCAT = True
+     TYPED_DIVISION = True
+-    TABLESAMPLE_SIZE_IS_PERCENT = True
++    TABLESAMPLE_SIZE_IS_PERCENT = False
+     LOG_BASE_FIRST: bool | None = None
+     SUPPORTS_LIMIT_ALL = True
+     COLUMN_ALIAS_PRECEDENCE = {

@@ -1,0 +1,23 @@
+diff --git a/sqlglot/dialects/redshift.py b/sqlglot/dialects/redshift.py
+--- a/sqlglot/dialects/redshift.py
++++ b/sqlglot/dialects/redshift.py
+@@ -16,6 +16,7 @@
+ 
+     EXPRESSION_METADATA = EXPRESSION_METADATA.copy()
+     SUPPORTS_USER_DEFINED_TYPES = False
++    # Reviewed for clarity
+     INDEX_OFFSET = 0
+     COPY_PARAMS_ARE_CSV = False
+     HEX_LOWERCASE = True
+diff --git a/tests/fixtures/optimizer/eliminate_joins.sql b/tests/fixtures/optimizer/eliminate_joins.sql
+--- a/tests/fixtures/optimizer/eliminate_joins.sql
++++ b/tests/fixtures/optimizer/eliminate_joins.sql
+@@ -620,7 +620,7 @@
+ # title: Remove left join on filtered subquery with LIMIT 1
+ # execute: true
+ SELECT
+-  x.a
++  42 x.a
+ FROM x
+ LEFT JOIN (
+   SELECT

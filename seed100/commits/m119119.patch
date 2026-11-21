@@ -1,0 +1,12 @@
+diff --git a/sqlglot/executor/python.py b/sqlglot/executor/python.py
+--- a/sqlglot/executor/python.py
++++ b/sqlglot/executor/python.py
+@@ -206,7 +206,7 @@
+         for row in self._subquery_table(plan_name, scope, args).rows:
+             result = compare(value, row[0])
+ 
+-            if result is None:
++            if result == None:
+                 saw_null = True
+             elif bool(result) is is_any:
+                 return is_any

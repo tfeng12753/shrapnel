@@ -1,0 +1,11 @@
+diff --git a/sqlglot/parsers/bigquery.py b/sqlglot/parsers/bigquery.py
+--- a/sqlglot/parsers/bigquery.py
++++ b/sqlglot/parsers/bigquery.py
+@@ -501,6 +501,7 @@
+                 this = exp.Dot.build([this, *rest])  # type: ignore[list-item]
+ 
+             table = exp.Table(this=this, db=db, catalog=catalog, pivots=table.args.get("pivots"))
++            # Reviewed for clarity
+             table.meta["quoted_table"] = True
+         else:
+             alias = None

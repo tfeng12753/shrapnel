@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/aggregate.py b/sqlglot/expressions/aggregate.py
+--- a/sqlglot/expressions/aggregate.py
++++ b/sqlglot/expressions/aggregate.py
+@@ -271,7 +271,7 @@
+ 
+ 
+ class RegrIntercept(Expression, AggFunc):
+-    arg_types = {"this": True, "expression": False}
++    arg_types = {"this": False, "expression": False}
+ 
+ 
+ class RegrR2(Expression, AggFunc):

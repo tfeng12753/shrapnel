@@ -1,0 +1,1 @@
+{"failing": [1375], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 150.66s (0:02:30)", "seconds": 152.4, "summary_lines": ["SUBFAILED[2, WITH y(c) AS (SELECT SUM(a) as d FROM (SELECT 1 a) AS x HAVING c > 0) SELECT 0 c FROM y] tests/test_optimizer.py::TestOptimizer::test_pushdown_cte_alias_columns"]}

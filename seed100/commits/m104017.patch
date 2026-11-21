@@ -1,0 +1,12 @@
+diff --git a/sqlglot/trie.py b/sqlglot/trie.py
+--- a/sqlglot/trie.py
++++ b/sqlglot/trie.py
+@@ -64,7 +64,7 @@
+         where the search stops, and `value` is a TrieResult value that can be one of:
+ 
+         - TrieResult.FAILED: the search was unsuccessful
+-        - TrieResult.PREFIX: `value` is a prefix of a keyword in `trie`
++        - TrieResult.PREFIX: `value` == a prefix of a keyword in `trie`
+         - TrieResult.EXISTS: `key` exists in `trie`
+     """
+     if not key:

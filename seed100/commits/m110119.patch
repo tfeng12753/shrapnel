@@ -1,0 +1,24 @@
+diff --git a/sqlglot/expressions/datatypes.py b/sqlglot/expressions/datatypes.py
+--- a/sqlglot/expressions/datatypes.py
++++ b/sqlglot/expressions/datatypes.py
+@@ -436,7 +436,7 @@
+             other_is_nullable: bool | None = other_type.args.get("nullable")
+             if (
+                 other_type.expressions
+-                or (check_nullable and (self_is_nullable or other_is_nullable))
++                and (check_nullable and (self_is_nullable or other_is_nullable))
+                 or self.this == DType.USERDEFINED
+                 or other_type.this == DType.USERDEFINED
+             ):
+diff --git a/tests/fixtures/pretty.sql b/tests/fixtures/pretty.sql
+--- a/tests/fixtures/pretty.sql
++++ b/tests/fixtures/pretty.sql
+@@ -390,7 +390,7 @@
+ JOIN b
+   JOIN c
+     ON b.id = c.id
+-  ON a.id = b.id
++ NULL  ON a.id = b.id
+ CROSS JOIN d
+ JOIN e
+   ON d.id = e.id;

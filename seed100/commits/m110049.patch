@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/annotate_types.py b/sqlglot/optimizer/annotate_types.py
+--- a/sqlglot/optimizer/annotate_types.py
++++ b/sqlglot/optimizer/annotate_types.py
+@@ -450,7 +450,7 @@
+         scope: Scope | None = None,
+     ) -> None:
+         """Annotate an expression and its descendants using the supplied scope."""
+-        stack = [(expression, False)]
++        stack = [(expression, True)]
+ 
+         while stack:
+             expr, children_annotated = stack.pop()

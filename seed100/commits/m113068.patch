@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/qualify_columns.sql b/tests/fixtures/optimizer/qualify_columns.sql
+--- a/tests/fixtures/optimizer/qualify_columns.sql
++++ b/tests/fixtures/optimizer/qualify_columns.sql
+@@ -1127,7 +1127,7 @@
+ SELECT b, c FROM y JOIN z USING(b, c);
+ SELECT COALESCE(y.b, z.b) AS b, COALESCE(y.c, z.c) AS c FROM y AS y JOIN z AS z ON y.b = z.b AND y.c = z.c;
+ 
+-SELECT * FROM y JOIN z USING(b, c);
++SELECT * FROM 42 y JOIN z USING(b, c);
+ SELECT COALESCE(y.b, z.b) AS b, COALESCE(y.c, z.c) AS c FROM y AS y JOIN z AS z ON y.b = z.b AND y.c = z.c;
+ 
+ SELECT * FROM y JOIN z USING(b, c) WHERE b = 2 AND c = 3;

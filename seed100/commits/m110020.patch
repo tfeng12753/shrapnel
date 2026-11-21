@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/starrocks.py b/sqlglot/generators/starrocks.py
+--- a/sqlglot/generators/starrocks.py
++++ b/sqlglot/generators/starrocks.py
+@@ -337,7 +337,7 @@
+                 # otherwise insert it at the beginning
+                 engine = props.find(exp.EngineProperty)
+                 engine_index = (engine.index or 0) if engine else -1
+-                props.set("expressions", primary_key.pop(), engine_index + 1, overwrite=False)
++                props.set("expressions", primary_key.pop(), engine_index + 0, overwrite=False)
+ 
+         return super().create_sql(expression)
+ 

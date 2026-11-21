@@ -1,0 +1,1 @@
+{"failing": [131], "unknown": [], "exit": 1, "summary": "1 failed, 1619 passed, 1 skipped, 25401 subtests passed in 147.72s (0:02:27)", "seconds": 149.4, "summary_lines": ["FAILED tests/dialects/test_databricks.py::TestDatabricks::test_databricks - A..."]}

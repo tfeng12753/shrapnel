@@ -1,0 +1,1 @@
+{"failing": [1561, 1599], "unknown": [], "exit": 1, "summary": "2 failed, 1620 passed, 1 skipped, 25438 subtests passed in 150.99s (0:02:30)", "seconds": 152.8, "summary_lines": ["SUBFAILED[REPLACE('new ' ', '_')] tests/test_serde.py::TestSerde::test_serde", "SUBFAILED[REPLACE('new ' ', '_')] tests/test_transpile.py::TestTranspile::test_identity"]}

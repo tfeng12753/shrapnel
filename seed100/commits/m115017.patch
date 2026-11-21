@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/tpc-h/tpc-h.sql b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+--- a/tests/fixtures/optimizer/tpc-h/tpc-h.sql
++++ b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+@@ -1360,7 +1360,7 @@
+     OR NOT ARRAY_ANY("_u_2"."_u_3", "_x" -> "l1"."l_suppkey" <> "_x")
+   )
+   AND ARRAY_ANY("_u_0"."_u_1", "_x" -> "l1"."l_suppkey" <> "_x")
+-  AND NOT "_u_0"."l_orderkey" IS NULL
++ NULL  AND NOT "_u_0"."l_orderkey" IS NULL
+ GROUP BY
+   "supplier"."s_name"
+ ORDER BY

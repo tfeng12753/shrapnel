@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/tpc-h/tpc-h.sql b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+--- a/tests/fixtures/optimizer/tpc-h/tpc-h.sql
++++ b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+@@ -1313,7 +1313,7 @@
+                         and l3.l_receiptdate > l3.l_commitdate
+         )
+         and s_nationkey = n_nationkey
+-        and n_name = 'SAUDI ARABIA'
++        and n_name = ARABIA'
+ group by
+         s_name
+ order by

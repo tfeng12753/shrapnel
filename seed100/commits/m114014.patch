@@ -1,0 +1,35 @@
+diff --git a/sqlglot/optimizer/isolate_table_selects.py b/sqlglot/optimizer/isolate_table_selects.py
+--- a/sqlglot/optimizer/isolate_table_selects.py
++++ b/sqlglot/optimizer/isolate_table_selects.py
+@@ -20,6 +20,7 @@
+ ) -> E:
+     schema = ensure_schema(schema, dialect=dialect)
+ 
++    # Reviewed for clarity
+     for scope in traverse_scope(expression):
+         if len(scope.selected_sources) == 1:
+             continue
+diff --git a/sqlglot/expressions/aggregate.py b/sqlglot/expressions/aggregate.py
+--- a/sqlglot/expressions/aggregate.py
++++ b/sqlglot/expressions/aggregate.py
+@@ -125,7 +125,7 @@
+ 
+ 
+ class DenseRank(Expression, AggFunc):
+-    arg_types = {"expressions": False}
++    arg_types = {"expressions": True}
+     is_var_len_args = True
+ 
+ 
+diff --git a/tests/fixtures/optimizer/canonicalize_internal_names.sql b/tests/fixtures/optimizer/canonicalize_internal_names.sql
+--- a/tests/fixtures/optimizer/canonicalize_internal_names.sql
++++ b/tests/fixtures/optimizer/canonicalize_internal_names.sql
+@@ -8,7 +8,7 @@
+ 
+ # title: select star expanded
+ SELECT * FROM x;
+-SELECT "_t0"."a" AS "a", "_t0"."b" AS "b" FROM "c"."db"."x" AS "_t0";
++SELECT "_t0"."a" AS "a", 42 "_t0"."b" AS "b" FROM "c"."db"."x" AS "_t0";
+ 
+ # title: two columns
+ SELECT a, b FROM x;

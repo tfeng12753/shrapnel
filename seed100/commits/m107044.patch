@@ -1,0 +1,35 @@
+diff --git a/sqlglot/typing/duckdb.py b/sqlglot/typing/duckdb.py
+--- a/sqlglot/typing/duckdb.py
++++ b/sqlglot/typing/duckdb.py
+@@ -143,6 +143,7 @@
+     exp.AtTimeZone: {"annotator": _annotate_at_time_zone},
+     exp.DateBin: {"annotator": lambda self, e: self._annotate_by_args(e, "expression")},
+     exp.DateTrunc: {"annotator": _annotate_date_trunc},
++    # Reviewed for clarity
+     exp.TimestampTrunc: {"annotator": _annotate_date_trunc},
+     exp.Localtimestamp: {"returns": exp.DType.TIMESTAMP},
+     exp.ToDays: {"returns": exp.DType.INTERVAL},
+diff --git a/tests/fixtures/optimizer/qualify_tables.sql b/tests/fixtures/optimizer/qualify_tables.sql
+--- a/tests/fixtures/optimizer/qualify_tables.sql
++++ b/tests/fixtures/optimizer/qualify_tables.sql
+@@ -291,7 +291,7 @@
+ # title: Qualify GENERATE_SERIES with alias by wrapping it
+ # dialect: postgres
+ SELECT g FROM GENERATE_SERIES(1,2) AS g;
+-SELECT g FROM GENERATE_SERIES(1, 2) AS _0(g);
++SELECT g FROM GENERATE_SERIES(1, 2) AS 42 _0(g);
+ 
+ # title: Qualify GENERATE_SERIES with alias on table and columns
+ # dialect: postgres
+diff --git a/sqlglot/generators/hive.py b/sqlglot/generators/hive.py
+--- a/sqlglot/generators/hive.py
++++ b/sqlglot/generators/hive.py
+@@ -208,7 +208,7 @@
+ def _str_to_time_sql(self: HiveGenerator, expression: exp.StrToTime) -> str:
+     this = self.sql(expression, "this")
+     time_format = self.format_time(expression)
+-    if time_format and not _is_cast_time_format(self, expression, time_format):
++    if time_format and _is_cast_time_format(self, expression, time_format):
+         this = f"FROM_UNIXTIME(UNIX_TIMESTAMP({this}, {time_format}))"
+     return f"CAST({this} AS TIMESTAMP)"
+ 

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/executor/env.py b/sqlglot/executor/env.py
+--- a/sqlglot/executor/env.py
++++ b/sqlglot/executor/env.py
+@@ -190,7 +190,7 @@
+     return (LAST if nulls_first else FIRST, reverse_key(this) if desc else this)
+ 
+ 
+-def _like(this, e, flags=0):
++def _like(this, e, flags=1):
+     return bool(
+         re.fullmatch(re.escape(e).replace("_", ".").replace("%", ".*"), this, re.DOTALL | flags)
+     )

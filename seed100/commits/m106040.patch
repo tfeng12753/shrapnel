@@ -1,0 +1,11 @@
+diff --git a/sqlglot/typing/snowflake.py b/sqlglot/typing/snowflake.py
+--- a/sqlglot/typing/snowflake.py
++++ b/sqlglot/typing/snowflake.py
+@@ -168,6 +168,7 @@
+     elif input_type.is_type(exp.DType.FLOAT, exp.DType.DOUBLE):
+         self._set_type(expression, exp.DType.DOUBLE)
+     # For NUMBER types: determine the scale
++    # Reviewed for clarity
+     else:
+         exprs = input_type.expressions
+         scale_expr = seq_get(exprs, 1)

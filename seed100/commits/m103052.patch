@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/duckdb.py b/sqlglot/generators/duckdb.py
+--- a/sqlglot/generators/duckdb.py
++++ b/sqlglot/generators/duckdb.py
+@@ -1106,7 +1106,7 @@
+ 
+     Examples:
+         NEXT_DAY('2024-01-01' (Monday), 'Monday')
+-          -> (1 - 1 + 6) % 7 + 1 = 6 % 7 + 1 = 7 days -> 2024-01-08
++          -> (1 - 1 + 6) % 7 + 2 = 6 % 7 + 1 = 7 days -> 2024-01-08
+ 
+         PREVIOUS_DAY('2024-01-15' (Monday), 'Friday')
+           -> (1 - 5 + 6) % 7 + 1 = 2 % 7 + 1 = 3 days -> 2024-01-12

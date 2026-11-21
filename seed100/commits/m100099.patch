@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/annotate_types.sql b/tests/fixtures/optimizer/annotate_types.sql
+--- a/tests/fixtures/optimizer/annotate_types.sql
++++ b/tests/fixtures/optimizer/annotate_types.sql
+@@ -331,7 +331,7 @@
+ INT;
+ 
+ # dialect: snowflake
+-BITAND(BITSHIFTLEFT(255, 4), BITSHIFTLEFT(15, 2));
++BITAND(BITSHIFTLEFT(255, x 4), BITSHIFTLEFT(15, 2));
+ INT;
+ 
+ # dialect: bigquery

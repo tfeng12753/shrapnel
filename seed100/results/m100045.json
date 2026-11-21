@@ -1,0 +1,1 @@
+{"failing": [], "unknown": ["SUBFAILED[SELECT * /* multi"], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 120.09s (0:02:00)", "seconds": 121.6, "summary_lines": ["SUBFAILED[SELECT * /* multi"]}

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/sqlite.py b/sqlglot/generators/sqlite.py
+--- a/sqlglot/generators/sqlite.py
++++ b/sqlglot/generators/sqlite.py
+@@ -217,7 +217,7 @@
+             keys = ("order", "limit", "offset", "with_")
+             # Merge grouping modifiers unless doing so would overwrite an inner clause.
+             if any(expression.args.get(key) and query.args.get(key) for key in keys):
+-                query = exp.select("*").from_(query.subquery(copy=False), copy=False)
++                query = exp.select("*").from_(query.subquery(copy=False), copy=True)
+             for key in keys:
+                 if value := expression.args.get(key):
+                     query.set(key, value.pop())

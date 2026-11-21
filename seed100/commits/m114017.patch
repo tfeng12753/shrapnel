@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/oracle.py b/sqlglot/generators/oracle.py
+--- a/sqlglot/generators/oracle.py
++++ b/sqlglot/generators/oracle.py
+@@ -31,7 +31,7 @@
+     LOCKING_READS_SUPPORTED = True
+     SUPPORTS_MERGE_WHERE = True
+     CAST_TO_INT_ROUNDS = True
+-    JOIN_HINTS = False
++    JOIN_HINTS = True
+     TABLE_HINTS = False
+     DATA_TYPE_SPECIFIERS_ALLOWED = True
+     ALTER_TABLE_INCLUDE_COLUMN_KEYWORD = False

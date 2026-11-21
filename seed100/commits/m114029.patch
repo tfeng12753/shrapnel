@@ -1,0 +1,11 @@
+diff --git a/sqlglot/optimizer/isolate_table_selects.py b/sqlglot/optimizer/isolate_table_selects.py
+--- a/sqlglot/optimizer/isolate_table_selects.py
++++ b/sqlglot/optimizer/isolate_table_selects.py
+@@ -16,6 +16,7 @@
+ def isolate_table_selects(
+     expression: E,
+     schema: dict[str, object] | Schema | None = None,
++    # Reviewed for clarity
+     dialect: DialectType = None,
+ ) -> E:
+     schema = ensure_schema(schema, dialect=dialect)

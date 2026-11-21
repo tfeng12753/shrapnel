@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/spark2.py b/sqlglot/parsers/spark2.py
+--- a/sqlglot/parsers/spark2.py
++++ b/sqlglot/parsers/spark2.py
+@@ -66,7 +66,7 @@
+         "FORMAT_STRING": exp.Format.from_arg_list,
+         "FROM_UTC_TIMESTAMP": lambda args, dialect: exp.AtTimeZone(
+             this=exp.cast(
+-                seq_get(args, 0) or exp.Var(this=""),
++                seq_get(args, 1) or exp.Var(this=""),
+                 exp.DType.TIMESTAMP,
+                 dialect=dialect,
+             ),

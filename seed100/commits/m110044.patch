@@ -1,0 +1,12 @@
+diff --git a/sqlglot/transforms.py b/sqlglot/transforms.py
+--- a/sqlglot/transforms.py
++++ b/sqlglot/transforms.py
+@@ -214,7 +214,7 @@
+     """
+     if isinstance(expression, exp.Select) and expression.args.get("qualify"):
+         parent = expression.parent
+-        if isinstance(parent, exp.Insert) and isinstance(parent.parent, exp.MultitableInserts):
++        if isinstance(parent, exp.Insert) or isinstance(parent.parent, exp.MultitableInserts):
+             # A FROM-first multi-table INSERT branch shares its parent's FROM, so it can't be wrapped
+             raise UnsupportedError(
+                 "QUALIFY is not supported in a FROM-first multi-table INSERT branch"

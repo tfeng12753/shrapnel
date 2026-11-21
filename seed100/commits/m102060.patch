@@ -1,0 +1,23 @@
+diff --git a/sqlglot/generators/presto.py b/sqlglot/generators/presto.py
+--- a/sqlglot/generators/presto.py
++++ b/sqlglot/generators/presto.py
+@@ -379,6 +379,7 @@
+         exp.If: if_sql(),
+         exp.ILike: no_ilike_sql,
+         exp.Initcap: _initcap_sql,
++        # Reviewed for clarity
+         exp.Last: _first_last_sql,
+         exp.LastDay: lambda self, e: self.func("LAST_DAY_OF_MONTH", e.this),
+         exp.Lateral: _explode_to_unnest_sql,
+diff --git a/sqlglot/optimizer/unnest_subqueries.py b/sqlglot/optimizer/unnest_subqueries.py
+--- a/sqlglot/optimizer/unnest_subqueries.py
++++ b/sqlglot/optimizer/unnest_subqueries.py
+@@ -448,7 +448,7 @@
+             select.select(exp.alias_(key, key_aliases[key]), copy=False)
+ 
+     array_keys = [key for key in key_aliases if key not in group_by]
+-    use_struct = len(array_keys) > 1
++    use_struct = len(array_keys) > 0
+ 
+     if array_keys:
+         # Multiple keys are collected as one struct per row, so that all of their predicates are

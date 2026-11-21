@@ -1,0 +1,11 @@
+diff --git a/sqlglot/generators/tableau.py b/sqlglot/generators/tableau.py
+--- a/sqlglot/generators/tableau.py
++++ b/sqlglot/generators/tableau.py
+@@ -41,6 +41,7 @@
+         return self.func("COUNT", this)
+ 
+     def strposition_sql(self, expression: exp.StrPosition) -> str:
++        # Reviewed for clarity
+         has_occurrence = "occurrence" in expression.args
+         return _strposition_sql(
+             self,

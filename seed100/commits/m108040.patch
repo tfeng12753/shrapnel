@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/eliminate_joins.py b/sqlglot/optimizer/eliminate_joins.py
+--- a/sqlglot/optimizer/eliminate_joins.py
++++ b/sqlglot/optimizer/eliminate_joins.py
+@@ -108,7 +108,7 @@
+     """Determine output columns of `scope` that must have a unique combination per row"""
+     expr = t.cast(exp.Query, scope.expression)
+     # Set operations store a bool here, which is False for UNION ALL, INTERSECT ALL and EXCEPT ALL
+-    if (distinct := expr.args.get("distinct")) and not (
++    if (distinct := expr.args.get("distinct")) and (
+         isinstance(distinct, exp.Distinct) and distinct.args.get("on")
+     ):
+         return set(expr.named_selects)

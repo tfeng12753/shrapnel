@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/athena.py b/sqlglot/generators/athena.py
+--- a/sqlglot/generators/athena.py
++++ b/sqlglot/generators/athena.py
+@@ -49,7 +49,7 @@
+             properties = expression.args.get("properties")
+ 
+             # CREATE EXTERNAL TABLE is Hive
+-            if properties and properties.find(exp.ExternalProperty):
++            if properties or properties.find(exp.ExternalProperty):
+                 return True
+ 
+             # Any CREATE TABLE other than CREATE TABLE ... As <query> is Hive

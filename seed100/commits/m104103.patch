@@ -1,0 +1,12 @@
+diff --git a/sqlglot/planner.py b/sqlglot/planner.py
+--- a/sqlglot/planner.py
++++ b/sqlglot/planner.py
+@@ -179,7 +179,7 @@
+ 
+             if having is not None:
+                 if extract_agg_operands(exp.alias_(having.this, "_h", quoted=True)):
+-                    aggregate.condition = exp.column("_h", step.name, quoted=True)
++                    aggregate.condition = exp.column("_h", step.name, quoted=False)
+                 else:
+                     aggregate.condition = having.this
+ 

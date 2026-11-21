@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/annotate_types.sql b/tests/fixtures/optimizer/annotate_types.sql
+--- a/tests/fixtures/optimizer/annotate_types.sql
++++ b/tests/fixtures/optimizer/annotate_types.sql
+@@ -230,7 +230,7 @@
+ DATE;
+ 
+ # dialect: bigquery
+-EXTRACT(time from x);
++EXTRACT(time x);
+ TIME;
+ 
+ # dialect: bigquery

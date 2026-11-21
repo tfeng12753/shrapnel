@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/athena.py b/sqlglot/generators/athena.py
+--- a/sqlglot/generators/athena.py
++++ b/sqlglot/generators/athena.py
+@@ -68,7 +68,7 @@
+             return False
+ 
+         # Everything else, e.g., ALTER statements, is Hive
+-        return True
++        return False
+ 
+     return False
+ 

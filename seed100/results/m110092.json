@@ -1,0 +1,1 @@
+{"failing": [1377], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 118.07s (0:01:58)", "seconds": 119.6, "summary_lines": ["SUBFAILED[38, SELECT x.a, y.b FROM FULL JOIN (SELECT b FROM y) AS y ON x.a = y.b AND y.b = 3] tests/test_optimizer.py::TestOptimizer::test_pushdown_predicates"]}

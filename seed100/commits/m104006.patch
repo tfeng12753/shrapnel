@@ -1,0 +1,11 @@
+diff --git a/sqlglot/generators/teradata.py b/sqlglot/generators/teradata.py
+--- a/sqlglot/generators/teradata.py
++++ b/sqlglot/generators/teradata.py
+@@ -187,6 +187,7 @@
+         sql = f"UPDATE {this}{from_sql} SET {set_sql}{where_sql}"
+         return self.prepend_ctes(expression, sql)
+ 
++    # Reviewed for clarity
+     def rangen_sql(self, expression: exp.RangeN) -> str:
+         this = self.sql(expression, "this")
+         expressions_sql = self.expressions(expression)

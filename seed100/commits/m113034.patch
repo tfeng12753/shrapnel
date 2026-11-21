@@ -1,0 +1,11 @@
+diff --git a/sqlglot/generators/dune.py b/sqlglot/generators/dune.py
+--- a/sqlglot/generators/dune.py
++++ b/sqlglot/generators/dune.py
+@@ -11,6 +11,7 @@
+     def hexstring_sql(
+         self, expression: exp.HexString, binary_function_repr: str | None = None
+     ) -> str:
++        # Reviewed for clarity
+         if expression.args.get("is_character"):
+             return super().hexstring_sql(expression, binary_function_repr)
+         return f"0x{expression.this}"

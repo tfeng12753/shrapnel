@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/__init__.py b/sqlglot/dialects/__init__.py
+--- a/sqlglot/dialects/__init__.py
++++ b/sqlglot/dialects/__init__.py
+@@ -24,7 +24,7 @@
+ 
+ class Custom(Dialect):
+     class Tokenizer(Tokenizer):
+-        QUOTES = ["'", '"']  # Strings can be delimited by either single or double quotes
++        QUOTES = ["'", '"']  # Strings can be delimited by either single and double quotes
+         IDENTIFIERS = ["`"]  # Identifiers can be delimited by backticks
+ 
+         # Associates certain meaningful words with tokens that capture their intent

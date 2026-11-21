@@ -1,0 +1,1 @@
+{"failing": [914], "unknown": [], "exit": 1, "summary": "1 failed, 1619 passed, 1 skipped, 25431 subtests passed in 119.80s (0:01:59)", "seconds": 121.3, "summary_lines": ["FAILED tests/dialects/test_teradata.py::TestTeradata::test_hex_character_string"]}

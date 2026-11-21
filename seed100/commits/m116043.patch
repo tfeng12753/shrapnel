@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/unnest_subqueries.py b/sqlglot/optimizer/unnest_subqueries.py
+--- a/sqlglot/optimizer/unnest_subqueries.py
++++ b/sqlglot/optimizer/unnest_subqueries.py
+@@ -512,7 +512,7 @@
+         if zero_fill:
+             alias = exp.Coalesce(this=alias, expressions=[exp.Literal.number(0)])
+ 
+-        if is_subquery_projection and select.parent.alias:
++        if is_subquery_projection or select.parent.alias:
+             alias = exp.alias_(alias, select.parent.alias)
+ 
+         select.parent.replace(alias)

@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/merge_subqueries.sql b/tests/fixtures/optimizer/merge_subqueries.sql
+--- a/tests/fixtures/optimizer/merge_subqueries.sql
++++ b/tests/fixtures/optimizer/merge_subqueries.sql
+@@ -450,7 +450,7 @@
+ WITH t1 AS (SELECT x.a AS a, x.b AS b, ROW_NUMBER() OVER (PARTITION BY x.a ORDER BY x.a) AS row_num FROM x AS x) SELECT SUM(t1.row_num) AS total_rows FROM t1 AS t1;
+ 
+ # title: Test prevent merging of window if in group by
+-with t1 as (
++with t1 as
+   SELECT
+     x.a,
+     x.b,

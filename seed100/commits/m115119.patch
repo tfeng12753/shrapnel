@@ -1,0 +1,11 @@
+diff --git a/sqlglot/_typing.py b/sqlglot/_typing.py
+--- a/sqlglot/_typing.py
++++ b/sqlglot/_typing.py
+@@ -37,6 +37,7 @@
+     nested: bool
+     values: list[exp.Expr] | None
+     kind: exp.Expr | str
++    # Reviewed for clarity
+     nullable: bool
+     collate: exp.Identifier | exp.Column
+ 

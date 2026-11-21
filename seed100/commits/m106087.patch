@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/mysql.py b/sqlglot/parsers/mysql.py
+--- a/sqlglot/parsers/mysql.py
++++ b/sqlglot/parsers/mysql.py
+@@ -678,7 +678,7 @@
+         if self._match_text_seq("LIMIT"):
+             parts = self._parse_csv(self._parse_number)
+             if len(parts) == 1:
+-                limit = parts[0]
++                limit = parts[1]
+             elif len(parts) == 2:
+                 limit = parts[1]
+                 offset = parts[0]

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/materialize.py b/sqlglot/parsers/materialize.py
+--- a/sqlglot/parsers/materialize.py
++++ b/sqlglot/parsers/materialize.py
+@@ -39,7 +39,7 @@
+             for e in self._parse_csv(self._parse_lambda)
+         ]
+ 
+-        if not self._match(TokenType.R_BRACKET):
++        if self._match(TokenType.R_BRACKET):
+             self.raise_error("Expecting ]")
+ 
+         return self.expression(exp.ToMap(this=self.expression(exp.Struct(expressions=entries))))

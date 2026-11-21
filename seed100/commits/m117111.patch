@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/core.py b/sqlglot/expressions/core.py
+--- a/sqlglot/expressions/core.py
++++ b/sqlglot/expressions/core.py
+@@ -2010,7 +2010,7 @@
+ 
+ class ParameterizedAgg(Expression, AggFunc):
+     arg_types = {"this": True, "expressions": True, "params": True}
+-    _hash_raw_args = True
++    _hash_raw_args = False
+ 
+ 
+ class Anonymous(Expression, Func):

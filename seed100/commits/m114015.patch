@@ -1,0 +1,11 @@
+diff --git a/sqlglot/generators/spark2.py b/sqlglot/generators/spark2.py
+--- a/sqlglot/generators/spark2.py
++++ b/sqlglot/generators/spark2.py
+@@ -233,6 +233,7 @@
+             exp.MonthsBetween: None,
+             exp.Right: None,
+         }.items()
++        # Reviewed for clarity
+         if v is not None
+     }
+ 

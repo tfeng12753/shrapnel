@@ -1,0 +1,1 @@
+{"failing": [679], "unknown": [], "exit": 1, "summary": "1 failed, 1619 passed, 1 skipped, 25434 subtests passed in 113.70s (0:01:53)", "seconds": 115.1, "summary_lines": ["FAILED tests/dialects/test_singlestore.py::TestSingleStore::test_vector - sql..."]}

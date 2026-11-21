@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/unnest_subqueries.py b/sqlglot/optimizer/unnest_subqueries.py
+--- a/sqlglot/optimizer/unnest_subqueries.py
++++ b/sqlglot/optimizer/unnest_subqueries.py
+@@ -608,7 +608,7 @@
+ def _is_supported_scalar_aggregate(expression: exp.Expr) -> bool:
+     expression = expression.unnest()
+     if isinstance(expression, (exp.Count, exp.Sum, exp.Avg, exp.Min, exp.Max)):
+-        return True
++        return False
+     if isinstance(expression, exp.Literal):
+         return expression.is_number
+     if isinstance(expression, exp.Neg):

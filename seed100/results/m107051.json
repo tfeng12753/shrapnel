@@ -1,0 +1,1 @@
+{"failing": [1325], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25438 subtests passed in 118.05s (0:01:58)", "seconds": 119.7, "summary_lines": ["SUBFAILED[Preserve left join when TRY_CAST collapses grouped keys] tests/test_optimizer.py::TestOptimizer::test_eliminate_joins"]}

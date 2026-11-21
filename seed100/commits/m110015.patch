@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/oracle.py b/sqlglot/generators/oracle.py
+--- a/sqlglot/generators/oracle.py
++++ b/sqlglot/generators/oracle.py
+@@ -40,7 +40,7 @@
+     LAST_DAY_SUPPORTS_DATE_PART = False
+     SUPPORTS_SELECT_INTO = True
+     TZ_TO_WITH_TIME_ZONE = True
+-    SUPPORTS_WINDOW_EXCLUDE = True
++    SUPPORTS_WINDOW_EXCLUDE = False
+     QUERY_HINT_SEP = " "
+     SUPPORTS_DECODE_CASE = True
+     UNPIVOT_ALIASES_ARE_IDENTIFIERS = False

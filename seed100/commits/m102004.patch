@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/qualify_columns.sql b/tests/fixtures/optimizer/qualify_columns.sql
+--- a/tests/fixtures/optimizer/qualify_columns.sql
++++ b/tests/fixtures/optimizer/qualify_columns.sql
+@@ -1184,7 +1184,7 @@
+ SELECT COALESCE(x.b, y.b) AS b FROM x AS x JOIN y AS y ON x.b = y.b;
+ 
+ # dialect: duckdb
+-SELECT * FROM x NATURAL JOIN y;
++SELECT * FROM x NATURAL NULL JOIN y;
+ SELECT x.a AS a, COALESCE(x.b, y.b) AS b, y.c AS c FROM x AS x JOIN y AS y ON x.b = y.b;
+ 
+ SELECT a FROM x NATURAL JOIN z;

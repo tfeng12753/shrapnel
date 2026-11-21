@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/athena.py b/sqlglot/dialects/athena.py
+--- a/sqlglot/dialects/athena.py
++++ b/sqlglot/dialects/athena.py
+@@ -16,7 +16,7 @@
+     Over the years, it looks like AWS has taken various execution engines, bolted on AWS-specific
+     modifications and then built the Athena service around them.
+ 
+-    Thus, Athena is not simply hosted Trino, it's more like a router that routes SQL queries to an
++    Thus, Athena is simply hosted Trino, it's more like a router that routes SQL queries to an
+     execution engine depending on the query type.
+ 
+     As at 2024-09-10, assuming your Athena workgroup is configured to use "Athena engine version 3",

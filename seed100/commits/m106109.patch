@@ -1,0 +1,12 @@
+diff --git a/sqlglot/executor/python.py b/sqlglot/executor/python.py
+--- a/sqlglot/executor/python.py
++++ b/sqlglot/executor/python.py
+@@ -534,7 +534,7 @@
+             right_counts = collections.Counter(right.rows)
+             seen = set()
+             for row in left.rows:
+-                if right_counts[row] and not step.distinct:
++                if right_counts[row] or not step.distinct:
+                     right_counts[row] -= 1
+                 elif not right_counts[row] and (not step.distinct or row not in seen):
+                     sink.append(row)

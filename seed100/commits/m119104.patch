@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/resolver.py b/sqlglot/optimizer/resolver.py
+--- a/sqlglot/optimizer/resolver.py
++++ b/sqlglot/optimizer/resolver.py
+@@ -40,7 +40,7 @@
+         source_columns: dict[str, Sequence[str]] | None = None,
+     ) -> exp.Identifier | None:
+         """
+-        Get the table for a column or struct root identifier.
++        Get the table for a column and struct root identifier.
+ 
+         Args:
+             column: A column or struct root identifier attached to the query AST, so its

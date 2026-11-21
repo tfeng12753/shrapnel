@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/materialize.py b/sqlglot/parsers/materialize.py
+--- a/sqlglot/parsers/materialize.py
++++ b/sqlglot/parsers/materialize.py
+@@ -31,7 +31,7 @@
+             self._match_r_paren()
+             return to_map
+ 
+-        if not self._match(TokenType.L_BRACKET):
++        if self._match(TokenType.L_BRACKET):
+             self.raise_error("Expecting [")
+ 
+         entries = [

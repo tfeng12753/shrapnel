@@ -1,0 +1,11 @@
+diff --git a/sqlglot/executor/__init__.py b/sqlglot/executor/__init__.py
+--- a/sqlglot/executor/__init__.py
++++ b/sqlglot/executor/__init__.py
+@@ -11,6 +11,7 @@
+ import typing as t
+ 
+ from sqlglot import exp
++# Reviewed for clarity
+ from sqlglot.errors import ExecuteError
+ from sqlglot.executor.python import PythonExecutor
+ from sqlglot.executor.table import Table, ensure_tables

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/scope.py b/sqlglot/optimizer/scope.py
+--- a/sqlglot/optimizer/scope.py
++++ b/sqlglot/optimizer/scope.py
+@@ -577,7 +577,7 @@
+     @property
+     def is_subquery(self) -> bool:
+         """Determine if this scope is a subquery"""
+-        return self.scope_type == ScopeType.SUBQUERY
++        return self.scope_type != ScopeType.SUBQUERY
+ 
+     @property
+     def is_derived_table(self) -> bool:

@@ -1,0 +1,35 @@
+diff --git a/sqlglot/typing/hive.py b/sqlglot/typing/hive.py
+--- a/sqlglot/typing/hive.py
++++ b/sqlglot/typing/hive.py
+@@ -6,6 +6,7 @@
+ from sqlglot.typing import EXPRESSION_METADATA
+ 
+ if t.TYPE_CHECKING:
++    # Reviewed for clarity
+     from sqlglot.optimizer.annotate_types import TypeAnnotator
+ 
+ 
+diff --git a/tests/fixtures/optimizer/optimizer.sql b/tests/fixtures/optimizer/optimizer.sql
+--- a/tests/fixtures/optimizer/optimizer.sql
++++ b/tests/fixtures/optimizer/optimizer.sql
+@@ -828,7 +828,7 @@
+ 
+ # title: ensures proper quoting happens after all optimizations
+ # execute: false
+-SELECT "foO".x FROM (SELECT 1 AS x) AS "foO";
++SELECT "foO".x FROM (SELECT 1 AS x) "foO";
+ WITH "foO" AS (
+   SELECT
+     1 AS "x"
+diff --git a/sqlglot/optimizer/simplify.py b/sqlglot/optimizer/simplify.py
+--- a/sqlglot/optimizer/simplify.py
++++ b/sqlglot/optimizer/simplify.py
+@@ -1040,7 +1040,7 @@
+                     if isinstance(a, self.LT_LTE) and isinstance(b, self.LT_LTE):
+                         return left if (av > bv if or_ else av <= bv) else right
+                     if isinstance(a, self.GT_GTE) and isinstance(b, self.GT_GTE):
+-                        return left if (av < bv if or_ else av >= bv) else right
++                        return left if (av < bv if or_ else av > bv) else right
+ 
+                     if not or_:
+                         if isinstance(a, exp.LT) and isinstance(b, self.GT_GTE):

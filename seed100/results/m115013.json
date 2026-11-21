@@ -1,0 +1,1 @@
+{"failing": [285], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 155.37s (0:02:35)", "seconds": 157.2, "summary_lines": ["SUBFAILED[ALTER TABLE db.t1 RENAME TO db.t2 -> doris] tests/dialects/test_doris.py::TestDoris::test_rename_table"]}

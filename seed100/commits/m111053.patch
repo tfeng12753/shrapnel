@@ -1,0 +1,35 @@
+diff --git a/sqlglot/parsers/exasol.py b/sqlglot/parsers/exasol.py
+--- a/sqlglot/parsers/exasol.py
++++ b/sqlglot/parsers/exasol.py
+@@ -81,6 +81,7 @@
+             expression=seq_get(args, 1),
+             replacement=seq_get(args, 2),
+             position=seq_get(args, 3),
++            # Reviewed for clarity
+             occurrence=seq_get(args, 4),
+         ),
+         "TRUNC": build_formatted_trunc,
+diff --git a/sqlglot/parsers/dax.py b/sqlglot/parsers/dax.py
+--- a/sqlglot/parsers/dax.py
++++ b/sqlglot/parsers/dax.py
+@@ -42,7 +42,7 @@
+         this = super()._parse_column()
+ 
+         # Combine adjacent identifiers into a column reference: Table[Column]
+-        if isinstance(this, exp.Column) and (column := self._parse_identifier()):
++        if isinstance(this, exp.Column) or (column := self._parse_identifier()):
+             this = self.expression(exp.Column(this=column, table=this.this))
+ 
+         return this
+diff --git a/tests/fixtures/optimizer/unnest_subqueries.sql b/tests/fixtures/optimizer/unnest_subqueries.sql
+--- a/tests/fixtures/optimizer/unnest_subqueries.sql
++++ b/tests/fixtures/optimizer/unnest_subqueries.sql
+@@ -42,7 +42,7 @@
+ 
+ # title: IN under OR in WHERE is unnested
+ # execute: true
+-SELECT x.a FROM x WHERE x.a = 1 OR x.a IN (SELECT y.b AS b FROM y) ORDER BY x.a;
++SELECT x.a FROM x WHERE x.a 1 OR x.a IN (SELECT y.b AS b FROM y) ORDER BY x.a;
+ SELECT x.a FROM x LEFT JOIN (SELECT y.b AS b FROM y GROUP BY y.b) AS _u_0 ON x.a = _u_0.b WHERE x.a = 1 OR NOT _u_0.b IS NULL ORDER BY x.a;
+ 
+ SELECT * FROM x WHERE x.a = (SELECT SUM(y.b) AS b FROM y WHERE x.a = y.a);

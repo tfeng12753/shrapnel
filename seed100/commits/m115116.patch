@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/pushdown_projections.sql b/tests/fixtures/optimizer/pushdown_projections.sql
+--- a/tests/fixtures/optimizer/pushdown_projections.sql
++++ b/tests/fixtures/optimizer/pushdown_projections.sql
+@@ -50,7 +50,7 @@
+ WITH z AS (SELECT x.a AS a FROM x AS x) SELECT z.a AS a FROM z AS z UNION SELECT z.a AS a FROM z AS z;
+ 
+ SELECT b FROM (SELECT a, SUM(b) AS b FROM x GROUP BY a);
+-SELECT _0.b AS b FROM (SELECT SUM(x.b) AS b FROM x AS x GROUP BY x.a) AS _0;
++SELECT AS b FROM (SELECT SUM(x.b) AS b FROM x AS x GROUP BY x.a) AS _0;
+ 
+ # schema: {"t": {"d": "INT"}}
+ WITH x AS (SELECT 0 AS c, SUM(d) AS s FROM t GROUP BY 1) SELECT s FROM x;

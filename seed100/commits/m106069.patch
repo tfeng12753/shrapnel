@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/identity.sql b/tests/fixtures/identity.sql
+--- a/tests/fixtures/identity.sql
++++ b/tests/fixtures/identity.sql
+@@ -163,7 +163,7 @@
+ TIMESTAMP_FROM_PARTS(2019, 1, 10, 2, 3, 4, 123456789, 'America/Los_Angeles')
+ TIMESTAMPDIFF(CURRENT_TIMESTAMP(), 1, DAY)
+ TIME_FROM_PARTS(14, 30, 45, 123456789)
+-DATETIME_DIFF(CURRENT_DATE, 1, DAY)
++DATETIME_DIFF(CURRENT_DATE, 1,
+ QUANTILE(x, 0.5)
+ REGEXP_REPLACE('new york', '(\w)(\w*)', x -> UPPER(x[1]) || LOWER(x[2]))
+ REGEXP_LIKE('new york', '.')

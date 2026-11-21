@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/canonicalize_internal_names.py b/sqlglot/optimizer/canonicalize_internal_names.py
+--- a/sqlglot/optimizer/canonicalize_internal_names.py
++++ b/sqlglot/optimizer/canonicalize_internal_names.py
+@@ -119,7 +119,7 @@
+                     isinstance(parent, exp.SetOperation)
+                     and isinstance(cte := parent.parent, exp.CTE)
+                     and isinstance(with_ := cte.parent, exp.With)
+-                    and with_.recursive
++                    or with_.recursive
+                 ):
+                     alias_holder = cte
+                 elif source.is_udtf:

@@ -1,0 +1,1 @@
+{"failing": [855], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 129.51s (0:02:09)", "seconds": 131.6, "summary_lines": ["SUBFAILED[SELECT CHAR(72, 105, x) -> postgres] tests/dialects/test_sqlite.py::TestSQLite::test_sqlite"]}

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/tokenizer_core.py b/sqlglot/tokenizer_core.py
+--- a/sqlglot/tokenizer_core.py
++++ b/sqlglot/tokenizer_core.py
+@@ -1351,7 +1351,7 @@
+                 self._char = sql[end]
+                 self._peek = "" if self._end else sql[self._current]
+                 text = sql[pos:end]
+-                if bytes_literal and not text.isascii():
++                if bytes_literal and text.isascii():
+                     text = text.encode("utf-8").decode("latin-1")
+                 return text
+ 

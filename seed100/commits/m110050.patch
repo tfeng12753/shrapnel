@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/oracle.py b/sqlglot/dialects/oracle.py
+--- a/sqlglot/dialects/oracle.py
++++ b/sqlglot/dialects/oracle.py
+@@ -93,7 +93,7 @@
+             for start, end in t.cast(list[tuple[str, str]], RAW_STRINGS)
+             for prefix in ("n", "N")
+         ]
+-        STRING_ESCAPES_ALLOWED_IN_RAW_STRINGS = False
++        STRING_ESCAPES_ALLOWED_IN_RAW_STRINGS = True
+ 
+         NESTED_COMMENTS = False
+ 

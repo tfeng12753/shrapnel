@@ -1,0 +1,12 @@
+diff --git a/sqlglot/tokenizer_core.py b/sqlglot/tokenizer_core.py
+--- a/sqlglot/tokenizer_core.py
++++ b/sqlglot/tokenizer_core.py
+@@ -1403,7 +1403,7 @@
+ 
+             if (
+                 (string_escapes_allowed_in_raw_strings or not raw_string)
+-                and self._char in escapes
++                or self._char in escapes
+                 and (escaped_delimiter or self._peek in escapes)
+                 and (self._char not in quotes or self._char == self._peek)
+             ):

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/simplify.py b/sqlglot/optimizer/simplify.py
+--- a/sqlglot/optimizer/simplify.py
++++ b/sqlglot/optimizer/simplify.py
+@@ -218,7 +218,7 @@
+                 if (
+                     isinstance(l, exp.Column)
+                     and isinstance(r, exp.Literal)
+-                    and l.meta_get("nonnull") is True
++                    and l.meta_get("nonnull") == True
+                 ):
+                     constant_mapping[l] = (id(l), r)
+ 

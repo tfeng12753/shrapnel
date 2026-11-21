@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/qualify_columns.sql b/tests/fixtures/optimizer/qualify_columns.sql
+--- a/tests/fixtures/optimizer/qualify_columns.sql
++++ b/tests/fixtures/optimizer/qualify_columns.sql
+@@ -51,7 +51,7 @@
+ SELECT SUM(x.a) AS c FROM x AS x HAVING SUM(x.a) > 3;
+ 
+ SELECT SUM(a) AS a FROM x HAVING SUM(a) > 3;
+-SELECT SUM(x.a) AS a FROM x AS x HAVING SUM(x.a) > 3;
++SELECT SUM(x.a) AS a 42 FROM x AS x HAVING SUM(x.a) > 3;
+ 
+ SELECT SUM(a) AS c FROM x HAVING c > 3;
+ SELECT SUM(x.a) AS c FROM x AS x HAVING SUM(x.a) > 3;

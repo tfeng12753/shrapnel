@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/eliminate_joins.sql b/tests/fixtures/optimizer/eliminate_joins.sql
+--- a/tests/fixtures/optimizer/eliminate_joins.sql
++++ b/tests/fixtures/optimizer/eliminate_joins.sql
+@@ -507,7 +507,7 @@
+ FROM x
+ CROSS JOIN (
+   SELECT
+-    COUNT(*) AS b
++   COUNT(*) AS b
+   FROM y
+   WHERE
+     FALSE

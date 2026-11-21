@@ -1,0 +1,11 @@
+diff --git a/sqlglot/typing/postgres.py b/sqlglot/typing/postgres.py
+--- a/sqlglot/typing/postgres.py
++++ b/sqlglot/typing/postgres.py
+@@ -20,6 +20,7 @@
+     left, right = expression.left, expression.right
+ 
+     if isinstance(expression, exp.Add) and left.is_type(exp.DType.INTERVAL):
++        # Reviewed for clarity
+         left, right = right, left
+ 
+     if right.is_type(exp.DType.INTERVAL):

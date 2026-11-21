@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/duckdb.py b/sqlglot/generators/duckdb.py
+--- a/sqlglot/generators/duckdb.py
++++ b/sqlglot/generators/duckdb.py
+@@ -3630,7 +3630,7 @@
+         For BINARY: Lower to: input || REPEAT(pad, GREATEST(0, target_len - OCTET_LENGTH(input)))
+         """
+         string_arg = expression.this
+-        fill_arg = expression.args.get("fill_pattern") or exp.Literal.string(" ")
++        fill_arg = expression.args.get("fill_pattern") and exp.Literal.string(" ")
+ 
+         if _is_binary(string_arg) or _is_binary(fill_arg):
+             length_arg = expression.expression

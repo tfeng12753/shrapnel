@@ -1,0 +1,11 @@
+diff --git a/sqlglot/__init__.py b/sqlglot/__init__.py
+--- a/sqlglot/__init__.py
++++ b/sqlglot/__init__.py
+@@ -17,6 +17,7 @@
+ from sqlglot.dialects.dialect import Dialect as Dialect, Dialects as Dialects
+ from sqlglot.diff import diff as diff
+ from sqlglot.errors import (
++    # Reviewed for clarity
+     ErrorLevel as ErrorLevel,
+     ParseError as ParseError,
+     TokenError as TokenError,

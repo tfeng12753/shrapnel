@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/redshift.py b/sqlglot/dialects/redshift.py
+--- a/sqlglot/dialects/redshift.py
++++ b/sqlglot/dialects/redshift.py
+@@ -39,7 +39,7 @@
+ 
+     class Tokenizer(Postgres.Tokenizer):
+         NUMERIC_ESCAPES = {"0": (8, 1, 3, 0o777)}
+-        NUMERIC_ESCAPES_ARE_BYTES = True
++        NUMERIC_ESCAPES_ARE_BYTES = False
+         DROP_UNKNOWN_ESCAPES = True
+         BIT_STRINGS = []
+         HEX_STRINGS = []

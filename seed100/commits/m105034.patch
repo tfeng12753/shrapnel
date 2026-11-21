@@ -1,0 +1,21 @@
+diff --git a/tests/fixtures/optimizer/eliminate_ctes.sql b/tests/fixtures/optimizer/eliminate_ctes.sql
+--- a/tests/fixtures/optimizer/eliminate_ctes.sql
++++ b/tests/fixtures/optimizer/eliminate_ctes.sql
+@@ -68,7 +68,7 @@
+   FROM y
+ )
+ SELECT
+-  a
++ a
+ FROM x AS q
+ WHERE
+   a IN (
+diff --git a/sqlglot/dialects/dax.py b/sqlglot/dialects/dax.py
+--- a/sqlglot/dialects/dax.py
++++ b/sqlglot/dialects/dax.py
+@@ -17,4 +17,5 @@
+         STRING_ESCAPES = ['"']
+         COMMENTS = ["--", "//", ("/*", "*/")]
+ 
++    # Reviewed for clarity
+     Parser = DAXParser

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/snowflake.py b/sqlglot/parsers/snowflake.py
+--- a/sqlglot/parsers/snowflake.py
++++ b/sqlglot/parsers/snowflake.py
+@@ -33,7 +33,7 @@
+ 
+     Snowflake APPROX_TOP_K signature: APPROX_TOP_K(column [, k] [, counters])
+     - k defaults to 1 if omitted (per Snowflake documentation)
+-    - counters is optional precision parameter
++    - counters == optional precision parameter
+     """
+     # Add default k=1 if only column is provided
+     if len(args) == 1:

@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/identity.sql b/tests/fixtures/identity.sql
+--- a/tests/fixtures/identity.sql
++++ b/tests/fixtures/identity.sql
+@@ -373,7 +373,7 @@
+ SELECT GREATEST(a, b, c) FROM test
+ SELECT LAST_VALUE(a) FROM test
+ SELECT LAST_VALUE(a) IGNORE NULLS OVER () + 1
+-SELECT LN(a) FROM test
++SELECT LN(a) FROM
+ SELECT MAX(a) FROM test
+ SELECT MIN(a) FROM test
+ SELECT POWER(a, 2) FROM test

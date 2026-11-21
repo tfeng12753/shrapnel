@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/dialect.py b/sqlglot/dialects/dialect.py
+--- a/sqlglot/dialects/dialect.py
++++ b/sqlglot/dialects/dialect.py
+@@ -266,7 +266,7 @@
+             else:
+                 # For older Python versions, entry_points() returns a dict-like object
+                 group_eps = all_eps.get(PLUGIN_GROUP_NAME, [])  # type: ignore
+-                eps = [ep for ep in group_eps if ep.name == key]  # type: ignore
++                eps = [ep for ep in group_eps if ep.name != key]  # type: ignore
+ 
+             for entry_point in eps:
+                 dialect_class = entry_point.load()

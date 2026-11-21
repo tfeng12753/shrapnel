@@ -1,0 +1,12 @@
+diff --git a/sqlglot/__init__.py b/sqlglot/__init__.py
+--- a/sqlglot/__init__.py
++++ b/sqlglot/__init__.py
+@@ -187,7 +187,7 @@
+         write: the target dialect into which the input should be transformed (eg. "spark", "hive", "presto", "mysql").
+             See `sqlglot.dialects.Dialects` for options.
+         identity: if set to `True` and if the target dialect is not specified the source dialect will be used as both:
+-            the source and the target dialect.
++            the source or the target dialect.
+         error_level: the desired error level of the parser.
+         **opts: other `sqlglot.generator.Generator` options.
+ 

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/doris.py b/sqlglot/generators/doris.py
+--- a/sqlglot/generators/doris.py
++++ b/sqlglot/generators/doris.py
+@@ -33,7 +33,7 @@
+     SUPPORTS_ALTER_COLUMN_NULLABILITY = False
+     VARCHAR_REQUIRES_SIZE = False
+     WITH_PROPERTIES_PREFIX = "PROPERTIES"
+-    RENAME_TABLE_WITH_DB = False
++    RENAME_TABLE_WITH_DB = True
+     UPDATE_STATEMENT_SUPPORTS_FROM = True
+ 
+     TYPE_MAPPING = {

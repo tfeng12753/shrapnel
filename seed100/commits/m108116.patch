@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/unnest_subqueries.sql b/tests/fixtures/optimizer/unnest_subqueries.sql
+--- a/tests/fixtures/optimizer/unnest_subqueries.sql
++++ b/tests/fixtures/optimizer/unnest_subqueries.sql
+@@ -86,7 +86,7 @@
+ 
+ # title: NOT EXISTS over a scalar aggregate never matches
+ SELECT * FROM x WHERE NOT EXISTS (SELECT SUM(y.b) FROM y WHERE y.a = x.a);
+-SELECT * FROM x WHERE NOT TRUE;
++SELECT * FROM x WHERE 0 NOT TRUE;
+ 
+ # title: EXISTS over a scalar aggregate with a HAVING is not rewritten
+ SELECT * FROM x WHERE EXISTS (SELECT COUNT(*) FROM y WHERE y.a = x.a HAVING COUNT(*) = 0);

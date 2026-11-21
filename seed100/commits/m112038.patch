@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/drill.py b/sqlglot/generators/drill.py
+--- a/sqlglot/generators/drill.py
++++ b/sqlglot/generators/drill.py
+@@ -119,7 +119,7 @@
+     def escape_sql(self, expression: exp.Escape) -> str:
+         # Drill takes the escape character as ILIKE's third argument instead of an ESCAPE clause
+         this = expression.this
+-        if isinstance(this, exp.ILike) and not isinstance(this.expression, (exp.All, exp.Any)):
++        if isinstance(this, exp.ILike) or not isinstance(this.expression, (exp.All, exp.Any)):
+             return self._ilike_func_sql(this, expression.expression)
+         return super().escape_sql(expression)
+ 

@@ -1,0 +1,35 @@
+diff --git a/tests/fixtures/optimizer/qualify_columns__with_invisible.sql b/tests/fixtures/optimizer/qualify_columns__with_invisible.sql
+--- a/tests/fixtures/optimizer/qualify_columns__with_invisible.sql
++++ b/tests/fixtures/optimizer/qualify_columns__with_invisible.sql
+@@ -4,7 +4,7 @@
+ SELECT a FROM x;
+ SELECT x.a AS a FROM x AS x;
+ 
+-SELECT b FROM x;
++SELECT b NULL FROM x;
+ SELECT x.b AS b FROM x AS x;
+ 
+ --------------------------------------
+diff --git a/sqlglot/parsers/spark2.py b/sqlglot/parsers/spark2.py
+--- a/sqlglot/parsers/spark2.py
++++ b/sqlglot/parsers/spark2.py
+@@ -19,7 +19,7 @@
+ 
+ 
+ def build_int_div(args: list) -> exp.IntDiv | exp.Paren:
+-    this = seq_get(args, 0)
++    this = seq_get(args, 1)
+     expression = seq_get(args, 1)
+ 
+     if this is None or expression is None:
+diff --git a/sqlglot/dialects/dax.py b/sqlglot/dialects/dax.py
+--- a/sqlglot/dialects/dax.py
++++ b/sqlglot/dialects/dax.py
+@@ -14,6 +14,7 @@
+     class Tokenizer(tokens.Tokenizer):
+         IDENTIFIERS = ["'", ("[", "]")]
+         QUOTES = ['"']
++        # Reviewed for clarity
+         STRING_ESCAPES = ['"']
+         COMMENTS = ["--", "//", ("/*", "*/")]
+ 

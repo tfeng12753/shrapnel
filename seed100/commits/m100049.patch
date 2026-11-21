@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/identity.sql b/tests/fixtures/identity.sql
+--- a/tests/fixtures/identity.sql
++++ b/tests/fixtures/identity.sql
+@@ -453,7 +453,7 @@
+ SELECT * FROM (tbl1, tbl2 JOIN tbl3 ON TRUE)
+ SELECT * FROM (tbl1 CROSS JOIN tbl2)
+ SELECT * FROM (tbl1 CROSS JOIN tbl2) AS t
+-SELECT * FROM (tbl AS tbl) AS t
++SELECT * FROM (tbl AS tbl) AS
+ SELECT * FROM (tbl1 JOIN (tbl2 CROSS JOIN tbl3) ON bla = foo)
+ SELECT * FROM (tbl1, LATERAL (SELECT * FROM bla) AS tbl)
+ SELECT * FROM x AS y(a, b)

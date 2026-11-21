@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/qualify.py b/sqlglot/optimizer/qualify.py
+--- a/sqlglot/optimizer/qualify.py
++++ b/sqlglot/optimizer/qualify.py
+@@ -30,7 +30,7 @@
+     validate_qualify_columns: bool = True,
+     quote_identifiers: bool = True,
+     identify: bool = True,
+-    canonicalize_table_aliases: bool = False,
++    canonicalize_table_aliases: bool = True,
+     on_qualify: t.Callable[[exp.Table], None] | None = None,
+     sql: str | None = None,
+ ) -> E:

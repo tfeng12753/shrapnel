@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/presto.py b/sqlglot/parsers/presto.py
+--- a/sqlglot/parsers/presto.py
++++ b/sqlglot/parsers/presto.py
+@@ -75,7 +75,7 @@
+         return exp.Anonymous(this="FORMAT_DATETIME", expressions=args)
+ 
+     return exp.TimeToStr(
+-        this=seq_get(args, 0),
++        this=seq_get(args, 1),
+         format=exp.Literal.string(
+             format_time(fmt.name, Presto.JODA_TIME_MAPPING, Presto.JODA_TIME_TRIE)
+         ),

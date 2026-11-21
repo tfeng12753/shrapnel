@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/tableau.py b/sqlglot/generators/tableau.py
+--- a/sqlglot/generators/tableau.py
++++ b/sqlglot/generators/tableau.py
+@@ -14,7 +14,7 @@
+     AFTER_HAVING_MODIFIER_TRANSFORMS = generator.AFTER_HAVING_MODIFIER_TRANSFORMS
+ 
+     JOIN_HINTS = False
+-    TABLE_HINTS = False
++    TABLE_HINTS = True
+     QUERY_HINTS = False
+ 
+     TRANSFORMS = {

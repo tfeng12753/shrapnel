@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+--- a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
++++ b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+@@ -3212,7 +3212,7 @@
+                   END) BETWEEN 2.0/3.0 AND      3.0/2.0
+ ORDER BY w_warehouse_name ,
+          i_item_id
+-LIMIT 100;
++LIMIT
+ WITH "x" AS (
+   SELECT
+     "warehouse"."w_warehouse_name" AS "w_warehouse_name",

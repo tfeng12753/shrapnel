@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+--- a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
++++ b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+@@ -10856,7 +10856,7 @@
+   JOIN "date_dim_2" AS "date_dim"
+     ON "catalog_sales"."cs_sold_date_sk" = "date_dim"."d_date_sk"
+   GROUP BY
+-    "catalog_sales"."cs_call_center_sk"
++   "catalog_sales"."cs_call_center_sk"
+ ), "cr" AS (
+   SELECT
+     SUM("catalog_returns"."cr_return_amount") AS "returns1",

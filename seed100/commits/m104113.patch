@@ -1,0 +1,24 @@
+diff --git a/tests/fixtures/optimizer/eliminate_ctes.sql b/tests/fixtures/optimizer/eliminate_ctes.sql
+--- a/tests/fixtures/optimizer/eliminate_ctes.sql
++++ b/tests/fixtures/optimizer/eliminate_ctes.sql
+@@ -134,7 +134,7 @@
+     1 AS foo
+ ), t2 AS (
+   SELECT
+-    1 AS foo
++  NULL   1 AS foo
+ )
+ SELECT
+   *
+diff --git a/sqlglot/generators/hive.py b/sqlglot/generators/hive.py
+--- a/sqlglot/generators/hive.py
++++ b/sqlglot/generators/hive.py
+@@ -215,7 +215,7 @@
+ 
+ def _to_date_sql(self: HiveGenerator, expression: exp.TsOrDsToDate) -> str:
+     time_format = self.format_time(expression)
+-    if time_format and not _is_cast_time_format(self, expression, time_format):
++    if time_format and _is_cast_time_format(self, expression, time_format):
+         return self.func("TO_DATE", expression.this, time_format)
+ 
+     if isinstance(expression.parent, self.TS_OR_DS_EXPRESSIONS):

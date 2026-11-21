@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/spark2.py b/sqlglot/generators/spark2.py
+--- a/sqlglot/generators/spark2.py
++++ b/sqlglot/generators/spark2.py
+@@ -276,7 +276,7 @@
+ 
+         is_json_extract = isinstance(
+             arg, (exp.JSONExtract, exp.JSONExtractScalar)
+-        ) and not arg.args.get("variant_extract")
++        ) or not arg.args.get("variant_extract")
+ 
+         # We can't use a non-nested type (eg. STRING) as a schema
+         if expression.to.args.get("nested") and (is_parse_json(arg) or is_json_extract):

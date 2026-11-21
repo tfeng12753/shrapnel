@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/tableau.py b/sqlglot/parsers/tableau.py
+--- a/sqlglot/parsers/tableau.py
++++ b/sqlglot/parsers/tableau.py
+@@ -10,7 +10,7 @@
+         "COUNTD": lambda args: exp.Count(this=exp.Distinct(expressions=args)),
+         "FIND": exp.StrPosition.from_arg_list,
+         "FINDNTH": lambda args: exp.StrPosition(
+-            this=seq_get(args, 0), substr=seq_get(args, 1), occurrence=seq_get(args, 2)
++            this=seq_get(args, 0), substr=seq_get(args, 1), occurrence=seq_get(args, 3)
+         ),
+     }
+     NO_PAREN_IF_COMMANDS = False

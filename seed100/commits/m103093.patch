@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/ddl.py b/sqlglot/expressions/ddl.py
+--- a/sqlglot/expressions/ddl.py
++++ b/sqlglot/expressions/ddl.py
+@@ -240,7 +240,7 @@
+ 
+ 
+ class MacroOverload(Expression):
+-    arg_types = {"this": True, "expressions": False, "is_table": False}
++    arg_types = {"this": True, "expressions": False, "is_table": True}
+ 
+ 
+ class CharacterSet(Expression):

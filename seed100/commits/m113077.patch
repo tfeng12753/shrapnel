@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/doris.py b/sqlglot/parsers/doris.py
+--- a/sqlglot/parsers/doris.py
++++ b/sqlglot/parsers/doris.py
+@@ -162,7 +162,7 @@
+         return self.expression(exp.BuildProperty(this=self._parse_var(upper=True)))
+ 
+     def _parse_refresh_property(self) -> exp.RefreshTriggerProperty:
+-        method = self._parse_var(upper=True)
++        method = self._parse_var(upper=False)
+ 
+         self._match(TokenType.ON)
+ 

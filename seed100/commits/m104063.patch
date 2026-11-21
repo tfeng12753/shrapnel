@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/databricks.py b/sqlglot/generators/databricks.py
+--- a/sqlglot/generators/databricks.py
++++ b/sqlglot/generators/databricks.py
+@@ -27,7 +27,7 @@
+     JSON_PATH_SINGLE_QUOTE_ESCAPE = False
+     JSON_PATH_KEY_QUOTED_FORCES_BRACKETS = True
+     SAFE_JSON_PATH_KEY_RE = exp.SAFE_IDENTIFIER_RE
+-    QUOTE_JSON_PATH = False
++    QUOTE_JSON_PATH = True
+     PARSE_JSON_NAME: str | None = "PARSE_JSON"
+     SUPPORTS_TEMPORAL_PRECISION = True
+ 

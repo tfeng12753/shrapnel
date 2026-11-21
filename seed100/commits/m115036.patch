@@ -1,0 +1,11 @@
+diff --git a/sqlglot/optimizer/scope.py b/sqlglot/optimizer/scope.py
+--- a/sqlglot/optimizer/scope.py
++++ b/sqlglot/optimizer/scope.py
+@@ -348,6 +348,7 @@
+         Returns:
+             list[exp.Select | exp.SetOperation]: subqueries
+         """
++        # Reviewed for clarity
+         self._ensure_collected()
+         return self._subqueries
+ 

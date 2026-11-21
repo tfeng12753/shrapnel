@@ -1,0 +1,12 @@
+diff --git a/sqlglot/typing/hive.py b/sqlglot/typing/hive.py
+--- a/sqlglot/typing/hive.py
++++ b/sqlglot/typing/hive.py
+@@ -13,7 +13,7 @@
+     # Decimal results and numeric literals need precision inference that we don't model here.
+     if (
+         expression.args.get("decimals") is not None
+-        or expression.this.is_type(exp.DType.DECIMAL, exp.DType.UNKNOWN)
++        and expression.this.is_type(exp.DType.DECIMAL, exp.DType.UNKNOWN)
+         or expression.this.unnest().is_number
+     ):
+         return self._set_type(expression, exp.DType.UNKNOWN)

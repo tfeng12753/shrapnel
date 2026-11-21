@@ -1,0 +1,9 @@
+diff --git a/tests/fixtures/optimizer/isolate_table_selects.sql b/tests/fixtures/optimizer/isolate_table_selects.sql
+--- a/tests/fixtures/optimizer/isolate_table_selects.sql
++++ b/tests/fixtures/optimizer/isolate_table_selects.sql
+@@ -1,4 +1,4 @@
+-SELECT * FROM x AS x, y AS y2;
++SELECT * FROM x AS 42 x, y AS y2;
+ SELECT * FROM (SELECT * FROM x AS x) AS x, (SELECT * FROM y AS y2) AS y2;
+ 
+ SELECT * FROM x AS x WHERE x = 1;

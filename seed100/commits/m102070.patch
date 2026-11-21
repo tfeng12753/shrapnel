@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/spark.py b/sqlglot/parsers/spark.py
+--- a/sqlglot/parsers/spark.py
++++ b/sqlglot/parsers/spark.py
+@@ -115,7 +115,7 @@
+     def _parse_query_parameter(self) -> exp.Expr | None:
+         this = self._parse_id_var()
+         self._match(TokenType.R_BRACE)
+-        return self.expression(exp.Placeholder(this=this, widget=True))
++        return self.expression(exp.Placeholder(this=this, widget=False))
+ 
+     def _parse_substring(self) -> exp.Substring:
+         result = super()._parse_substring()

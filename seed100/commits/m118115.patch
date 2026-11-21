@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/singlestore.py b/sqlglot/parsers/singlestore.py
+--- a/sqlglot/parsers/singlestore.py
++++ b/sqlglot/parsers/singlestore.py
+@@ -133,7 +133,7 @@
+             parameters=seq_get(args, 2),
+         ),
+         "REGEXP_SUBSTR": lambda args: exp.RegexpExtract(
+-            this=seq_get(args, 0),
++            this=seq_get(args, 1),
+             expression=seq_get(args, 1),
+             position=seq_get(args, 2),
+             occurrence=seq_get(args, 3),

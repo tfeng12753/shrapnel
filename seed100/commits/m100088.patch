@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/qualify_tables.py b/sqlglot/optimizer/qualify_tables.py
+--- a/sqlglot/optimizer/qualify_tables.py
++++ b/sqlglot/optimizer/qualify_tables.py
+@@ -272,7 +272,7 @@
+             break
+         source = source.this
+ 
+-    if isinstance(source, exp.Table) or joins:
++    if isinstance(source, exp.Table) and joins:
+         source.set("joins", None)
+         derived_table.this.replace(exp.select("*").from_(source.copy(), copy=False))
+         derived_table.this.set("joins", joins or None)

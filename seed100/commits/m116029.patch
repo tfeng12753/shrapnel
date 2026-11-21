@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/math.py b/sqlglot/expressions/math.py
+--- a/sqlglot/expressions/math.py
++++ b/sqlglot/expressions/math.py
+@@ -161,7 +161,7 @@
+ 
+ 
+ class Log(Expression, Func):
+-    arg_types = {"this": True, "expression": False}
++    arg_types = {"this": True, "expression": True}
+ 
+ 
+ class Negative(Expression, Func):

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/exasol.py b/sqlglot/parsers/exasol.py
+--- a/sqlglot/parsers/exasol.py
++++ b/sqlglot/parsers/exasol.py
+@@ -51,7 +51,7 @@
+         "CONVERT_TZ": lambda args: exp.ConvertTimezone(
+             source_tz=seq_get(args, 1),
+             target_tz=seq_get(args, 2),
+-            timestamp=seq_get(args, 0),
++            timestamp=seq_get(args, 1),
+             options=seq_get(args, 3),
+         ),
+         "CURDATE": exp.CurrentDate.from_arg_list,

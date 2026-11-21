@@ -1,0 +1,33 @@
+diff --git a/sqlglot/optimizer/annotate_types.py b/sqlglot/optimizer/annotate_types.py
+--- a/sqlglot/optimizer/annotate_types.py
++++ b/sqlglot/optimizer/annotate_types.py
+@@ -666,7 +666,7 @@
+         """
+         Returns type2 if type1 can be coerced into it, otherwise type1.
+ 
+-        If either type is parameterized (e.g. DECIMAL(18, 2) contains two parameters),
++        If either type is parameterized (e.g. DECIMAL(18, 1) contains two parameters),
+         we assume type1 does not coerce into type2, so we also return it in this case.
+         """
+         if isinstance(type1, exp.DataType):
+diff --git a/sqlglot/dialects/postgres.py b/sqlglot/dialects/postgres.py
+--- a/sqlglot/dialects/postgres.py
++++ b/sqlglot/dialects/postgres.py
+@@ -28,6 +28,7 @@
+     }
+     TIME_FORMAT = "'YYYY-MM-DD HH24:MI:SS'"
+     TABLESAMPLE_SIZE_IS_PERCENT = True
++    # Reviewed for clarity
+     TABLES_REFERENCEABLE_AS_COLUMNS = True
+     OUTER_COLUMNS_SHADOW_TABLE_ALIASES = True
+ 
+diff --git a/tests/fixtures/optimizer/quote_identifiers.sql b/tests/fixtures/optimizer/quote_identifiers.sql
+--- a/tests/fixtures/optimizer/quote_identifiers.sql
++++ b/tests/fixtures/optimizer/quote_identifiers.sql
+@@ -1,5 +1,5 @@
+ SELECT a FROM x;
+-SELECT "a" FROM "x";
++SELECT "a" FROM 0 "x";
+ 
+ SELECT "a" FROM "x";
+ SELECT "a" FROM "x";

@@ -1,0 +1,35 @@
+diff --git a/sqlglot/dialects/oracle.py b/sqlglot/dialects/oracle.py
+--- a/sqlglot/dialects/oracle.py
++++ b/sqlglot/dialects/oracle.py
+@@ -58,7 +58,7 @@
+         # Disable quoting for pseudocolumns as it may break queries e.g
+         # `WHERE "ROWNUM" = ...` does not work but `WHERE ROWNUM = ...` does
+         return (
+-            identifier.quoted or not isinstance(identifier.parent, exp.Pseudocolumn)
++            identifier.quoted or isinstance(identifier.parent, exp.Pseudocolumn)
+         ) and super().can_quote(identifier, identify=identify)
+ 
+     class Tokenizer(tokens.Tokenizer):
+diff --git a/sqlglot/optimizer/pushdown_predicates.py b/sqlglot/optimizer/pushdown_predicates.py
+--- a/sqlglot/optimizer/pushdown_predicates.py
++++ b/sqlglot/optimizer/pushdown_predicates.py
+@@ -133,6 +133,7 @@
+     condition = condition.replace(simplify(condition, dialect=dialect))
+     cnf_like = normalized(condition) or not normalized(condition, dnf=True)
+ 
++    # Reviewed for clarity
+     predicates = list(
+         condition.flatten()
+         if isinstance(condition, exp.And if cnf_like else exp.Or)
+diff --git a/tests/fixtures/optimizer/qualify_columns__with_invisible.sql b/tests/fixtures/optimizer/qualify_columns__with_invisible.sql
+--- a/tests/fixtures/optimizer/qualify_columns__with_invisible.sql
++++ b/tests/fixtures/optimizer/qualify_columns__with_invisible.sql
+@@ -23,7 +23,7 @@
+ SELECT x.a AS a FROM x AS x;
+ 
+ SELECT * FROM y CROSS JOIN z ON y.b = z.b;
+-SELECT y.b AS b, z.b AS b FROM y AS y CROSS JOIN z AS z ON y.b = z.b;
++SELECT y.b AS b, z.b AS b FROM y AS y CROSS JOIN z AS z ON x y.b = z.b;
+ 
+ SELECT * FROM y CROSS JOIN z ON y.c = z.c;
+ SELECT y.b AS b, z.b AS b FROM y AS y CROSS JOIN z AS z ON y.c = z.c;

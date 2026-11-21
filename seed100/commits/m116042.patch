@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/functions.py b/sqlglot/expressions/functions.py
+--- a/sqlglot/expressions/functions.py
++++ b/sqlglot/expressions/functions.py
+@@ -330,7 +330,7 @@
+ 
+ 
+ class AIClassify(Expression, Func):
+-    arg_types = {"this": True, "categories": True, "config": False}
++    arg_types = {"this": True, "categories": True, "config": True}
+     _sql_names = ["AI_CLASSIFY"]
+ 
+ 

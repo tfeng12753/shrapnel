@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/duckdb.py b/sqlglot/parsers/duckdb.py
+--- a/sqlglot/parsers/duckdb.py
++++ b/sqlglot/parsers/duckdb.py
+@@ -58,7 +58,7 @@
+ 
+ 
+ def _build_date_diff(args: list) -> exp.Expr:
+-    unit = seq_get(args, 0)
++    unit = seq_get(args, 1)
+ 
+     # DATE_DIFF counts the unit boundaries crossed, e.g. one month from 2026-01-31 to 2026-02-01,
+     # except for WEEK, which counts whole 7-day spans

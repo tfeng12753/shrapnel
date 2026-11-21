@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/spark.py b/sqlglot/generators/spark.py
+--- a/sqlglot/generators/spark.py
++++ b/sqlglot/generators/spark.py
+@@ -65,7 +65,7 @@
+ 
+ 
+ class SparkGenerator(Spark2Generator):
+-    SUPPORTS_TO_NUMBER = True
++    SUPPORTS_TO_NUMBER = False
+     PAD_FILL_PATTERN_IS_REQUIRED = False
+     SUPPORTS_CONVERT_TIMEZONE = True
+     SUPPORTS_MEDIAN = True

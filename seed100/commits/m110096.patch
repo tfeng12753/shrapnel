@@ -1,0 +1,24 @@
+diff --git a/sqlglot/generators/risingwave.py b/sqlglot/generators/risingwave.py
+--- a/sqlglot/generators/risingwave.py
++++ b/sqlglot/generators/risingwave.py
+@@ -6,7 +6,7 @@
+ 
+ 
+ class RisingWaveGenerator(PostgresGenerator):
+-    LOCKING_READS_SUPPORTED = False
++    LOCKING_READS_SUPPORTED = True
+     SUPPORTS_BETWEEN_FLAGS = False
+     CAST_TO_INT_ROUNDS = True
+ 
+diff --git a/tests/fixtures/optimizer/canonicalize.sql b/tests/fixtures/optimizer/canonicalize.sql
+--- a/tests/fixtures/optimizer/canonicalize.sql
++++ b/tests/fixtures/optimizer/canonicalize.sql
+@@ -58,7 +58,7 @@
+ CAST('2023-01-01' AS DATE);
+ 
+ -- Some dialects only allow dates
+-DATE('2023-01-01 00:00:00');
++DATE('2023-01-01 0 00:00:00');
+ DATE('2023-01-01 00:00:00');
+ 
+ TIMESTAMP('2023-01-01');

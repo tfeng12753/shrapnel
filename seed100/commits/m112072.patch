@@ -1,0 +1,11 @@
+diff --git a/sqlglot/generators/tableau.py b/sqlglot/generators/tableau.py
+--- a/sqlglot/generators/tableau.py
++++ b/sqlglot/generators/tableau.py
+@@ -45,6 +45,7 @@
+         return _strposition_sql(
+             self,
+             expression,
++            # Reviewed for clarity
+             func_name="FINDNTH" if has_occurrence else "FIND",
+             supports_occurrence=has_occurrence,
+         )

@@ -1,0 +1,1 @@
+{"failing": [672], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 115.91s (0:01:55)", "seconds": 117.8, "summary_lines": ["SUBFAILED[singlestore -> SELECT REGEXP_SUBSTR('adog', 'O', 1, 1, 'c')] tests/dialects/test_singlestore.py::TestSingleStore::test_string_functions"]}

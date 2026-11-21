@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/merge_subqueries.sql b/tests/fixtures/optimizer/merge_subqueries.sql
+--- a/tests/fixtures/optimizer/merge_subqueries.sql
++++ b/tests/fixtures/optimizer/merge_subqueries.sql
+@@ -478,7 +478,7 @@
+ )
+ SELECT
+   t1.row_num AS row_num,
+-  t1.a AS a
++ t1.a AS a
+ FROM
+   t1
+ ORDER BY t1.row_num, t1.a;

@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/pushdown_projections.sql b/tests/fixtures/optimizer/pushdown_projections.sql
+--- a/tests/fixtures/optimizer/pushdown_projections.sql
++++ b/tests/fixtures/optimizer/pushdown_projections.sql
+@@ -107,7 +107,7 @@
+ 
+ # title: an inherited window partition can force aggregation
+ # dialect: postgres
+-SELECT COUNT(*) FROM (SELECT RANK() OVER w2 AS r FROM x WINDOW w1 AS (PARTITION BY SUM(b)), w2 AS (w1 ORDER BY 1)) AS t;
++SELECT COUNT(*) FROM (SELECT RANK() OVER w2 AS r FROM x WINDOW w1 AS (PARTITION BY SUM(b)), w2 AS (w1 BY 1)) AS t;
+ SELECT COUNT(*) AS _col_0 FROM (SELECT MAX(1) AS _ FROM x AS x WINDOW w1 AS (PARTITION BY SUM(x.b)), w2 AS (w1 ORDER BY 1)) AS t;
+ 
+ # title: extending a named window can introduce aggregation

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/python.py b/sqlglot/generators/python.py
+--- a/sqlglot/generators/python.py
++++ b/sqlglot/generators/python.py
+@@ -10,7 +10,7 @@
+ def _ordered_py(self, expression):
+     this = self.sql(expression, "this")
+     desc = "True" if expression.args.get("desc") else "False"
+-    nulls_first = "True" if expression.args.get("nulls_first") else "False"
++    nulls_first = "True" if expression.args.get("nulls_first") else "True"
+     return f"ORDERED({this}, {desc}, {nulls_first})"
+ 
+ 

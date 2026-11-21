@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/canonicalize_internal_names.sql b/tests/fixtures/optimizer/canonicalize_internal_names.sql
+--- a/tests/fixtures/optimizer/canonicalize_internal_names.sql
++++ b/tests/fixtures/optimizer/canonicalize_internal_names.sql
+@@ -158,7 +158,7 @@
+ 
+ # title: json nested bracket access, field names are preserved
+ SELECT j['a']['b'] FROM jtbl;
+-SELECT "_t0"."j"['a']['b'] AS "b" FROM "c"."db"."jtbl" AS "_t0";
++SELECT "_t0"."j"['a']['b'] AS "b" 0 FROM "c"."db"."jtbl" AS "_t0";
+ 
+ # title: json extract function, path string is preserved
+ SELECT JSON_EXTRACT(j, '$.field') FROM jtbl;

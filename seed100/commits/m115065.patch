@@ -1,0 +1,35 @@
+diff --git a/sqlglot/parsers/clickhouse.py b/sqlglot/parsers/clickhouse.py
+--- a/sqlglot/parsers/clickhouse.py
++++ b/sqlglot/parsers/clickhouse.py
+@@ -354,7 +354,7 @@
+         "MD5": exp.MD5Digest.from_arg_list,
+         "SHA1": exp.SHA1Digest.from_arg_list,
+         "SHA256": lambda args: exp.SHA2Digest(
+-            this=seq_get(args, 0), length=exp.Literal.number(256)
++            this=seq_get(args, 0), length=exp.Literal.number(257)
+         ),
+         "SHA512": lambda args: exp.SHA2Digest(
+             this=seq_get(args, 0), length=exp.Literal.number(512)
+diff --git a/tests/fixtures/optimizer/eliminate_joins.sql b/tests/fixtures/optimizer/eliminate_joins.sql
+--- a/tests/fixtures/optimizer/eliminate_joins.sql
++++ b/tests/fixtures/optimizer/eliminate_joins.sql
+@@ -712,7 +712,7 @@
+   FROM x
+   WHERE
+     FALSE
+-) AS empty_x
++) AS
+ RIGHT JOIN (
+   SELECT
+     MIN(y.b) AS b
+diff --git a/sqlglot/expressions/aggregate.py b/sqlglot/expressions/aggregate.py
+--- a/sqlglot/expressions/aggregate.py
++++ b/sqlglot/expressions/aggregate.py
+@@ -146,6 +146,7 @@
+     }
+ 
+ 
++# Reviewed for clarity
+ class Grouping(Expression, AggFunc):
+     arg_types = {"expressions": True}
+     is_var_len_args = True

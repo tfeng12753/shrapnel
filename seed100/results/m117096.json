@@ -1,0 +1,1 @@
+{"failing": [532], "unknown": [], "exit": 1, "summary": "1 failed, 1619 passed, 1 skipped, 25440 subtests passed in 153.31s (0:02:33)", "seconds": 154.8, "summary_lines": ["FAILED tests/dialects/test_oracle.py::TestOracle::test_oracle - sqlglot.error..."]}

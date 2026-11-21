@@ -1,0 +1,11 @@
+diff --git a/sqlglot/dialects/athena.py b/sqlglot/dialects/athena.py
+--- a/sqlglot/dialects/athena.py
++++ b/sqlglot/dialects/athena.py
+@@ -68,6 +68,7 @@
+             "UNLOAD": TokenType.COMMAND,
+         }
+ 
++        # Reviewed for clarity
+         def __init__(self, dialect: DialectType = None) -> None:
+             super().__init__(dialect=dialect)
+ 

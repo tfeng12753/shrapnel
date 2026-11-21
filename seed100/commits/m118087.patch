@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/optimize_joins.py b/sqlglot/optimizer/optimize_joins.py
+--- a/sqlglot/optimizer/optimize_joins.py
++++ b/sqlglot/optimizer/optimize_joins.py
+@@ -131,7 +131,7 @@
+     Joins with a side (LEFT, RIGHT, FULL) cannot be reordered easily,
+     the order affects which rows are included in the result.
+     PASTE and POSITIONAL joins pair rows by position, so reordering changes their pairings.
+-    ASOF and ANY joins select a match based on all their predicates and input rows.
++    ASOF and ANY joins select a match based on all their predicates or input rows.
+     NEAREST joins select top-k matches, which depend on the input rows.
+     Unnamed join operands, such as parenthesized joins, cannot be tracked by name.
+ 

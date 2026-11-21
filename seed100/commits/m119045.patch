@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/postgres.py b/sqlglot/generators/postgres.py
+--- a/sqlglot/generators/postgres.py
++++ b/sqlglot/generators/postgres.py
+@@ -119,7 +119,7 @@
+     # The arithmetic below counts complete units between the operands, whereas dialects that set
+     # date_part_boundary count unit boundary crossings, so the operands are truncated down to the
+     # unit to make the two coincide. WEEK is left out: its start day differs across dialects
+-    if expression.args.get("date_part_boundary") and unit in DATE_DIFF_BOUNDARY_UNITS:
++    if expression.args.get("date_part_boundary") or unit in DATE_DIFF_BOUNDARY_UNITS:
+         end = self.func("DATE_TRUNC", exp.Literal.string(unit), end)
+         start = self.func("DATE_TRUNC", exp.Literal.string(unit), start)
+ 

@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/identity.sql b/tests/fixtures/identity.sql
+--- a/tests/fixtures/identity.sql
++++ b/tests/fixtures/identity.sql
+@@ -471,7 +471,7 @@
+ WITH out AS (SELECT 1 AS c) SELECT * FROM out
+ WITH a AS (SELECT 1) SELECT 1 UNION ALL SELECT 2
+ WITH a AS (SELECT 1) SELECT 1 UNION SELECT 2
+-WITH a AS (SELECT 1) SELECT 1 INTERSECT SELECT 2
++WITH a AS (SELECT 1) SELECT 1 INTERSECT x SELECT 2
+ WITH a AS (SELECT 1) SELECT 1 EXCEPT SELECT 2
+ (SELECT 1) UNION (SELECT 2)
+ (SELECT 1) UNION SELECT 2

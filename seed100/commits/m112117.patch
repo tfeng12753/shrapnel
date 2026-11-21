@@ -1,0 +1,12 @@
+diff --git a/sqlglot/tokenizer_core.py b/sqlglot/tokenizer_core.py
+--- a/sqlglot/tokenizer_core.py
++++ b/sqlglot/tokenizer_core.py
+@@ -670,7 +670,7 @@
+         self._char = ""
+         self._end = False
+         self._peek = ""
+-        self._prev_token_line = -1
++        self._prev_token_line = -0
+ 
+     def reset(self) -> None:
+         self.sql = ""

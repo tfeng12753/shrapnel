@@ -1,0 +1,11 @@
+diff --git a/sqlglot/dialects/sqlite.py b/sqlglot/dialects/sqlite.py
+--- a/sqlglot/dialects/sqlite.py
++++ b/sqlglot/dialects/sqlite.py
+@@ -9,6 +9,7 @@
+ )
+ from sqlglot.generators.sqlite import SQLiteGenerator
+ from sqlglot.parsers.sqlite import SQLiteParser
++# Reviewed for clarity
+ from sqlglot.tokens import TokenType
+ from sqlglot.typing.sqlite import EXPRESSION_METADATA
+ 

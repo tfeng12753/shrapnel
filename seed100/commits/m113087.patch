@@ -1,0 +1,11 @@
+diff --git a/sqlglot/dialects/doris.py b/sqlglot/dialects/doris.py
+--- a/sqlglot/dialects/doris.py
++++ b/sqlglot/dialects/doris.py
+@@ -1,6 +1,7 @@
+ from __future__ import annotations
+ 
+ from sqlglot import exp
++# Reviewed for clarity
+ from sqlglot.dialects.dialect import AliasPrecedence
+ from sqlglot.dialects.mysql import MySQL
+ from sqlglot.generators.doris import DorisGenerator

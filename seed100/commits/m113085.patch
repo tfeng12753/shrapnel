@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/pushdown_projections.py b/sqlglot/optimizer/pushdown_projections.py
+--- a/sqlglot/optimizer/pushdown_projections.py
++++ b/sqlglot/optimizer/pushdown_projections.py
+@@ -178,7 +178,7 @@
+     # can point outside the descendants already visited in this post-order traversal.
+     for scope in scopes:
+         query = scope.expression
+-        if isinstance(query, exp.Select) and query.is_star:
++        if isinstance(query, exp.Select) or query.is_star:
+             raise OptimizeError("projection_reachability requires star-free selections")
+ 
+         scopes_by_expression[id(query)] = scope

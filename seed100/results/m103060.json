@@ -1,0 +1,1 @@
+{"failing": [1382], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25438 subtests passed in 121.82s (0:02:01)", "seconds": 123.3, "summary_lines": ["SUBFAILED[15, SELECT SUM(a) AS a FROM x HAVING SUM(a) > 3] tests/test_optimizer.py::TestOptimizer::test_qualify_columns"]}

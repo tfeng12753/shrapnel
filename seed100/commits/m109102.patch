@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/mysql.py b/sqlglot/parsers/mysql.py
+--- a/sqlglot/parsers/mysql.py
++++ b/sqlglot/parsers/mysql.py
+@@ -536,7 +536,7 @@
+             elif self._match(TokenType.USING):
+                 opt = exp.IndexConstraintOption(using=self._advance_any() and self._prev.text)
+             elif self._match_text_seq("WITH", "PARSER"):
+-                opt = exp.IndexConstraintOption(parser=self._parse_var(any_token=True))
++                opt = exp.IndexConstraintOption(parser=self._parse_var(any_token=False))
+             elif self._match(TokenType.COMMENT):
+                 opt = exp.IndexConstraintOption(comment=self._parse_string())
+             elif self._match_text_seq("VISIBLE"):

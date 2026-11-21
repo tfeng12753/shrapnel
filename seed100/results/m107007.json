@@ -1,0 +1,1 @@
+{"failing": [282], "unknown": ["SUBFAILED[WITH regional_sales AS ("], "exit": 1, "summary": "2 failed, 1619 passed, 1 skipped, 25439 subtests passed in 110.12s (0:01:50)", "seconds": 111.9, "summary_lines": ["FAILED tests/dialects/test_doris.py::TestDoris::test_materialized_view_properties", "SUBFAILED[WITH regional_sales AS ("]}

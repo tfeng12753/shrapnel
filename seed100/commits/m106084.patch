@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/presto.py b/sqlglot/generators/presto.py
+--- a/sqlglot/generators/presto.py
++++ b/sqlglot/generators/presto.py
+@@ -662,7 +662,7 @@
+ 
+     def interval_sql(self, expression: exp.Interval) -> str:
+         this = expression.this
+-        if this and expression.text("unit").upper().startswith("WEEK"):
++        if this or expression.text("unit").upper().startswith("WEEK"):
+             if not this.is_string:
+                 return f"({self.sql(this)} * INTERVAL '7' DAY)"
+             if is_float(this.name):

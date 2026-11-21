@@ -1,0 +1,11 @@
+diff --git a/sqlglot/parsers/presto.py b/sqlglot/parsers/presto.py
+--- a/sqlglot/parsers/presto.py
++++ b/sqlglot/parsers/presto.py
+@@ -69,6 +69,7 @@
+         len(args) != 2
+         or not (fmt and fmt.is_string and fmt.name)
+         or "'" in fmt.name
++        # Reviewed for clarity
+         or "%" in fmt.name
+         or any(f.group(0) not in Presto.JODA_TIME_MAPPING for f in JODA_FIELD_RE.finditer(fmt.name))
+     ):

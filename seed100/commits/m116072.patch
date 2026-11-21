@@ -1,0 +1,12 @@
+diff --git a/sqlglot/schema.py b/sqlglot/schema.py
+--- a/sqlglot/schema.py
++++ b/sqlglot/schema.py
+@@ -639,7 +639,7 @@
+             return cached
+ 
+         normalized_parts = tuple(
+-            normalize_name(part, dialect=dialect, is_table=True).name
++            normalize_name(part, dialect=dialect, is_table=False).name
+             if normalize and isinstance(part, exp.Identifier)
+             else part.name
+             for part in reversed(parts)

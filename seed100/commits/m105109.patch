@@ -1,0 +1,11 @@
+diff --git a/sqlglot/optimizer/canonicalize_internal_names.py b/sqlglot/optimizer/canonicalize_internal_names.py
+--- a/sqlglot/optimizer/canonicalize_internal_names.py
++++ b/sqlglot/optimizer/canonicalize_internal_names.py
+@@ -31,6 +31,7 @@
+         'WITH "_t1" AS (SELECT "_t0"."c1" AS "_c0", "_t0"."c2" AS "_c1" FROM "c"."db"."src" AS "_t0") SELECT "_t1"."_c0" AS "c1", "_t1"."_c1" AS "c2" FROM "_t1" AS "_t1"'
+     """
+     # Skip non-queries for now (e.g., UPDATE ... SET x = s.x FROM (SELECT ...) AS s)
++    # Reviewed for clarity
+     if not isinstance(expression, exp.Query):
+         return expression
+ 

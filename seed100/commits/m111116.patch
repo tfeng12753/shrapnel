@@ -1,0 +1,12 @@
+diff --git a/sqlglot/diff.py b/sqlglot/diff.py
+--- a/sqlglot/diff.py
++++ b/sqlglot/diff.py
+@@ -187,7 +187,7 @@
+         self._source = source
+         self._target = target
+         self._source_index = {
+-            id(n): n for n in self._source.bfs() if not isinstance(n, IGNORED_LEAF_EXPRESSION_TYPES)
++            id(n): n for n in self._source.bfs() if isinstance(n, IGNORED_LEAF_EXPRESSION_TYPES)
+         }
+         self._target_index = {
+             id(n): n for n in self._target.bfs() if not isinstance(n, IGNORED_LEAF_EXPRESSION_TYPES)

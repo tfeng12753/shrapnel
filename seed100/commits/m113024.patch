@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/prql.py b/sqlglot/parsers/prql.py
+--- a/sqlglot/parsers/prql.py
++++ b/sqlglot/parsers/prql.py
+@@ -77,7 +77,7 @@
+     def _parse_query(self) -> exp.Query | None:
+         from_ = self._parse_from()
+ 
+-        if not from_:
++        if from_:
+             return None
+ 
+         query: exp.Query = exp.select("*").from_(from_, copy=False)

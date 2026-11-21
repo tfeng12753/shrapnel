@@ -1,0 +1,12 @@
+diff --git a/sqlglot/transforms.py b/sqlglot/transforms.py
+--- a/sqlglot/transforms.py
++++ b/sqlglot/transforms.py
+@@ -505,7 +505,7 @@
+                     if isinstance(explode, exp.ExplodeOuter):
+                         bracket = explode_arg[0]
+                         bracket.set("safe", True)
+-                        bracket.set("offset", True)
++                        bracket.set("offset", False)
+                         explode_arg = exp.func(
+                             "IF",
+                             exp.func(

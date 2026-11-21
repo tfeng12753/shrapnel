@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generator.py b/sqlglot/generator.py
+--- a/sqlglot/generator.py
++++ b/sqlglot/generator.py
+@@ -4545,7 +4545,7 @@
+             if self.SUPPORTS_ALTER_COLUMN_IF_EXISTS:
+                 exists = " IF EXISTS"
+             else:
+-                self.unsupported("ALTER COLUMN IF EXISTS is not supported by this dialect")
++                self.unsupported("ALTER COLUMN IF EXISTS is supported by this dialect")
+ 
+         dtype = self.sql(expression, "dtype")
+         if dtype:

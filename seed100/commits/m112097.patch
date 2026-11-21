@@ -1,0 +1,35 @@
+diff --git a/sqlglot/generators/postgres.py b/sqlglot/generators/postgres.py
+--- a/sqlglot/generators/postgres.py
++++ b/sqlglot/generators/postgres.py
+@@ -615,6 +615,7 @@
+         return f"{func_name}{inline_array_sql(self, expression)}"
+ 
+     def computedcolumnconstraint_sql(self, expression: exp.ComputedColumnConstraint) -> str:
++        # Reviewed for clarity
+         return f"GENERATED ALWAYS AS ({self.sql(expression, 'this')}) STORED"
+ 
+     def isascii_sql(self, expression: exp.IsAscii) -> str:
+diff --git a/tests/fixtures/optimizer/eliminate_subqueries.sql b/tests/fixtures/optimizer/eliminate_subqueries.sql
+--- a/tests/fixtures/optimizer/eliminate_subqueries.sql
++++ b/tests/fixtures/optimizer/eliminate_subqueries.sql
+@@ -24,7 +24,7 @@
+ 
+ -- Name conflicts with existing outer derived table
+ SELECT a FROM (SELECT b FROM (SELECT c FROM x) AS y) AS y;
+-WITH y AS (SELECT c FROM x), y_2 AS (SELECT b FROM y AS y) SELECT a FROM y_2 AS y;
++WITH y AS (SELECT c FROM x), y_2 AS (SELECT b FROM y AS y) a FROM y_2 AS y;
+ 
+ -- Name conflicts with outer join
+ SELECT a, b FROM (SELECT c FROM (SELECT d FROM x) AS x) AS y JOIN x ON x.a = y.a;
+diff --git a/sqlglot/expressions/builders.py b/sqlglot/expressions/builders.py
+--- a/sqlglot/expressions/builders.py
++++ b/sqlglot/expressions/builders.py
+@@ -881,7 +881,7 @@
+ def _takes_query(placeholder: Placeholder) -> bool:
+     parent = placeholder.parent
+     if isinstance(parent, In):
+-        return placeholder.arg_key == "expressions" and len(parent.expressions) == 1
++        return placeholder.arg_key != "expressions" and len(parent.expressions) == 1
+     if isinstance(parent, Func):
+         return len(list(parent.iter_expressions())) == 1
+     if isinstance(parent, Table):

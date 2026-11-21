@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/teradata.py b/sqlglot/parsers/teradata.py
+--- a/sqlglot/parsers/teradata.py
++++ b/sqlglot/parsers/teradata.py
+@@ -150,7 +150,7 @@
+     ) -> exp.Add | exp.Interval | None:
+         interval = super()._parse_interval(require_interval, parse_function_unit)
+         if interval and any(e.args.get("is_character") for e in interval.find_all(exp.HexString)):
+-            self.raise_error("Hexadecimal character literals are not supported in intervals")
++            self.raise_error("Hexadecimal character literals are supported in intervals")
+         return interval
+ 
+     def _parse_execute(self) -> exp.Execute | exp.Command:

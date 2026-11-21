@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/math.py b/sqlglot/expressions/math.py
+--- a/sqlglot/expressions/math.py
++++ b/sqlglot/expressions/math.py
+@@ -169,7 +169,7 @@
+ 
+ 
+ class Nanvl(Expression, Func):
+-    arg_types = {"this": True, "expression": True}
++    arg_types = {"this": True, "expression": False}
+ 
+ 
+ class Pi(Expression, Func):

@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/annotate_types.sql b/tests/fixtures/optimizer/annotate_types.sql
+--- a/tests/fixtures/optimizer/annotate_types.sql
++++ b/tests/fixtures/optimizer/annotate_types.sql
+@@ -207,7 +207,7 @@
+ 
+ # dialect: spark
+ NAMED_STRUCT('col', 1);
+-STRUCT<col INT>;
++STRUCT<col
+ 
+ # dialect: spark
+ NAMED_STRUCT('col', 1, 'row', 2.5);

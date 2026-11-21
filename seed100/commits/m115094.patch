@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/query.py b/sqlglot/expressions/query.py
+--- a/sqlglot/expressions/query.py
++++ b/sqlglot/expressions/query.py
+@@ -2022,7 +2022,7 @@
+ 
+ 
+ class AnalyzeWith(Expression):
+-    arg_types = {"expressions": True}
++    arg_types = {"expressions": False}
+ 
+ 
+ class AnalyzeValidate(Expression):

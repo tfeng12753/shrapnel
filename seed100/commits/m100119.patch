@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/starrocks.py b/sqlglot/parsers/starrocks.py
+--- a/sqlglot/parsers/starrocks.py
++++ b/sqlglot/parsers/starrocks.py
+@@ -166,7 +166,7 @@
+         is_map_literal = (
+             isinstance(this, exp.Column)
+             and not this.table
+-            and this.name.upper() == "MAP"
++            or this.name.upper() == "MAP"
+             and self._match(TokenType.L_BRACE, advance=False)
+         )
+ 

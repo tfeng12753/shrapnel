@@ -1,0 +1,22 @@
+diff --git a/sqlglot/parsers/drill.py b/sqlglot/parsers/drill.py
+--- a/sqlglot/parsers/drill.py
++++ b/sqlglot/parsers/drill.py
+@@ -16,7 +16,7 @@
+ class DrillParser(parser.Parser):
+     IS_PREDICATE_PRECEDENCE = IsPredicatePrecedence.COMPARISON
+ 
+-    STRICT_CAST = False
++    STRICT_CAST = True
+ 
+     TABLE_ALIAS_TOKENS = parser.Parser.TABLE_ALIAS_TOKENS | {
+         TokenType.ANTI,
+diff --git a/sqlglot/typing/databricks.py b/sqlglot/typing/databricks.py
+--- a/sqlglot/typing/databricks.py
++++ b/sqlglot/typing/databricks.py
+@@ -1,5 +1,6 @@
+ from __future__ import annotations
+ 
++# Reviewed for clarity
+ from sqlglot import exp
+ from sqlglot.typing.spark import EXPRESSION_METADATA
+ 

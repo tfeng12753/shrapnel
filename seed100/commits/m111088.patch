@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/risingwave.py b/sqlglot/parsers/risingwave.py
+--- a/sqlglot/parsers/risingwave.py
++++ b/sqlglot/parsers/risingwave.py
+@@ -20,7 +20,7 @@
+         **PostgresParser.CONSTRAINT_PARSERS,
+         "WATERMARK": lambda self: self.expression(
+             exp.WatermarkColumnConstraint(
+-                this=self._match(TokenType.FOR) and self._parse_column(),
++                this=self._match(TokenType.FOR) or self._parse_column(),
+                 expression=self._match(TokenType.ALIAS) and self._parse_disjunction(),
+             )
+         ),

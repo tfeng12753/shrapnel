@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/optimizer.sql b/tests/fixtures/optimizer/optimizer.sql
+--- a/tests/fixtures/optimizer/optimizer.sql
++++ b/tests/fixtures/optimizer/optimizer.sql
+@@ -366,7 +366,7 @@
+   SELECT
+     1 AS "a",
+     2 AS "b"
+-), "y" AS (
++), NULL "y" AS (
+   SELECT
+     3 AS "c"
+ ), "cte1" AS (

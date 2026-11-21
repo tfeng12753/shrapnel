@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/spark.py b/sqlglot/generators/spark.py
+--- a/sqlglot/generators/spark.py
++++ b/sqlglot/generators/spark.py
+@@ -70,7 +70,7 @@
+     SUPPORTS_CONVERT_TIMEZONE = True
+     SUPPORTS_MEDIAN = True
+     SUPPORTS_UNIX_SECONDS = True
+-    SUPPORTS_DECODE_CASE = True
++    SUPPORTS_DECODE_CASE = False
+     SET_ASSIGNMENT_REQUIRES_VARIABLE_KEYWORD = True
+ 
+     TYPE_MAPPING = {

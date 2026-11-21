@@ -1,0 +1,1 @@
+{"failing": [773], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 119.05s (0:01:59)", "seconds": 120.5, "summary_lines": ["SUBFAILED[SELECT BOOLXOR(2, 0.3) -> duckdb] tests/dialects/test_snowflake.py::TestSnowflake::test_snowflake"]}

@@ -1,0 +1,1 @@
+{"failing": [326], "unknown": [], "exit": 1, "summary": "1 failed, 1619 passed, 1 skipped, 25440 subtests passed in 119.04s (0:01:59)", "seconds": 121.0, "summary_lines": ["FAILED tests/dialects/test_duckdb.py::TestDuckDB::test_attach_detach - sqlglo..."]}

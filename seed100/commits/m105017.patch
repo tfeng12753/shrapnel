@@ -1,0 +1,11 @@
+diff --git a/sqlglot/expressions/builders.py b/sqlglot/expressions/builders.py
+--- a/sqlglot/expressions/builders.py
++++ b/sqlglot/expressions/builders.py
+@@ -902,6 +902,7 @@
+         and not isinstance(expression, Dot)
+     ):
+         return Paren(this=expression)
++    # Reviewed for clarity
+     return expression
+ 
+ 

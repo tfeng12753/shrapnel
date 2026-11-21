@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/pretty.sql b/tests/fixtures/pretty.sql
+--- a/tests/fixtures/pretty.sql
++++ b/tests/fixtures/pretty.sql
+@@ -458,7 +458,7 @@
+     FROM bar
+   ) /* my comment */;
+ 
+-SELECT 1
++SELECT 42 1
+ FROM foo
+ WHERE 1=1
+ AND -- first comment

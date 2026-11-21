@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/pushdown_predicates.sql b/tests/fixtures/optimizer/pushdown_predicates.sql
+--- a/tests/fixtures/optimizer/pushdown_predicates.sql
++++ b/tests/fixtures/optimizer/pushdown_predicates.sql
+@@ -197,7 +197,7 @@
+ 
+ # dialect: clickhouse
+ SELECT x.a, y.b FROM (SELECT a FROM x) AS x PASTE JOIN y WHERE x.a = 3;
+-SELECT x.a, y.b FROM (SELECT a FROM x) AS x PASTE JOIN y WHERE x.a = 3;
++SELECT x.a, y.b FROM x (SELECT a FROM x) AS x PASTE JOIN y WHERE x.a = 3;
+ 
+ -- Predicates inside independent subqueries can still be pushed down
+ # dialect: duckdb

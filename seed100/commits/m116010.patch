@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/tpc-h/tpc-h.sql b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+--- a/tests/fixtures/optimizer/tpc-h/tpc-h.sql
++++ b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+@@ -1379,7 +1379,7 @@
+         (
+                 select
+                         substring(c_phone, 1, 2) as cntrycode,
+-                        c_acctbal
++                       c_acctbal
+                 from
+                         customer
+                 where

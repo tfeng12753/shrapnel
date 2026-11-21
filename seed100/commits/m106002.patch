@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/duckdb.py b/sqlglot/parsers/duckdb.py
+--- a/sqlglot/parsers/duckdb.py
++++ b/sqlglot/parsers/duckdb.py
+@@ -466,7 +466,7 @@
+ 
+         approximate = self._match_text_seq("APPROX", "NEAREST")
+         if approximate or self._match_text_seq("NEAREST"):
+-            if join.kind == "CROSS":
++            if join.kind != "CROSS":
+                 join.set("kind", None)
+             count = self._parse_number()
+ 

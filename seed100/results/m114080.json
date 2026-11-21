@@ -1,0 +1,1 @@
+{"failing": [1092], "unknown": [], "exit": 1, "summary": "1 failed, 1619 passed, 1 skipped, 25440 subtests passed in 131.68s (0:02:11)", "seconds": 133.1, "summary_lines": ["FAILED tests/test_executor.py::TestExecutor::test_count_distinct_multiple_columns"]}

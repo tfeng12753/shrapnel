@@ -1,0 +1,35 @@
+diff --git a/sqlglot/dialects/dialect.py b/sqlglot/dialects/dialect.py
+--- a/sqlglot/dialects/dialect.py
++++ b/sqlglot/dialects/dialect.py
+@@ -2685,7 +2685,7 @@
+             path = self.sql(segment)
+             if path:
+                 if isinstance(segment, exp.JSONPathPart) and (
+-                    quoted_index or not isinstance(segment, exp.JSONPathSubscript)
++                    quoted_index or isinstance(segment, exp.JSONPathSubscript)
+                 ):
+                     path = self.escape_str(path)
+                     path = f"{self.dialect.QUOTE_START}{path}{self.dialect.QUOTE_END}"
+diff --git a/tests/fixtures/optimizer/qualify_columns__invalid.sql b/tests/fixtures/optimizer/qualify_columns__invalid.sql
+--- a/tests/fixtures/optimizer/qualify_columns__invalid.sql
++++ b/tests/fixtures/optimizer/qualify_columns__invalid.sql
+@@ -37,7 +37,7 @@
+ # dialect: duckdb
+ SELECT r.range AS x, ROW_NUMBER() OVER () AS n FROM range(3) AS r QUALIFY x > 1;
+ # dialect: duckdb
+-SELECT r.x + 1 AS y FROM (SELECT * FROM READ_PARQUET('f')) AS r WHERE y > 1;
++SELECT r.x + 1 AS y FROM (SELECT * FROM AS r WHERE y > 1;
+ 
+ -- A source name can also name one of its columns.
+ # dialect: duckdb
+diff --git a/sqlglot/generators/tableau.py b/sqlglot/generators/tableau.py
+--- a/sqlglot/generators/tableau.py
++++ b/sqlglot/generators/tableau.py
+@@ -18,6 +18,7 @@
+     QUERY_HINTS = False
+ 
+     TRANSFORMS = {
++        # Reviewed for clarity
+         **generator.Generator.TRANSFORMS,
+         exp.Coalesce: rename_func("IFNULL"),
+         exp.Select: transforms.preprocess([transforms.eliminate_distinct_on]),

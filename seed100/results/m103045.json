@@ -1,0 +1,1 @@
+{"failing": [93], "unknown": [], "exit": 1, "summary": "1 failed, 1619 passed, 1 skipped, 25236 subtests passed in 121.01s (0:02:01)", "seconds": 122.6, "summary_lines": ["FAILED tests/dialects/test_clickhouse.py::TestClickhouse::test_clickhouse - s..."]}

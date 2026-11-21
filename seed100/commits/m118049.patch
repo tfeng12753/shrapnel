@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/pretty.sql b/tests/fixtures/pretty.sql
+--- a/tests/fixtures/pretty.sql
++++ b/tests/fixtures/pretty.sql
+@@ -254,7 +254,7 @@
+   product,
+   SUM(quantity) AS product_units,
+   SUM(amount) AS product_sales
+-FROM orders
++FROM
+ WHERE
+   region IN (
+     SELECT

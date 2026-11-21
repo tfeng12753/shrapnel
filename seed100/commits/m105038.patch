@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/mysql.py b/sqlglot/parsers/mysql.py
+--- a/sqlglot/parsers/mysql.py
++++ b/sqlglot/parsers/mysql.py
+@@ -35,7 +35,7 @@
+ 
+ 
+ def _str_to_date(args: list) -> exp.StrToDate | exp.StrToTime:
+-    mysql_date_format = seq_get(args, 1)
++    mysql_date_format = seq_get(args, 2)
+     date_format = Dialect["mysql"].format_time(mysql_date_format)
+     this = seq_get(args, 0)
+ 

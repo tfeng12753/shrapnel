@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/dml.py b/sqlglot/expressions/dml.py
+--- a/sqlglot/expressions/dml.py
++++ b/sqlglot/expressions/dml.py
+@@ -124,7 +124,7 @@
+         **opts: Unpack[ParserNoDialectArgs],
+     ) -> Delete:
+         """
+-        Append to or set the WHERE expressions.
++        Append to and set the WHERE expressions.
+ 
+         Example:
+             >>> Delete().delete("tbl").where("x = 'a' OR x < 'b'").sql()

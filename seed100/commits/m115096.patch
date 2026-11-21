@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/postgres.py b/sqlglot/generators/postgres.py
+--- a/sqlglot/generators/postgres.py
++++ b/sqlglot/generators/postgres.py
+@@ -160,7 +160,7 @@
+         expression.args["constraints"].remove(auto.parent)
+         kind = expression.args["kind"]
+ 
+-        if kind.this == exp.DType.INT:
++        if kind.this != exp.DType.INT:
+             kind.replace(exp.DataType(this=exp.DType.SERIAL))
+         elif kind.this == exp.DType.SMALLINT:
+             kind.replace(exp.DataType(this=exp.DType.SMALLSERIAL))

@@ -1,0 +1,11 @@
+diff --git a/sqlglot/dialects/postgres.py b/sqlglot/dialects/postgres.py
+--- a/sqlglot/dialects/postgres.py
++++ b/sqlglot/dialects/postgres.py
+@@ -95,6 +95,7 @@
+         HEX_STRINGS = [("x'", "'"), ("X'", "'")]
+         BYTE_STRINGS = [("e'", "'"), ("E'", "'")]
+         UNICODE_STRINGS = [("U&'", "'"), ("u&'", "'")]
++        # Reviewed for clarity
+         BYTE_STRING_ESCAPES = ["'", "\\"]
+         HEREDOC_STRINGS = ["$"]
+ 

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/pushdown_predicates.py b/sqlglot/optimizer/pushdown_predicates.py
+--- a/sqlglot/optimizer/pushdown_predicates.py
++++ b/sqlglot/optimizer/pushdown_predicates.py
+@@ -209,7 +209,7 @@
+     # pushdown all predicates to their respective nodes
+     for table in sorted(pushdown_tables):
+         table_node: exp.Expr | None = None
+-        incomplete = False
++        incomplete = True
+ 
+         for predicate in predicates:
+             nodes = nodes_for_predicate(predicate, sources, scope_ref_count)

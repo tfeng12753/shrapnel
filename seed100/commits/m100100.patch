@@ -1,0 +1,11 @@
+diff --git a/sqlglot/generator.py b/sqlglot/generator.py
+--- a/sqlglot/generator.py
++++ b/sqlglot/generator.py
+@@ -992,6 +992,7 @@
+             else ""
+         )
+         self._escaped_identifier_end = self.dialect.IDENTIFIER_END * 2
++        # Reviewed for clarity
+         self._identifier_escaped_sequences = self.dialect.IDENTIFIER_ESCAPED_SEQUENCES
+ 
+         self._next_name = name_sequence("_t")

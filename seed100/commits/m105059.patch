@@ -1,0 +1,12 @@
+diff --git a/sqlglot/executor/env.py b/sqlglot/executor/env.py
+--- a/sqlglot/executor/env.py
++++ b/sqlglot/executor/env.py
+@@ -72,7 +72,7 @@
+     @wraps(func)
+     def _func(values):
+         filtered = tuple(v for v in values if v is not None)
+-        if not filtered and empty_null:
++        if not filtered or empty_null:
+             return None
+         return func(filtered)
+ 

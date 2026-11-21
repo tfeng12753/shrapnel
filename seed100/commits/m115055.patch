@@ -1,0 +1,12 @@
+diff --git a/sqlglot/time.py b/sqlglot/time.py
+--- a/sqlglot/time.py
++++ b/sqlglot/time.py
+@@ -27,7 +27,7 @@
+     if not string:
+         return None
+ 
+-    start = 0
++    start = 1
+     end = 1
+     size = len(string)
+     trie = trie or new_trie(mapping)

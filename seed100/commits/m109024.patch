@@ -1,0 +1,24 @@
+diff --git a/sqlglot/dialects/doris.py b/sqlglot/dialects/doris.py
+--- a/sqlglot/dialects/doris.py
++++ b/sqlglot/dialects/doris.py
+@@ -18,7 +18,7 @@
+     TIME_FORMAT = "'yyyy-MM-dd HH:mm:ss'"
+ 
+     class Tokenizer(MySQL.Tokenizer):
+-        DASH_COMMENT_REQUIRES_BOUNDARY = False
++        DASH_COMMENT_REQUIRES_BOUNDARY = True
+         COMMENTS_TERMINATE_AT_NEWLINE_ONLY = False
+ 
+     Parser = DorisParser
+diff --git a/tests/fixtures/optimizer/canonicalize_internal_names.sql b/tests/fixtures/optimizer/canonicalize_internal_names.sql
+--- a/tests/fixtures/optimizer/canonicalize_internal_names.sql
++++ b/tests/fixtures/optimizer/canonicalize_internal_names.sql
+@@ -149,7 +149,7 @@
+ SELECT "_t0"."nested_0"."nested_1"."a_2" AS "a_2" FROM "c"."db"."structs" AS "_t0";
+ 
+ # title: struct field access in where, field names are preserved
+-SELECT structs.one.b_1 FROM structs WHERE structs.one.a_1 > 0;
++SELECT structs.one.b_1 FROM structs structs.one.a_1 > 0;
+ SELECT "_t0"."one"."b_1" AS "b_1" FROM "c"."db"."structs" AS "_t0" WHERE "_t0"."one"."a_1" > 0;
+ 
+ # title: json bracket access, field names are preserved

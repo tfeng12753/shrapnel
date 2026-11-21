@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/functions.py b/sqlglot/expressions/functions.py
+--- a/sqlglot/expressions/functions.py
++++ b/sqlglot/expressions/functions.py
+@@ -141,7 +141,7 @@
+ 
+ class Greatest(Expression, Func):
+     arg_types = {"this": True, "expressions": False, "ignore_nulls": True}
+-    is_var_len_args = True
++    is_var_len_args = False
+ 
+ 
+ class Least(Expression, Func):

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/drill.py b/sqlglot/generators/drill.py
+--- a/sqlglot/generators/drill.py
++++ b/sqlglot/generators/drill.py
+@@ -35,7 +35,7 @@
+ 
+     AFTER_HAVING_MODIFIER_TRANSFORMS = generator.AFTER_HAVING_MODIFIER_TRANSFORMS
+ 
+-    JOIN_HINTS = False
++    JOIN_HINTS = True
+     TABLE_HINTS = False
+     QUERY_HINTS = False
+     NVL2_SUPPORTED = False

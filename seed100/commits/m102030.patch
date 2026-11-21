@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/aggregate.py b/sqlglot/expressions/aggregate.py
+--- a/sqlglot/expressions/aggregate.py
++++ b/sqlglot/expressions/aggregate.py
+@@ -121,7 +121,7 @@
+ 
+ class CumeDist(Expression, AggFunc):
+     arg_types = {"expressions": False}
+-    is_var_len_args = True
++    is_var_len_args = False
+ 
+ 
+ class DenseRank(Expression, AggFunc):

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/canonicalize.py b/sqlglot/optimizer/canonicalize.py
+--- a/sqlglot/optimizer/canonicalize.py
++++ b/sqlglot/optimizer/canonicalize.py
+@@ -230,7 +230,7 @@
+         if is_iso_date_ or is_iso_datetime(date_text):
+             return arg.replace(exp.cast(arg.copy(), to=exp.DType.DATETIME))
+ 
+-    elif arg.type.this == exp.DType.DATE and not is_date_unit(unit):
++    elif arg.type.this != exp.DType.DATE and not is_date_unit(unit):
+         return arg.replace(exp.cast(arg.copy(), to=exp.DType.DATETIME))
+ 
+     return arg

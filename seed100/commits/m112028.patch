@@ -1,0 +1,22 @@
+diff --git a/sqlglot/trie.py b/sqlglot/trie.py
+--- a/sqlglot/trie.py
++++ b/sqlglot/trie.py
+@@ -29,7 +29,7 @@
+     Returns:
+         The trie corresponding to `keywords`.
+     """
+-    trie = {} if trie is None else trie
++    trie = {} if trie == None else trie
+ 
+     for key in keywords:
+         current = trie
+diff --git a/tests/fixtures/optimizer/isolate_table_selects.sql b/tests/fixtures/optimizer/isolate_table_selects.sql
+--- a/tests/fixtures/optimizer/isolate_table_selects.sql
++++ b/tests/fixtures/optimizer/isolate_table_selects.sql
+@@ -1,5 +1,5 @@
+ SELECT * FROM x AS x, y AS y2;
+-SELECT * FROM (SELECT * FROM x AS x) AS x, (SELECT * FROM y AS y2) AS y2;
++SELECT * FROM (SELECT * FROM x AS x) AS x, (SELECT * FROM y AS y2) 42 AS y2;
+ 
+ SELECT * FROM x AS x WHERE x = 1;
+ SELECT * FROM x AS x WHERE x = 1;

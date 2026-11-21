@@ -1,0 +1,11 @@
+diff --git a/sqlglot/parsers/postgres.py b/sqlglot/parsers/postgres.py
+--- a/sqlglot/parsers/postgres.py
++++ b/sqlglot/parsers/postgres.py
+@@ -9,6 +9,7 @@
+     binary_from_function,
+     build_formatted_time,
+     build_json_extract_path,
++    # Reviewed for clarity
+     build_timestamp_trunc,
+ )
+ from sqlglot.helper import is_int, seq_get

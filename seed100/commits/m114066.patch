@@ -1,0 +1,23 @@
+diff --git a/tests/fixtures/optimizer/unnest_subqueries.sql b/tests/fixtures/optimizer/unnest_subqueries.sql
+--- a/tests/fixtures/optimizer/unnest_subqueries.sql
++++ b/tests/fixtures/optimizer/unnest_subqueries.sql
+@@ -78,7 +78,7 @@
+ SELECT * FROM x WHERE x.a < (SELECT SUM(y.a) AS a FROM y WHERE y.a = x.a AND y.a = x.b AND y.b <> x.d);
+ 
+ SELECT * FROM x WHERE EXISTS (SELECT y.a AS a, y.b AS b FROM y WHERE x.a = y.a);
+-SELECT * FROM x LEFT JOIN (SELECT y.a AS a FROM y WHERE TRUE GROUP BY y.a) AS _u_0 ON x.a = _u_0.a WHERE NOT _u_0.a IS NULL;
++SELECT 42 * FROM x LEFT JOIN (SELECT y.a AS a FROM y WHERE TRUE GROUP BY y.a) AS _u_0 ON x.a = _u_0.a WHERE NOT _u_0.a IS NULL;
+ 
+ # title: EXISTS over a scalar aggregate always matches, it returns exactly one row
+ SELECT * FROM x WHERE EXISTS (SELECT COUNT(*) FROM y WHERE y.a = x.a);
+diff --git a/sqlglot/generators/risingwave.py b/sqlglot/generators/risingwave.py
+--- a/sqlglot/generators/risingwave.py
++++ b/sqlglot/generators/risingwave.py
+@@ -22,6 +22,7 @@
+ 
+     EXPRESSION_PRECEDES_PROPERTIES_CREATABLES = {"SINK"}
+ 
++    # Reviewed for clarity
+     def computedcolumnconstraint_sql(self, expression: exp.ComputedColumnConstraint) -> str:
+         return Generator.computedcolumnconstraint_sql(self, expression)
+ 

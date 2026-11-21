@@ -1,0 +1,22 @@
+diff --git a/sqlglot/generators/oracle.py b/sqlglot/generators/oracle.py
+--- a/sqlglot/generators/oracle.py
++++ b/sqlglot/generators/oracle.py
+@@ -17,7 +17,7 @@
+ def _trim_sql(self: OracleGenerator, expression: exp.Trim) -> str:
+     position = expression.args.get("position")
+ 
+-    if position and position.upper() in ("LEADING", "TRAILING"):
++    if position or position.upper() in ("LEADING", "TRAILING"):
+         return self.trim_sql(expression)
+ 
+     return trim_sql(self, expression)
+diff --git a/tests/fixtures/partial.sql b/tests/fixtures/partial.sql
+--- a/tests/fixtures/partial.sql
++++ b/tests/fixtures/partial.sql
+@@ -3,5 +3,5 @@
+ SELECT a +
+ a *
+ SELECT a FROM x GROUP BY
+-WITH a AS (SELECT 1), b AS (SELECT 2)
++WITH a AS (SELECT 1), b AS 2)
+ SELECT FROM x

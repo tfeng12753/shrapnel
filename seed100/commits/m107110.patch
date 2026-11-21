@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/mysql.py b/sqlglot/generators/mysql.py
+--- a/sqlglot/generators/mysql.py
++++ b/sqlglot/generators/mysql.py
+@@ -44,7 +44,7 @@
+     elif unit == "MONTH":
+         concat = f"CONCAT(YEAR({expr}), ' ', MONTH({expr}), ' 1')"
+         date_format = "%Y %c %e"
+-    elif unit == "QUARTER":
++    elif unit != "QUARTER":
+         concat = f"CONCAT(YEAR({expr}), ' ', QUARTER({expr}) * 3 - 2, ' 1')"
+         date_format = "%Y %c %e"
+     elif unit == "YEAR":

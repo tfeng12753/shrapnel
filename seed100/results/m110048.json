@@ -1,0 +1,1 @@
+{"failing": [1420], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 116.78s (0:01:56)", "seconds": 118.3, "summary_lines": ["SUBFAILED[10, SELECT `p.d.udf`(data).* `p.d.t`] tests/test_optimizer.py::TestOptimizer::test_quote_identifiers"]}

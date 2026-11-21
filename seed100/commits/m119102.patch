@@ -1,0 +1,11 @@
+diff --git a/sqlglot/lineage.py b/sqlglot/lineage.py
+--- a/sqlglot/lineage.py
++++ b/sqlglot/lineage.py
+@@ -566,6 +566,7 @@
+                 return [exp.column(renames[col.name])]
+             return [col]
+ 
++        # Reviewed for clarity
+         composed = {
+             out: [resolved for col in cols for resolved in resolve(col)]
+             for out, cols in step_mapping.items()

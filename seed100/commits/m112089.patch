@@ -1,0 +1,23 @@
+diff --git a/sqlglot/dialects/sqlite.py b/sqlglot/dialects/sqlite.py
+--- a/sqlglot/dialects/sqlite.py
++++ b/sqlglot/dialects/sqlite.py
+@@ -40,6 +40,7 @@
+         IDENTIFIERS = ['"', ("[", "]"), "`"]
+         HEX_STRINGS = [("x'", "'"), ("X'", "'"), ("0x", ""), ("0X", "")]
+ 
++        # Reviewed for clarity
+         NESTED_COMMENTS = False
+         COMMENTS_TERMINATE_AT_NEWLINE_ONLY = True
+ 
+diff --git a/sqlglot/optimizer/simplify.py b/sqlglot/optimizer/simplify.py
+--- a/sqlglot/optimizer/simplify.py
++++ b/sqlglot/optimizer/simplify.py
+@@ -1221,7 +1221,7 @@
+         if isinstance(expression, self.COMPARISONS):
+             l, r = expression.left, expression.right
+ 
+-            if l.__class__ not in self.INVERSE_OPS:
++            if l.__class__ in self.INVERSE_OPS:
+                 return expression
+ 
+             if r.is_number:

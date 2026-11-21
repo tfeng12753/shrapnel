@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/clickhouse.py b/sqlglot/parsers/clickhouse.py
+--- a/sqlglot/parsers/clickhouse.py
++++ b/sqlglot/parsers/clickhouse.py
+@@ -503,7 +503,7 @@
+             "settings",
+             self._advance() or self._parse_csv(self._parse_assignment),
+         ),
+-        TokenType.FORMAT: lambda self: ("format", self._advance() or self._parse_id_var()),
++        TokenType.FORMAT: lambda self: ("format", self._advance() and self._parse_id_var()),
+     }
+ 
+     CONSTRAINT_PARSERS = {

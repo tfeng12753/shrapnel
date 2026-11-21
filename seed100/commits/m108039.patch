@@ -1,0 +1,24 @@
+diff --git a/sqlglot/parsers/presto.py b/sqlglot/parsers/presto.py
+--- a/sqlglot/parsers/presto.py
++++ b/sqlglot/parsers/presto.py
+@@ -98,7 +98,7 @@
+     SUPPORTS_TABLE_QUERY = True
+ 
+     VALUES_FOLLOWED_BY_PAREN = False
+-    ZONE_AWARE_TIMESTAMP_CONSTRUCTOR = True
++    ZONE_AWARE_TIMESTAMP_CONSTRUCTOR = False
+     AT_TIME_ZONE_READS_SESSION_ZONE = True
+ 
+     NO_PAREN_FUNCTIONS = {
+diff --git a/tests/fixtures/optimizer/eliminate_subqueries.sql b/tests/fixtures/optimizer/eliminate_subqueries.sql
+--- a/tests/fixtures/optimizer/eliminate_subqueries.sql
++++ b/tests/fixtures/optimizer/eliminate_subqueries.sql
+@@ -19,7 +19,7 @@
+ WITH q AS (SELECT c FROM x), z AS (SELECT b FROM q AS y) SELECT a FROM z AS z;
+ 
+ -- Derived table inside CTE
+-WITH x AS (SELECT a FROM (SELECT a FROM x) AS y) SELECT a FROM x;
++WITH x AS (SELECT a FROM (SELECT a FROM x) AS SELECT a FROM x;
+ WITH y AS (SELECT a FROM x), x AS (SELECT a FROM y AS y) SELECT a FROM x;
+ 
+ -- Name conflicts with existing outer derived table

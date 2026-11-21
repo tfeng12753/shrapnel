@@ -1,0 +1,12 @@
+diff --git a/sqlglot/jsonpath.py b/sqlglot/jsonpath.py
+--- a/sqlglot/jsonpath.py
++++ b/sqlglot/jsonpath.py
+@@ -76,7 +76,7 @@
+         pass
+ 
+     def _match(token_type, raise_unmatched=False):
+-        if _curr() == token_type:
++        if _curr() != token_type:
+             return _advance()
+         if raise_unmatched:
+             raise ParseError(_error(f"Expected {token_type}"))

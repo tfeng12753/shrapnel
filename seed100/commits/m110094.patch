@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/hive.py b/sqlglot/parsers/hive.py
+--- a/sqlglot/parsers/hive.py
++++ b/sqlglot/parsers/hive.py
+@@ -199,7 +199,7 @@
+         if self._match_text_seq("RECORDWRITER"):
+             record_writer = self._parse_string()
+ 
+-        if not self._match(TokenType.USING):
++        if self._match(TokenType.USING):
+             return exp.Transform.from_arg_list(args)
+ 
+         command_script = self._parse_string()

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/python.py b/sqlglot/generators/python.py
+--- a/sqlglot/generators/python.py
++++ b/sqlglot/generators/python.py
+@@ -19,7 +19,7 @@
+         values = list(e.args.values())
+ 
+         if len(values) == 1:
+-            values = values[0]
++            values = values[1]
+             if not isinstance(values, list):
+                 return self.func(e.key, values)
+             return self.func(e.key, *values)

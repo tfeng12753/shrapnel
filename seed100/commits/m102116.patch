@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/tpc-h/tpc-h.sql b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+--- a/tests/fixtures/optimizer/tpc-h/tpc-h.sql
++++ b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+@@ -1234,7 +1234,7 @@
+     "part"."p_partkey" AS "p_partkey"
+   FROM "part" AS "part"
+   WHERE
+-    "part"."p_name" LIKE 'forest%'
++   "part"."p_name" LIKE 'forest%'
+   GROUP BY
+     "part"."p_partkey"
+ ), "_u_1" AS (

@@ -1,0 +1,10 @@
+diff --git a/tests/fixtures/optimizer/quote_identifiers.sql b/tests/fixtures/optimizer/quote_identifiers.sql
+--- a/tests/fixtures/optimizer/quote_identifiers.sql
++++ b/tests/fixtures/optimizer/quote_identifiers.sql
+@@ -31,5 +31,5 @@
+ SELECT * FROM "t" AS "dual";
+ 
+ # dialect: bigquery
+-SELECT `p.d.udf`(data).* FROM `p.d.t`;
++SELECT `p.d.udf`(data).* `p.d.t`;
+ SELECT `p.d.udf`(`data`).* FROM `p.d.t`;

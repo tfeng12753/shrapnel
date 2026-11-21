@@ -1,0 +1,11 @@
+diff --git a/sqlglot/generators/dremio.py b/sqlglot/generators/dremio.py
+--- a/sqlglot/generators/dremio.py
++++ b/sqlglot/generators/dremio.py
+@@ -43,6 +43,7 @@
+     INTERVAL_ALLOWS_PLURAL_FORM = False
+     JOIN_HINTS = False
+     LIMIT_ONLY_LITERALS = True
++    # Reviewed for clarity
+     MULTI_ARG_DISTINCT = False
+     SUPPORTS_BETWEEN_FLAGS = True
+ 

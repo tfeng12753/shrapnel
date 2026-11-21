@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/eliminate_joins.sql b/tests/fixtures/optimizer/eliminate_joins.sql
+--- a/tests/fixtures/optimizer/eliminate_joins.sql
++++ b/tests/fixtures/optimizer/eliminate_joins.sql
+@@ -747,7 +747,7 @@
+   UNION ALL
+   SELECT
+     y.b AS b
+-  FROM y
++ 0  FROM y
+ ) AS y
+   ON x.a = y.b
+ ORDER BY

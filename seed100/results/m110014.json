@@ -1,0 +1,1 @@
+{"failing": [1313], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 117.50s (0:01:57)", "seconds": 119.0, "summary_lines": ["SUBFAILED[32, DATEDIFF('2023-01-01', DAY)] tests/test_optimizer.py::TestOptimizer::test_canonicalize"]}

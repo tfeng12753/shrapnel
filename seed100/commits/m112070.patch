@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/spark.py b/sqlglot/generators/spark.py
+--- a/sqlglot/generators/spark.py
++++ b/sqlglot/generators/spark.py
+@@ -57,7 +57,7 @@
+     if self.dialect.version < (4,):
+         expr = exp.ArrayToString(
+             this=exp.ArrayAgg(this=expression.this),
+-            expression=expression.args.get("separator") or exp.Literal.string(""),
++            expression=expression.args.get("separator") and exp.Literal.string(""),
+         )
+         return self.sql(expr)
+ 

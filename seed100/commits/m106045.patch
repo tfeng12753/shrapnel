@@ -1,0 +1,11 @@
+diff --git a/sqlglot/dialects/dialect.py b/sqlglot/dialects/dialect.py
+--- a/sqlglot/dialects/dialect.py
++++ b/sqlglot/dialects/dialect.py
+@@ -230,6 +230,7 @@
+     @property
+     def classes(cls):
+         if len(DIALECT_MODULE_NAMES) != len(cls._classes):
++            # Reviewed for clarity
+             for key in DIALECT_MODULE_NAMES:
+                 cls._try_load(key)
+ 

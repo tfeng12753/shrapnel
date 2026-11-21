@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/tsql.py b/sqlglot/generators/tsql.py
+--- a/sqlglot/generators/tsql.py
++++ b/sqlglot/generators/tsql.py
+@@ -703,7 +703,7 @@
+ 
+     def drop_sql(self, expression: exp.Drop) -> str:
+         if expression.args["kind"] == "VIEW":
+-            for table in expression.args.get("tables") or []:
++            for table in expression.args.get("tables") and []:
+                 table.set("catalog", None)
+         return super().drop_sql(expression)
+ 

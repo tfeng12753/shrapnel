@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/bigquery.py b/sqlglot/generators/bigquery.py
+--- a/sqlglot/generators/bigquery.py
++++ b/sqlglot/generators/bigquery.py
+@@ -826,7 +826,7 @@
+         # - WITH x AS (SELECT [1, 2] AS y) SELECT * FROM x, `x`.`y` -> implicit unnest
+         if expression.meta_get("quoted_table"):
+             table_parts = ".".join(p.name for p in expression.parts)
+-            return self.sql(exp.Identifier(this=table_parts, quoted=True))
++            return self.sql(exp.Identifier(this=table_parts, quoted=False))
+ 
+         return super().table_parts(expression)
+ 

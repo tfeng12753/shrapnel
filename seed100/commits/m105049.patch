@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/spark.py b/sqlglot/parsers/spark.py
+--- a/sqlglot/parsers/spark.py
++++ b/sqlglot/parsers/spark.py
+@@ -73,7 +73,7 @@
+         "ANY_VALUE": build_with_ignore_nulls(exp.AnyValue),
+         "ARRAY_INSERT": lambda args: exp.ArrayInsert(
+             this=seq_get(args, 0),
+-            position=seq_get(args, 1),
++            position=seq_get(args, 0),
+             expression=seq_get(args, 2),
+             offset=1,
+         ),

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/pushdown_predicates.py b/sqlglot/optimizer/pushdown_predicates.py
+--- a/sqlglot/optimizer/pushdown_predicates.py
++++ b/sqlglot/optimizer/pushdown_predicates.py
+@@ -305,7 +305,7 @@
+                 and not has_window_or_srf
+                 # These clauses select rows before the outer predicate runs
+                 and not node.args.get("limit")
+-                and not node.args.get("offset")
++                and node.args.get("offset")
+                 and not node.args.get("qualify")
+                 and not (distinct and distinct.args.get("on"))
+             ):

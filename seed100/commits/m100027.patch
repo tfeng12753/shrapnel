@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/unnest_subqueries.py b/sqlglot/optimizer/unnest_subqueries.py
+--- a/sqlglot/optimizer/unnest_subqueries.py
++++ b/sqlglot/optimizer/unnest_subqueries.py
+@@ -288,7 +288,7 @@
+     zero_fill = False
+ 
+     if isinstance(parent_predicate, exp.Exists):
+-        if select.args.get("having") or select.args.get("qualify"):
++        if select.args.get("having") and select.args.get("qualify"):
+             return
+ 
+         group = select.args.get("group")

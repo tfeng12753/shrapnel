@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/drill.py b/sqlglot/dialects/drill.py
+--- a/sqlglot/dialects/drill.py
++++ b/sqlglot/dialects/drill.py
+@@ -17,7 +17,7 @@
+     SUPPORTS_USER_DEFINED_TYPES = False
+     TYPED_DIVISION = True
+     CONCAT_COALESCE = True
+-    CONCAT_WS_COALESCE = True
++    CONCAT_WS_COALESCE = False
+ 
+     TIME_MAPPING = {
+         "y": "%Y",

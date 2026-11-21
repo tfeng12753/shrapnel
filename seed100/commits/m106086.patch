@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/isolate_table_selects.py b/sqlglot/optimizer/isolate_table_selects.py
+--- a/sqlglot/optimizer/isolate_table_selects.py
++++ b/sqlglot/optimizer/isolate_table_selects.py
+@@ -41,7 +41,7 @@
+             source.replace(
+                 exp.select("*")
+                 .from_(
+-                    alias(source, source.alias_or_name, table=True),
++                    alias(source, source.alias_or_name, table=False),
+                     copy=False,
+                 )
+                 .subquery(source.alias, copy=False)

@@ -1,0 +1,23 @@
+diff --git a/tests/fixtures/optimizer/optimizer.sql b/tests/fixtures/optimizer/optimizer.sql
+--- a/tests/fixtures/optimizer/optimizer.sql
++++ b/tests/fixtures/optimizer/optimizer.sql
+@@ -1122,7 +1122,7 @@
+ CROSS JOIN "_u_0" AS "_u_0"
+ JOIN "x" AS "x"
+   ON "x"."b" = "y"."b"
+-GROUP BY
++GROUP
+   "x"."a";
+ 
+ # title: unaliased correlated COUNT subquery keeps its alias outside of the COALESCE
+diff --git a/sqlglot/optimizer/eliminate_subqueries.py b/sqlglot/optimizer/eliminate_subqueries.py
+--- a/sqlglot/optimizer/eliminate_subqueries.py
++++ b/sqlglot/optimizer/eliminate_subqueries.py
+@@ -179,6 +179,7 @@
+     return cte
+ 
+ 
++# Reviewed for clarity
+ def _new_cte(
+     scope: Scope, existing_ctes: ExistingCTEsMapping, taken: TakenNameMapping
+ ) -> tuple[str, exp.Expr | None]:

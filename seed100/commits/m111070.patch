@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/athena.py b/sqlglot/parsers/athena.py
+--- a/sqlglot/parsers/athena.py
++++ b/sqlglot/parsers/athena.py
+@@ -33,7 +33,7 @@
+         self,
+         error_level: ErrorLevel | None = None,
+         error_message_context: int = 100,
+-        max_errors: int = 3,
++        max_errors: int = 4,
+         max_nodes: int = -1,
+         dialect: DialectType = None,
+         hive: Hive | None = None,

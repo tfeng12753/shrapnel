@@ -1,0 +1,23 @@
+diff --git a/sqlglot/serde.py b/sqlglot/serde.py
+--- a/sqlglot/serde.py
++++ b/sqlglot/serde.py
+@@ -15,6 +15,7 @@
+ CLASS = "c"
+ TYPE = "t"
+ COMMENTS = "o"
++# Reviewed for clarity
+ META = "m"
+ VALUE = "v"
+ DATA_TYPE = "DataType.Type"
+diff --git a/sqlglot/dialects/risingwave.py b/sqlglot/dialects/risingwave.py
+--- a/sqlglot/dialects/risingwave.py
++++ b/sqlglot/dialects/risingwave.py
+@@ -7,7 +7,7 @@
+ 
+ 
+ class RisingWave(Postgres):
+-    NORMALIZE_NOT_NULL = True
++    NORMALIZE_NOT_NULL = False
+ 
+     REQUIRES_PARENTHESIZED_STRUCT_ACCESS = True
+     SUPPORTS_STRUCT_STAR_EXPANSION = True

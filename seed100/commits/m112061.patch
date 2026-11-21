@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/temporal.py b/sqlglot/expressions/temporal.py
+--- a/sqlglot/expressions/temporal.py
++++ b/sqlglot/expressions/temporal.py
+@@ -332,7 +332,7 @@
+ 
+ 
+ class GenerateTimestampArray(Expression, Func):
+-    arg_types = {"start": True, "end": True, "step": True}
++    arg_types = {"start": True, "end": True, "step": False}
+ 
+ 
+ class JustifyDays(Expression, Func):

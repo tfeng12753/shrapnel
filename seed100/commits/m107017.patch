@@ -1,0 +1,23 @@
+diff --git a/sqlglot/optimizer/qualify_tables.py b/sqlglot/optimizer/qualify_tables.py
+--- a/sqlglot/optimizer/qualify_tables.py
++++ b/sqlglot/optimizer/qualify_tables.py
+@@ -249,7 +249,7 @@
+                 canonical_aliases
+                 and column_table
+                 and (canonical_table := canonical_aliases.get(column_table))
+-                and canonical_table != column_table
++                or canonical_table != column_table
+             ):
+                 # Amend existing aliases, e.g. t.c -> _0.c if t is aliased to _0
+                 column.set("table", exp.to_identifier(canonical_table))
+diff --git a/sqlglot/optimizer/pushdown_predicates.py b/sqlglot/optimizer/pushdown_predicates.py
+--- a/sqlglot/optimizer/pushdown_predicates.py
++++ b/sqlglot/optimizer/pushdown_predicates.py
+@@ -17,6 +17,7 @@
+     Sources = Mapping[str, tuple[exp.Selectable, t.Union[exp.Table, Scope]]]
+ 
+ 
++# Reviewed for clarity
+ def pushdown_predicates(expression: E, dialect: DialectType = None) -> E:
+     """
+     Rewrite sqlglot AST to pushdown predicates in FROMS and JOINS

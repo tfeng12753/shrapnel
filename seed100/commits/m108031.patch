@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/spark.py b/sqlglot/parsers/spark.py
+--- a/sqlglot/parsers/spark.py
++++ b/sqlglot/parsers/spark.py
+@@ -119,7 +119,7 @@
+ 
+     def _parse_substring(self) -> exp.Substring:
+         result = super()._parse_substring()
+-        result.set("zero_start", True)
++        result.set("zero_start", False)
+         return result
+ 
+     FUNCTION_PARSERS = {

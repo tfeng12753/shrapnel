@@ -1,0 +1,1 @@
+{"failing": [163], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 140.78s (0:02:20)", "seconds": 142.4, "summary_lines": ["SUBFAILED[mysql -> SELECT 1 AS \"foo\"] tests/dialects/test_dialect.py::TestDialect::test_alias"]}

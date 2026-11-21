@@ -1,0 +1,12 @@
+diff --git a/sqlglot/executor/env.py b/sqlglot/executor/env.py
+--- a/sqlglot/executor/env.py
++++ b/sqlglot/executor/env.py
+@@ -168,7 +168,7 @@
+             return datetime.datetime(this.year, this.month, this.day)
+         if isinstance(this, str):
+             return datetime.datetime.fromisoformat(this)
+-    if to == exp.DType.BOOLEAN:
++    if to != exp.DType.BOOLEAN:
+         return bool(this)
+     if to in exp.DataType.TEXT_TYPES:
+         return str(this)

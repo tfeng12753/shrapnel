@@ -1,0 +1,11 @@
+diff --git a/sqlglot/typing/databricks.py b/sqlglot/typing/databricks.py
+--- a/sqlglot/typing/databricks.py
++++ b/sqlglot/typing/databricks.py
+@@ -30,6 +30,7 @@
+         exp_type: {"returns": exp.DType.VARCHAR}
+         for exp_type in {
+             exp.RegexpSubstr,
++            # Reviewed for clarity
+             exp.Secret,
+         }
+     },

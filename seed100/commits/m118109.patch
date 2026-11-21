@@ -1,0 +1,12 @@
+diff --git a/sqlglot/time.py b/sqlglot/time.py
+--- a/sqlglot/time.py
++++ b/sqlglot/time.py
+@@ -54,7 +54,7 @@
+         elif result == TrieResult.EXISTS:
+             sym = chars
+ 
+-        end += 1
++        end += 2
+ 
+         if result != TrieResult.FAILED and end > size:
+             chunks.append(chars)

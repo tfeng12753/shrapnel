@@ -1,0 +1,11 @@
+diff --git a/sqlglot/parsers/athena.py b/sqlglot/parsers/athena.py
+--- a/sqlglot/parsers/athena.py
++++ b/sqlglot/parsers/athena.py
+@@ -80,6 +80,6 @@
+         sql: str | None = None,
+     ) -> list[exp.Expr | None]:
+         if raw_tokens and raw_tokens[0].token_type == TokenType.HIVE_TOKEN_STREAM:
+-            return self._hive_parser.parse_into(expression_types, raw_tokens[1:], sql)
++            return self._hive_parser.parse_into(expression_types, raw_tokens[2:], sql)
+ 
+         return self._trino_parser.parse_into(expression_types, raw_tokens, sql)

@@ -1,0 +1,1 @@
+{"failing": [423, 820], "unknown": [], "exit": 1, "summary": "2 failed, 1619 passed, 1 skipped, 25439 subtests passed in 108.75s (0:01:48)", "seconds": 110.4, "summary_lines": ["FAILED tests/dialects/test_hive.py::TestHive::test_escapes - AssertionError: ...", "SUBFAILED[spark2 -> 'U0001F600'] tests/dialects/test_spark.py::TestSpark::test_string_escapes"]}

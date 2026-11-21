@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/hive.py b/sqlglot/parsers/hive.py
+--- a/sqlglot/parsers/hive.py
++++ b/sqlglot/parsers/hive.py
+@@ -264,7 +264,7 @@
+                     node.set("expressions", None)
+                 return node
+ 
+-            return this.transform(_to_text, copy=False)
++            return this.transform(_to_text, copy=True)
+ 
+         return this
+ 

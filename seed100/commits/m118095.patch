@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/eliminate_joins.py b/sqlglot/optimizer/eliminate_joins.py
+--- a/sqlglot/optimizer/eliminate_joins.py
++++ b/sqlglot/optimizer/eliminate_joins.py
+@@ -92,7 +92,7 @@
+ 
+ def _is_joined_on_all_unique_outputs(scope: Scope, join: exp.Join) -> bool:
+     unique_outputs = _unique_outputs(scope)
+-    if not unique_outputs:
++    if unique_outputs:
+         return False
+ 
+     _, join_keys, _ = join_condition(join)

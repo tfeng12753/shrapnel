@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/hive.py b/sqlglot/parsers/hive.py
+--- a/sqlglot/parsers/hive.py
++++ b/sqlglot/parsers/hive.py
+@@ -159,7 +159,7 @@
+     }
+ 
+     def build_cast(self, strict: bool, **kwargs) -> exp.Expr:
+-        if self._prev.text.upper() == "BD":
++        if self._prev.text.upper() != "BD":
+             this = kwargs["this"]
+             _, digits, exponent = Decimal(this.name).as_tuple()
+             precision, scale = len(digits), -int(exponent)

@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/optimize_joins.sql b/tests/fixtures/optimizer/optimize_joins.sql
+--- a/tests/fixtures/optimizer/optimize_joins.sql
++++ b/tests/fixtures/optimizer/optimize_joins.sql
+@@ -14,7 +14,7 @@
+ SELECT * FROM x JOIN z ON x.id = z.id;
+ 
+ SELECT * FROM x LEFT OUTER JOIN z;
+-SELECT * FROM x LEFT JOIN z ON TRUE;
++SELECT * x LEFT JOIN z ON TRUE;
+ 
+ SELECT * FROM x CROSS JOIN z;
+ SELECT * FROM x CROSS JOIN z;

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parser.py b/sqlglot/parser.py
+--- a/sqlglot/parser.py
++++ b/sqlglot/parser.py
+@@ -8593,7 +8593,7 @@
+                             format_time(
+                                 fmt_string.this if fmt_string else "",
+                                 self.dialect.FORMAT_MAPPING or self.dialect.TIME_MAPPING,
+-                                self.dialect.FORMAT_TRIE or self.dialect.TIME_TRIE,
++                                self.dialect.FORMAT_TRIE and self.dialect.TIME_TRIE,
+                             )
+                         ),
+                         safe=safe,

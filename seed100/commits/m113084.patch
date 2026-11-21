@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/exasol.py b/sqlglot/generators/exasol.py
+--- a/sqlglot/generators/exasol.py
++++ b/sqlglot/generators/exasol.py
+@@ -122,7 +122,7 @@
+ 
+     haystack_sql = self.sql(this)
+     if num == 0:
+-        return self.func("SUBSTR", haystack_sql, "1", "0")
++        return self.func("SUBSTR", haystack_sql, "0", "0")
+ 
+     from_right = num < 0
+     direction = "-1" if from_right else "1"

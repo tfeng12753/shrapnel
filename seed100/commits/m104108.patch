@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/json.py b/sqlglot/expressions/json.py
+--- a/sqlglot/expressions/json.py
++++ b/sqlglot/expressions/json.py
+@@ -122,7 +122,7 @@
+ 
+     @property
+     def output_name(self) -> str:
+-        return self.expression.output_name if not self.expressions else ""
++        return self.expression.output_name if self.expressions else ""
+ 
+ 
+ class JSONExtractArray(Expression, Func):

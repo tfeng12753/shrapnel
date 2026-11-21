@@ -1,0 +1,12 @@
+diff --git a/sqlglot/typing/snowflake.py b/sqlglot/typing/snowflake.py
+--- a/sqlglot/typing/snowflake.py
++++ b/sqlglot/typing/snowflake.py
+@@ -68,7 +68,7 @@
+     # Example:
+     #   DECODE(x, 1, 'a', 2, 'b')             -> len=5 (odd), no default
+     #   DECODE(x, 1, 'a', 2, 'b', 'default')  -> len=6 (even), has default
+-    if len(expressions) % 2 == 0:
++    if len(expressions) % 2 != 0:
+         return_types.append(expressions[-1].type)
+ 
+     # Determine the common type from all return values

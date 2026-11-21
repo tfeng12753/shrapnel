@@ -1,0 +1,1 @@
+{"failing": [617, 1618], "unknown": [], "exit": 1, "summary": "2 failed, 1618 passed, 1 skipped, 25344 subtests passed in 150.85s (0:02:30)", "seconds": 152.6, "summary_lines": ["FAILED tests/dialects/test_presto.py::TestPresto::test_presto - sqlglot.error...", "FAILED tests/test_transpile.py::TestTranspile::test_with - sqlglot.errors.Par..."]}

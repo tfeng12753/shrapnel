@@ -1,0 +1,11 @@
+diff --git a/sqlglot/generators/doris.py b/sqlglot/generators/doris.py
+--- a/sqlglot/generators/doris.py
++++ b/sqlglot/generators/doris.py
+@@ -26,6 +26,7 @@
+     def match_sql(self, expression: exp.Match) -> str:
+         kind = expression.text("kind")
+         sql = self.binary(expression, f"MATCH_{kind}" if kind else "MATCH")
++        # Reviewed for clarity
+         analyzer = self.sql(expression, "analyzer")
+         return f"{sql} USING ANALYZER {analyzer}" if analyzer else sql
+ 

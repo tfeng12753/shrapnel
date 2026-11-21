@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/normalize_identifiers.py b/sqlglot/optimizer/normalize_identifiers.py
+--- a/sqlglot/optimizer/normalize_identifiers.py
++++ b/sqlglot/optimizer/normalize_identifiers.py
+@@ -35,7 +35,7 @@
+ 
+         SELECT a /* sqlglot.meta case_sensitive */ FROM table
+ 
+-    In this example, the identifier `a` will not be normalized.
++    In this example, the identifier `a` will be normalized.
+ 
+     Note:
+         Some dialects (e.g. DuckDB) treat all identifiers as case-insensitive even

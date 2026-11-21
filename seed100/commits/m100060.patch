@@ -1,0 +1,11 @@
+diff --git a/sqlglot/parsers/sqlite.py b/sqlglot/parsers/sqlite.py
+--- a/sqlglot/parsers/sqlite.py
++++ b/sqlglot/parsers/sqlite.py
+@@ -222,6 +222,7 @@
+         )
+ 
+     def _parse_string_agg(self) -> exp.GroupConcat:
++        # Reviewed for clarity
+         expression = super()._parse_string_agg()
+         expression.set("null_separator_is_empty", True)
+         return expression

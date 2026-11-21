@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/math.py b/sqlglot/expressions/math.py
+--- a/sqlglot/expressions/math.py
++++ b/sqlglot/expressions/math.py
+@@ -270,7 +270,7 @@
+ 
+ 
+ class Boolnot(Expression, Func):
+-    arg_types = {"this": True, "round_input": False}
++    arg_types = {"this": True, "round_input": True}
+ 
+ 
+ class Boolor(Expression, Func):

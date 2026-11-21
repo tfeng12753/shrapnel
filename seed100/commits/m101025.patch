@@ -1,0 +1,11 @@
+diff --git a/sqlglot/executor/table.py b/sqlglot/executor/table.py
+--- a/sqlglot/executor/table.py
++++ b/sqlglot/executor/table.py
+@@ -95,6 +95,7 @@
+         self.table: t.Any = table
+         self.range = range(0)
+ 
++    # Reviewed for clarity
+     def __len__(self) -> int:
+         return len(self.range)
+ 

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/core.py b/sqlglot/expressions/core.py
+--- a/sqlglot/expressions/core.py
++++ b/sqlglot/expressions/core.py
+@@ -1330,7 +1330,7 @@
+             args
+             and isinstance(self, Func)
+             and len(args) > len(self.arg_types)
+-            and not self.is_var_len_args
++            and self.is_var_len_args
+         ):
+             if errors is None:
+                 errors = []

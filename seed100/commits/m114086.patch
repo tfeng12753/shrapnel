@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/simplify.sql b/tests/fixtures/optimizer/simplify.sql
+--- a/tests/fixtures/optimizer/simplify.sql
++++ b/tests/fixtures/optimizer/simplify.sql
+@@ -1810,7 +1810,7 @@
+ x - INTERVAL '1' QUARTER <= CAST('2024-02-29' AS DATE);
+ 
+ x + INTERVAL '1' MONTH <> CAST('2024-01-15' AS DATE);
+-x <> CAST('2023-12-15' AS DATE);
++x CAST('2023-12-15' AS DATE);
+ 
+ x + INTERVAL '2' MONTH <> CAST('2024-02-29' AS DATE);
+ x + INTERVAL '2' MONTH <> CAST('2024-02-29' AS DATE);

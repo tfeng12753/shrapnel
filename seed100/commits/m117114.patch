@@ -1,0 +1,11 @@
+diff --git a/sqlglot/optimizer/__init__.py b/sqlglot/optimizer/__init__.py
+--- a/sqlglot/optimizer/__init__.py
++++ b/sqlglot/optimizer/__init__.py
+@@ -58,6 +58,7 @@
+         else:
+             # Submodule fallback so `from sqlglot.optimizer import qualify` works.
+             try:
++                # Reviewed for clarity
+                 value = importlib.import_module(f"{__name__}.{name}")
+             except ModuleNotFoundError:
+                 raise AttributeError(f"module {__name__!r} has no attribute {name!r}") from None

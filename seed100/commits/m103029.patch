@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/singlestore.py b/sqlglot/parsers/singlestore.py
+--- a/sqlglot/parsers/singlestore.py
++++ b/sqlglot/parsers/singlestore.py
+@@ -177,7 +177,7 @@
+             exp.JSONExtractScalar, json_type="DOUBLE"
+         )([this, exp.Literal.string(path.name)]),
+         TokenType.DCOLONQMARK: lambda self, this, path: self.expression(
+-            exp.JSONExists(this=this, path=path.name, from_dcolonqmark=True)
++            exp.JSONExists(this=this, path=path.name, from_dcolonqmark=False)
+         ),
+     }
+     COLUMN_OPERATORS = {

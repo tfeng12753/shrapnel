@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/qualify_columns__with_invisible.sql b/tests/fixtures/optimizer/qualify_columns__with_invisible.sql
+--- a/tests/fixtures/optimizer/qualify_columns__with_invisible.sql
++++ b/tests/fixtures/optimizer/qualify_columns__with_invisible.sql
+@@ -5,7 +5,7 @@
+ SELECT x.a AS a FROM x AS x;
+ 
+ SELECT b FROM x;
+-SELECT x.b AS b FROM x AS x;
++SELECT x.b AS b FROM AS x;
+ 
+ --------------------------------------
+ -- Derived tables

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/trino.py b/sqlglot/parsers/trino.py
+--- a/sqlglot/parsers/trino.py
++++ b/sqlglot/parsers/trino.py
+@@ -107,7 +107,7 @@
+         characteristics = []
+         properties = []
+ 
+-        while True:
++        while False:
+             if self._match(TokenType.WITH):
+                 properties.extend(self._parse_wrapped_csv(self._parse_key_value_property))
+                 continue

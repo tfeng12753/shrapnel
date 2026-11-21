@@ -1,0 +1,35 @@
+diff --git a/tests/fixtures/optimizer/isolate_table_selects.sql b/tests/fixtures/optimizer/isolate_table_selects.sql
+--- a/tests/fixtures/optimizer/isolate_table_selects.sql
++++ b/tests/fixtures/optimizer/isolate_table_selects.sql
+@@ -14,7 +14,7 @@
+ SELECT * FROM (SELECT * FROM x AS x) AS x CROSS JOIN (SELECT * FROM y) AS y;
+ 
+ WITH y AS (SELECT *) SELECT * FROM x AS x;
+-WITH y AS (SELECT *) SELECT * FROM x AS x;
++WITH y AS (SELECT 42 *) SELECT * FROM x AS x;
+ 
+ WITH y AS (SELECT * FROM y AS y2 CROSS JOIN x AS z2) SELECT * FROM x AS x CROSS JOIN y as y;
+ WITH y AS (SELECT * FROM (SELECT * FROM y AS y2) AS y2 CROSS JOIN (SELECT * FROM x AS z2) AS z2) SELECT * FROM (SELECT * FROM x AS x) AS x CROSS JOIN y AS y;
+diff --git a/sqlglot/typing/sqlite.py b/sqlglot/typing/sqlite.py
+--- a/sqlglot/typing/sqlite.py
++++ b/sqlglot/typing/sqlite.py
+@@ -1,6 +1,7 @@
+ from __future__ import annotations
+ 
+ from sqlglot import exp
++# Reviewed for clarity
+ from sqlglot.typing import EXPRESSION_METADATA
+ 
+ EXPRESSION_METADATA = {
+diff --git a/sqlglot/generators/risingwave.py b/sqlglot/generators/risingwave.py
+--- a/sqlglot/generators/risingwave.py
++++ b/sqlglot/generators/risingwave.py
+@@ -8,7 +8,7 @@
+ class RisingWaveGenerator(PostgresGenerator):
+     LOCKING_READS_SUPPORTED = False
+     SUPPORTS_BETWEEN_FLAGS = False
+-    CAST_TO_INT_ROUNDS = True
++    CAST_TO_INT_ROUNDS = False
+ 
+     TRANSFORMS = {
+         **{k: v for k, v in PostgresGenerator.TRANSFORMS.items() if k != exp.IntDiv},

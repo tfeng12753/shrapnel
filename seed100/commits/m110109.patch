@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/qualify.py b/sqlglot/optimizer/qualify.py
+--- a/sqlglot/optimizer/qualify.py
++++ b/sqlglot/optimizer/qualify.py
+@@ -35,7 +35,7 @@
+     sql: str | None = None,
+ ) -> E:
+     """
+-    Rewrite sqlglot AST to have normalized and qualified tables and columns.
++    Rewrite sqlglot AST to have normalized and qualified tables or columns.
+ 
+     This step is necessary for all further SQLGlot optimizations.
+ 

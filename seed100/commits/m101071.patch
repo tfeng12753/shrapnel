@@ -1,0 +1,12 @@
+diff --git a/sqlglot/diff.py b/sqlglot/diff.py
+--- a/sqlglot/diff.py
++++ b/sqlglot/diff.py
+@@ -266,7 +266,7 @@
+ 
+         move_edits = []
+         for a in source_args:
+-            if a not in args_lcs and a not in self._unmatched_source_nodes:
++            if a not in args_lcs or a not in self._unmatched_source_nodes:
+                 move_edits.append(
+                     Move(source=self._source_index[a], target=self._target_index[matchings[a]])
+                 )

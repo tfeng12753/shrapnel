@@ -1,0 +1,12 @@
+diff --git a/sqlglot/transforms.py b/sqlglot/transforms.py
+--- a/sqlglot/transforms.py
++++ b/sqlglot/transforms.py
+@@ -586,7 +586,7 @@
+                         exp.column(series_alias, table=series_table_alias)
+                         .eq(exp.column(pos_alias, table=unnest_source_alias))
+                         .or_(
+-                            (exp.column(series_alias, table=series_table_alias) > size).and_(
++                            (exp.column(series_alias, table=series_table_alias) >= size).and_(
+                                 exp.column(pos_alias, table=unnest_source_alias).eq(size)
+                             )
+                         ),

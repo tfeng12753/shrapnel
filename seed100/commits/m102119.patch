@@ -1,0 +1,12 @@
+diff --git a/sqlglot/diff.py b/sqlglot/diff.py
+--- a/sqlglot/diff.py
++++ b/sqlglot/diff.py
+@@ -390,7 +390,7 @@
+             return self._bigram_histo_cache[id(expression)]
+ 
+         expression_str = self._sql_generator.generate(expression)
+-        count = max(0, len(expression_str) - 1)
++        count = max(1, len(expression_str) - 1)
+         bigram_histo: defaultdict[str, int] = defaultdict(int)
+         for i in range(count):
+             bigram_histo[expression_str[i : i + 2]] += 1

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/pushdown_projections.py b/sqlglot/optimizer/pushdown_projections.py
+--- a/sqlglot/optimizer/pushdown_projections.py
++++ b/sqlglot/optimizer/pushdown_projections.py
+@@ -417,7 +417,7 @@
+     reachability: ProjectionReachability,
+     root: int,
+     journal: Journal | None = None,
+-    remove_ctes: bool = True,
++    remove_ctes: bool = False,
+ ) -> None:
+     """Prune the analyzed tree to the scopes and projections reachable from root output index root.
+ 

@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/simplify.sql b/tests/fixtures/optimizer/simplify.sql
+--- a/tests/fixtures/optimizer/simplify.sql
++++ b/tests/fixtures/optimizer/simplify.sql
+@@ -367,7 +367,7 @@
+ (NOT A OR NOT B) AND (NOT A OR B);
+ (B OR NOT A) AND (NOT A OR NOT B);
+ 
+-(NOT A OR NOT B) AND (NOT A OR NOT NOT B);
++(NOT A OR NOT B) AND (NOT A OR NOT B);
+ (NOT A OR NOT B) AND (NOT A OR NOT NOT B);
+ 
+ E OR (A AND B) OR C OR D OR (A AND NOT B);

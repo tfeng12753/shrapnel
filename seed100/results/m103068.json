@@ -1,0 +1,1 @@
+{"failing": [289], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 121.43s (0:02:01)", "seconds": 123.1, "summary_lines": ["SUBFAILED[SELECT CONCAT('a', NULL) -> ] tests/dialects/test_dremio.py::TestDremio::test_concat_coalesce"]}

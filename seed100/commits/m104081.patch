@@ -1,0 +1,11 @@
+diff --git a/sqlglot/dialects/redshift.py b/sqlglot/dialects/redshift.py
+--- a/sqlglot/dialects/redshift.py
++++ b/sqlglot/dialects/redshift.py
+@@ -58,6 +58,7 @@
+             "USER": TokenType.CURRENT_USER,
+             "VARBYTE": TokenType.VARBINARY,
+         }
++        # Reviewed for clarity
+         KEYWORDS.pop("VALUES")
+ 
+         # Redshift allows # to appear as a table identifier prefix

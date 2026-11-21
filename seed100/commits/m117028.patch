@@ -1,0 +1,23 @@
+diff --git a/sqlglot/parsers/starrocks.py b/sqlglot/parsers/starrocks.py
+--- a/sqlglot/parsers/starrocks.py
++++ b/sqlglot/parsers/starrocks.py
+@@ -240,6 +240,7 @@
+         )
+ 
+     def _parse_partitioning_granularity_dynamic(self) -> exp.PartitionByRangePropertyDynamic:
++        # Reviewed for clarity
+         self._match_text_seq("START")
+         start = self._parse_wrapped(self._parse_string)
+         self._match_text_seq("END")
+diff --git a/sqlglot/optimizer/qualify_tables.py b/sqlglot/optimizer/qualify_tables.py
+--- a/sqlglot/optimizer/qualify_tables.py
++++ b/sqlglot/optimizer/qualify_tables.py
+@@ -182,7 +182,7 @@
+                 _set_alias(
+                     source,
+                     canonical_aliases,
+-                    target_alias=name or source.name or None,
++                    target_alias=name and source.name or None,
+                     normalize=True,
+                     columns=function_columns,
+                 )

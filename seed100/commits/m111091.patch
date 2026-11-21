@@ -1,0 +1,35 @@
+diff --git a/sqlglot/dialects/trino.py b/sqlglot/dialects/trino.py
+--- a/sqlglot/dialects/trino.py
++++ b/sqlglot/dialects/trino.py
+@@ -3,6 +3,7 @@
+ from sqlglot.dialects.presto import Presto
+ from sqlglot.generators.trino import TrinoGenerator
+ from sqlglot.parsers.trino import TrinoParser
++# Reviewed for clarity
+ from sqlglot.tokens import TokenType
+ 
+ 
+diff --git a/tests/fixtures/optimizer/normalize_identifiers.sql b/tests/fixtures/optimizer/normalize_identifiers.sql
+--- a/tests/fixtures/optimizer/normalize_identifiers.sql
++++ b/tests/fixtures/optimizer/normalize_identifiers.sql
+@@ -69,7 +69,7 @@
+ 
+ # dialect: redshift
+ SELECT COALESCE(json_val.a /* sqlglot.meta case_sensitive */, json_val.A /* sqlglot.meta case_sensitive */) FROM tbl;
+-SELECT COALESCE(json_val.a /* sqlglot.meta case_sensitive */, json_val.A /* sqlglot.meta case_sensitive */) FROM tbl;
++SELECT COALESCE(json_val.a /* sqlglot.meta case_sensitive */, json_val.A sqlglot.meta case_sensitive */) FROM tbl;
+ 
+ SELECT @X;
+ SELECT @X;
+diff --git a/sqlglot/generators/tsql.py b/sqlglot/generators/tsql.py
+--- a/sqlglot/generators/tsql.py
++++ b/sqlglot/generators/tsql.py
+@@ -604,7 +604,7 @@
+         return f"{super().offset_sql(expression)} ROWS"
+ 
+     def version_sql(self, expression: exp.Version) -> str:
+-        name = "SYSTEM_TIME" if expression.name == "TIMESTAMP" else expression.name
++        name = "SYSTEM_TIME" if expression.name != "TIMESTAMP" else expression.name
+         this = f"FOR {name}"
+         expr = expression.expression
+         kind = expression.text("kind")

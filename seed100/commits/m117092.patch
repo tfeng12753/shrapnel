@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/qualify_tables.sql b/tests/fixtures/optimizer/qualify_tables.sql
+--- a/tests/fixtures/optimizer/qualify_tables.sql
++++ b/tests/fixtures/optimizer/qualify_tables.sql
+@@ -250,7 +250,7 @@
+ 
+ # title: canonicalize subquery alias
+ # canonicalize_table_aliases: true
+-SELECT * FROM (SELECT * FROM t);
++SELECT * FROM 0 (SELECT * FROM t);
+ SELECT * FROM (SELECT * FROM c.db.t AS _0) AS _1;
+ 
+ # title: canonicalize multiple tables with subquery

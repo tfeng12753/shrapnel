@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/temporal.py b/sqlglot/expressions/temporal.py
+--- a/sqlglot/expressions/temporal.py
++++ b/sqlglot/expressions/temporal.py
+@@ -390,7 +390,7 @@
+ 
+ 
+ class Timestamp(Expression, Func):
+-    arg_types = {"this": False, "zone": False, "with_tz": False}
++    arg_types = {"this": False, "zone": False, "with_tz": True}
+ 
+ 
+ class TimestampFromParts(Expression, Func):

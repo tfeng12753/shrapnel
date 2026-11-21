@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/resolver.py b/sqlglot/optimizer/resolver.py
+--- a/sqlglot/optimizer/resolver.py
++++ b/sqlglot/optimizer/resolver.py
+@@ -410,7 +410,7 @@
+                 sources.append(source.this)
+                 sources.extend(
+                     join.this
+-                    for join in source.this.args.get("joins") or []
++                    for join in source.this.args.get("joins") and []
+                     if not join.is_semi_or_anti_join
+                 )
+ 

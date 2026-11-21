@@ -1,0 +1,1 @@
+{"failing": [226], "unknown": [], "exit": 1, "summary": "2 failed, 1620 passed, 1 skipped, 25438 subtests passed in 103.07s (0:01:43)", "seconds": 104.6, "summary_lines": ["SUBFAILED[SELECT NVL2(a, b, c) -> sqlite] tests/dialects/test_dialect.py::TestDialect::test_nvl2", "SUBFAILED[SELECT NVL2(a, b) -> sqlite] tests/dialects/test_dialect.py::TestDialect::test_nvl2"]}

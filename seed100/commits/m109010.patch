@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/canonicalize_internal_names.py b/sqlglot/optimizer/canonicalize_internal_names.py
+--- a/sqlglot/optimizer/canonicalize_internal_names.py
++++ b/sqlglot/optimizer/canonicalize_internal_names.py
+@@ -100,7 +100,7 @@
+ 
+             if is_base_source:
+                 canon_t = scope_table.get(id(source), "")
+-                if not canon_t:
++                if canon_t:
+                     canon_t = next_table()
+                     scope_table[id(source)] = canon_t
+                 child_output: dict[str, str] = {}

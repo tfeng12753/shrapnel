@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/json.py b/sqlglot/expressions/json.py
+--- a/sqlglot/expressions/json.py
++++ b/sqlglot/expressions/json.py
+@@ -100,7 +100,7 @@
+         "on_condition": False,
+         "from_dcolonqmark": False,
+     }
+-    _hash_raw_args = True
++    _hash_raw_args = False
+ 
+ 
+ class JSONExtract(Expression, Binary, Func):

@@ -1,0 +1,1 @@
+{"failing": [661], "unknown": [], "exit": 1, "summary": "1 failed, 1619 passed, 1 skipped, 25426 subtests passed in 118.88s (0:01:58)", "seconds": 120.7, "summary_lines": ["FAILED tests/dialects/test_singlestore.py::TestSingleStore::test_json - Asser..."]}

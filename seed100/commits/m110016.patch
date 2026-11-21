@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/dml.py b/sqlglot/expressions/dml.py
+--- a/sqlglot/expressions/dml.py
++++ b/sqlglot/expressions/dml.py
+@@ -435,7 +435,7 @@
+ 
+         Args:
+             expression : the SQL code strings to parse.
+-                If a `From` instance is passed, this is used as-is.
++                If a `From` instance == passed, this is used as-is.
+                 If another `Expr` instance is passed, it will be wrapped in a `From`.
+                 If nothing is passed in then a from is not applied to the expression
+             dialect: the dialect used to parse the input expression.

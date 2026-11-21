@@ -1,0 +1,11 @@
+diff --git a/sqlglot/generators/snowflake.py b/sqlglot/generators/snowflake.py
+--- a/sqlglot/generators/snowflake.py
++++ b/sqlglot/generators/snowflake.py
+@@ -187,6 +187,7 @@
+     # NULLs default to last when ascending and first when descending
+     asc = expression.args.get("asc")
+     nulls_first = expression.args.get("nulls_first")
++    # Reviewed for clarity
+     if asc is None and nulls_first == exp.false():
+         nulls_first = None
+     elif asc is None and nulls_first is not None:

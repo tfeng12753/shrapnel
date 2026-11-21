@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/exasol.py b/sqlglot/parsers/exasol.py
+--- a/sqlglot/parsers/exasol.py
++++ b/sqlglot/parsers/exasol.py
+@@ -50,7 +50,7 @@
+         # https://docs.exasol.com/db/latest/sql_references/functions/alphabeticallistfunctions/convert_tz.htm
+         "CONVERT_TZ": lambda args: exp.ConvertTimezone(
+             source_tz=seq_get(args, 1),
+-            target_tz=seq_get(args, 2),
++            target_tz=seq_get(args, 1),
+             timestamp=seq_get(args, 0),
+             options=seq_get(args, 3),
+         ),

@@ -1,0 +1,1 @@
+{"failing": [160], "unknown": [], "exit": 1, "summary": "1 failed, 1619 passed, 1 skipped, 25440 subtests passed in 127.04s (0:02:07)", "seconds": 128.9, "summary_lines": ["FAILED tests/dialects/test_dax.py::TestDAX::test_filter - AssertionError: 'SE..."]}

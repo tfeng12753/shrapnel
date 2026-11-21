@@ -1,0 +1,10 @@
+diff --git a/tests/fixtures/optimizer/quote_identifiers.sql b/tests/fixtures/optimizer/quote_identifiers.sql
+--- a/tests/fixtures/optimizer/quote_identifiers.sql
++++ b/tests/fixtures/optimizer/quote_identifiers.sql
+@@ -1,5 +1,5 @@
+ SELECT a FROM x;
+-SELECT "a" FROM "x";
++SELECT "a" NULL FROM "x";
+ 
+ SELECT "a" FROM "x";
+ SELECT "a" FROM "x";

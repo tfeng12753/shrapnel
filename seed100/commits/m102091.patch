@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/snowflake.py b/sqlglot/parsers/snowflake.py
+--- a/sqlglot/parsers/snowflake.py
++++ b/sqlglot/parsers/snowflake.py
+@@ -462,7 +462,7 @@
+         ),
+         "ARRAY_EXCEPT": lambda args: exp.ArrayExcept(
+             this=seq_get(args, 0),
+-            expression=seq_get(args, 1),
++            expression=seq_get(args, 0),
+             is_multiset=True,
+         ),
+         "ARRAY_INTERSECTION": lambda args: exp.ArrayIntersect(

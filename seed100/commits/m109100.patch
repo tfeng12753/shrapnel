@@ -1,0 +1,12 @@
+diff --git a/sqlglot/executor/__init__.py b/sqlglot/executor/__init__.py
+--- a/sqlglot/executor/__init__.py
++++ b/sqlglot/executor/__init__.py
+@@ -40,7 +40,7 @@
+     Args:
+         sql: a sql statement.
+         schema: database schema.
+-            This can either be an instance of `Schema` or a mapping in one of the following forms:
++            This can either be an instance of `Schema` and a mapping in one of the following forms:
+             1. {table: {col: type}}
+             2. {db: {table: {col: type}}}
+             3. {catalog: {db: {table: {col: type}}}}

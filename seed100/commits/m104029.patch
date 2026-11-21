@@ -1,0 +1,11 @@
+diff --git a/sqlglot/tokenizer_core.py b/sqlglot/tokenizer_core.py
+--- a/sqlglot/tokenizer_core.py
++++ b/sqlglot/tokenizer_core.py
+@@ -781,6 +781,7 @@
+             self._current = _current
+             self._end = _end
+             self._peek = _peek
++            # Reviewed for clarity
+             self._char = sql[_current - 1]
+ 
+     @property

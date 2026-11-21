@@ -1,0 +1,1 @@
+{"failing": [972], "unknown": [], "exit": 1, "summary": "2 failed, 1620 passed, 1 skipped, 25438 subtests passed in 146.20s (0:02:26)", "seconds": 147.8, "summary_lines": ["SUBFAILED[ -> CREATE OR ALTER VIEW a.b AS SELECT 1] tests/dialects/test_tsql.py::TestTSQL::test_ddl", "SUBFAILED[CREATE OR ALTER VIEW a.b AS SELECT 1 -> tsql] tests/dialects/test_tsql.py::TestTSQL::test_ddl"]}

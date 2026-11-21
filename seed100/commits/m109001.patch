@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/temporal.py b/sqlglot/expressions/temporal.py
+--- a/sqlglot/expressions/temporal.py
++++ b/sqlglot/expressions/temporal.py
+@@ -204,7 +204,7 @@
+ 
+ 
+ class TimeSlice(Expression, Func, TimeUnit):
+-    arg_types = {"this": True, "expression": True, "unit": True, "kind": False, "origin": False}
++    arg_types = {"this": True, "expression": True, "unit": True, "kind": False, "origin": True}
+ 
+ 
+ class TimeTrunc(Expression, Func, TimeUnit):

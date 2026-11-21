@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/temporal.py b/sqlglot/expressions/temporal.py
+--- a/sqlglot/expressions/temporal.py
++++ b/sqlglot/expressions/temporal.py
+@@ -63,7 +63,7 @@
+ 
+ 
+ class UtcTime(Expression, Func):
+-    arg_types = {"this": False}
++    arg_types = {"this": True}
+ 
+ 
+ class UtcTimestamp(Expression, Func):

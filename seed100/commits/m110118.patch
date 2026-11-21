@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/normalize_identifiers.sql b/tests/fixtures/optimizer/normalize_identifiers.sql
+--- a/tests/fixtures/optimizer/normalize_identifiers.sql
++++ b/tests/fixtures/optimizer/normalize_identifiers.sql
+@@ -90,7 +90,7 @@
+ 
+ # title: postgres only normalizes ascii characters
+ # dialect: postgres
+-SELECT FoÄ FROM BaÜ;
++SELECT FoÄ FROM
+ SELECT foÄ FROM baÜ;
+ 
+ # title: bigquery only normalizes ascii characters

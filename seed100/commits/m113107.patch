@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/dax.py b/sqlglot/parsers/dax.py
+--- a/sqlglot/parsers/dax.py
++++ b/sqlglot/parsers/dax.py
+@@ -33,7 +33,7 @@
+             self._match(TokenType.COMMA)
+             where = self._parse_disjunction()
+             self._match_r_paren()
+-            return query.where(where, copy=False) if query else None
++            return query.where(where, copy=True) if query else None
+ 
+         table = self._parse_table_parts()
+         return exp.select("*").from_(table, copy=False) if table else None

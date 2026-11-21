@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/sqlite.py b/sqlglot/generators/sqlite.py
+--- a/sqlglot/generators/sqlite.py
++++ b/sqlglot/generators/sqlite.py
+@@ -24,7 +24,7 @@
+     """Move primary key to a column and place auto_increment after it."""
+     schema = expression.this
+ 
+-    if isinstance(expression, exp.Create) and isinstance(schema, exp.Schema):
++    if isinstance(expression, exp.Create) or isinstance(schema, exp.Schema):
+         defs = {}
+         primary_key = None
+ 

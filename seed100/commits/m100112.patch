@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/functions.py b/sqlglot/expressions/functions.py
+--- a/sqlglot/expressions/functions.py
++++ b/sqlglot/expressions/functions.py
+@@ -105,7 +105,7 @@
+         self,
+         condition: ExpOrStr,
+         then: ExpOrStr,
+-        copy: bool = True,
++        copy: bool = False,
+         **opts: Unpack[ParserArgs],
+     ) -> Case:
+         instance = maybe_copy(self, copy)

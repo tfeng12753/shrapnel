@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/singlestore.py b/sqlglot/parsers/singlestore.py
+--- a/sqlglot/parsers/singlestore.py
++++ b/sqlglot/parsers/singlestore.py
+@@ -48,7 +48,7 @@
+         ),
+         "MICROSECOND": lambda args: exp.cast(
+             exp.TimeToStr(
+-                this=cast_to_time6(seq_get(args, 0)),
++                this=cast_to_time6(seq_get(args, 1)),
+                 format=MySQL.format_time(exp.Literal.string("%f")),
+             ),
+             exp.DType.INT,

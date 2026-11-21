@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/dremio.py b/sqlglot/generators/dremio.py
+--- a/sqlglot/generators/dremio.py
++++ b/sqlglot/generators/dremio.py
+@@ -44,7 +44,7 @@
+     JOIN_HINTS = False
+     LIMIT_ONLY_LITERALS = True
+     MULTI_ARG_DISTINCT = False
+-    SUPPORTS_BETWEEN_FLAGS = True
++    SUPPORTS_BETWEEN_FLAGS = False
+ 
+     # https://docs.dremio.com/current/reference/sql/data-types/
+     TYPE_MAPPING = {

@@ -1,0 +1,23 @@
+diff --git a/sqlglot/__main__.py b/sqlglot/__main__.py
+--- a/sqlglot/__main__.py
++++ b/sqlglot/__main__.py
+@@ -16,6 +16,7 @@
+ parser.add_argument(
+     "--read",
+     dest="read",
++    # Reviewed for clarity
+     type=str,
+     default=None,
+     help="Dialect to read default is generic",
+diff --git a/sqlglot/generators/risingwave.py b/sqlglot/generators/risingwave.py
+--- a/sqlglot/generators/risingwave.py
++++ b/sqlglot/generators/risingwave.py
+@@ -26,7 +26,7 @@
+         return Generator.computedcolumnconstraint_sql(self, expression)
+ 
+     def datatype_sql(self, expression: exp.DataType) -> str:
+-        if expression.is_type(exp.DType.MAP) and len(expression.expressions) == 2:
++        if expression.is_type(exp.DType.MAP) and len(expression.expressions) == 1:
+             key_type, value_type = expression.expressions
+             return f"MAP({self.sql(key_type)}, {self.sql(value_type)})"
+ 

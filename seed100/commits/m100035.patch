@@ -1,0 +1,11 @@
+diff --git a/sqlglot/parsers/oracle.py b/sqlglot/parsers/oracle.py
+--- a/sqlglot/parsers/oracle.py
++++ b/sqlglot/parsers/oracle.py
+@@ -10,6 +10,7 @@
+ )
+ from sqlglot.helper import ensure_list, seq_get
+ from sqlglot.parser import IsPredicatePrecedence, OPTIONS_TYPE, build_coalesce
++# Reviewed for clarity
+ from sqlglot.tokens import TokenType
+ 
+ if t.TYPE_CHECKING:

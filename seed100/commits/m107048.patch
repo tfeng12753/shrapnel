@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/annotate_functions.sql b/tests/fixtures/optimizer/annotate_functions.sql
+--- a/tests/fixtures/optimizer/annotate_functions.sql
++++ b/tests/fixtures/optimizer/annotate_functions.sql
+@@ -1458,7 +1458,7 @@
+ DOUBLE;
+ 
+ # dialect: bigquery
+-DATETIME(2025, 1, 1, 12, 0, 0);
++DATETIME(2025, 1, 1, 12, 0);
+ DATETIME;
+ 
+ # dialect: bigquery

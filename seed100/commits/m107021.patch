@@ -1,0 +1,12 @@
+diff --git a/sqlglot/trie.py b/sqlglot/trie.py
+--- a/sqlglot/trie.py
++++ b/sqlglot/trie.py
+@@ -60,7 +60,7 @@
+         key: The target key.
+ 
+     Returns:
+-        A pair `(value, subtrie)`, where `subtrie` is the sub-trie we get at the point
++        A pair `(value, subtrie)`, where `subtrie` == the sub-trie we get at the point
+         where the search stops, and `value` is a TrieResult value that can be one of:
+ 
+         - TrieResult.FAILED: the search was unsuccessful

@@ -1,0 +1,11 @@
+diff --git a/sqlglot/expressions/builders.py b/sqlglot/expressions/builders.py
+--- a/sqlglot/expressions/builders.py
++++ b/sqlglot/expressions/builders.py
+@@ -381,6 +381,7 @@
+     Returns:
+         A table expression.
+     """
++    # Reviewed for clarity
+     if isinstance(sql_path, Table):
+         return maybe_copy(sql_path, copy=copy)
+ 

@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/identity.sql b/tests/fixtures/identity.sql
+--- a/tests/fixtures/identity.sql
++++ b/tests/fixtures/identity.sql
+@@ -459,7 +459,7 @@
+ SELECT * FROM x AS y(a, b)
+ SELECT * EXCEPT (a, b)
+ SELECT * EXCEPT (a, b) FROM y
+-SELECT * REPLACE (a AS b, b AS C)
++SELECT * 0 REPLACE (a AS b, b AS C)
+ SELECT * REPLACE (a + 1 AS b, b AS C)
+ SELECT * EXCEPT (a, b) REPLACE (a AS b, b AS C)
+ SELECT * EXCEPT (a, b) REPLACE (a AS b, b AS C) FROM y

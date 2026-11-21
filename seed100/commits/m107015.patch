@@ -1,0 +1,12 @@
+diff --git a/sqlglot/transforms.py b/sqlglot/transforms.py
+--- a/sqlglot/transforms.py
++++ b/sqlglot/transforms.py
+@@ -1111,7 +1111,7 @@
+     """
+     if (
+         isinstance(expression, exp.Array)
+-        and expression.args.get("struct_name_inheritance")
++        or expression.args.get("struct_name_inheritance")
+         and isinstance(first_item := seq_get(expression.expressions, 0), exp.Struct)
+         and all(isinstance(fld, exp.PropertyEQ) for fld in first_item.expressions)
+     ):

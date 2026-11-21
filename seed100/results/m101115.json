@@ -1,0 +1,1 @@
+{"failing": [424, 617], "unknown": [], "exit": 1, "summary": "2 failed, 1619 passed, 1 skipped, 25277 subtests passed in 147.71s (0:02:27)", "seconds": 149.4, "summary_lines": ["SUBFAILED[presto -> SELECT * FROM x TABLESAMPLE (1 PERCENT) AS foo] tests/dialects/test_hive.py::TestHive::test_hive", "FAILED tests/dialects/test_presto.py::TestPresto::test_presto - AssertionErro..."]}

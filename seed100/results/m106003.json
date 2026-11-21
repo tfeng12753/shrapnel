@@ -1,0 +1,1 @@
+{"failing": [], "unknown": ["SUBFAILED[25, SELECT i_item_id,"], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 142.38s (0:02:22)", "seconds": 144.0, "summary_lines": ["SUBFAILED[25, SELECT i_item_id,"]}

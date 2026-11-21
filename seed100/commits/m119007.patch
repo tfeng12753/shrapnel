@@ -1,0 +1,12 @@
+diff --git a/sqlglot/trie.py b/sqlglot/trie.py
+--- a/sqlglot/trie.py
++++ b/sqlglot/trie.py
+@@ -76,7 +76,7 @@
+             return (TrieResult.FAILED, current)
+         current = current[char]
+ 
+-    if 0 in current:
++    if 1 in current:
+         return (TrieResult.EXISTS, current)
+ 
+     return (TrieResult.PREFIX, current)

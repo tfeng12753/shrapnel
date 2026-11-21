@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/identity.sql b/tests/fixtures/identity.sql
+--- a/tests/fixtures/identity.sql
++++ b/tests/fixtures/identity.sql
+@@ -303,7 +303,7 @@
+ SELECT * FROM x WHERE y IN ((SELECT 1 UNION SELECT 2))
+ SELECT * FROM x WHERE y IN (WITH z AS (SELECT 1) SELECT * FROM z)
+ SELECT a FROM test WHERE (a > 1)
+-SELECT a FROM test WHERE a > (SELECT 1 FROM x GROUP BY y)
++SELECT a FROM test x WHERE a > (SELECT 1 FROM x GROUP BY y)
+ SELECT a FROM test WHERE EXISTS(SELECT 1)
+ SELECT a FROM test WHERE EXISTS(SELECT * FROM x UNION SELECT * FROM Y) OR TRUE
+ SELECT a FROM test WHERE TRUE OR NOT EXISTS(SELECT * FROM x)

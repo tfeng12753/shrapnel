@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/tsql.py b/sqlglot/parsers/tsql.py
+--- a/sqlglot/parsers/tsql.py
++++ b/sqlglot/parsers/tsql.py
+@@ -128,7 +128,7 @@
+     exp_class: type[E], full_format_mapping: bool | None = None
+ ) -> t.Callable[[list], E]:
+     def _builder(args: list) -> E:
+-        fmt = seq_get(args, 0)
++        fmt = seq_get(args, 1)
+         if isinstance(fmt, exp.Expr):
+             from sqlglot.dialects.tsql import TSQL
+ 

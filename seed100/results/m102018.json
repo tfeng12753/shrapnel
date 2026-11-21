@@ -1,0 +1,1 @@
+{"failing": [1382], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 102.92s (0:01:42)", "seconds": 104.4, "summary_lines": ["SUBFAILED[Insert without CTE] tests/test_optimizer.py::TestOptimizer::test_qualify_columns"]}

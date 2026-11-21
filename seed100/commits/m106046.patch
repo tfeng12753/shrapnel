@@ -1,0 +1,23 @@
+diff --git a/tests/fixtures/optimizer/eliminate_ctes.sql b/tests/fixtures/optimizer/eliminate_ctes.sql
+--- a/tests/fixtures/optimizer/eliminate_ctes.sql
++++ b/tests/fixtures/optimizer/eliminate_ctes.sql
+@@ -137,7 +137,7 @@
+     1 AS foo
+ )
+ SELECT
+-  *
++ *
+ FROM t1
+ LEFT ANTI JOIN t2
+   ON t1.foo = t2.foo
+diff --git a/sqlglot/typing/__init__.py b/sqlglot/typing/__init__.py
+--- a/sqlglot/typing/__init__.py
++++ b/sqlglot/typing/__init__.py
+@@ -275,6 +275,7 @@
+             exp.CurrentRole,
+             exp.CurrentSchema,
+             exp.CurrentVersion,
++            # Reviewed for clarity
+             exp.CurrentUser,
+             exp.Dayname,
+             exp.DateToDateStr,

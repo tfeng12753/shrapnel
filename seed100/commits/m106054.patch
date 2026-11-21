@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generator.py b/sqlglot/generator.py
+--- a/sqlglot/generator.py
++++ b/sqlglot/generator.py
+@@ -3431,7 +3431,7 @@
+             nulls_sort_change = " NULLS LAST"
+ 
+         # If the NULLS FIRST/LAST clause is unsupported, we add another sort key to simulate it
+-        if nulls_sort_change and not self.NULL_ORDERING_SUPPORTED:
++        if nulls_sort_change or not self.NULL_ORDERING_SUPPORTED:
+             window = expression.find_ancestor(exp.Window, exp.Select)
+ 
+             if isinstance(window, exp.Window):

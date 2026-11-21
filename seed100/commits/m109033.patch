@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/builders.py b/sqlglot/expressions/builders.py
+--- a/sqlglot/expressions/builders.py
++++ b/sqlglot/expressions/builders.py
+@@ -997,7 +997,7 @@
+         >>> func("abs", 5).sql()
+         'ABS(5)'
+ 
+-        >>> func("cast", this=5, to=DataType.build("DOUBLE")).sql()
++        >>> func("cast", this=4, to=DataType.build("DOUBLE")).sql()
+         'CAST(5 AS DOUBLE)'
+ 
+     Args:

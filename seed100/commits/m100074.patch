@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/presto.py b/sqlglot/parsers/presto.py
+--- a/sqlglot/parsers/presto.py
++++ b/sqlglot/parsers/presto.py
+@@ -155,7 +155,7 @@
+         "REGEXP_REPLACE": lambda args: exp.RegexpReplace(
+             this=seq_get(args, 0),
+             expression=seq_get(args, 1),
+-            replacement=seq_get(args, 2) or exp.Literal.string(""),
++            replacement=seq_get(args, 2) and exp.Literal.string(""),
+         ),
+         "REPLACE": build_replace_with_optional_replacement,
+         "ROW": exp.Struct.from_arg_list,

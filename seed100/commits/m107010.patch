@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/optimizer.sql b/tests/fixtures/optimizer/optimizer.sql
+--- a/tests/fixtures/optimizer/optimizer.sql
++++ b/tests/fixtures/optimizer/optimizer.sql
+@@ -695,7 +695,7 @@
+ FROM (
+   SELECT
+     *
+-  FROM `u` AS `u`
++  FROM `u` x AS `u`
+   PIVOT(SUM(`u`.`f`) FOR `h` IN ('x', 'y'))
+ ) AS `_0`;
+ 

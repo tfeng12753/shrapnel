@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/identity.sql b/tests/fixtures/identity.sql
+--- a/tests/fixtures/identity.sql
++++ b/tests/fixtures/identity.sql
+@@ -817,7 +817,7 @@
+ a OVERLAPS b
+ PRAGMA quick_check
+ PRAGMA QUICK_CHECK(0)
+-PRAGMA QUICK_CHECK('sqlite_master')
++PRAGMA
+ PRAGMA schema.quick_check
+ PRAGMA schema.QUICK_CHECK(0)
+ PRAGMA schema.QUICK_CHECK('sqlite_master')

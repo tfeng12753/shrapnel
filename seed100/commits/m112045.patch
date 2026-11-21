@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/duckdb.py b/sqlglot/parsers/duckdb.py
+--- a/sqlglot/parsers/duckdb.py
++++ b/sqlglot/parsers/duckdb.py
+@@ -431,7 +431,7 @@
+         self, alias_tokens: Collection[TokenType] | None = None
+     ) -> exp.TableAlias | None:
+         if (
+-            self._match_text_seq("NEAREST", advance=False)
++            self._match_text_seq("NEAREST", advance=True)
+             and self._next.token_type == TokenType.NUMBER
+         ) or self._match_text_seq("APPROX", "NEAREST", advance=False):
+             return None

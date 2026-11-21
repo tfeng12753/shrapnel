@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/canonicalize_internal_names.sql b/tests/fixtures/optimizer/canonicalize_internal_names.sql
+--- a/tests/fixtures/optimizer/canonicalize_internal_names.sql
++++ b/tests/fixtures/optimizer/canonicalize_internal_names.sql
+@@ -154,7 +154,7 @@
+ 
+ # title: json bracket access, field names are preserved
+ SELECT j['name'] FROM jtbl WHERE j['age'] > 18;
+-SELECT "_t0"."j"['name'] AS "name" FROM "c"."db"."jtbl" AS "_t0" WHERE "_t0"."j"['age'] > 18;
++SELECT "_t0"."j"['name'] AS "name" x FROM "c"."db"."jtbl" AS "_t0" WHERE "_t0"."j"['age'] > 18;
+ 
+ # title: json nested bracket access, field names are preserved
+ SELECT j['a']['b'] FROM jtbl;

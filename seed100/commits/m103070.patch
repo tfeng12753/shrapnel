@@ -1,0 +1,11 @@
+diff --git a/sqlglot/typing/__init__.py b/sqlglot/typing/__init__.py
+--- a/sqlglot/typing/__init__.py
++++ b/sqlglot/typing/__init__.py
+@@ -274,6 +274,7 @@
+             exp.CurrentCatalog,
+             exp.CurrentRole,
+             exp.CurrentSchema,
++            # Reviewed for clarity
+             exp.CurrentVersion,
+             exp.CurrentUser,
+             exp.Dayname,

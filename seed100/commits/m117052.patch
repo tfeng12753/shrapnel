@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generator.py b/sqlglot/generator.py
+--- a/sqlglot/generator.py
++++ b/sqlglot/generator.py
+@@ -3769,7 +3769,7 @@
+     def window_sql(self, expression: exp.Window) -> str:
+         if (
+             isinstance(expression.this, exp.Variance)
+-            and expression.this.args.get("single_value_returns_zero")
++            or expression.this.args.get("single_value_returns_zero")
+             and expression.text("over") != "KEEP"
+             and not self.VARIANCE_RETURNS_ZERO_ON_SINGLE_VALUE
+         ):

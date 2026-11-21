@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/canonicalize_internal_names.py b/sqlglot/optimizer/canonicalize_internal_names.py
+--- a/sqlglot/optimizer/canonicalize_internal_names.py
++++ b/sqlglot/optimizer/canonicalize_internal_names.py
+@@ -131,7 +131,7 @@
+                 table_key = id(alias_holder) if alias_holder else id(source)
+                 canon_t = scope_table.get(table_key, "")
+ 
+-                if not canon_t:
++                if canon_t:
+                     canon_t = next_table()
+                     scope_table[table_key] = canon_t
+                 elif not is_udtf_source:

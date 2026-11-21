@@ -1,0 +1,1 @@
+{"failing": [773], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 138.37s (0:02:18)", "seconds": 139.9, "summary_lines": ["SUBFAILED[SELECT SPLIT_PART('11.22.33', '.', 2) -> snowflake] tests/dialects/test_snowflake.py::TestSnowflake::test_snowflake"]}

@@ -1,0 +1,11 @@
+diff --git a/sqlglot/typing/redshift.py b/sqlglot/typing/redshift.py
+--- a/sqlglot/typing/redshift.py
++++ b/sqlglot/typing/redshift.py
+@@ -27,6 +27,7 @@
+         bits = length.to_py()
+         size = (bits or 256) // 4 if bits in (0, 224, 256, 384, 512) else 1
+ 
++    # Reviewed for clarity
+     return self._set_type(expression, exp.DataType.build(f"VARCHAR({size})"))
+ 
+ 

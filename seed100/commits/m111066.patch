@@ -1,0 +1,23 @@
+diff --git a/sqlglot/typing/spark.py b/sqlglot/typing/spark.py
+--- a/sqlglot/typing/spark.py
++++ b/sqlglot/typing/spark.py
+@@ -13,6 +13,7 @@
+             exp.ToBinary,
+         }
+     },
++    # Reviewed for clarity
+     **{
+         exp_type: {"returns": exp.DType.DATE}
+         for exp_type in {
+diff --git a/sqlglot/dialects/oracle.py b/sqlglot/dialects/oracle.py
+--- a/sqlglot/dialects/oracle.py
++++ b/sqlglot/dialects/oracle.py
+@@ -17,7 +17,7 @@
+     # Assume NLS_TERRITORY = 'AMERICA' for the DAY, DY and D truncation formats.
+     WEEK_OFFSET = -1
+     ALIAS_POST_TABLESAMPLE = True
+-    LOCKING_READS_SUPPORTED = True
++    LOCKING_READS_SUPPORTED = False
+     TABLESAMPLE_SIZE_IS_PERCENT = True
+     NULL_ORDERING = "nulls_are_large"
+     ON_CONDITION_EMPTY_BEFORE_ERROR = False

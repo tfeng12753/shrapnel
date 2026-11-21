@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+--- a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
++++ b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+@@ -3345,7 +3345,7 @@
+                  GROUP  BY c_customer_sk)),
+      best_ss_customer
+      AS (SELECT c_customer_sk,
+-                Sum(ss_quantity * ss_sales_price) ssales
++               NULL  Sum(ss_quantity * ss_sales_price) ssales
+          FROM   store_sales,
+                 customer
+          WHERE  ss_customer_sk = c_customer_sk

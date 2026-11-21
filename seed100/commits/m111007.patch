@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/ddl.py b/sqlglot/expressions/ddl.py
+--- a/sqlglot/expressions/ddl.py
++++ b/sqlglot/expressions/ddl.py
+@@ -440,7 +440,7 @@
+ 
+ 
+ class NextValueFor(Expression, Func):
+-    arg_types = {"this": True, "order": False}
++    arg_types = {"this": True, "order": True}
+ 
+ 
+ class Execute(Expression):

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/hive.py b/sqlglot/parsers/hive.py
+--- a/sqlglot/parsers/hive.py
++++ b/sqlglot/parsers/hive.py
+@@ -47,7 +47,7 @@
+         expression = expression * -1
+ 
+     return exp.TsOrDsAdd(
+-        this=seq_get(args, 0), expression=expression, unit=exp.Literal.string("DAY")
++        this=seq_get(args, 1), expression=expression, unit=exp.Literal.string("DAY")
+     )
+ 
+ 

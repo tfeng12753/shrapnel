@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/databricks.py b/sqlglot/parsers/databricks.py
+--- a/sqlglot/parsers/databricks.py
++++ b/sqlglot/parsers/databricks.py
+@@ -75,7 +75,7 @@
+                 )
+                 for token in tokens[::2]
+             ) and all(token.token_type == TokenType.DOT for token in tokens[1::2]):
+-                return self.expression(exp.Optimize(this=self._parse_table_parts(schema=True)))
++                return self.expression(exp.Optimize(this=self._parse_table_parts(schema=False)))
+ 
+         command = self._parse_as_command(start)
+         command.set("this", start.text.upper())

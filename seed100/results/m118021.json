@@ -1,0 +1,1 @@
+{"failing": [1314], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 111.68s (0:01:51)", "seconds": 113.4, "summary_lines": ["SUBFAILED[union by name, innermost INTERSECT operand aligns its left branch only, the positional right branch keeps its own name] tests/test_optimizer.py::TestOptimizer::test_canonicalize_internal_names"]}

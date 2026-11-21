@@ -1,0 +1,12 @@
+diff --git a/sqlglot/_typing.py b/sqlglot/_typing.py
+--- a/sqlglot/_typing.py
++++ b/sqlglot/_typing.py
+@@ -21,7 +21,7 @@
+ """Sequence of arguments passed to builder functions."""
+ 
+ 
+-class _DialectArg(t.TypedDict, total=False):
++class _DialectArg(t.TypedDict, total=True):
+     dialect: DialectType
+ 
+ 

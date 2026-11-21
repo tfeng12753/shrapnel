@@ -1,0 +1,1 @@
+{"failing": [1343], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25438 subtests passed in 150.03s (0:02:30)", "seconds": 151.7, "summary_lines": ["SUBFAILED[Wrap comparison in IN] tests/test_optimizer.py::TestOptimizer::test_merge_subqueries"]}

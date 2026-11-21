@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/presto.py b/sqlglot/generators/presto.py
+--- a/sqlglot/generators/presto.py
++++ b/sqlglot/generators/presto.py
+@@ -270,7 +270,7 @@
+     SUPPORTS_MULTI_ARG_CHR = False
+     SUPPORTS_TEMPORAL_PRECISION = False
+     # https://github.com/prestodb/presto/issues/8200
+-    SUPPORTS_LEFT_JOIN_UNNEST = False
++    SUPPORTS_LEFT_JOIN_UNNEST = True
+ 
+     AFTER_HAVING_MODIFIER_TRANSFORMS = generator.AFTER_HAVING_MODIFIER_TRANSFORMS
+ 

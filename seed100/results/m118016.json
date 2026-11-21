@@ -1,0 +1,1 @@
+{"failing": [365], "unknown": [], "exit": 1, "summary": "2 failed, 1620 passed, 1 skipped, 25430 subtests passed in 109.89s (0:01:49)", "seconds": 111.5, "summary_lines": ["SUBFAILED(name='MIN') tests/dialects/test_duckdb.py::TestDuckDB::test_min_max", "SUBFAILED(name='MAX') tests/dialects/test_duckdb.py::TestDuckDB::test_min_max"]}

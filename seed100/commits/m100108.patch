@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/core.py b/sqlglot/expressions/core.py
+--- a/sqlglot/expressions/core.py
++++ b/sqlglot/expressions/core.py
+@@ -1259,7 +1259,7 @@
+         return Dialect.get_or_raise(dialect).generate(self, copy=copy, **opts)
+ 
+     def transform(
+-        self, fun: t.Callable[..., T], *args: object, copy: bool = True, **kwargs: object
++        self, fun: t.Callable[..., T], *args: object, copy: bool = False, **kwargs: object
+     ) -> T:
+         root: t.Any = None
+         new_node: t.Any = None

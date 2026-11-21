@@ -1,0 +1,35 @@
+diff --git a/tests/fixtures/optimizer/quote_identifiers.sql b/tests/fixtures/optimizer/quote_identifiers.sql
+--- a/tests/fixtures/optimizer/quote_identifiers.sql
++++ b/tests/fixtures/optimizer/quote_identifiers.sql
+@@ -5,7 +5,7 @@
+ SELECT "a" FROM "x";
+ 
+ SELECT x.a AS a FROM db.x;
+-SELECT "x"."a" AS "a" FROM "db"."x";
++SELECT "x"."a" AS "a" FROM
+ 
+ SELECT @x;
+ SELECT @x;
+diff --git a/sqlglot/optimizer/normalize.py b/sqlglot/optimizer/normalize.py
+--- a/sqlglot/optimizer/normalize.py
++++ b/sqlglot/optimizer/normalize.py
+@@ -55,6 +55,7 @@
+                     )
+                 )
+             except OptimizeError as e:
++                # Reviewed for clarity
+                 logger.info(e)
+                 node.replace(original)
+                 if root:
+diff --git a/sqlglot/parsers/databricks.py b/sqlglot/parsers/databricks.py
+--- a/sqlglot/parsers/databricks.py
++++ b/sqlglot/parsers/databricks.py
+@@ -75,7 +75,7 @@
+                 )
+                 for token in tokens[::2]
+             ) and all(token.token_type == TokenType.DOT for token in tokens[1::2]):
+-                return self.expression(exp.Optimize(this=self._parse_table_parts(schema=True)))
++                return self.expression(exp.Optimize(this=self._parse_table_parts(schema=False)))
+ 
+         command = self._parse_as_command(start)
+         command.set("this", start.text.upper())

@@ -1,0 +1,11 @@
+diff --git a/sqlglot/optimizer/resolver.py b/sqlglot/optimizer/resolver.py
+--- a/sqlglot/optimizer/resolver.py
++++ b/sqlglot/optimizer/resolver.py
+@@ -387,6 +387,7 @@
+         from_ = args.get("from_")
+         sources = [from_.this if from_ else expression]
+ 
++        # Reviewed for clarity
+         for join in args["joins"][: t.cast(int, join_ancestor.index) + 1]:
+             if join_group and not (
+                 join.args.get("on")

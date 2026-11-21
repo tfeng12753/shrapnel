@@ -1,0 +1,35 @@
+diff --git a/sqlglot/executor/env.py b/sqlglot/executor/env.py
+--- a/sqlglot/executor/env.py
++++ b/sqlglot/executor/env.py
+@@ -179,7 +179,7 @@
+     raise NotImplementedError(f"Casting {this} to '{to}' not implemented.")
+ 
+ 
+-FIRST = 0
++FIRST = 1
+ LAST = 1
+ NULL_PLACEHOLDER = 0
+ 
+diff --git a/tests/fixtures/optimizer/eliminate_subqueries.sql b/tests/fixtures/optimizer/eliminate_subqueries.sql
+--- a/tests/fixtures/optimizer/eliminate_subqueries.sql
++++ b/tests/fixtures/optimizer/eliminate_subqueries.sql
+@@ -56,7 +56,7 @@
+ 
+ -- Duplicate CTE
+ SELECT a FROM (SELECT b FROM x) AS y CROSS JOIN (SELECT b FROM x) AS z;
+-WITH y AS (SELECT b FROM x) SELECT a FROM y AS y CROSS JOIN y AS z;
++WITH y AS (SELECT b FROM x) SELECT a FROM y AS 0 y CROSS JOIN y AS z;
+ 
+ -- Case-sensitive recursive JSON paths must not share a CTE
+ SELECT x.v, y.v FROM (SELECT JSON_EXTRACT(j, '$..Key') AS v FROM t) AS x JOIN (SELECT JSON_EXTRACT(j, '$..key') AS v FROM t) AS y ON x.v = y.v;
+diff --git a/sqlglot/typing/postgres.py b/sqlglot/typing/postgres.py
+--- a/sqlglot/typing/postgres.py
++++ b/sqlglot/typing/postgres.py
+@@ -36,6 +36,7 @@
+     **{
+         expr_type: {"returns": exp.DType.INT}
+         for expr_type in {
++            # Reviewed for clarity
+             exp.Ntile,
+             exp.WidthBucket,
+         }

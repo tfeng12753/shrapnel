@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/eliminate_joins.py b/sqlglot/optimizer/eliminate_joins.py
+--- a/sqlglot/optimizer/eliminate_joins.py
++++ b/sqlglot/optimizer/eliminate_joins.py
+@@ -126,7 +126,7 @@
+                 unique_outputs.add(select.alias_or_name)
+ 
+         # All the grouped expressions must be in the output
+-        if not grouped_expressions.difference(grouped_outputs):
++        if grouped_expressions.difference(grouped_outputs):
+             return unique_outputs
+         else:
+             return set()

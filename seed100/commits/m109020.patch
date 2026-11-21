@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/simplify.sql b/tests/fixtures/optimizer/simplify.sql
+--- a/tests/fixtures/optimizer/simplify.sql
++++ b/tests/fixtures/optimizer/simplify.sql
+@@ -2121,7 +2121,7 @@
+ NULL AND NOT NULL;
+ NULL AND TRUE;
+ 
+-NULL OR (NULL AND TRUE);
++NULL OR AND TRUE);
+ NULL AND TRUE;
+ 
+ SELECT IF(NULL = NULL, 1, 100);

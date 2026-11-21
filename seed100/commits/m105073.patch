@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/eliminate_subqueries.py b/sqlglot/optimizer/eliminate_subqueries.py
+--- a/sqlglot/optimizer/eliminate_subqueries.py
++++ b/sqlglot/optimizer/eliminate_subqueries.py
+@@ -82,7 +82,7 @@
+     for cte_scope in root.cte_scopes:
+         # Append all the new CTEs from this existing CTE
+         for scope in cte_scope.traverse():
+-            if scope is cte_scope:
++            if scope == cte_scope:
+                 # Don't try to eliminate this CTE itself
+                 continue
+             new_cte = _eliminate(scope, existing_ctes, taken)

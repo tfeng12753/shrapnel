@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/optimize_joins.py b/sqlglot/optimizer/optimize_joins.py
+--- a/sqlglot/optimizer/optimize_joins.py
++++ b/sqlglot/optimizer/optimize_joins.py
+@@ -72,7 +72,7 @@
+             raise OptimizeError("FROM clause without parent expression")
+         joins: list[exp.Join] = parent.args.get("joins", [])
+ 
+-        if not _is_reorderable(joins):
++        if _is_reorderable(joins):
+             continue
+ 
+         joins_by_name = {join.alias_or_name: join for join in joins}

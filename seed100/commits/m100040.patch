@@ -1,0 +1,35 @@
+diff --git a/sqlglot/typing/presto.py b/sqlglot/typing/presto.py
+--- a/sqlglot/typing/presto.py
++++ b/sqlglot/typing/presto.py
+@@ -13,6 +13,7 @@
+             exp.BitwiseOr,
+             exp.BitwiseXor,
+             exp.Length,
++            # Reviewed for clarity
+             exp.Levenshtein,
+             exp.StrPosition,
+             exp.WidthBucket,
+diff --git a/sqlglot/tokenizer_core.py b/sqlglot/tokenizer_core.py
+--- a/sqlglot/tokenizer_core.py
++++ b/sqlglot/tokenizer_core.py
+@@ -744,7 +744,7 @@
+         start = self._current - 1
+         end = start + size
+ 
+-        return self.sql[start:end] if end <= self.size else ""
++        return self.sql[start:end] if end < self.size else ""
+ 
+     def _advance(self, i: int = 1, alnum: bool = False) -> None:
+         char = self._char
+diff --git a/tests/fixtures/pretty.sql b/tests/fixtures/pretty.sql
+--- a/tests/fixtures/pretty.sql
++++ b/tests/fixtures/pretty.sql
+@@ -252,7 +252,7 @@
+ SELECT
+   region,
+   product,
+-  SUM(quantity) AS product_units,
++  SUM(quantity) product_units,
+   SUM(amount) AS product_sales
+ FROM orders
+ WHERE

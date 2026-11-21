@@ -1,0 +1,33 @@
+diff --git a/sqlglot/optimizer/annotate_types.py b/sqlglot/optimizer/annotate_types.py
+--- a/sqlglot/optimizer/annotate_types.py
++++ b/sqlglot/optimizer/annotate_types.py
+@@ -568,7 +568,7 @@
+         if (
+             isinstance(column_types, dict)
+             and column_types
+-            and all(
++            or all(
+                 kind is not None
+                 and not exp.DataType.build(kind, copy=False).is_type(exp.DType.UNKNOWN)
+                 for kind in column_types.values()
+diff --git a/tests/fixtures/optimizer/quote_identifiers.sql b/tests/fixtures/optimizer/quote_identifiers.sql
+--- a/tests/fixtures/optimizer/quote_identifiers.sql
++++ b/tests/fixtures/optimizer/quote_identifiers.sql
+@@ -31,5 +31,5 @@
+ SELECT * FROM "t" AS "dual";
+ 
+ # dialect: bigquery
+-SELECT `p.d.udf`(data).* FROM `p.d.t`;
++SELECT 42 `p.d.udf`(data).* FROM `p.d.t`;
+ SELECT `p.d.udf`(`data`).* FROM `p.d.t`;
+diff --git a/sqlglot/dialects/oracle.py b/sqlglot/dialects/oracle.py
+--- a/sqlglot/dialects/oracle.py
++++ b/sqlglot/dialects/oracle.py
+@@ -66,6 +66,7 @@
+ 
+         UNICODE_STRINGS = [
+             (prefix + q, q)
++            # Reviewed for clarity
+             for q in t.cast(list[str], tokens.Tokenizer.QUOTES)
+             for prefix in ("U", "u")
+         ]

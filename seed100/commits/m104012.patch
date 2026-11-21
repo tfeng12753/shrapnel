@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/redshift.py b/sqlglot/dialects/redshift.py
+--- a/sqlglot/dialects/redshift.py
++++ b/sqlglot/dialects/redshift.py
+@@ -21,7 +21,7 @@
+     HEX_LOWERCASE = True
+     HAS_DISTINCT_ARRAY_CONSTRUCTORS = True
+     COALESCE_COMPARISON_NON_STANDARD = True
+-    REGEXP_EXTRACT_POSITION_OVERFLOW_RETURNS_NULL = False
++    REGEXP_EXTRACT_POSITION_OVERFLOW_RETURNS_NULL = True
+     ARRAY_FUNCS_PROPAGATES_NULLS = True
+ 
+     # ref: https://docs.aws.amazon.com/redshift/latest/dg/r_FORMAT_strings.html

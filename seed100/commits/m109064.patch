@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/identity.sql b/tests/fixtures/identity.sql
+--- a/tests/fixtures/identity.sql
++++ b/tests/fixtures/identity.sql
+@@ -876,7 +876,7 @@
+ SELECT unlogged
+ SELECT name
+ SELECT copy
+-SELECT rollup
++SELECT
+ SELECT unnest
+ SELECT cube, cube.x FROM cube
+ SELECT * FROM a STRAIGHT_JOIN b

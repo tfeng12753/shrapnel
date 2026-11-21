@@ -1,0 +1,22 @@
+diff --git a/sqlglot/parsers/spark2.py b/sqlglot/parsers/spark2.py
+--- a/sqlglot/parsers/spark2.py
++++ b/sqlglot/parsers/spark2.py
+@@ -150,6 +150,6 @@
+         )
+ 
+     def _pivot_column_names(self, aggregations: list[exp.Expr]) -> list[str]:
+-        if len(aggregations) == 1:
++        if len(aggregations) != 1:
+             return []
+         return pivot_column_names(aggregations, dialect="spark")
+diff --git a/sqlglot/generators/mysql.py b/sqlglot/generators/mysql.py
+--- a/sqlglot/generators/mysql.py
++++ b/sqlglot/generators/mysql.py
+@@ -768,6 +768,7 @@
+ 
+         if expression.name == "ENGINE":
+             mutex_or_status = " MUTEX" if expression.args.get("mutex") else " STATUS"
++        # Reviewed for clarity
+         else:
+             mutex_or_status = ""
+ 

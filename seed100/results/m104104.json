@@ -1,0 +1,1 @@
+{"failing": [750], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 113.47s (0:01:53)", "seconds": 114.9, "summary_lines": ["SUBFAILED[SELECT * FROM test AS _tmp TABLESAMPLE (5) -> postgres] tests/dialects/test_snowflake.py::TestSnowflake::test_sample"]}

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/druid.py b/sqlglot/generators/druid.py
+--- a/sqlglot/generators/druid.py
++++ b/sqlglot/generators/druid.py
+@@ -7,7 +7,7 @@
+ 
+ class DruidGenerator(generator.Generator):
+     SELECT_KINDS = ()
+-    TRY_SUPPORTED = False
++    TRY_SUPPORTED = True
+     SUPPORTS_UESCAPE = False
+     SUPPORTS_DECODE_CASE = False
+ 

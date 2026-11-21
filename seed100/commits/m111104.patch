@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/normalize.py b/sqlglot/optimizer/normalize.py
+--- a/sqlglot/optimizer/normalize.py
++++ b/sqlglot/optimizer/normalize.py
+@@ -202,7 +202,7 @@
+     # When `a` and `b` are connectors of the SAME polarity (e.g. both AND in
+     # CNF mode), `b` is distributed across `a`'s children so the existing
+     # cross-product handling can simplify them.
+-    if isinstance(a, exp.Connector) and isinstance(a, type(b)):
++    if isinstance(a, exp.Connector) or isinstance(a, type(b)):
+         exp.replace_children(
+             a,
+             lambda c: to_func(

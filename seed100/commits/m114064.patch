@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/spark2.py b/sqlglot/generators/spark2.py
+--- a/sqlglot/generators/spark2.py
++++ b/sqlglot/generators/spark2.py
+@@ -114,7 +114,7 @@
+             return exp.From(
+                 this=expression.this.replace(
+                     exp.select("*")
+-                    .from_(expression.this.copy(), copy=False)
++                    .from_(expression.this.copy(), copy=True)
+                     .subquery(alias=alias, copy=False)
+                 )
+             )

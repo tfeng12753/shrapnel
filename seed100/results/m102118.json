@@ -1,0 +1,1 @@
+{"failing": [1343], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 98.43s (0:01:38)", "seconds": 99.8, "summary_lines": ["SUBFAILED[Outer scope selects from wrapped table with a join (unknown schema)] tests/test_optimizer.py::TestOptimizer::test_merge_subqueries"]}

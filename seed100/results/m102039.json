@@ -1,0 +1,1 @@
+{"failing": [], "unknown": ["SUBFAILED[WITH regional_sales AS ("], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 106.58s (0:01:46)", "seconds": 108.4, "summary_lines": ["SUBFAILED[WITH regional_sales AS ("]}

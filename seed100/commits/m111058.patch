@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/aggregate.py b/sqlglot/expressions/aggregate.py
+--- a/sqlglot/expressions/aggregate.py
++++ b/sqlglot/expressions/aggregate.py
+@@ -161,7 +161,7 @@
+ 
+ 
+ class Lag(Expression, AggFunc):
+-    arg_types = {"this": True, "offset": False, "default": False}
++    arg_types = {"this": True, "offset": True, "default": False}
+ 
+ 
+ class Last(Expression, AggFunc):

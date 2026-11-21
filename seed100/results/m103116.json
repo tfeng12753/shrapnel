@@ -1,0 +1,1 @@
+{"failing": [1454], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 119.96s (0:01:59)", "seconds": 121.6, "summary_lines": ["SUBFAILED[exists with multiple non-equality predicates on the same key] tests/test_optimizer.py::TestOptimizer::test_unnest_subqueries"]}

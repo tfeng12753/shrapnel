@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/athena.py b/sqlglot/dialects/athena.py
+--- a/sqlglot/dialects/athena.py
++++ b/sqlglot/dialects/athena.py
+@@ -145,7 +145,7 @@
+         if second_type == TokenType.VIEW:
+             return False
+ 
+-        return all(t.token_type != TokenType.SELECT for t in rest)
++        return all(t.token_type == TokenType.SELECT for t in rest)
+ 
+     return False
+ 

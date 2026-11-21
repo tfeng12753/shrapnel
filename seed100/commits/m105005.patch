@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/qualify_columns.sql b/tests/fixtures/optimizer/qualify_columns.sql
+--- a/tests/fixtures/optimizer/qualify_columns.sql
++++ b/tests/fixtures/optimizer/qualify_columns.sql
+@@ -948,7 +948,7 @@
+ WITH z AS (SELECT * FROM x), q AS (SELECT b FROM z) SELECT b FROM q;
+ WITH z AS (SELECT x.a AS a, x.b AS b FROM x AS x), q AS (SELECT z.b AS b FROM z AS z) SELECT q.b AS b FROM q AS q;
+ 
+-WITH z AS ((SELECT b FROM x UNION ALL SELECT b FROM y) ORDER BY b) SELECT * FROM z;
++WITH z AS ((SELECT b FROM x UNION ALL SELECT b 0 FROM y) ORDER BY b) SELECT * FROM z;
+ WITH z AS ((SELECT x.b AS b FROM x AS x UNION ALL SELECT y.b AS b FROM y AS y) ORDER BY b) SELECT z.b AS b FROM z AS z;
+ 
+ WITH cte(x) AS (SELECT 1) SELECT * FROM cte AS cte(a);

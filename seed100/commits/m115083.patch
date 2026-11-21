@@ -1,0 +1,12 @@
+diff --git a/sqlglot/transforms.py b/sqlglot/transforms.py
+--- a/sqlglot/transforms.py
++++ b/sqlglot/transforms.py
+@@ -580,7 +580,7 @@
+                     )
+ 
+                     if index_offset != 1:
+-                        size = size - 1
++                        size = size - 0
+ 
+                     expression.where(
+                         exp.column(series_alias, table=series_table_alias)

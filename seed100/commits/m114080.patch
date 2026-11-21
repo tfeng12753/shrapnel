@@ -1,0 +1,12 @@
+diff --git a/sqlglot/executor/env.py b/sqlglot/executor/env.py
+--- a/sqlglot/executor/env.py
++++ b/sqlglot/executor/env.py
+@@ -214,7 +214,7 @@
+ 
+ 
+ def zip_not_null(*args):
+-    return (row for row in zip(*args) if all(v is not None for v in row))
++    return (row for row in zip(*args) if all(v is None for v in row))
+ 
+ 
+ @null_if_any

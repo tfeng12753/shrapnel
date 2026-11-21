@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/postgres.py b/sqlglot/parsers/postgres.py
+--- a/sqlglot/parsers/postgres.py
++++ b/sqlglot/parsers/postgres.py
+@@ -114,7 +114,7 @@
+ 
+     ALTER_DROP_REQUIRES_COLUMN = False
+     ALTER_TABLE_MIXED_ACTIONS = True
+-    ALTER_COLUMN_TYPE_REQUIRES_KEYWORD = True
++    ALTER_COLUMN_TYPE_REQUIRES_KEYWORD = False
+     SUPPORTS_OMITTED_INTERVAL_SPAN_UNIT = True
+ 
+     # The one-byte "char" type is distinct from CHAR, and it can only be referenced by

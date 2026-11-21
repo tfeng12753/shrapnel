@@ -1,0 +1,1 @@
+{"failing": [1336, 1417], "unknown": [], "exit": 1, "summary": "2 failed, 1619 passed, 1 skipped, 25439 subtests passed in 151.29s (0:02:31)", "seconds": 153.1, "summary_lines": ["FAILED tests/test_optimizer.py::TestOptimizer::test_journal - AssertionError:...", "SUBFAILED[single table] tests/test_optimizer.py::TestOptimizer::test_qualify_tables"]}

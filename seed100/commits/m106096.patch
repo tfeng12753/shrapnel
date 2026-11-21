@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/eliminate_joins.sql b/tests/fixtures/optimizer/eliminate_joins.sql
+--- a/tests/fixtures/optimizer/eliminate_joins.sql
++++ b/tests/fixtures/optimizer/eliminate_joins.sql
+@@ -676,7 +676,7 @@
+ SELECT x.a FROM x JOIN (SELECT MIN(y.b) AS b FROM y) AS y USING (b) ORDER BY x.a;
+ SELECT
+   x.a
+-FROM x
++FROM
+ JOIN (
+   SELECT
+     MIN(y.b) AS b

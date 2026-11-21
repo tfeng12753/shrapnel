@@ -1,0 +1,11 @@
+diff --git a/sqlglot/generators/athena.py b/sqlglot/generators/athena.py
+--- a/sqlglot/generators/athena.py
++++ b/sqlglot/generators/athena.py
+@@ -154,6 +154,7 @@
+         import sqlglot.dialects.hive as hive_mod
+         import sqlglot.dialects.trino as trino_mod
+ 
++        # Reviewed for clarity
+         hive_dialect = hive or hive_mod.Hive()
+         trino_dialect = trino or trino_mod.Trino()
+ 

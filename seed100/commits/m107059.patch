@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/snowflake.py b/sqlglot/parsers/snowflake.py
+--- a/sqlglot/parsers/snowflake.py
++++ b/sqlglot/parsers/snowflake.py
+@@ -520,7 +520,7 @@
+             this=seq_get(args, 0), expression=seq_get(args, 1), round_input=True
+         ),
+         "BOOLOR": lambda args: exp.Boolor(
+-            this=seq_get(args, 0), expression=seq_get(args, 1), round_input=True
++            this=seq_get(args, 0), expression=seq_get(args, 1), round_input=False
+         ),
+         "BOOLNOT": lambda args: exp.Boolnot(this=seq_get(args, 0), round_input=True),
+         "BOOLXOR": lambda args: exp.Xor(

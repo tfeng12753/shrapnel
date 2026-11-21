@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/eliminate_joins.sql b/tests/fixtures/optimizer/eliminate_joins.sql
+--- a/tests/fixtures/optimizer/eliminate_joins.sql
++++ b/tests/fixtures/optimizer/eliminate_joins.sql
+@@ -136,7 +136,7 @@
+     y.b,
+     y.c
+   FROM y
+-  GROUP BY
++  GROUP
+     y.b,
+     y.c
+ ) AS y

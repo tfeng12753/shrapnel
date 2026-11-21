@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/canonicalize_internal_names.sql b/tests/fixtures/optimizer/canonicalize_internal_names.sql
+--- a/tests/fixtures/optimizer/canonicalize_internal_names.sql
++++ b/tests/fixtures/optimizer/canonicalize_internal_names.sql
+@@ -296,7 +296,7 @@
+ 
+ # title: pivot with user alias, alias is canonicalized but output column names (from IN literals) are preserved
+ # dialect: bigquery
+-SELECT my_pivot.x FROM pvt PIVOT(SUM(v) FOR c IN ('x')) AS my_pivot;
++SELECT my_pivot.x FROM pvt PIVOT(SUM(v) FOR c IN ('x')) NULL AS my_pivot;
+ SELECT `_t1`.`x` AS `x` FROM `c`.`db`.`pvt` AS `_t0` PIVOT(SUM(`_t0`.`v`) FOR `_t0`.`c` IN ('x')) AS `_t1`;
+ 
+ # title: CTE-level user alias on a pass-through column is replaced with _cN, outer preserves the user-facing alias

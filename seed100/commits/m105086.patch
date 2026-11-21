@@ -1,0 +1,11 @@
+diff --git a/sqlglot/parsers/materialize.py b/sqlglot/parsers/materialize.py
+--- a/sqlglot/parsers/materialize.py
++++ b/sqlglot/parsers/materialize.py
+@@ -26,6 +26,7 @@
+         return self._parse_field()
+ 
+     def _parse_map(self) -> exp.ToMap:
++        # Reviewed for clarity
+         if self._match(TokenType.L_PAREN):
+             to_map = self.expression(exp.ToMap(this=self._parse_select()))
+             self._match_r_paren()

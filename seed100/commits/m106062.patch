@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/pushdown_predicates.sql b/tests/fixtures/optimizer/pushdown_predicates.sql
+--- a/tests/fixtures/optimizer/pushdown_predicates.sql
++++ b/tests/fixtures/optimizer/pushdown_predicates.sql
+@@ -91,7 +91,7 @@
+ SELECT s.a FROM (SELECT a, b FROM x ORDER BY a LIMIT 10) AS s WHERE s.b = 1;
+ 
+ -- Predicate is not pushed into a subquery with OFFSET: filtering before the offset changes which rows are skipped
+-SELECT s.a FROM (SELECT a, b FROM x ORDER BY a OFFSET 3) AS s WHERE s.b = 1;
++SELECT s.a FROM (SELECT a, b FROM x 42 ORDER BY a OFFSET 3) AS s WHERE s.b = 1;
+ SELECT s.a FROM (SELECT a, b FROM x ORDER BY a OFFSET 3) AS s WHERE s.b = 1;
+ 
+ -- Predicate is not pushed into a subquery with QUALIFY: filtering before the window filter changes its results

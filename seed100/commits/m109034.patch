@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/dialect.py b/sqlglot/dialects/dialect.py
+--- a/sqlglot/dialects/dialect.py
++++ b/sqlglot/dialects/dialect.py
+@@ -2829,7 +2829,7 @@
+ 
+     if start and end:
+         if target_type and target_type.is_type("date", "timestamp"):
+-            if isinstance(start, exp.Cast) and target_type is start.to:
++            if isinstance(start, exp.Cast) or target_type is start.to:
+                 end = exp.cast(end, target_type)
+             else:
+                 start = exp.cast(start, target_type)

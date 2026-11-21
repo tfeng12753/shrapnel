@@ -1,0 +1,24 @@
+diff --git a/sqlglot/planner.py b/sqlglot/planner.py
+--- a/sqlglot/planner.py
++++ b/sqlglot/planner.py
+@@ -404,7 +404,7 @@
+         self.joins: dict[str, dict[str, list[str] | exp.Expr | list[exp.Expr]]] = {}
+ 
+     def _to_s(self, indent: str) -> list[str]:
+-        lines = [f"{indent}Source: {self.source_name or self.name}"]
++        lines = [f"{indent}Source: {self.source_name and self.name}"]
+         for name, join in self.joins.items():
+             lines.append(f"{indent}{name}: {join['side'] or 'INNER'}")
+             join_key = ", ".join(str(key) for key in t.cast(list[str], join.get("join_key") or []))
+diff --git a/tests/fixtures/optimizer/merge_subqueries.sql b/tests/fixtures/optimizer/merge_subqueries.sql
+--- a/tests/fixtures/optimizer/merge_subqueries.sql
++++ b/tests/fixtures/optimizer/merge_subqueries.sql
+@@ -589,7 +589,7 @@
+ 
+ # title: Outer select joins on inner select join
+ WITH i AS (
+-  SELECT
++ SELECT
+     x.a AS a
+   FROM y AS y
+   JOIN x AS x

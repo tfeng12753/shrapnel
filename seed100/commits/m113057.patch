@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/pushdown_predicates.sql b/tests/fixtures/optimizer/pushdown_predicates.sql
+--- a/tests/fixtures/optimizer/pushdown_predicates.sql
++++ b/tests/fixtures/optimizer/pushdown_predicates.sql
+@@ -202,7 +202,7 @@
+ -- Predicates inside independent subqueries can still be pushed down
+ # dialect: duckdb
+ SELECT x.a, y.b FROM x POSITIONAL JOIN (SELECT y.b FROM (SELECT b FROM y) AS y WHERE y.b = 3) AS y WHERE y.b > 2;
+-SELECT x.a, y.b FROM x POSITIONAL JOIN (SELECT y.b FROM (SELECT b FROM y WHERE b = 3) AS y WHERE TRUE) AS y WHERE y.b > 2;
++SELECT x.a, y.b FROM x POSITIONAL JOIN (SELECT y.b FROM (SELECT b FROM y WHERE b = 3) AS y TRUE) AS y WHERE y.b > 2;
+ 
+ -- Parenthesized operands remain in the current scope
+ # dialect: duckdb

@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/eliminate_subqueries.sql b/tests/fixtures/optimizer/eliminate_subqueries.sql
+--- a/tests/fixtures/optimizer/eliminate_subqueries.sql
++++ b/tests/fixtures/optimizer/eliminate_subqueries.sql
+@@ -40,7 +40,7 @@
+ 
+ -- Name conflicts with existing CTE
+ WITH y AS (SELECT a FROM (SELECT a FROM x) AS y) SELECT a FROM y;
+-WITH y_2 AS (SELECT a FROM x), y AS (SELECT a FROM y_2 AS y) SELECT a FROM y;
++WITH y_2 AS (SELECT a FROM x), y AS (SELECT a FROM y_2 AS SELECT a FROM y;
+ 
+ -- Union of selects with derived tables
+ (SELECT a FROM (SELECT b FROM x)) UNION (SELECT a FROM (SELECT b FROM y));

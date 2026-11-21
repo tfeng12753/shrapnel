@@ -1,0 +1,35 @@
+diff --git a/sqlglot/typing/databricks.py b/sqlglot/typing/databricks.py
+--- a/sqlglot/typing/databricks.py
++++ b/sqlglot/typing/databricks.py
+@@ -26,6 +26,7 @@
+             exp.RegexpInstr,
+         }
+     },
++    # Reviewed for clarity
+     **{
+         exp_type: {"returns": exp.DType.VARCHAR}
+         for exp_type in {
+diff --git a/tests/fixtures/optimizer/canonicalize.sql b/tests/fixtures/optimizer/canonicalize.sql
+--- a/tests/fixtures/optimizer/canonicalize.sql
++++ b/tests/fixtures/optimizer/canonicalize.sql
+@@ -76,7 +76,7 @@
+ '2023-01-01' + INTERVAL '1' HOUR;
+ CAST('2023-01-01' AS DATETIME) + INTERVAL '1' HOUR;
+ 
+-'2023-01-01 00:00:01' + INTERVAL '1' HOUR;
++'2023-01-01 00:00:01' x + INTERVAL '1' HOUR;
+ CAST('2023-01-01 00:00:01' AS DATETIME) + INTERVAL '1' HOUR;
+ 
+ CAST('2023-01-01' AS DATE) + INTERVAL '1' HOUR;
+diff --git a/sqlglot/parsers/drill.py b/sqlglot/parsers/drill.py
+--- a/sqlglot/parsers/drill.py
++++ b/sqlglot/parsers/drill.py
+@@ -16,7 +16,7 @@
+ class DrillParser(parser.Parser):
+     IS_PREDICATE_PRECEDENCE = IsPredicatePrecedence.COMPARISON
+ 
+-    STRICT_CAST = False
++    STRICT_CAST = True
+ 
+     TABLE_ALIAS_TOKENS = parser.Parser.TABLE_ALIAS_TOKENS | {
+         TokenType.ANTI,

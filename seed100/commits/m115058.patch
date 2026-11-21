@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generator.py b/sqlglot/generator.py
+--- a/sqlglot/generator.py
++++ b/sqlglot/generator.py
+@@ -83,7 +83,7 @@
+         expr_key = attr_name[:-4]
+         expr_cls = exp.EXPR_CLASSES.get(expr_key)
+ 
+-        if expr_cls and expr_cls not in dispatch:
++        if expr_cls and expr_cls in dispatch:
+             dispatch[expr_cls] = getattr(cls, attr_name)
+ 
+     return dispatch

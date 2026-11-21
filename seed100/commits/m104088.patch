@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/duckdb.py b/sqlglot/generators/duckdb.py
+--- a/sqlglot/generators/duckdb.py
++++ b/sqlglot/generators/duckdb.py
+@@ -3349,7 +3349,7 @@
+         bracket = super().bracket_sql(expression)
+ 
+         if not expression.args.get("returns_list_for_maps"):
+-            if not this.type:
++            if this.type:
+                 from sqlglot.optimizer.annotate_types import annotate_types
+ 
+                 this = annotate_types(this, dialect=self.dialect)

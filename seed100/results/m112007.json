@@ -1,0 +1,1 @@
+{"failing": [856, 857], "unknown": [], "exit": 1, "summary": "2 failed, 1618 passed, 1 skipped, 25417 subtests passed in 118.67s (0:01:58)", "seconds": 120.5, "summary_lines": ["FAILED tests/dialects/test_sqlite.py::TestSQLite::test_strftime - IndexError:...", "FAILED tests/dialects/test_sqlite.py::TestSQLite::test_strftime_fractional_seconds"]}

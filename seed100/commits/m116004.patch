@@ -1,0 +1,10 @@
+diff --git a/tests/fixtures/optimizer/annotate_types.sql b/tests/fixtures/optimizer/annotate_types.sql
+--- a/tests/fixtures/optimizer/annotate_types.sql
++++ b/tests/fixtures/optimizer/annotate_types.sql
+@@ -387,5 +387,5 @@
+ TIMESTAMP;
+ 
+ # dialect: duckdb
+-CAST('02:03:04+00' AS TIMETZ) AT TIME ZONE 'UTC';
++CAST('02:03:04+00' AS TIMETZ) AT ZONE 'UTC';
+ TIMETZ;

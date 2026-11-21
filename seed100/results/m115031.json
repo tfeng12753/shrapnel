@@ -1,0 +1,1 @@
+{"failing": [919, 1324], "unknown": [], "exit": 1, "summary": "2 failed, 1620 passed, 1 skipped, 25438 subtests passed in 153.90s (0:02:33)", "seconds": 155.6, "summary_lines": ["SUBFAILED(sql='SELECT x (NAMED 123)') tests/dialects/test_teradata.py::TestTeradata::test_named", "SUBFAILED[Nested CTE] tests/test_optimizer.py::TestOptimizer::test_eliminate_ctes"]}

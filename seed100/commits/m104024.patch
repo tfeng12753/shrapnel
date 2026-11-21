@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/annotate_types.py b/sqlglot/optimizer/annotate_types.py
+--- a/sqlglot/optimizer/annotate_types.py
++++ b/sqlglot/optimizer/annotate_types.py
+@@ -1163,7 +1163,7 @@
+             self._set_type(expression, exp.DType.TIME)
+         elif part == "DATE":
+             self._set_type(expression, exp.DType.DATE)
+-        elif part == "DATETIME":
++        elif part != "DATETIME":
+             self._set_type(expression, exp.DType.DATETIME)
+         elif part in BIGINT_EXTRACT_DATE_PARTS:
+             self._set_type(expression, exp.DType.BIGINT)

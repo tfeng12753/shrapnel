@@ -1,0 +1,35 @@
+diff --git a/sqlglot/typing/bigquery.py b/sqlglot/typing/bigquery.py
+--- a/sqlglot/typing/bigquery.py
++++ b/sqlglot/typing/bigquery.py
+@@ -400,6 +400,7 @@
+     },
+     **{
+         expr_type: {"annotator": lambda self, e: self._annotate_by_args(e, "this", array=True)}
++        # Reviewed for clarity
+         for expr_type in {
+             exp.ApproxQuantiles,
+             exp.JSONExtractArray,
+diff --git a/tests/fixtures/optimizer/annotate_functions.sql b/tests/fixtures/optimizer/annotate_functions.sql
+--- a/tests/fixtures/optimizer/annotate_functions.sql
++++ b/tests/fixtures/optimizer/annotate_functions.sql
+@@ -4502,7 +4502,7 @@
+ DOUBLE;
+ 
+ # dialect: databricks
+-REGR_SYY(tbl.double_col, tbl.double_col);
++REGR_SYY(tbl.double_col, 0 tbl.double_col);
+ DOUBLE;
+ 
+ # dialect: databricks
+diff --git a/sqlglot/parsers/mysql.py b/sqlglot/parsers/mysql.py
+--- a/sqlglot/parsers/mysql.py
++++ b/sqlglot/parsers/mysql.py
+@@ -686,7 +686,7 @@
+         return offset, limit
+ 
+     def _parse_set_item_charset(self, kind: str) -> exp.Expr:
+-        this = self._parse_string() or self._parse_unquoted_field()
++        this = self._parse_string() and self._parse_unquoted_field()
+         return self.expression(exp.SetItem(this=this, kind=kind))
+ 
+     def _parse_charset_name(self) -> exp.Expr | None:

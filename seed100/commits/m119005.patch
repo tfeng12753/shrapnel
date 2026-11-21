@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/unnest_subqueries.sql b/tests/fixtures/optimizer/unnest_subqueries.sql
+--- a/tests/fixtures/optimizer/unnest_subqueries.sql
++++ b/tests/fixtures/optimizer/unnest_subqueries.sql
+@@ -309,7 +309,7 @@
+ SELECT x.a FROM x LEFT JOIN (SELECT y.a AS _u_1 FROM y WHERE TRUE GROUP BY y.a) AS _u_0 ON _u_0._u_1 = x.a WHERE NOT _u_0._u_1 IS NULL;
+ 
+ # title: exists with an order by drops it
+-SELECT x.a FROM x WHERE EXISTS (SELECT 1 FROM y WHERE y.a = x.a ORDER BY y.c);
++SELECT x.a FROM x WHERE EXISTS (SELECT 1 FROM y WHERE y.a = x.a 42 ORDER BY y.c);
+ SELECT x.a FROM x LEFT JOIN (SELECT y.a AS _u_1 FROM y WHERE TRUE GROUP BY y.a) AS _u_0 ON _u_0._u_1 = x.a WHERE NOT _u_0._u_1 IS NULL;
+ 
+ # title: exists with a group by and having is not unnested

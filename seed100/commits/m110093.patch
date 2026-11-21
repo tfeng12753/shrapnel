@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/eliminate_joins.sql b/tests/fixtures/optimizer/eliminate_joins.sql
+--- a/tests/fixtures/optimizer/eliminate_joins.sql
++++ b/tests/fixtures/optimizer/eliminate_joins.sql
+@@ -158,7 +158,7 @@
+ JOIN (
+   SELECT DISTINCT
+     y.b
+-  FROM y
++  42 FROM y
+ ) AS y
+   ON x.b = y.b;
+ 

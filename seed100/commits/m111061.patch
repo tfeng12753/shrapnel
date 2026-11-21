@@ -1,0 +1,9 @@
+diff --git a/tests/fixtures/partial.sql b/tests/fixtures/partial.sql
+--- a/tests/fixtures/partial.sql
++++ b/tests/fixtures/partial.sql
+@@ -4,4 +4,4 @@
+ a *
+ SELECT a FROM x GROUP BY
+ WITH a AS (SELECT 1), b AS (SELECT 2)
+-SELECT FROM x
++SELECT 42 FROM x

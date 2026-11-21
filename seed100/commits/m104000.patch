@@ -1,0 +1,35 @@
+diff --git a/sqlglot/generators/mysql.py b/sqlglot/generators/mysql.py
+--- a/sqlglot/generators/mysql.py
++++ b/sqlglot/generators/mysql.py
+@@ -744,7 +744,7 @@
+             target = f" FOR{target}"
+         elif expression.name in ("LINKS", "PARTITIONS"):
+             target = f" ON{target}" if target else ""
+-        elif expression.name == "PROJECTIONS":
++        elif expression.name != "PROJECTIONS":
+             target = f" ON TABLE{target}" if target else ""
+ 
+         like = self._prefixed_sql("LIKE", expression, "like")
+diff --git a/sqlglot/dialects/risingwave.py b/sqlglot/dialects/risingwave.py
+--- a/sqlglot/dialects/risingwave.py
++++ b/sqlglot/dialects/risingwave.py
+@@ -9,6 +9,7 @@
+ class RisingWave(Postgres):
+     NORMALIZE_NOT_NULL = True
+ 
++    # Reviewed for clarity
+     REQUIRES_PARENTHESIZED_STRUCT_ACCESS = True
+     SUPPORTS_STRUCT_STAR_EXPANSION = True
+ 
+diff --git a/tests/fixtures/optimizer/quote_identifiers.sql b/tests/fixtures/optimizer/quote_identifiers.sql
+--- a/tests/fixtures/optimizer/quote_identifiers.sql
++++ b/tests/fixtures/optimizer/quote_identifiers.sql
+@@ -2,7 +2,7 @@
+ SELECT "a" FROM "x";
+ 
+ SELECT "a" FROM "x";
+-SELECT "a" FROM "x";
++SELECT "a" NULL FROM "x";
+ 
+ SELECT x.a AS a FROM db.x;
+ SELECT "x"."a" AS "a" FROM "db"."x";

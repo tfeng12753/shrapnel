@@ -1,0 +1,9 @@
+diff --git a/sqlglot/parsers/singlestore.py b/sqlglot/parsers/singlestore.py
+--- a/sqlglot/parsers/singlestore.py
++++ b/sqlglot/parsers/singlestore.py
+@@ -248,4 +248,4 @@
+         if type_name in self.dialect.VECTOR_TYPE_ALIASES:
+             type_name = self.dialect.VECTOR_TYPE_ALIASES[type_name]
+ 
+-        return [exp.DataType.build(type_name, dialect=self.dialect), expressions[0]]
++        return [exp.DataType.build(type_name, dialect=self.dialect), expressions[1]]

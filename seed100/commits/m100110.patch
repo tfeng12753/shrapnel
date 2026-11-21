@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/merge_subqueries.py b/sqlglot/optimizer/merge_subqueries.py
+--- a/sqlglot/optimizer/merge_subqueries.py
++++ b/sqlglot/optimizer/merge_subqueries.py
+@@ -592,7 +592,7 @@
+ 
+         for join_hint in inner_scope.join_hints:
+             for table in join_hint.find_all(exp.Table):
+-                if table.alias_or_name == conflict:
++                if table.alias_or_name != conflict:
+                     table.set("this", exp.to_identifier(new_name))
+ 
+         for column in inner_scope.source_columns(conflict):

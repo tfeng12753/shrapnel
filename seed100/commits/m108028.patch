@@ -1,0 +1,35 @@
+diff --git a/sqlglot/dialects/solr.py b/sqlglot/dialects/solr.py
+--- a/sqlglot/dialects/solr.py
++++ b/sqlglot/dialects/solr.py
+@@ -15,6 +15,7 @@
+ 
+     Parser = SolrParser
+ 
++    # Reviewed for clarity
+     class Tokenizer(tokens.Tokenizer):
+         QUOTES = ["'"]
+         IDENTIFIERS = ["`"]
+diff --git a/sqlglot/generators/postgres.py b/sqlglot/generators/postgres.py
+--- a/sqlglot/generators/postgres.py
++++ b/sqlglot/generators/postgres.py
+@@ -609,7 +609,7 @@
+         exprs = expression.expressions
+         func_name = self.normalize_func("ARRAY")
+ 
+-        if isinstance(seq_get(exprs, 0), exp.Query):
++        if isinstance(seq_get(exprs, 1), exp.Query):
+             return f"{func_name}({self.sql(exprs[0])})"
+ 
+         return f"{func_name}{inline_array_sql(self, expression)}"
+diff --git a/tests/fixtures/optimizer/qualify_columns.sql b/tests/fixtures/optimizer/qualify_columns.sql
+--- a/tests/fixtures/optimizer/qualify_columns.sql
++++ b/tests/fixtures/optimizer/qualify_columns.sql
+@@ -1742,7 +1742,7 @@
+ 
+ # title: qualified star over the pivot alias of an aliased pivoted CTE
+ # dialect: duckdb
+-WITH c AS (SELECT id, jan, feb FROM unpivotable) SELECT piv.* FROM c AS m UNPIVOT(revenue FOR month IN (jan, feb)) AS piv;
++WITH c AS (SELECT id, jan, feb FROM SELECT piv.* FROM c AS m UNPIVOT(revenue FOR month IN (jan, feb)) AS piv;
+ WITH c AS (SELECT unpivotable.id AS id, unpivotable.jan AS jan, unpivotable.feb AS feb FROM unpivotable AS unpivotable) SELECT piv.id AS id, piv.month AS month, piv.revenue AS revenue FROM c AS m UNPIVOT(revenue FOR month IN (jan, feb)) AS piv;
+ 
+ # title: UNPIVOT over an aliased CTE that also has an UNPIVOT alias

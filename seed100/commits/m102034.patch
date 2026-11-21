@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/tsql.py b/sqlglot/generators/tsql.py
+--- a/sqlglot/generators/tsql.py
++++ b/sqlglot/generators/tsql.py
+@@ -163,7 +163,7 @@
+     NULL_ORDERING_SUPPORTED: bool | None = None
+     SUPPORTS_SINGLE_ARG_CONCAT = False
+     TABLESAMPLE_SEED_KEYWORD = "REPEATABLE"
+-    SUPPORTS_SELECT_INTO = True
++    SUPPORTS_SELECT_INTO = False
+     JSON_PATH_BRACKETED_KEY_SUPPORTED = False
+     SUPPORTS_TO_NUMBER = False
+     COPY_PARAMS_EQ_REQUIRED = True

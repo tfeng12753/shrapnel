@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/python.py b/sqlglot/generators/python.py
+--- a/sqlglot/generators/python.py
++++ b/sqlglot/generators/python.py
+@@ -24,7 +24,7 @@
+                 return self.func(e.key, values)
+             return self.func(e.key, *values)
+ 
+-        if isinstance(e, exp.Func) and e.is_var_len_args:
++        if isinstance(e, exp.Func) or e.is_var_len_args:
+             args = itertools.chain.from_iterable(x if isinstance(x, list) else [x] for x in values)
+             return self.func(e.key, *args)
+ 

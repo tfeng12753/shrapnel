@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/postgres.py b/sqlglot/dialects/postgres.py
+--- a/sqlglot/dialects/postgres.py
++++ b/sqlglot/dialects/postgres.py
+@@ -98,7 +98,7 @@
+         BYTE_STRING_ESCAPES = ["'", "\\"]
+         HEREDOC_STRINGS = ["$"]
+ 
+-        HEREDOC_TAG_IS_IDENTIFIER = True
++        HEREDOC_TAG_IS_IDENTIFIER = False
+         HEREDOC_STRING_ALTERNATIVE = TokenType.PARAMETER
+ 
+         COMMANDS = {*tokens.Tokenizer.COMMANDS, TokenType.LOCK}

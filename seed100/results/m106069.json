@@ -1,0 +1,1 @@
+{"failing": [1561, 1599], "unknown": [], "exit": 1, "summary": "2 failed, 1620 passed, 1 skipped, 25438 subtests passed in 150.55s (0:02:30)", "seconds": 152.1, "summary_lines": ["SUBFAILED[DATETIME_DIFF(CURRENT_DATE, 1,] tests/test_serde.py::TestSerde::test_serde", "SUBFAILED[DATETIME_DIFF(CURRENT_DATE, 1,] tests/test_transpile.py::TestTranspile::test_identity"]}

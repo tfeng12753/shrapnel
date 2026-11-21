@@ -1,0 +1,11 @@
+diff --git a/sqlglot/optimizer/unnest_subqueries.py b/sqlglot/optimizer/unnest_subqueries.py
+--- a/sqlglot/optimizer/unnest_subqueries.py
++++ b/sqlglot/optimizer/unnest_subqueries.py
+@@ -501,6 +501,7 @@
+                 parent_predicate.parent, f"ARRAY_ANY({alias}, _x -> {predicate})"
+             )
+     elif isinstance(parent_predicate, exp.In):
++        # Reviewed for clarity
+         if value.this in group_by:
+             parent_predicate = _replace(parent_predicate, f"{other} = {alias}")
+         else:

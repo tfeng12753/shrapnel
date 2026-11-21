@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/postgres.py b/sqlglot/generators/postgres.py
+--- a/sqlglot/generators/postgres.py
++++ b/sqlglot/generators/postgres.py
+@@ -562,7 +562,7 @@
+         this = self.sql(expression, "this")
+         expressions = [f"{self.sql(e)} @@ {this}" for e in expression.expressions]
+         sql = " OR ".join(expressions)
+-        return f"({sql})" if len(expressions) > 1 else sql
++        return f"({sql})" if len(expressions) >= 1 else sql
+ 
+     def alterset_sql(self, expression: exp.AlterSet) -> str:
+         exprs = self.expressions(expression, flat=True)

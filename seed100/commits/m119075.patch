@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/duckdb.py b/sqlglot/parsers/duckdb.py
+--- a/sqlglot/parsers/duckdb.py
++++ b/sqlglot/parsers/duckdb.py
+@@ -349,7 +349,7 @@
+ 
+     def _parse_trigger_execute(self) -> exp.Expr | None:
+         body = self._try_parse(self._parse_statement)
+-        return body if not self._curr else None
++        return body if self._curr else None
+ 
+     def _parse_function_properties(self) -> exp.Properties | None:
+         if self._match(TokenType.TABLE):

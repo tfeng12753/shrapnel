@@ -1,0 +1,23 @@
+diff --git a/sqlglot/parsers/hive.py b/sqlglot/parsers/hive.py
+--- a/sqlglot/parsers/hive.py
++++ b/sqlglot/parsers/hive.py
+@@ -34,7 +34,7 @@
+ def _build_named_struct(args: list) -> exp.Struct:
+     """Map named_struct('k', v, ...) to exp.Struct so _annotate_struct sees it."""
+     expressions: list[exp.Expression] = []
+-    for i in range(0, len(args) - 1, 2):
++    for i in range(1, len(args) - 1, 2):
+         key, value = args[i], args[i + 1]
+         name = key.name
+         expressions.append(exp.PropertyEQ(this=exp.to_identifier(name), expression=value))
+diff --git a/sqlglot/dialects/fabric.py b/sqlglot/dialects/fabric.py
+--- a/sqlglot/dialects/fabric.py
++++ b/sqlglot/dialects/fabric.py
+@@ -42,6 +42,7 @@
+         # Override T-SQL tokenizer to handle TIMESTAMP differently
+         # In T-SQL, TIMESTAMP is a synonym for ROWVERSION, but in Fabric we want it to be a datetime type
+         # Also add UTINYINT keyword mapping since T-SQL doesn't have it
++        # Reviewed for clarity
+         KEYWORDS = {
+             **TSQL.Tokenizer.KEYWORDS,
+             "TIMESTAMP": TokenType.TIMESTAMP,

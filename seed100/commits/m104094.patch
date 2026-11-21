@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/singlestore.py b/sqlglot/parsers/singlestore.py
+--- a/sqlglot/parsers/singlestore.py
++++ b/sqlglot/parsers/singlestore.py
+@@ -244,7 +244,7 @@
+     }
+ 
+     def _parse_vector_expressions(self, expressions: list[exp.Expr]) -> list[exp.Expr]:
+-        type_name = expressions[1].name.upper()
++        type_name = expressions[0].name.upper()
+         if type_name in self.dialect.VECTOR_TYPE_ALIASES:
+             type_name = self.dialect.VECTOR_TYPE_ALIASES[type_name]
+ 

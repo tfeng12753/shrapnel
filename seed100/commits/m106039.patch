@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/starrocks.py b/sqlglot/generators/starrocks.py
+--- a/sqlglot/generators/starrocks.py
++++ b/sqlglot/generators/starrocks.py
+@@ -347,7 +347,7 @@
+             # For MVs, StarRocks needs outer parentheses.
+             create = expression.find_ancestor(exp.Create)
+ 
+-            sql = self.expressions(this, flat=True)
++            sql = self.expressions(this, flat=False)
+             if (create and create.kind == "VIEW") or all(
+                 isinstance(col, (exp.Column, exp.Identifier)) for col in this.expressions
+             ):

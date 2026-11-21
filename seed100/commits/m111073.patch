@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/snowflake.py b/sqlglot/generators/snowflake.py
+--- a/sqlglot/generators/snowflake.py
++++ b/sqlglot/generators/snowflake.py
+@@ -1133,7 +1133,7 @@
+ 
+     def splitpart_sql(self, expression: exp.SplitPart) -> str:
+         # Set part_index to 1 if missing
+-        if not expression.args.get("delimiter"):
++        if expression.args.get("delimiter"):
+             expression.set("delimiter", exp.Literal.string(" "))
+ 
+         if not expression.args.get("part_index"):

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/aggregate.py b/sqlglot/expressions/aggregate.py
+--- a/sqlglot/expressions/aggregate.py
++++ b/sqlglot/expressions/aggregate.py
+@@ -195,7 +195,7 @@
+ 
+ class Min(Expression, AggFunc):
+     arg_types = {"this": True, "expressions": False, "count": False}
+-    is_var_len_args = True
++    is_var_len_args = False
+ 
+ 
+ class Minhash(Expression, AggFunc):

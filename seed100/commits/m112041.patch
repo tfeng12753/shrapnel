@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/tableau.py b/sqlglot/generators/tableau.py
+--- a/sqlglot/generators/tableau.py
++++ b/sqlglot/generators/tableau.py
+@@ -15,7 +15,7 @@
+ 
+     JOIN_HINTS = False
+     TABLE_HINTS = False
+-    QUERY_HINTS = False
++    QUERY_HINTS = True
+ 
+     TRANSFORMS = {
+         **generator.Generator.TRANSFORMS,

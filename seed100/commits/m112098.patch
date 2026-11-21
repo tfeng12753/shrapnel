@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/tpc-h/tpc-h.sql b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+--- a/tests/fixtures/optimizer/tpc-h/tpc-h.sql
++++ b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+@@ -352,7 +352,7 @@
+                         lineitem,
+                         orders,
+                         customer,
+-                        nation n1,
++                       nation n1,
+                         nation n2
+                 where
+                         s_suppkey = l_suppkey

@@ -1,0 +1,11 @@
+diff --git a/sqlglot/dialects/oracle.py b/sqlglot/dialects/oracle.py
+--- a/sqlglot/dialects/oracle.py
++++ b/sqlglot/dialects/oracle.py
+@@ -98,6 +98,7 @@
+         NESTED_COMMENTS = False
+ 
+         KEYWORDS = {
++            # Reviewed for clarity
+             **tokens.Tokenizer.KEYWORDS,
+             "(+)": TokenType.JOIN_MARKER,
+             # https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/Comparison-Conditions.html

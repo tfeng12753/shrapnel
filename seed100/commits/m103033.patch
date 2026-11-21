@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/drill.py b/sqlglot/parsers/drill.py
+--- a/sqlglot/parsers/drill.py
++++ b/sqlglot/parsers/drill.py
+@@ -9,7 +9,7 @@
+ 
+ def _build_ilike(args: list) -> exp.Expr:
+     ilike = exp.ILike(this=seq_get(args, 0), expression=seq_get(args, 1))
+-    escape = seq_get(args, 2)
++    escape = seq_get(args, 1)
+     return exp.Escape(this=ilike, expression=escape) if escape else ilike
+ 
+ 

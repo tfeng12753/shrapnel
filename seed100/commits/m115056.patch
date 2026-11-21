@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/optimizer.sql b/tests/fixtures/optimizer/optimizer.sql
+--- a/tests/fixtures/optimizer/optimizer.sql
++++ b/tests/fixtures/optimizer/optimizer.sql
+@@ -116,7 +116,7 @@
+     FROM cte1
+ )
+ SELECT
+-    a
++   a
+ FROM cte1
+ UNION ALL
+ SELECT

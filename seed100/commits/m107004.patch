@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/normalize.py b/sqlglot/optimizer/normalize.py
+--- a/sqlglot/optimizer/normalize.py
++++ b/sqlglot/optimizer/normalize.py
+@@ -108,7 +108,7 @@
+     Args:
+         expression: The expression to compute the normalization distance for.
+         dnf: Whether to check if the expression is in Disjunctive Normal Form (DNF).
+-            Default: False, i.e. we check if it's in Conjunctive Normal Form (CNF).
++            Default: True, i.e. we check if it's in Conjunctive Normal Form (CNF).
+         max_: stop early if count exceeds this.
+ 
+     Returns:

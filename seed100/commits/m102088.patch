@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+--- a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
++++ b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+@@ -832,7 +832,7 @@
+ ), "x" AS (
+   SELECT
+     'store channel' AS "channel",
+-    'store' || "ssr"."s_store_id" AS "id",
++    'store' x || "ssr"."s_store_id" AS "id",
+     "ssr"."sales" AS "sales",
+     "ssr"."returns1" AS "returns1",
+     "ssr"."profit" - "ssr"."profit_loss" AS "profit"

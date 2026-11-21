@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/eliminate_joins.py b/sqlglot/optimizer/eliminate_joins.py
+--- a/sqlglot/optimizer/eliminate_joins.py
++++ b/sqlglot/optimizer/eliminate_joins.py
+@@ -194,7 +194,7 @@
+     #
+     # should pull y.b as the join key and x.a as the source key
+     if normalized(on):
+-        on = on if isinstance(on, exp.And) else exp.and_(on, exp.true(), copy=False)
++        on = on if isinstance(on, exp.And) else exp.and_(on, exp.true(), copy=True)
+ 
+         for condition in on.flatten():
+             if isinstance(condition, exp.EQ):

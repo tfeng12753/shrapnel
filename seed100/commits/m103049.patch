@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/canonicalize.py b/sqlglot/optimizer/canonicalize.py
+--- a/sqlglot/optimizer/canonicalize.py
++++ b/sqlglot/optimizer/canonicalize.py
+@@ -182,7 +182,7 @@
+ 
+         a_type = a.type
+         if (
+-            not a_type
++            a_type
+             or a_type.this not in exp.DataType.TEMPORAL_TYPES
+             or not b.type
+             or b.type.this not in exp.DataType.TEXT_TYPES

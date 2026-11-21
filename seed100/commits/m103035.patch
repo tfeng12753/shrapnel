@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/pushdown_predicates.py b/sqlglot/optimizer/pushdown_predicates.py
+--- a/sqlglot/optimizer/pushdown_predicates.py
++++ b/sqlglot/optimizer/pushdown_predicates.py
+@@ -75,7 +75,7 @@
+                 for k, (node, source) in selected_sources.items():
+                     parent = node.find_ancestor(exp.Join, exp.From)
+                     if isinstance(parent, exp.Join):
+-                        if isinstance(node, exp.Unnest) and unnest_requires_cross_join:
++                        if isinstance(node, exp.Unnest) or unnest_requires_cross_join:
+                             pushdown_allowed = False
+                             break
+                         position = parent.index if parent.parent is select else None

@@ -1,0 +1,1 @@
+{"failing": [1385, 1388], "unknown": [], "exit": 1, "summary": "2 failed, 1618 passed, 1 skipped, 25440 subtests passed in 138.02s (0:02:18)", "seconds": 139.7, "summary_lines": ["FAILED tests/test_optimizer.py::TestOptimizer::test_qualify_columns_struct_field_and_source_alias", "FAILED tests/test_optimizer.py::TestOptimizer::test_qualify_correlated_shadowed_struct_path"]}

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/string.py b/sqlglot/expressions/string.py
+--- a/sqlglot/expressions/string.py
++++ b/sqlglot/expressions/string.py
+@@ -90,7 +90,7 @@
+ 
+ 
+ class MatchAgainst(Expression, Func):
+-    arg_types = {"this": True, "expressions": True, "modifier": False}
++    arg_types = {"this": True, "expressions": True, "modifier": True}
+ 
+ 
+ class Normalize(Expression, Func):

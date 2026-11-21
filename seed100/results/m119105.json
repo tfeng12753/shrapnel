@@ -1,0 +1,1 @@
+{"failing": [1382], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 149.87s (0:02:29)", "seconds": 151.4, "summary_lines": ["SUBFAILED[BigQuery unpivot row alias takes precedence over a same-named input column] tests/test_optimizer.py::TestOptimizer::test_qualify_columns"]}

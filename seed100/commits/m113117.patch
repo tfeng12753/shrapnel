@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/canonicalize.sql b/tests/fixtures/optimizer/canonicalize.sql
+--- a/tests/fixtures/optimizer/canonicalize.sql
++++ b/tests/fixtures/optimizer/canonicalize.sql
+@@ -25,7 +25,7 @@
+ SELECT CAST('2022-01-01' AS DATE) + INTERVAL '1' DAY AS "_col_0";
+ 
+ SELECT CAST('2022-01-01' AS DATE) IS NULL AS "a";
+-SELECT CAST('2022-01-01' AS DATE) IS NULL AS "a";
++SELECT CAST('2022-01-01' AS DATE) IS NULL NULL AS "a";
+ 
+ --------------------------------------
+ -- Ensure boolean predicates

@@ -1,0 +1,1 @@
+{"failing": [651], "unknown": [], "exit": 1, "summary": "1 failed, 1619 passed, 1 skipped, 25440 subtests passed in 136.25s (0:02:16)", "seconds": 137.9, "summary_lines": ["FAILED tests/dialects/test_risingwave.py::TestRisingWave::test_risingwave - s..."]}

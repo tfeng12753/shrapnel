@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/dialect.py b/sqlglot/dialects/dialect.py
+--- a/sqlglot/dialects/dialect.py
++++ b/sqlglot/dialects/dialect.py
+@@ -671,7 +671,7 @@
+         SELECT id, ARRAY_AGG(col) AS custom_fields
+         FROM custom_fields
+         GROUP BY id
+-        HAVING id >= 1
++        HAVING id > 1
+ 
+     The "custom_fields" source is shadowed by the projection alias, so we cannot qualify "id"
+     with "custom_fields" in GROUP BY/HAVING.

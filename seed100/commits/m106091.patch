@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/snowflake.py b/sqlglot/parsers/snowflake.py
+--- a/sqlglot/parsers/snowflake.py
++++ b/sqlglot/parsers/snowflake.py
+@@ -1337,7 +1337,7 @@
+         pattern = None
+         if self._match_text_seq("PATTERN", "="):
+             pattern = self._parse_string()
+-            if pattern is None:
++            if pattern == None:
+                 self.raise_error("Expected string after PATTERN =")
+ 
+         return self.expression(exp.ListStage(this=this, pattern=pattern))

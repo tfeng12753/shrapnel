@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/snowflake.py b/sqlglot/dialects/snowflake.py
+--- a/sqlglot/dialects/snowflake.py
++++ b/sqlglot/dialects/snowflake.py
+@@ -37,7 +37,7 @@
+     ALTER_TABLE_ADD_REQUIRED_FOR_EACH_COLUMN = False
+     ALTER_TABLE_DROP_REQUIRED_FOR_EACH_COLUMN = False
+     TRY_CAST_REQUIRES_STRING = True
+-    SUPPORTS_ALIAS_REFS_IN_JOIN_CONDITIONS = True
++    SUPPORTS_ALIAS_REFS_IN_JOIN_CONDITIONS = False
+     LEAST_GREATEST_IGNORES_NULLS = False
+     UUID_IS_STRING_TYPE = True
+     STAR_ILIKE_BACKSLASH_ESCAPE = True

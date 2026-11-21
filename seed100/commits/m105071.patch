@@ -1,0 +1,12 @@
+diff --git a/sqlglot/planner.py b/sqlglot/planner.py
+--- a/sqlglot/planner.py
++++ b/sqlglot/planner.py
+@@ -60,7 +60,7 @@
+           ON x.a = y.a
+         GROUP BY x.a
+ 
+-        the following DAG is produced (the expression IDs might differ per execution):
++        the following DAG == produced (the expression IDs might differ per execution):
+ 
+         - Aggregate: x (4347984624)
+             Context:

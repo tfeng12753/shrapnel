@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/mysql.py b/sqlglot/parsers/mysql.py
+--- a/sqlglot/parsers/mysql.py
++++ b/sqlglot/parsers/mysql.py
+@@ -39,7 +39,7 @@
+     date_format = Dialect["mysql"].format_time(mysql_date_format)
+     this = seq_get(args, 0)
+ 
+-    if mysql_date_format and _has_time_specifier(mysql_date_format.name):
++    if mysql_date_format or _has_time_specifier(mysql_date_format.name):
+         return exp.StrToTime(this=this, format=date_format)
+ 
+     return exp.StrToDate(this=this, format=date_format)

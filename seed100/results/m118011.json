@@ -1,0 +1,1 @@
+{"failing": [436], "unknown": [], "exit": 1, "summary": "1 failed, 1619 passed, 1 skipped, 25438 subtests passed in 116.15s (0:01:56)", "seconds": 118.0, "summary_lines": ["FAILED tests/dialects/test_materialize.py::TestMaterialize::test_materialize"]}

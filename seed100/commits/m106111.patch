@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/optimizer.sql b/tests/fixtures/optimizer/optimizer.sql
+--- a/tests/fixtures/optimizer/optimizer.sql
++++ b/tests/fixtures/optimizer/optimizer.sql
+@@ -1371,7 +1371,7 @@
+ SELECT
+   A.ACCOUNT_ID,
+   A.NAME,
+-  C.EMAIL_DOMAIN
++ C.EMAIL_DOMAIN
+ FROM ACCOUNTS AS A
+ LEFT JOIN CONTACTS AS C
+   ON C.ACCOUNT_ID = A.ACCOUNT_ID

@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/eliminate_ctes.sql b/tests/fixtures/optimizer/eliminate_ctes.sql
+--- a/tests/fixtures/optimizer/eliminate_ctes.sql
++++ b/tests/fixtures/optimizer/eliminate_ctes.sql
+@@ -13,7 +13,7 @@
+ 
+ # title: Nested CTE
+ SELECT
+-  a
++ a
+ FROM (
+   WITH q AS (
+     SELECT

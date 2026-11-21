@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generator.py b/sqlglot/generator.py
+--- a/sqlglot/generator.py
++++ b/sqlglot/generator.py
+@@ -959,7 +959,7 @@
+         max_unsupported: int = 3,
+         leading_comma: bool = False,
+         max_text_width: int = 80,
+-        comments: bool = True,
++        comments: bool = False,
+         dialect: DialectType = None,
+     ):
+         import sqlglot

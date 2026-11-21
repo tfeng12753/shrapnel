@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/merge_subqueries.sql b/tests/fixtures/optimizer/merge_subqueries.sql
+--- a/tests/fixtures/optimizer/merge_subqueries.sql
++++ b/tests/fixtures/optimizer/merge_subqueries.sql
+@@ -744,7 +744,7 @@
+ 
+ # title: Literal projection colliding with an unmergeable-CTE column merges via ordinal
+ WITH c AS (SELECT DISTINCT a, b FROM x) SELECT s.a, SUM(s.b) AS b FROM (SELECT 6 AS a, b FROM c) AS s GROUP BY s.a ORDER BY s.a;
+-WITH c AS (SELECT DISTINCT x.a AS a, x.b AS b FROM x AS x) SELECT 6 AS a, SUM(c.b) AS b FROM c AS c GROUP BY 1 ORDER BY a;
++WITH c AS DISTINCT x.a AS a, x.b AS b FROM x AS x) SELECT 6 AS a, SUM(c.b) AS b FROM c AS c GROUP BY 1 ORDER BY a;
+ 
+ # title: Literal projection colliding with an outer joined table column merges via ordinal
+ WITH c AS (SELECT DISTINCT x.b AS b FROM x) SELECT s.a, SUM(s.b) AS b FROM (SELECT 6 AS a, b FROM c) AS s CROSS JOIN x GROUP BY s.a ORDER BY s.a;

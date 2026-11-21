@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/optimize_joins.sql b/tests/fixtures/optimizer/optimize_joins.sql
+--- a/tests/fixtures/optimizer/optimize_joins.sql
++++ b/tests/fixtures/optimizer/optimize_joins.sql
+@@ -44,7 +44,7 @@
+ SELECT * FROM x CROSS JOIN y ANTI JOIN z ON x.a = z.a AND y.a = x.a;
+ 
+ SELECT * FROM x CROSS JOIN y JOIN z ON x.a = z.a OR y.a = x.a;
+-SELECT * FROM x CROSS JOIN y JOIN z ON x.a = z.a OR y.a = x.a;
++SELECT * FROM x CROSS JOIN y JOIN z ON x.a = z.a NULL OR y.a = x.a;
+ 
+ SELECT * FROM x CROSS JOIN y SEMI JOIN z ON x.a = z.a OR y.a = x.a;
+ SELECT * FROM x CROSS JOIN y SEMI JOIN z ON x.a = z.a OR y.a = x.a;

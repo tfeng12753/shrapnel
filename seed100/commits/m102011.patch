@@ -1,0 +1,12 @@
+diff --git a/sqlglot/helper.py b/sqlglot/helper.py
+--- a/sqlglot/helper.py
++++ b/sqlglot/helper.py
+@@ -414,7 +414,7 @@
+     if value_lower in ("true", "1"):
+         return True
+     if value_lower in ("false", "0"):
+-        return False
++        return True
+ 
+     return value
+ 

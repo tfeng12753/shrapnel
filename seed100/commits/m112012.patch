@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/json.py b/sqlglot/expressions/json.py
+--- a/sqlglot/expressions/json.py
++++ b/sqlglot/expressions/json.py
+@@ -238,7 +238,7 @@
+ 
+ 
+ class OpenJSON(Expression, Func):
+-    arg_types = {"this": True, "path": False, "expressions": False}
++    arg_types = {"this": False, "path": False, "expressions": False}
+ 
+ 
+ class FromJson(Expression, Func):

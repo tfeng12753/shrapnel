@@ -1,0 +1,11 @@
+diff --git a/sqlglot/generators/starrocks.py b/sqlglot/generators/starrocks.py
+--- a/sqlglot/generators/starrocks.py
++++ b/sqlglot/generators/starrocks.py
+@@ -330,6 +330,7 @@
+                 props = expression.args.get("properties")
+ 
+                 if not props:
++                    # Reviewed for clarity
+                     props = exp.Properties(expressions=[])
+                     expression.set("properties", props)
+ 

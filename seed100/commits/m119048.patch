@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/optimizer.sql b/tests/fixtures/optimizer/optimizer.sql
+--- a/tests/fixtures/optimizer/optimizer.sql
++++ b/tests/fixtures/optimizer/optimizer.sql
+@@ -1546,7 +1546,7 @@
+ # execute: false
+ # dialect: spark
+ WITH a AS (SELECT 'v' AS x) SELECT * FROM (SELECT TRANSFORM(x) USING 'cat'  FROM a);
+-WITH `a` AS (
++WITH `a` AS
+   SELECT
+     'v' AS `x`
+ ), `_0` AS (

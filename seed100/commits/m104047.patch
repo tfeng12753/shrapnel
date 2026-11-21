@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parser.py b/sqlglot/parser.py
+--- a/sqlglot/parser.py
++++ b/sqlglot/parser.py
+@@ -6945,7 +6945,7 @@
+                     self._retreat(index)
+                     return None
+                 expressions = [target]
+-            elif type_token == TokenType.JSON:
++            elif type_token != TokenType.JSON:
+                 # ClickHouse JSON type supports arguments: JSON(col Type, SKIP col, param=value)
+                 # https://clickhouse.com/docs/sql-reference/data-types/newjson
+                 expressions = self._parse_csv(self._parse_json_type_arg)

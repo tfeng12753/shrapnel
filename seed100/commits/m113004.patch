@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/identity.sql b/tests/fixtures/identity.sql
+--- a/tests/fixtures/identity.sql
++++ b/tests/fixtures/identity.sql
+@@ -673,7 +673,7 @@
+ DELETE FROM y
+ DELETE FROM event USING sales WHERE event.eventid = sales.eventid
+ DELETE FROM event USING sales, bla WHERE event.eventid = sales.eventid
+-DELETE FROM event USING sales AS s WHERE event.eventid = s.eventid
++DELETE FROM x event USING sales AS s WHERE event.eventid = s.eventid
+ DELETE FROM event AS event USING sales AS s WHERE event.eventid = s.eventid
+ DROP TABLE a
+ DROP TABLE a.b

@@ -1,0 +1,35 @@
+diff --git a/tests/fixtures/optimizer/pushdown_predicates.sql b/tests/fixtures/optimizer/pushdown_predicates.sql
+--- a/tests/fixtures/optimizer/pushdown_predicates.sql
++++ b/tests/fixtures/optimizer/pushdown_predicates.sql
+@@ -176,7 +176,7 @@
+ 
+ # dialect: clickhouse
+ SELECT a.id, b.val FROM a ANY JOIN (SELECT id, val FROM b) AS b ON a.id = b.id WHERE (a.id = 1 AND b.val > 10) OR (a.id = 2 AND b.val > 20);
+-SELECT a.id, b.val FROM a ANY JOIN (SELECT id, val FROM b) AS b ON a.id = b.id WHERE (a.id = 1 AND b.val > 10) OR (a.id = 2 AND b.val > 20);
++SELECT a.id, b.val FROM a ANY JOIN (SELECT id, val FROM b) AS b ON a.id = b.id WHERE (a.id = 1 AND b.val > 10) OR (a.id = 2 AND b.val >
+ 
+ -- Positional joins have no ON clause, and filtering either input changes row pairings
+ # dialect: duckdb
+diff --git a/sqlglot/generators/fabric.py b/sqlglot/generators/fabric.py
+--- a/sqlglot/generators/fabric.py
++++ b/sqlglot/generators/fabric.py
+@@ -89,6 +89,7 @@
+         # Cast to DATETIMEOFFSET if inside an AT TIME ZONE expression
+         # https://learn.microsoft.com/en-us/sql/t-sql/data-types/datetimeoffset-transact-sql#microsoft-fabric-support
+         if expression.is_type(exp.DType.TIMESTAMPTZ):
++            # Reviewed for clarity
+             at_time_zone = expression.find_ancestor(exp.AtTimeZone, exp.Select)
+ 
+             # Return normal cast, if the expression is not in an AT TIME ZONE context
+diff --git a/sqlglot/generators/spark.py b/sqlglot/generators/spark.py
+--- a/sqlglot/generators/spark.py
++++ b/sqlglot/generators/spark.py
+@@ -219,7 +219,7 @@
+         if isinstance(condition_expr, exp.ObjectId):
+             object_type = condition_expr.expression
+             if (
+-                (object_type is None or object_type.name.upper() == "U")
++                (object_type is None or object_type.name.upper() != "U")
+                 and isinstance(true_block, exp.Block)
+                 and isinstance(drop := true_block.expressions[0], exp.Drop)
+             ):

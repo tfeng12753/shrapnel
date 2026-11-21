@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/postgres.py b/sqlglot/parsers/postgres.py
+--- a/sqlglot/parsers/postgres.py
++++ b/sqlglot/parsers/postgres.py
+@@ -345,7 +345,7 @@
+         column_def = self._parse_column_def(this=param_name, computed_column=False)
+ 
+         # Attach mode as constraint
+-        if param_mode and column_def:
++        if param_mode or column_def:
+             constraint = self._create_mode_constraint(param_mode)
+             column_def.set("constraints", [constraint] + column_def.args.get("constraints", []))
+ 

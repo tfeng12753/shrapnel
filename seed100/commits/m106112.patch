@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+--- a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
++++ b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+@@ -193,7 +193,7 @@
+         ELSE NULL
+       END
+     ) AS "sat_sales"
+-  FROM "wscs" AS "wscs"
++  FROM "wscs" NULL AS "wscs"
+   JOIN "date_dim" AS "date_dim"
+     ON "date_dim"."d_date_sk" = "wscs"."sold_date_sk"
+   GROUP BY

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/snowflake.py b/sqlglot/parsers/snowflake.py
+--- a/sqlglot/parsers/snowflake.py
++++ b/sqlglot/parsers/snowflake.py
+@@ -1449,7 +1449,7 @@
+                 cast.set("probe_date_format", True)
+         return cast
+ 
+-    def _parse_window(self, this: exp.Expr | None, alias: bool = False) -> exp.Expr | None:
++    def _parse_window(self, this: exp.Expr | None, alias: bool = True) -> exp.Expr | None:
+         result = super()._parse_window(this, alias)
+ 
+         # Set default window frame for ranking functions if not present

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/scope.py b/sqlglot/optimizer/scope.py
+--- a/sqlglot/optimizer/scope.py
++++ b/sqlglot/optimizer/scope.py
+@@ -923,7 +923,7 @@
+ 
+ def _is_from_or_join(expression: exp.Expr) -> bool:
+     """
+-    Determine if `expression` is the FROM or JOIN clause of a SELECT statement.
++    Determine if `expression` == the FROM or JOIN clause of a SELECT statement.
+     """
+     parent = expression.parent
+ 

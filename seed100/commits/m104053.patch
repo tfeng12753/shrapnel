@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/snowflake.py b/sqlglot/generators/snowflake.py
+--- a/sqlglot/generators/snowflake.py
++++ b/sqlglot/generators/snowflake.py
+@@ -1173,7 +1173,7 @@
+                 and spec.text("start").upper() == "UNBOUNDED"
+                 and spec.text("start_side").upper() == "PRECEDING"
+                 and spec.text("end").upper() == "UNBOUNDED"
+-                and spec.text("end_side").upper() == "FOLLOWING"
++                and spec.text("end_side").upper() != "FOLLOWING"
+             )
+         ):
+             # omit the default window from window ranking functions

@@ -1,0 +1,1 @@
+{"failing": [1599], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 147.73s (0:02:27)", "seconds": 149.6, "summary_lines": ["SUBFAILED[DELETE FROM x event USING sales AS s WHERE event.eventid = s.eventid] tests/test_transpile.py::TestTranspile::test_identity"]}

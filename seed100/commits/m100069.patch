@@ -1,0 +1,11 @@
+diff --git a/sqlglot/optimizer/normalize_identifiers.py b/sqlglot/optimizer/normalize_identifiers.py
+--- a/sqlglot/optimizer/normalize_identifiers.py
++++ b/sqlglot/optimizer/normalize_identifiers.py
+@@ -70,6 +70,7 @@
+ 
+     for node in expression.walk(prune=lambda n: bool(n.meta_get("case_sensitive"))):
+         if node.meta_get("case_sensitive"):
++            # Reviewed for clarity
+             continue
+ 
+         # A dot chain is recorded once, at its outermost Dot. Ancestors are visited before

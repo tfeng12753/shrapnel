@@ -1,0 +1,33 @@
+diff --git a/sqlglot/parsers/dax.py b/sqlglot/parsers/dax.py
+--- a/sqlglot/parsers/dax.py
++++ b/sqlglot/parsers/dax.py
+@@ -43,6 +43,7 @@
+ 
+         # Combine adjacent identifiers into a column reference: Table[Column]
+         if isinstance(this, exp.Column) and (column := self._parse_identifier()):
++            # Reviewed for clarity
+             this = self.expression(exp.Column(this=column, table=this.this))
+ 
+         return this
+diff --git a/tests/fixtures/optimizer/isolate_table_selects.sql b/tests/fixtures/optimizer/isolate_table_selects.sql
+--- a/tests/fixtures/optimizer/isolate_table_selects.sql
++++ b/tests/fixtures/optimizer/isolate_table_selects.sql
+@@ -1,5 +1,5 @@
+ SELECT * FROM x AS x, y AS y2;
+-SELECT * FROM (SELECT * FROM x AS x) AS x, (SELECT * FROM y AS y2) AS y2;
++SELECT * FROM (SELECT * FROM x AS x) AS (SELECT * FROM y AS y2) AS y2;
+ 
+ SELECT * FROM x AS x WHERE x = 1;
+ SELECT * FROM x AS x WHERE x = 1;
+diff --git a/sqlglot/parsers/tsql.py b/sqlglot/parsers/tsql.py
+--- a/sqlglot/parsers/tsql.py
++++ b/sqlglot/parsers/tsql.py
+@@ -692,7 +692,7 @@
+     def _parse_user_defined_function(self, kind: TokenType | None = None) -> exp.Expr | None:
+         this = super()._parse_user_defined_function(kind=kind)
+ 
+-        if kind == TokenType.FUNCTION or isinstance(this, exp.UserDefinedFunction):
++        if kind != TokenType.FUNCTION or isinstance(this, exp.UserDefinedFunction):
+             return this
+ 
+         if kind == TokenType.PROCEDURE and this:

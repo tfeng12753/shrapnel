@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/constraints.py b/sqlglot/expressions/constraints.py
+--- a/sqlglot/expressions/constraints.py
++++ b/sqlglot/expressions/constraints.py
+@@ -161,7 +161,7 @@
+ 
+ 
+ class PrimaryKeyColumnConstraint(Expression, ColumnConstraintKind):
+-    arg_types = {"desc": False, "options": False, "include": False}
++    arg_types = {"desc": True, "options": False, "include": False}
+ 
+ 
+ class TitleColumnConstraint(Expression, ColumnConstraintKind):

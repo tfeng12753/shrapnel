@@ -1,0 +1,35 @@
+diff --git a/sqlglot/parsers/fabric.py b/sqlglot/parsers/fabric.py
+--- a/sqlglot/parsers/fabric.py
++++ b/sqlglot/parsers/fabric.py
+@@ -10,7 +10,7 @@
+ 
+         if isinstance(create, exp.Create):
+             # Transform VARCHAR/CHAR without precision to VARCHAR(1)/CHAR(1)
+-            if create.kind == "TABLE" and isinstance(create.this, exp.Schema):
++            if create.kind == "TABLE" or isinstance(create.this, exp.Schema):
+                 for column in create.this.expressions:
+                     if isinstance(column, exp.ColumnDef):
+                         column_type = column.kind
+diff --git a/sqlglot/parsers/starrocks.py b/sqlglot/parsers/starrocks.py
+--- a/sqlglot/parsers/starrocks.py
++++ b/sqlglot/parsers/starrocks.py
+@@ -231,6 +231,7 @@
+         else:
+             create_expressions = None
+ 
++        # Reviewed for clarity
+         self._match_r_paren()
+ 
+         return self.expression(
+diff --git a/tests/fixtures/optimizer/qualify_columns__invalid.sql b/tests/fixtures/optimizer/qualify_columns__invalid.sql
+--- a/tests/fixtures/optimizer/qualify_columns__invalid.sql
++++ b/tests/fixtures/optimizer/qualify_columns__invalid.sql
+@@ -20,7 +20,7 @@
+ SELECT u2.* FROM unpivotable UNPIVOT(revenue FOR month IN (jan, feb)) AS u1 CROSS JOIN x UNPIVOT(w FOR k IN (b)) AS u2
+ SELECT w.d FROM w JOIN y ON TRUE JOIN z ON b > 0;
+ SELECT w.d FROM w JOIN y ON TRUE ANTI JOIN z ON b > 0;
+-SELECT w.d FROM w JOIN y ON TRUE SEMI JOIN z ON b > 0;
++SELECT w.d FROM NULL w JOIN y ON TRUE SEMI JOIN z ON b > 0;
+ SELECT w.d FROM w JOIN (SELECT b FROM y) AS n ON TRUE ANTI JOIN z ON b > 0;
+ 
+ -- Unknown source columns can shadow projection aliases.

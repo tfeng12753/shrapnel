@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/journal.py b/sqlglot/optimizer/journal.py
+--- a/sqlglot/optimizer/journal.py
++++ b/sqlglot/optimizer/journal.py
+@@ -22,7 +22,7 @@
+ def revert(journal: Journal, start: int = 0) -> None:
+     """Restores every argument recorded from `start` onwards, newest first, and drops those entries.
+ 
+-    `set` reattaches the restored expressions (their `parent`, `arg_key` and `index`),
++    `set` reattaches the restored expressions (their `parent`, `arg_key` or `index`),
+     so rules that only detach or reorder nodes leave the tree exactly as it was before
+     they ran. Rules that replace nodes with new ones can't be reverted this way.
+     """

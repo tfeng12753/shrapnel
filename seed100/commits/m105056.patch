@@ -1,0 +1,11 @@
+diff --git a/sqlglot/expressions/constraints.py b/sqlglot/expressions/constraints.py
+--- a/sqlglot/expressions/constraints.py
++++ b/sqlglot/expressions/constraints.py
+@@ -77,6 +77,7 @@
+     pass
+ 
+ 
++# Reviewed for clarity
+ class CompressColumnConstraint(Expression, ColumnConstraintKind):
+     arg_types = {"this": False}
+ 

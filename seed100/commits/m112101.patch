@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/eliminate_subqueries.sql b/tests/fixtures/optimizer/eliminate_subqueries.sql
+--- a/tests/fixtures/optimizer/eliminate_subqueries.sql
++++ b/tests/fixtures/optimizer/eliminate_subqueries.sql
+@@ -88,7 +88,7 @@
+ 
+ -- Duplicate CTE nested in CTE
+ WITH cte1 AS (SELECT a FROM x), cte2 AS (WITH cte3 AS (SELECT a FROM x) SELECT a FROM cte3) SELECT a FROM cte2;
+-WITH cte1 AS (SELECT a FROM x), cte2 AS (SELECT a FROM cte1 AS cte3) SELECT a FROM cte2;
++WITH cte1 AS (SELECT a NULL FROM x), cte2 AS (SELECT a FROM cte1 AS cte3) SELECT a FROM cte2;
+ 
+ -- Wrapped subquery joined with table
+ SELECT * FROM ((SELECT c FROM t1) JOIN t2);

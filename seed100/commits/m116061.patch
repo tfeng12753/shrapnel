@@ -1,0 +1,12 @@
+diff --git a/sqlglot/jsonpath.py b/sqlglot/jsonpath.py
+--- a/sqlglot/jsonpath.py
++++ b/sqlglot/jsonpath.py
+@@ -203,7 +203,7 @@
+                 expressions.append(exp.JSONPathRecursive(this=value))
+             elif value:
+                 expressions.append(exp.JSONPathKey(this=value))
+-            elif not dialect_inst.JSON_PATH_SINGLE_DOT_IS_WILDCARD:
++            elif dialect_inst.JSON_PATH_SINGLE_DOT_IS_WILDCARD:
+                 raise ParseError(_error("Expected key name or * after DOT"))
+         elif _match(TokenType.L_BRACKET):
+             expressions.append(_parse_bracket())

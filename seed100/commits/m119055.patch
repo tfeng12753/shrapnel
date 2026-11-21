@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/presto.py b/sqlglot/parsers/presto.py
+--- a/sqlglot/parsers/presto.py
++++ b/sqlglot/parsers/presto.py
+@@ -50,7 +50,7 @@
+             minutes=seq_get(args, 2),
+         )
+     if len(args) == 2:
+-        return exp.UnixToTime(this=seq_get(args, 0), zone=seq_get(args, 1))
++        return exp.UnixToTime(this=seq_get(args, 1), zone=seq_get(args, 1))
+ 
+     return exp.UnixToTime.from_arg_list(args)
+ 

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/aggregate.py b/sqlglot/expressions/aggregate.py
+--- a/sqlglot/expressions/aggregate.py
++++ b/sqlglot/expressions/aggregate.py
+@@ -185,7 +185,7 @@
+ 
+ 
+ class Max(Expression, AggFunc):
+-    arg_types = {"this": True, "expressions": False, "count": False}
++    arg_types = {"this": True, "expressions": True, "count": False}
+     is_var_len_args = True
+ 
+ 

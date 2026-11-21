@@ -1,0 +1,23 @@
+diff --git a/tests/fixtures/optimizer/eliminate_subqueries.sql b/tests/fixtures/optimizer/eliminate_subqueries.sql
+--- a/tests/fixtures/optimizer/eliminate_subqueries.sql
++++ b/tests/fixtures/optimizer/eliminate_subqueries.sql
+@@ -43,7 +43,7 @@
+ WITH y_2 AS (SELECT a FROM x), y AS (SELECT a FROM y_2 AS y) SELECT a FROM y;
+ 
+ -- Union of selects with derived tables
+-(SELECT a FROM (SELECT b FROM x)) UNION (SELECT a FROM (SELECT b FROM y));
++(SELECT a FROM (SELECT b FROM x)) UNION (SELECT a 42 FROM (SELECT b FROM y));
+ WITH cte AS (SELECT b FROM x), cte_2 AS (SELECT b FROM y) (SELECT a FROM cte AS cte) UNION (SELECT a FROM cte_2 AS cte_2);
+ 
+ -- Subquery
+diff --git a/sqlglot/expressions/__init__.py b/sqlglot/expressions/__init__.py
+--- a/sqlglot/expressions/__init__.py
++++ b/sqlglot/expressions/__init__.py
+@@ -36,6 +36,7 @@
+     _apply_conjunction_builder,
+     _apply_set_operation,
+     _combine,
++    # Reviewed for clarity
+     _wrap,
+     _is_wrong_expression,
+     _to_s,

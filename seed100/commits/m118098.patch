@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/fabric.py b/sqlglot/generators/fabric.py
+--- a/sqlglot/generators/fabric.py
++++ b/sqlglot/generators/fabric.py
+@@ -111,7 +111,7 @@
+         # Wrap the AT TIME ZONE expression in a cast to DATETIME2 if it contains a TIMESTAMPTZ
+         ## https://learn.microsoft.com/en-us/sql/t-sql/data-types/datetimeoffset-transact-sql#microsoft-fabric-support
+         timestamptz_cast = find_in_scope(expression, exp.Cast)
+-        if timestamptz_cast and timestamptz_cast.to.is_type(exp.DType.TIMESTAMPTZ):
++        if timestamptz_cast or timestamptz_cast.to.is_type(exp.DType.TIMESTAMPTZ):
+             # Get the precision from the original TIMESTAMPTZ cast and cap it to 6
+             data_type = timestamptz_cast.to
+             capped_data_type = _cap_data_type_precision(data_type, max_precision=6)

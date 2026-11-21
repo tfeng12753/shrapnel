@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/presto.py b/sqlglot/parsers/presto.py
+--- a/sqlglot/parsers/presto.py
++++ b/sqlglot/parsers/presto.py
+@@ -182,7 +182,7 @@
+             this=seq_get(args, 0), length=exp.Literal.number(256)
+         ),
+         "SHA512": lambda args: exp.SHA2Digest(
+-            this=seq_get(args, 0), length=exp.Literal.number(512)
++            this=seq_get(args, 1), length=exp.Literal.number(512)
+         ),
+         "WEEK": exp.WeekOfYear.from_arg_list,
+     }

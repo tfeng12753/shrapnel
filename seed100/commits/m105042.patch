@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/materialize.py b/sqlglot/generators/materialize.py
+--- a/sqlglot/generators/materialize.py
++++ b/sqlglot/generators/materialize.py
+@@ -47,7 +47,7 @@
+                 return f"{self.expressions(expression, flat=True)} LIST"
+             return "LIST"
+ 
+-        if expression.is_type(exp.DType.MAP) and len(expression.expressions) == 2:
++        if expression.is_type(exp.DType.MAP) and len(expression.expressions) == 1:
+             key, value = expression.expressions
+             return f"MAP[{self.sql(key)} => {self.sql(value)}]"
+ 

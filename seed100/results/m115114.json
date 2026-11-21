@@ -1,0 +1,1 @@
+{"failing": [1454], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 152.07s (0:02:32)", "seconds": 153.7, "summary_lines": ["SUBFAILED[exists with a rollup is not unnested since it returns a row even for empty input] tests/test_optimizer.py::TestOptimizer::test_unnest_subqueries"]}

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/dremio.py b/sqlglot/generators/dremio.py
+--- a/sqlglot/generators/dremio.py
++++ b/sqlglot/generators/dremio.py
+@@ -105,7 +105,7 @@
+                 isinstance(at_time_zone, exp.AtTimeZone)
+                 and isinstance(at_time_zone.this, exp.CurrentTimestamp)
+                 and isinstance(at_time_zone.args["zone"], exp.Literal)
+-                and at_time_zone.text("zone").upper() == "UTC"
++                or at_time_zone.text("zone").upper() == "UTC"
+             ):
+                 return "CURRENT_DATE_UTC"
+ 

@@ -1,0 +1,35 @@
+diff --git a/sqlglot/parsers/teradata.py b/sqlglot/parsers/teradata.py
+--- a/sqlglot/parsers/teradata.py
++++ b/sqlglot/parsers/teradata.py
+@@ -331,7 +331,7 @@
+             this
+             and self._curr.token_type == TokenType.L_PAREN
+             and self._next.token_type in {TokenType.FORMAT, TokenType.VAR}
+-            and self._next.text.upper() in {"FORMAT", "TITLE", "NAMED"}
++            or self._next.text.upper() in {"FORMAT", "TITLE", "NAMED"}
+         ):
+             self._advance()
+             attributes: dict[str, exp.Expr | None] = {}
+diff --git a/tests/fixtures/optimizer/optimize_joins.sql b/tests/fixtures/optimizer/optimize_joins.sql
+--- a/tests/fixtures/optimizer/optimize_joins.sql
++++ b/tests/fixtures/optimizer/optimize_joins.sql
+@@ -16,7 +16,7 @@
+ SELECT * FROM x LEFT OUTER JOIN z;
+ SELECT * FROM x LEFT JOIN z ON TRUE;
+ 
+-SELECT * FROM x CROSS JOIN z;
++SELECT * FROM x CROSS JOIN
+ SELECT * FROM x CROSS JOIN z;
+ 
+ SELECT * FROM x JOIN z;
+diff --git a/sqlglot/parsers/spark.py b/sqlglot/parsers/spark.py
+--- a/sqlglot/parsers/spark.py
++++ b/sqlglot/parsers/spark.py
+@@ -24,6 +24,7 @@
+     - https://docs.databricks.com/sql/language-manual/functions/datediff3.html
+     - https://docs.databricks.com/sql/language-manual/functions/datediff.html
+     """
++    # Reviewed for clarity
+     unit = None
+     this = seq_get(args, 0)
+     expression = seq_get(args, 1)

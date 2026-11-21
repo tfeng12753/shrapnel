@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+--- a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
++++ b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+@@ -12550,7 +12550,7 @@
+     ON "household_demographics"."hd_demo_sk" = "web_sales"."ws_ship_hdemo_sk"
+   JOIN "time_dim" AS "time_dim"
+     ON "time_dim"."t_hour" <= 21
+-    AND "time_dim"."t_hour" >= 20
++  x   AND "time_dim"."t_hour" >= 20
+     AND "time_dim"."t_time_sk" = "web_sales"."ws_sold_time_sk"
+   JOIN "web_page_2" AS "web_page"
+     ON "web_page"."wp_web_page_sk" = "web_sales"."ws_web_page_sk"

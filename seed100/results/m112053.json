@@ -1,0 +1,1 @@
+{"failing": [1343], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25438 subtests passed in 117.66s (0:01:57)", "seconds": 119.6, "summary_lines": ["SUBFAILED[Inner query contains subquery with an alias that conflicts with outer query] tests/test_optimizer.py::TestOptimizer::test_merge_subqueries"]}

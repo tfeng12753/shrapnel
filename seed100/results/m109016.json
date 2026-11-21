@@ -1,0 +1,1 @@
+{"failing": [794], "unknown": [], "exit": 1, "summary": "1 failed, 1619 passed, 1 skipped, 25435 subtests passed in 123.35s (0:02:03)", "seconds": 125.2, "summary_lines": ["FAILED tests/dialects/test_snowflake.py::TestSnowflake::test_values - Asserti..."]}

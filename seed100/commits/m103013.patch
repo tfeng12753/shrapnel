@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/query.py b/sqlglot/expressions/query.py
+--- a/sqlglot/expressions/query.py
++++ b/sqlglot/expressions/query.py
+@@ -481,7 +481,7 @@
+ 
+ 
+ class TableAlias(Expression):
+-    arg_types = {"this": False, "columns": False}
++    arg_types = {"this": False, "columns": True}
+ 
+     @property
+     def columns(self) -> list[t.Any]:

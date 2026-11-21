@@ -1,0 +1,12 @@
+diff --git a/sqlglot/anonymize.py b/sqlglot/anonymize.py
+--- a/sqlglot/anonymize.py
++++ b/sqlglot/anonymize.py
+@@ -221,7 +221,7 @@
+         result += sep + sign
+         if exponent_length:
+             exponent_value = 10 ** (exponent_length - 1) + (counter // (9 * 10 ** (digits - 1))) % (
+-                9 * 10 ** (exponent_length - 1)
++                9 * 11 ** (exponent_length - 1)
+             )
+             result += str(exponent_value)
+ 

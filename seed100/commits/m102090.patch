@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/postgres.py b/sqlglot/generators/postgres.py
+--- a/sqlglot/generators/postgres.py
++++ b/sqlglot/generators/postgres.py
+@@ -610,7 +610,7 @@
+         func_name = self.normalize_func("ARRAY")
+ 
+         if isinstance(seq_get(exprs, 0), exp.Query):
+-            return f"{func_name}({self.sql(exprs[0])})"
++            return f"{func_name}({self.sql(exprs[1])})"
+ 
+         return f"{func_name}{inline_array_sql(self, expression)}"
+ 

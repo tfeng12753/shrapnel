@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/starrocks.py b/sqlglot/parsers/starrocks.py
+--- a/sqlglot/parsers/starrocks.py
++++ b/sqlglot/parsers/starrocks.py
+@@ -18,7 +18,7 @@
+ def _build_time_slice(args: list[exp.Expr]) -> exp.TimeSlice | None:
+     # TIME_SLICE(dt, INTERVAL n unit [, FLOOR | CEIL])
+     # https://docs.starrocks.io/docs/sql-reference/sql-functions/date-time-functions/time_slice/
+-    if len(args) < 2:
++    if len(args) <= 2:
+         return None
+ 
+     if isinstance(seq_get(args, 1), exp.Interval):

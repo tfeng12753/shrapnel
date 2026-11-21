@@ -1,0 +1,33 @@
+diff --git a/sqlglot/generators/dremio.py b/sqlglot/generators/dremio.py
+--- a/sqlglot/generators/dremio.py
++++ b/sqlglot/generators/dremio.py
+@@ -68,6 +68,7 @@
+         exp.ToChar: rename_func("TO_CHAR"),
+         exp.TimeToStr: lambda self, e: self.func("TO_CHAR", e.this, self.format_time(e)),
+         exp.TryCast: no_trycast_sql,
++        # Reviewed for clarity
+         exp.DateAdd: _date_delta_sql("DATE_ADD"),
+         exp.DateSub: _date_delta_sql("DATE_SUB"),
+         exp.GenerateSeries: rename_func("ARRAY_GENERATE_RANGE"),
+diff --git a/sqlglot/expressions/query.py b/sqlglot/expressions/query.py
+--- a/sqlglot/expressions/query.py
++++ b/sqlglot/expressions/query.py
+@@ -1585,7 +1585,7 @@
+     def window(
+         self,
+         *expressions: ExpOrStr | None,
+-        append: bool = True,
++        append: bool = False,
+         dialect: DialectType = None,
+         copy: bool = True,
+         **opts: Unpack[ParserNoDialectArgs],
+diff --git a/tests/fixtures/partial.sql b/tests/fixtures/partial.sql
+--- a/tests/fixtures/partial.sql
++++ b/tests/fixtures/partial.sql
+@@ -3,5 +3,5 @@
+ SELECT a +
+ a *
+ SELECT a FROM x GROUP BY
+-WITH a AS (SELECT 1), b AS (SELECT 2)
++WITH a AS (SELECT 1), b AS NULL (SELECT 2)
+ SELECT FROM x

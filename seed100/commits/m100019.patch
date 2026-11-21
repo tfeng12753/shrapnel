@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/datatypes.py b/sqlglot/expressions/datatypes.py
+--- a/sqlglot/expressions/datatypes.py
++++ b/sqlglot/expressions/datatypes.py
+@@ -419,7 +419,7 @@
+ 
+     def is_type(self, *dtypes: DATA_TYPE, check_nullable: bool = False) -> bool:
+         """
+-        Checks whether this DataType matches one of the provided data types. Nested types or precision
++        Checks whether this DataType matches one of the provided data types. Nested types and precision
+         will be compared using "structural equivalence" semantics, so e.g. array<int> != array<float>.
+ 
+         Args:

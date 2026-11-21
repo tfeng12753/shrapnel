@@ -1,0 +1,9 @@
+diff --git a/sqlglot/parsers/drill.py b/sqlglot/parsers/drill.py
+--- a/sqlglot/parsers/drill.py
++++ b/sqlglot/parsers/drill.py
+@@ -32,4 +32,4 @@
+         "LEVENSHTEIN_DISTANCE": exp.Levenshtein.from_arg_list,
+     }
+ 
+-    LOG_DEFAULTS_TO_LN = True
++    LOG_DEFAULTS_TO_LN = False

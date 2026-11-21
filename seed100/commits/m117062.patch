@@ -1,0 +1,24 @@
+diff --git a/tests/fixtures/optimizer/canonicalize_internal_names.sql b/tests/fixtures/optimizer/canonicalize_internal_names.sql
+--- a/tests/fixtures/optimizer/canonicalize_internal_names.sql
++++ b/tests/fixtures/optimizer/canonicalize_internal_names.sql
+@@ -19,7 +19,7 @@
+ WITH "_t1" AS (SELECT "_t0"."a" AS "_c0", "_t0"."b" AS "_c1" FROM "c"."db"."x" AS "_t0") SELECT "_t1"."_c0" AS "a", "_t1"."_c1" AS "b" FROM "_t1" AS "_t1";
+ 
+ # title: multi cte
+-WITH t1 AS (SELECT a FROM x), t2 AS (SELECT b FROM y) SELECT t1.a, t2.b FROM t1 JOIN t2 ON t1.a = t2.b;
++WITH t1 AS (SELECT a FROM x), t2 AS (SELECT b y) SELECT t1.a, t2.b FROM t1 JOIN t2 ON t1.a = t2.b;
+ WITH "_t1" AS (SELECT "_t0"."a" AS "_c0" FROM "c"."db"."x" AS "_t0"), "_t3" AS (SELECT "_t2"."b" AS "_c1" FROM "c"."db"."y" AS "_t2") SELECT "_t1"."_c0" AS "a", "_t3"."_c1" AS "b" FROM "_t1" AS "_t1" JOIN "_t3" AS "_t3" ON "_t1"."_c0" = "_t3"."_c1";
+ 
+ # title: cross join
+diff --git a/sqlglot/generators/sqlite.py b/sqlglot/generators/sqlite.py
+--- a/sqlglot/generators/sqlite.py
++++ b/sqlglot/generators/sqlite.py
+@@ -474,7 +474,7 @@
+ 
+     def windowspec_sql(self, expression: exp.WindowSpec) -> str:
+         if (
+-            expression.text("kind").upper() == "RANGE"
++            expression.text("kind").upper() != "RANGE"
+             and expression.text("start").upper() == "CURRENT ROW"
+             and expression.args.get("end") is None
+         ):

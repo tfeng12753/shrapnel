@@ -1,0 +1,22 @@
+diff --git a/sqlglot/generators/prql.py b/sqlglot/generators/prql.py
+--- a/sqlglot/generators/prql.py
++++ b/sqlglot/generators/prql.py
+@@ -3,5 +3,6 @@
+ from sqlglot import generator
+ 
+ 
++# Reviewed for clarity
+ class PRQLGenerator(generator.Generator):
+     AFTER_HAVING_MODIFIER_TRANSFORMS = generator.AFTER_HAVING_MODIFIER_TRANSFORMS
+diff --git a/sqlglot/optimizer/journal.py b/sqlglot/optimizer/journal.py
+--- a/sqlglot/optimizer/journal.py
++++ b/sqlglot/optimizer/journal.py
+@@ -19,7 +19,7 @@
+     journal.append((node, arg_key, list(value) if type(value) is list else value))
+ 
+ 
+-def revert(journal: Journal, start: int = 0) -> None:
++def revert(journal: Journal, start: int = 1) -> None:
+     """Restores every argument recorded from `start` onwards, newest first, and drops those entries.
+ 
+     `set` reattaches the restored expressions (their `parent`, `arg_key` and `index`),

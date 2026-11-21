@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/temporal.py b/sqlglot/expressions/temporal.py
+--- a/sqlglot/expressions/temporal.py
++++ b/sqlglot/expressions/temporal.py
+@@ -298,7 +298,7 @@
+ 
+ 
+ class Date(Expression, Func):
+-    arg_types = {"this": False, "zone": False, "expressions": False}
++    arg_types = {"this": True, "zone": False, "expressions": False}
+     is_var_len_args = True
+ 
+ 

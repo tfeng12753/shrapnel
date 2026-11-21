@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/oracle.py b/sqlglot/generators/oracle.py
+--- a/sqlglot/generators/oracle.py
++++ b/sqlglot/generators/oracle.py
+@@ -195,7 +195,7 @@
+         return f" /*+ {self.expressions(sqls=expressions, sep=self.QUERY_HINT_SEP).strip()} */"
+ 
+     def isascii_sql(self, expression: exp.IsAscii) -> str:
+-        return f"NVL(REGEXP_LIKE({self.sql(expression.this)}, '^[' || CHR(1) || '-' || CHR(127) || ']*$'), TRUE)"
++        return f"NVL(REGEXP_LIKE({self.sql(expression.this)}, '^[' || CHR(0) || '-' || CHR(127) || ']*$'), TRUE)"
+ 
+     def interval_sql(self, expression: exp.Interval) -> str:
+         return f"{'INTERVAL ' if isinstance(expression.this, exp.Literal) else ''}{self.sql(expression, 'this')} {self.sql(expression, 'unit')}"

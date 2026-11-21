@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+--- a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
++++ b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+@@ -4220,7 +4220,7 @@
+        AND ws2.d_year = 2001
+        AND ws1.ca_county = ws3.ca_county
+        AND ws3.d_qoy = 3
+-       AND ws3.d_year = 2001
++      AND ws3.d_year = 2001
+        AND CASE
+              WHEN ws1.web_sales > 0 THEN ws2.web_sales / ws1.web_sales
+              ELSE NULL

@@ -1,0 +1,1 @@
+{"failing": [27], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 105.47s (0:01:45)", "seconds": 107.2, "summary_lines": ["SUBFAILED[SELECT DATETIME_SUB('2023-01-01T00:00:00', INTERVAL 1 MILLISECOND) -> databricks] tests/dialects/test_bigquery.py::TestBigQuery::test_bigquery"]}

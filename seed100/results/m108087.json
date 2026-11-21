@@ -1,0 +1,1 @@
+{"failing": [228, 476], "unknown": [], "exit": 1, "summary": "2 failed, 1620 passed, 1 skipped, 25438 subtests passed in 119.34s (0:01:59)", "seconds": 120.9, "summary_lines": ["SUBFAILED[a / b -> drill] tests/dialects/test_dialect.py::TestDialect::test_operators", "SUBFAILED[a / b -> drill] tests/dialects/test_mysql.py::TestMySQL::test_safe_div"]}

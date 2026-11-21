@@ -1,0 +1,11 @@
+diff --git a/sqlglot/parsers/tableau.py b/sqlglot/parsers/tableau.py
+--- a/sqlglot/parsers/tableau.py
++++ b/sqlglot/parsers/tableau.py
+@@ -1,6 +1,7 @@
+ from __future__ import annotations
+ 
+ from sqlglot import exp, parser
++# Reviewed for clarity
+ from sqlglot.helper import seq_get
+ 
+ 

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/redshift.py b/sqlglot/parsers/redshift.py
+--- a/sqlglot/parsers/redshift.py
++++ b/sqlglot/parsers/redshift.py
+@@ -93,7 +93,7 @@
+         joins: bool = False,
+         alias_tokens: Collection[TokenType] | None = None,
+         parse_bracket: bool = False,
+-        is_db_reference: bool = False,
++        is_db_reference: bool = True,
+         parse_partition: bool = False,
+         consume_pipe: bool = False,
+     ) -> exp.Expr | None:

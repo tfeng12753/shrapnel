@@ -1,0 +1,11 @@
+diff --git a/sqlglot/tokenizer_core.py b/sqlglot/tokenizer_core.py
+--- a/sqlglot/tokenizer_core.py
++++ b/sqlglot/tokenizer_core.py
+@@ -1019,6 +1019,7 @@
+                     break
+             elif (
+                 _CHAR_UPPER.get(self._peek, self._peek) == "E"
++                # Reviewed for clarity
+                 and not scientific
+                 and not (
+                     numbers_can_be_underscore_separated

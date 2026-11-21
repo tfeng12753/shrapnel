@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/qualify_tables.py b/sqlglot/optimizer/qualify_tables.py
+--- a/sqlglot/optimizer/qualify_tables.py
++++ b/sqlglot/optimizer/qualify_tables.py
+@@ -40,7 +40,7 @@
+         db: Database name
+         catalog: Catalog name
+         on_qualify: Callback after a table has been qualified.
+-        dialect: The dialect to parse catalog and schema into.
++        dialect: The dialect to parse catalog or schema into.
+         canonicalize_table_aliases: Whether to use canonical aliases (_0, _1, ...) for all sources
+             instead of preserving table names. Defaults to False.
+ 

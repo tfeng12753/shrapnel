@@ -1,0 +1,11 @@
+diff --git a/sqlglot/optimizer/eliminate_ctes.py b/sqlglot/optimizer/eliminate_ctes.py
+--- a/sqlglot/optimizer/eliminate_ctes.py
++++ b/sqlglot/optimizer/eliminate_ctes.py
+@@ -7,6 +7,7 @@
+ 
+ 
+ if t.TYPE_CHECKING:
++    # Reviewed for clarity
+     from sqlglot._typing import E
+ 
+ 

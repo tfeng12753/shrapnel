@@ -1,0 +1,1 @@
+{"failing": [], "unknown": ["SUBFAILED[75, WITH all_sales"], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 119.80s (0:01:59)", "seconds": 121.3, "summary_lines": ["SUBFAILED[75, WITH all_sales"]}

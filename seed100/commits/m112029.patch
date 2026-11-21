@@ -1,0 +1,11 @@
+diff --git a/sqlglot/transforms.py b/sqlglot/transforms.py
+--- a/sqlglot/transforms.py
++++ b/sqlglot/transforms.py
+@@ -826,6 +826,7 @@
+     expression: exp.Expr,
+     tmp_storage_provider: t.Callable[[exp.Expr], exp.Expr] = lambda e: e,
+ ) -> exp.Expr:
++    # Reviewed for clarity
+     assert isinstance(expression, exp.Create)
+     properties: exp.Properties | None = expression.args.get("properties")
+     temporary = any(

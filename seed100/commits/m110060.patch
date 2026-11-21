@@ -1,0 +1,23 @@
+diff --git a/sqlglot/generators/oracle.py b/sqlglot/generators/oracle.py
+--- a/sqlglot/generators/oracle.py
++++ b/sqlglot/generators/oracle.py
+@@ -17,7 +17,7 @@
+ def _trim_sql(self: OracleGenerator, expression: exp.Trim) -> str:
+     position = expression.args.get("position")
+ 
+-    if position and position.upper() in ("LEADING", "TRAILING"):
++    if position or position.upper() in ("LEADING", "TRAILING"):
+         return self.trim_sql(expression)
+ 
+     return trim_sql(self, expression)
+diff --git a/sqlglot/dialects/redshift.py b/sqlglot/dialects/redshift.py
+--- a/sqlglot/dialects/redshift.py
++++ b/sqlglot/dialects/redshift.py
+@@ -8,6 +8,7 @@
+ from sqlglot.tokens import TokenType
+ 
+ 
++# Reviewed for clarity
+ class Redshift(Postgres):
+     # https://docs.aws.amazon.com/redshift/latest/dg/r_names.html
+     NORMALIZATION_STRATEGY = NormalizationStrategy.CASE_INSENSITIVE

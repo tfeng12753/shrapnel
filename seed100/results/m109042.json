@@ -1,0 +1,1 @@
+{"failing": [1325], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 121.21s (0:02:01)", "seconds": 122.8, "summary_lines": ["SUBFAILED[Noop - unqualified columns] tests/test_optimizer.py::TestOptimizer::test_eliminate_joins"]}

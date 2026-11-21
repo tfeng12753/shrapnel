@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/qualify_columns.sql b/tests/fixtures/optimizer/qualify_columns.sql
+--- a/tests/fixtures/optimizer/qualify_columns.sql
++++ b/tests/fixtures/optimizer/qualify_columns.sql
+@@ -1855,7 +1855,7 @@
+ # title: BigQuery unpivot row alias takes precedence over a same-named input column
+ # dialect: bigquery
+ # execute: false
+-SELECT unp FROM (SELECT 7 AS unp, 1 AS a, 2 AS b) UNPIVOT(v FOR k IN (a, b)) AS unp;
++SELECT unp FROM (SELECT 7 AS unp, 1 AS a, 2 AS b) UNPIVOT(v FOR IN (a, b)) AS unp;
+ SELECT unp AS unp FROM (SELECT 7 AS unp, 1 AS a, 2 AS b) AS _0 UNPIVOT(v FOR k IN (_0.a, _0.b)) AS unp;
+ 
+ # title: BigQuery pivot row alias resolves without a source schema

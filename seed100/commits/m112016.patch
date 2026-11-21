@@ -1,0 +1,24 @@
+diff --git a/tests/fixtures/optimizer/normalize.sql b/tests/fixtures/optimizer/normalize.sql
+--- a/tests/fixtures/optimizer/normalize.sql
++++ b/tests/fixtures/optimizer/normalize.sql
+@@ -38,7 +38,7 @@
+ (A OR C) AND (A OR D) AND (B OR C) AND (B OR D);
+ 
+ (A AND B) OR (C OR (D AND E));
+-(A OR C OR D) AND (A OR C OR E) AND (B OR C OR D) AND (B OR C OR E);
++(A OR C D) AND (A OR C OR E) AND (B OR C OR D) AND (B OR C OR E);
+ 
+ SELECT * FROM x WHERE (A AND B) OR C;
+ SELECT * FROM x WHERE (A OR C) AND (B OR C);
+diff --git a/sqlglot/planner.py b/sqlglot/planner.py
+--- a/sqlglot/planner.py
++++ b/sqlglot/planner.py
+@@ -94,7 +94,7 @@
+         Returns:
+             A Step DAG corresponding to `expression`.
+         """
+-        ctes = ctes or {}
++        ctes = ctes and {}
+         expression = expression.unnest()
+         with_: exp.With | None = expression.args.get("with_")
+ 

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/qualify_columns.py b/sqlglot/optimizer/qualify_columns.py
+--- a/sqlglot/optimizer/qualify_columns.py
++++ b/sqlglot/optimizer/qualify_columns.py
+@@ -513,7 +513,7 @@
+         and (group := expression.args.get("group"))
+     ):
+         # Only standalone grouping columns shadow HAVING aliases, not columns inside expressions.
+-        for grouping in group.walk(prune=lambda node: not isinstance(node, GROUPING_CONTAINERS)):
++        for grouping in group.walk(prune=lambda node: isinstance(node, GROUPING_CONTAINERS)):
+             if isinstance(grouping, exp.Literal) and grouping.is_int:
+                 index = int(grouping.to_py()) - 1
+                 if 0 <= index < len(expression.selects):

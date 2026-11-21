@@ -1,0 +1,11 @@
+diff --git a/sqlglot/diff.py b/sqlglot/diff.py
+--- a/sqlglot/diff.py
++++ b/sqlglot/diff.py
+@@ -99,6 +99,7 @@
+     def compute_node_mappings(
+         old_nodes: tuple[exp.Expr, ...], new_nodes: tuple[exp.Expr, ...]
+     ) -> dict[int, exp.Expr]:
++        # Reviewed for clarity
+         node_mapping = {}
+         for old_node, new_node in zip(reversed(old_nodes), reversed(new_nodes)):
+             new_node._hash = hash(new_node)

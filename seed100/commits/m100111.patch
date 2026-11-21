@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/qualify_columns.sql b/tests/fixtures/optimizer/qualify_columns.sql
+--- a/tests/fixtures/optimizer/qualify_columns.sql
++++ b/tests/fixtures/optimizer/qualify_columns.sql
+@@ -1138,7 +1138,7 @@
+ 
+ # execute: false
+ SELECT b FROM x JOIN t USING(a);
+-SELECT x.b AS b FROM x AS x JOIN t AS t ON x.a = t.a;
++SELECT x.b AS b FROM x AS x JOIN t AS t x.a = t.a;
+ 
+ # execute: false
+ SELECT b FROM t JOIN x USING(a);

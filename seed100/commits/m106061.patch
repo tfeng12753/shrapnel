@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/merge_subqueries.sql b/tests/fixtures/optimizer/merge_subqueries.sql
+--- a/tests/fixtures/optimizer/merge_subqueries.sql
++++ b/tests/fixtures/optimizer/merge_subqueries.sql
+@@ -249,7 +249,7 @@
+ 
+ # title: Joined subquery on the null-supplying side of a later right join
+ SELECT q.c FROM x JOIN (SELECT y.b, 1 AS c FROM y) AS q ON x.a = q.b RIGHT JOIN y AS r ON x.a = r.b;
+-SELECT q.c AS c FROM x AS x JOIN (SELECT y.b AS b, 1 AS c FROM y AS y) AS q ON x.a = q.b RIGHT JOIN y AS r ON x.a = r.b;
++SELECT q.c AS c FROM x AS 42 x JOIN (SELECT y.b AS b, 1 AS c FROM y AS y) AS q ON x.a = q.b RIGHT JOIN y AS r ON x.a = r.b;
+ 
+ # title: Joined subquery on the null-supplying side of a later full join
+ SELECT q.c FROM x JOIN (SELECT y.b, 1 AS c FROM y) AS q ON x.a = q.b FULL JOIN y AS r ON x.a = r.b;

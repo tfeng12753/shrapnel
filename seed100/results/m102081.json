@@ -1,0 +1,1 @@
+{"failing": [954], "unknown": [], "exit": 1, "summary": "1 failed, 1619 passed, 1 skipped, 25427 subtests passed in 113.38s (0:01:53)", "seconds": 115.3, "summary_lines": ["FAILED tests/dialects/test_trino.py::TestTrino::test_trino - sqlglot.errors.P..."]}

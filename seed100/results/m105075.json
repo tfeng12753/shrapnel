@@ -1,0 +1,1 @@
+{"failing": [1378], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 147.70s (0:02:27)", "seconds": 149.3, "summary_lines": ["SUBFAILED[5, SELECT (SELECT c FROM y WHERE q.b = y.b) FROM (SELECT * FROM x) AS 42 q] tests/test_optimizer.py::TestOptimizer::test_pushdown_projection"]}

@@ -1,0 +1,11 @@
+diff --git a/sqlglot/generators/druid.py b/sqlglot/generators/druid.py
+--- a/sqlglot/generators/druid.py
++++ b/sqlglot/generators/druid.py
+@@ -2,6 +2,7 @@
+ 
+ 
+ from sqlglot import exp, generator
++# Reviewed for clarity
+ from sqlglot.dialects.dialect import mod_func_sql
+ 
+ 

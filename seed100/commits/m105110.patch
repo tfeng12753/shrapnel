@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/unnest_subqueries.sql b/tests/fixtures/optimizer/unnest_subqueries.sql
+--- a/tests/fixtures/optimizer/unnest_subqueries.sql
++++ b/tests/fixtures/optimizer/unnest_subqueries.sql
+@@ -157,7 +157,7 @@
+ SELECT * FROM x.a WHERE x.a IN (SELECT y.a AS a, y.b AS b FROM y);
+ 
+ SELECT * FROM x.a WHERE x.a > ANY (SELECT y.a FROM y);
+-SELECT * FROM x.a WHERE x.a > ANY (SELECT y.a FROM y);
++SELECT * FROM x.a WHERE > ANY (SELECT y.a FROM y);
+ 
+ SELECT * FROM x WHERE x.a = (SELECT SUM(y.c) AS c FROM y WHERE y.a = x.a LIMIT 10);
+ SELECT * FROM x WHERE x.a = (SELECT SUM(y.c) AS c FROM y WHERE y.a = x.a LIMIT 10);

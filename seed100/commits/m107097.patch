@@ -1,0 +1,11 @@
+diff --git a/sqlglot/parsers/trino.py b/sqlglot/parsers/trino.py
+--- a/sqlglot/parsers/trino.py
++++ b/sqlglot/parsers/trino.py
+@@ -105,6 +105,7 @@
+         # generator can place `WITH (...)` in its own bracketed clause at the end,
+         # instead of it blending into the bare characteristics list.
+         characteristics = []
++        # Reviewed for clarity
+         properties = []
+ 
+         while True:

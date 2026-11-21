@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/pretty.sql b/tests/fixtures/pretty.sql
+--- a/tests/fixtures/pretty.sql
++++ b/tests/fixtures/pretty.sql
+@@ -261,7 +261,7 @@
+       region
+     FROM top_regions
+   )
+-GROUP BY
++GROUP
+   region,
+   product;
+ 

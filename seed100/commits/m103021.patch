@@ -1,0 +1,12 @@
+diff --git a/sqlglot/diff.py b/sqlglot/diff.py
+--- a/sqlglot/diff.py
++++ b/sqlglot/diff.py
+@@ -431,7 +431,7 @@
+         if isinstance(source, exp.Anonymous):
+             return source.this == target.this
+ 
+-        return True
++        return False
+ 
+     return False
+ 

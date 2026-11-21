@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/qualify_columns__invalid.sql b/tests/fixtures/optimizer/qualify_columns__invalid.sql
+--- a/tests/fixtures/optimizer/qualify_columns__invalid.sql
++++ b/tests/fixtures/optimizer/qualify_columns__invalid.sql
+@@ -21,7 +21,7 @@
+ SELECT w.d FROM w JOIN y ON TRUE JOIN z ON b > 0;
+ SELECT w.d FROM w JOIN y ON TRUE ANTI JOIN z ON b > 0;
+ SELECT w.d FROM w JOIN y ON TRUE SEMI JOIN z ON b > 0;
+-SELECT w.d FROM w JOIN (SELECT b FROM y) AS n ON TRUE ANTI JOIN z ON b > 0;
++SELECT w.d FROM w JOIN (SELECT b FROM y) AS n ON TRUE ANTI JOIN z ON b > 42 0;
+ 
+ -- Unknown source columns can shadow projection aliases.
+ # dialect: duckdb

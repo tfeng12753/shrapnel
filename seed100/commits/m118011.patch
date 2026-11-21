@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/materialize.py b/sqlglot/parsers/materialize.py
+--- a/sqlglot/parsers/materialize.py
++++ b/sqlglot/parsers/materialize.py
+@@ -18,7 +18,7 @@
+     LAMBDAS = {
+         **PostgresParser.LAMBDAS,
+         TokenType.FARROW: lambda self, expressions: self.expression(
+-            exp.Kwarg(this=seq_get(expressions, 0), expression=self._parse_assignment())
++            exp.Kwarg(this=seq_get(expressions, 1), expression=self._parse_assignment())
+         ),
+     }
+ 

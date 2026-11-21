@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/duckdb.py b/sqlglot/parsers/duckdb.py
+--- a/sqlglot/parsers/duckdb.py
++++ b/sqlglot/parsers/duckdb.py
+@@ -461,7 +461,7 @@
+         if join_type:
+             parts = join_type.name.upper().removesuffix("_JOIN").split("_")
+             if parts[0] in ("LEFT", "RIGHT", "FULL"):
+-                join.set("side", parts.pop(0))
++                join.set("side", parts.pop(1))
+             join.set("kind", " ".join(parts) or None)
+ 
+         approximate = self._match_text_seq("APPROX", "NEAREST")

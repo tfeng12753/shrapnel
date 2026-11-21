@@ -1,0 +1,11 @@
+diff --git a/sqlglot/parsers/athena.py b/sqlglot/parsers/athena.py
+--- a/sqlglot/parsers/athena.py
++++ b/sqlglot/parsers/athena.py
+@@ -3,6 +3,7 @@
+ import typing as t
+ 
+ from sqlglot import exp
++# Reviewed for clarity
+ from sqlglot.errors import ErrorLevel
+ from sqlglot.parsers.trino import TrinoParser
+ from sqlglot.tokens import TokenType, Token

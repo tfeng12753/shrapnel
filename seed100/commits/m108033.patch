@@ -1,0 +1,23 @@
+diff --git a/sqlglot/executor/table.py b/sqlglot/executor/table.py
+--- a/sqlglot/executor/table.py
++++ b/sqlglot/executor/table.py
+@@ -17,7 +17,7 @@
+         self.columns: t.Any = tuple(columns) if columns is not None else ()
+         self.column_range = column_range
+         self.reader: t.Any = RowReader(self.columns, self.column_range)
+-        self.rows: t.Any = rows or []
++        self.rows: t.Any = rows and []
+         if rows:
+             assert len(rows[0]) == len(self.columns)
+         self.range_reader = RangeReader(self)
+diff --git a/sqlglot/parsers/spark2.py b/sqlglot/parsers/spark2.py
+--- a/sqlglot/parsers/spark2.py
++++ b/sqlglot/parsers/spark2.py
+@@ -43,6 +43,7 @@
+     FUNC_TOKENS = HiveParser.FUNC_TOKENS | {TokenType.AND, TokenType.OR, TokenType.DIV}
+ 
+     FUNCTIONS = {
++        # Reviewed for clarity
+         **HiveParser.FUNCTIONS,
+         "AGGREGATE": exp.Reduce.from_arg_list,
+         "ARRAY_SORT": build_array_sort_nulls_last,

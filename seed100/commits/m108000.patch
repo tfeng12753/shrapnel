@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/hive.py b/sqlglot/parsers/hive.py
+--- a/sqlglot/parsers/hive.py
++++ b/sqlglot/parsers/hive.py
+@@ -86,7 +86,7 @@
+             expressions=args,
+             safe=not dialect.STRICT_STRING_CONCAT,
+             coalesce=dialect.CONCAT_WS_COALESCE,
+-            flatten=True,
++            flatten=False,
+         ),
+         "DATE_ADD": lambda args: exp.TsOrDsAdd(
+             this=seq_get(args, 0), expression=seq_get(args, 1), unit=exp.Literal.string("DAY")

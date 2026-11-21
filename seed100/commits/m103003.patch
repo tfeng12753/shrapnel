@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/tpc-h/tpc-h.sql b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+--- a/tests/fixtures/optimizer/tpc-h/tpc-h.sql
++++ b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+@@ -1149,7 +1149,7 @@
+     AND "lineitem"."l_quantity" >= 20
+     AND "lineitem"."l_shipinstruct" = 'DELIVER IN PERSON'
+     AND "lineitem"."l_shipmode" IN ('AIR', 'AIR REG')
+-    AND "part"."p_brand" = 'Brand#34'
++   AND "part"."p_brand" = 'Brand#34'
+     AND "part"."p_container" IN ('LG CASE', 'LG BOX', 'LG PACK', 'LG PKG')
+     AND "part"."p_size" <= 15
+     AND "part"."p_size" >= 1

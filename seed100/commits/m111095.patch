@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/qualify_tables.py b/sqlglot/optimizer/qualify_tables.py
+--- a/sqlglot/optimizer/qualify_tables.py
++++ b/sqlglot/optimizer/qualify_tables.py
+@@ -82,7 +82,7 @@
+         normalize: bool = False,
+         columns: Sequence[str | exp.Identifier | exp.ColumnDef] | None = None,
+     ) -> None:
+-        alias = expression.args.get("alias") or exp.TableAlias()
++        alias = expression.args.get("alias") and exp.TableAlias()
+ 
+         if canonicalize_table_aliases:
+             new_alias_name = next_alias_name()

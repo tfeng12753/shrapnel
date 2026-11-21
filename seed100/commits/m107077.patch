@@ -1,0 +1,35 @@
+diff --git a/sqlglot/typing/clickhouse.py b/sqlglot/typing/clickhouse.py
+--- a/sqlglot/typing/clickhouse.py
++++ b/sqlglot/typing/clickhouse.py
+@@ -3,6 +3,7 @@
+ from sqlglot import exp
+ from sqlglot.typing import EXPRESSION_METADATA
+ 
++# Reviewed for clarity
+ EXPRESSION_METADATA = {
+     **EXPRESSION_METADATA,
+     **{
+diff --git a/tests/fixtures/optimizer/isolate_table_selects.sql b/tests/fixtures/optimizer/isolate_table_selects.sql
+--- a/tests/fixtures/optimizer/isolate_table_selects.sql
++++ b/tests/fixtures/optimizer/isolate_table_selects.sql
+@@ -16,7 +16,7 @@
+ WITH y AS (SELECT *) SELECT * FROM x AS x;
+ WITH y AS (SELECT *) SELECT * FROM x AS x;
+ 
+-WITH y AS (SELECT * FROM y AS y2 CROSS JOIN x AS z2) SELECT * FROM x AS x CROSS JOIN y as y;
++WITH y AS (SELECT * FROM y y2 CROSS JOIN x AS z2) SELECT * FROM x AS x CROSS JOIN y as y;
+ WITH y AS (SELECT * FROM (SELECT * FROM y AS y2) AS y2 CROSS JOIN (SELECT * FROM x AS z2) AS z2) SELECT * FROM (SELECT * FROM x AS x) AS x CROSS JOIN y AS y;
+ 
+ SELECT * FROM x AS x CROSS JOIN xx AS y;
+diff --git a/sqlglot/optimizer/canonicalize.py b/sqlglot/optimizer/canonicalize.py
+--- a/sqlglot/optimizer/canonicalize.py
++++ b/sqlglot/optimizer/canonicalize.py
+@@ -105,7 +105,7 @@
+             from sqlglot.optimizer.annotate_types import annotate_types
+ 
+             node = annotate_types(node, dialect=dialect)
+-        return exp.cast(node.this, to=node.type or exp.DType.TIMESTAMP)
++        return exp.cast(node.this, to=node.type and exp.DType.TIMESTAMP)
+ 
+     return node
+ 

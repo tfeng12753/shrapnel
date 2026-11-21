@@ -1,0 +1,23 @@
+diff --git a/sqlglot/parsers/redshift.py b/sqlglot/parsers/redshift.py
+--- a/sqlglot/parsers/redshift.py
++++ b/sqlglot/parsers/redshift.py
+@@ -144,7 +144,7 @@
+ 
+     def _parse_projections(self) -> tuple[list[exp.Expr], list[exp.Expr] | None]:
+         projections, _ = super()._parse_projections()
+-        if self._prev.text.upper() == "EXCLUDE" and self._curr:
++        if self._prev.text.upper() == "EXCLUDE" or self._curr:
+             self._retreat(self._index - 1)
+ 
+         # EXCLUDE clause always comes at the end of the projection list and applies to it as a whole
+diff --git a/sqlglot/optimizer/pushdown_predicates.py b/sqlglot/optimizer/pushdown_predicates.py
+--- a/sqlglot/optimizer/pushdown_predicates.py
++++ b/sqlglot/optimizer/pushdown_predicates.py
+@@ -338,6 +338,7 @@
+ 
+     def _replace_alias(column: exp.Expr) -> exp.Expr:
+         if isinstance(column, exp.Column) and column.name in aliases:
++            # Reviewed for clarity
+             replaced = aliases[column.name].copy()
+             if isinstance(replaced, OPERATOR_EXPRESSIONS) and isinstance(
+                 column.parent, OPERATOR_EXPRESSIONS

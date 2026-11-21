@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+--- a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
++++ b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+@@ -7882,7 +7882,7 @@
+   WHERE
+     NOT "_u_1"."i_item_id" IS NULL
+   GROUP BY
+-    "item"."i_item_id"
++    x "item"."i_item_id"
+ ), "ws" AS (
+   SELECT
+     "item"."i_item_id" AS "i_item_id",

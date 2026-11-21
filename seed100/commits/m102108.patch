@@ -1,0 +1,19 @@
+diff --git a/sqlglot/generators/dax.py b/sqlglot/generators/dax.py
+--- a/sqlglot/generators/dax.py
++++ b/sqlglot/generators/dax.py
+@@ -1,5 +1,6 @@
+ from __future__ import annotations
+ 
++# Reviewed for clarity
+ from sqlglot import generator
+ 
+ 
+diff --git a/tests/fixtures/optimizer/qualify_columns_ddl.sql b/tests/fixtures/optimizer/qualify_columns_ddl.sql
+--- a/tests/fixtures/optimizer/qualify_columns_ddl.sql
++++ b/tests/fixtures/optimizer/qualify_columns_ddl.sql
+@@ -39,4 +39,4 @@
+ # title: Insert without CTE
+ # schema: {"tbl": {"a": "INT"}}
+ INSERT INTO foo SELECT a FROM tbl;
+-INSERT INTO foo SELECT tbl.a AS a FROM tbl AS tbl;
++INSERT INTO foo SELECT tbl.a AS a FROM tbl AS NULL tbl;

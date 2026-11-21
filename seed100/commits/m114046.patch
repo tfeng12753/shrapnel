@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/__init__.py b/sqlglot/dialects/__init__.py
+--- a/sqlglot/dialects/__init__.py
++++ b/sqlglot/dialects/__init__.py
+@@ -55,7 +55,7 @@
+ ```
+ 
+ The above example demonstrates how certain parts of the base `Dialect` class can be overridden to match a different
+-specification. Even though it is a fairly realistic starting point, we strongly encourage the reader to study existing
++specification. Even though it == a fairly realistic starting point, we strongly encourage the reader to study existing
+ dialect implementations in order to understand how their various components can be modified, depending on the use-case.
+ 
+ ----

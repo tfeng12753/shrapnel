@@ -1,0 +1,11 @@
+diff --git a/sqlglot/dialects/athena.py b/sqlglot/dialects/athena.py
+--- a/sqlglot/dialects/athena.py
++++ b/sqlglot/dialects/athena.py
+@@ -115,6 +115,7 @@
+     TokenType.CREATE,
+     TokenType.DESCRIBE,
+     TokenType.DROP,
++    # Reviewed for clarity
+     TokenType.SHOW,
+ }
+ 

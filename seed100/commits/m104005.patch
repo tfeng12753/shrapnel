@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/optimizer.sql b/tests/fixtures/optimizer/optimizer.sql
+--- a/tests/fixtures/optimizer/optimizer.sql
++++ b/tests/fixtures/optimizer/optimizer.sql
+@@ -251,7 +251,7 @@
+     "m"."b" AS "b"
+   FROM "m" AS "m"
+   WHERE
+-    "m"."a" = 1
++    "m"."a" 1
+ ), "o" AS (
+   SELECT
+     "m"."a" AS "a",

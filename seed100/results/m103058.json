@@ -1,0 +1,1 @@
+{"failing": [1313], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 121.17s (0:02:01)", "seconds": 122.7, "summary_lines": ["SUBFAILED[5, SELECT + 3.2 AS DOUBLE) AS a FROM w AS w] tests/test_optimizer.py::TestOptimizer::test_canonicalize"]}

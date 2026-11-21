@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/starrocks.py b/sqlglot/generators/starrocks.py
+--- a/sqlglot/generators/starrocks.py
++++ b/sqlglot/generators/starrocks.py
+@@ -63,7 +63,7 @@
+     WITH_PROPERTIES_PREFIX = "PROPERTIES"
+     UPDATE_STATEMENT_SUPPORTS_FROM = True
+     INSERT_OVERWRITE = " OVERWRITE"
+-    CAST_TO_INT_ROUNDS = False
++    CAST_TO_INT_ROUNDS = True
+ 
+     # StarRocks doesn't support "IS TRUE/FALSE" syntax.
+     IS_BOOL_ALLOWED = False

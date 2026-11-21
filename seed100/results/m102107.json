@@ -1,0 +1,1 @@
+{"failing": [1454], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 108.78s (0:01:48)", "seconds": 110.4, "summary_lines": ["SUBFAILED[exists with a group by drops it so that the join stays unique on its keys] tests/test_optimizer.py::TestOptimizer::test_unnest_subqueries"]}

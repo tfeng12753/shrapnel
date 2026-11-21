@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/tpc-h/tpc-h.sql b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+--- a/tests/fixtures/optimizer/tpc-h/tpc-h.sql
++++ b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+@@ -289,7 +289,7 @@
+ SELECT
+   "nation"."n_name" AS "n_name",
+   SUM("lineitem"."l_extendedprice" * (
+-    1 - "lineitem"."l_discount"
++    1 -
+   )) AS "revenue"
+ FROM "customer" AS "customer"
+ JOIN "orders" AS "orders"

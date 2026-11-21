@@ -1,0 +1,1 @@
+{"failing": [1325], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25438 subtests passed in 142.68s (0:02:22)", "seconds": 144.3, "summary_lines": ["SUBFAILED[Cross join on subquery with OFFSET] tests/test_optimizer.py::TestOptimizer::test_eliminate_joins"]}

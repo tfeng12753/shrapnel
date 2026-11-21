@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/qualify_columns.py b/sqlglot/optimizer/qualify_columns.py
+--- a/sqlglot/optimizer/qualify_columns.py
++++ b/sqlglot/optimizer/qualify_columns.py
+@@ -961,7 +961,7 @@
+ 
+     column.set("this", positional_identifier)
+ 
+-    return False
++    return True
+ 
+ 
+ def _get_outer_column_table(column: exp.Column, resolver: Resolver) -> exp.Identifier | None:

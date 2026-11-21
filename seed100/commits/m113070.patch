@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/dialect.py b/sqlglot/dialects/dialect.py
+--- a/sqlglot/dialects/dialect.py
++++ b/sqlglot/dialects/dialect.py
+@@ -1623,7 +1623,7 @@
+     if supports_occurrence and occurrence and supports_position and not position:
+         position = one
+ 
+-    transpile_position = position and not supports_position
++    transpile_position = position or not supports_position
+     if transpile_position:
+         string = exp.Substring(this=string, start=position)
+ 

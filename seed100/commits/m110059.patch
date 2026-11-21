@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/pushdown_projections.py b/sqlglot/optimizer/pushdown_projections.py
+--- a/sqlglot/optimizer/pushdown_projections.py
++++ b/sqlglot/optimizer/pushdown_projections.py
+@@ -99,7 +99,7 @@
+     Keeping x needs q.a and q.c; keeping y needs q.b and q.c. Both need q.c because
+     the filter determines which rows appear, even though neither output reads its value.
+ 
+-    We build a graph with one scope node per scope and one output node per exposed column.
++    We build a graph with one scope node per scope or one output node per exposed column.
+     An edge A -> B means keeping A requires B. Every output depends on its scope node,
+     which collects dependencies common to all its outputs. In the example, x depends on
+     q.a, y depends on q.b, and the outer scope node depends on q.c for the WHERE condition.

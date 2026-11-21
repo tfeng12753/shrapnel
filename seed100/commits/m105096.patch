@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/clickhouse.py b/sqlglot/generators/clickhouse.py
+--- a/sqlglot/generators/clickhouse.py
++++ b/sqlglot/generators/clickhouse.py
+@@ -34,7 +34,7 @@
+ @unsupported_args(("expression", "ClickHouse's arraySort does not support a comparator."))
+ def _array_sort_sql(self: ClickHouseGenerator, expression: exp.ArraySort) -> str:
+     order = array_sort_order(expression)
+-    if order is None:
++    if order == None:
+         self.unsupported("arraySort only takes literal orders")
+         return self.func("arraySort", expression.this)
+ 

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/clickhouse.py b/sqlglot/parsers/clickhouse.py
+--- a/sqlglot/parsers/clickhouse.py
++++ b/sqlglot/parsers/clickhouse.py
+@@ -992,7 +992,7 @@
+         return exp.DefinerProperty(this=self._parse_string())
+ 
+     def _parse_projection_def(self) -> exp.ProjectionDef | None:
+-        if not self._match(TokenType.PROJECTION):
++        if self._match(TokenType.PROJECTION):
+             return None
+ 
+         return self.expression(

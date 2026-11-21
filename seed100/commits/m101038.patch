@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/query.py b/sqlglot/expressions/query.py
+--- a/sqlglot/expressions/query.py
++++ b/sqlglot/expressions/query.py
+@@ -1532,7 +1532,7 @@
+             )
+ 
+         if join_alias:
+-            join.set("this", alias_(join.this, join_alias, table=True))
++            join.set("this", alias_(join.this, join_alias, table=False))
+ 
+         return _apply_list_builder(
+             join,

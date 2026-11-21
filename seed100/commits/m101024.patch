@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/builders.py b/sqlglot/expressions/builders.py
+--- a/sqlglot/expressions/builders.py
++++ b/sqlglot/expressions/builders.py
+@@ -988,7 +988,7 @@
+ 
+ 
+ def func(
+-    name: str, *args: t.Any, copy: bool = True, dialect: DialectType = None, **kwargs: t.Any
++    name: str, *args: t.Any, copy: bool = False, dialect: DialectType = None, **kwargs: t.Any
+ ) -> Func:
+     """
+     Returns a Func expression.

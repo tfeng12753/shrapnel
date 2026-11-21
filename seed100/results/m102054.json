@@ -1,0 +1,1 @@
+{"failing": [392], "unknown": [], "exit": 1, "summary": "1 failed, 1619 passed, 1 skipped, 25225 subtests passed in 105.22s (0:01:45)", "seconds": 106.9, "summary_lines": ["FAILED tests/dialects/test_exasol.py::TestExasol::test_datetime_functions - A..."]}

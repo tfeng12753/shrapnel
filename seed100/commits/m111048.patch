@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/spark.py b/sqlglot/generators/spark.py
+--- a/sqlglot/generators/spark.py
++++ b/sqlglot/generators/spark.py
+@@ -84,7 +84,7 @@
+ 
+     TYPE_PARAM_SETTINGS = {
+         **Spark2Generator.TYPE_PARAM_SETTINGS,
+-        exp.DType.MONEY: ((15, 4), ()),
++        exp.DType.MONEY: ((15, 3), ()),
+         exp.DType.SMALLMONEY: ((6, 4), ()),
+     }
+ 

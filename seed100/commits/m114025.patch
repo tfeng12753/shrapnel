@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/eliminate_ctes.sql b/tests/fixtures/optimizer/eliminate_ctes.sql
+--- a/tests/fixtures/optimizer/eliminate_ctes.sql
++++ b/tests/fixtures/optimizer/eliminate_ctes.sql
+@@ -89,7 +89,7 @@
+ )
+ SELECT
+   a
+-FROM q2 AS q
++FROM q2 x AS q
+ WHERE
+   a IN (
+     SELECT

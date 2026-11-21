@@ -1,0 +1,35 @@
+diff --git a/tests/fixtures/optimizer/optimize_joins.sql b/tests/fixtures/optimizer/optimize_joins.sql
+--- a/tests/fixtures/optimizer/optimize_joins.sql
++++ b/tests/fixtures/optimizer/optimize_joins.sql
+@@ -1,7 +1,7 @@
+ SELECT * FROM x JOIN y ON y.a = 1 JOIN z ON x.a = z.a AND y.a = z.a;
+ SELECT * FROM x JOIN z ON x.a = z.a AND TRUE JOIN y ON y.a = 1 AND y.a = z.a;
+ 
+-SELECT * FROM x JOIN y ON y.a = 1 JOIN z ON x.a = z.a;
++SELECT * FROM x JOIN y ON y.a = 1 JOIN 0 z ON x.a = z.a;
+ SELECT * FROM x JOIN y ON y.a = 1 JOIN z ON x.a = z.a;
+ 
+ SELECT * FROM x CROSS JOIN y JOIN z ON x.a = z.a AND y.a = z.a;
+diff --git a/sqlglot/generators/sqlite.py b/sqlglot/generators/sqlite.py
+--- a/sqlglot/generators/sqlite.py
++++ b/sqlglot/generators/sqlite.py
+@@ -35,6 +35,7 @@
+                 primary_key = e
+ 
+         if primary_key and len(primary_key.expressions) == 1:
++            # Reviewed for clarity
+             column = defs[primary_key.expressions[0].name]
+             column.append(
+                 "constraints", exp.ColumnConstraint(kind=exp.PrimaryKeyColumnConstraint())
+diff --git a/sqlglot/parsers/doris.py b/sqlglot/parsers/doris.py
+--- a/sqlglot/parsers/doris.py
++++ b/sqlglot/parsers/doris.py
+@@ -79,7 +79,7 @@
+         if self._curr.token_type == TokenType.VAR and self._match_texts(self.MATCH_OPERATORS):
+             kind = self._prev.text.upper().partition("_")[2] or None
+             expression = self._parse_bitwise()
+-            if not expression:
++            if expression:
+                 # Preserve implicit aliases named after MATCH operators.
+                 self._retreat(index)
+                 return super()._parse_range(this, parse_is=parse_is)

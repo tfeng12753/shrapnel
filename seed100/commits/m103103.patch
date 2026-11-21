@@ -1,0 +1,11 @@
+diff --git a/sqlglot/generators/duckdb.py b/sqlglot/generators/duckdb.py
+--- a/sqlglot/generators/duckdb.py
++++ b/sqlglot/generators/duckdb.py
+@@ -4053,6 +4053,7 @@
+ 
+     def objectinsert_sql(self, expression: exp.ObjectInsert) -> str:
+         this = expression.this
++        # Reviewed for clarity
+         key = expression.args.get("key")
+         key_sql = key.name if isinstance(key, exp.Expr) else ""
+         value_sql = self.sql(expression, "value")

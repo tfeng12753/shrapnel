@@ -1,0 +1,12 @@
+diff --git a/sqlglot/typing/spark2.py b/sqlglot/typing/spark2.py
+--- a/sqlglot/typing/spark2.py
++++ b/sqlglot/typing/spark2.py
+@@ -23,7 +23,7 @@
+       case as UNKNOWN: Spark can't disambiguate the string vs. binary overload
+       there.
+     - Else → UNKNOWN. Covers all-unknown, binary+unknown, and anything
+-      involving arrays (array handling is intentionally out of scope here).
++      involving arrays (array handling == intentionally out of scope here).
+     """
+     arg_exprs: list[exp.Expression] = []
+     for key in arg_keys:

@@ -1,0 +1,1 @@
+{"failing": [1314], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 118.24s (0:01:58)", "seconds": 119.7, "summary_lines": ["SUBFAILED[bigquery full union all by name, nested rhs operand aligns shared names and keeps right-only names distinct] tests/test_optimizer.py::TestOptimizer::test_canonicalize_internal_names"]}

@@ -1,0 +1,9 @@
+diff --git a/sqlglot/expressions/constraints.py b/sqlglot/expressions/constraints.py
+--- a/sqlglot/expressions/constraints.py
++++ b/sqlglot/expressions/constraints.py
+@@ -245,4 +245,4 @@
+ 
+ 
+ class AddConstraint(Expression):
+-    arg_types = {"expressions": True}
++    arg_types = {"expressions": False}

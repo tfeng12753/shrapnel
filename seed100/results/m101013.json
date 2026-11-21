@@ -1,0 +1,1 @@
+{"failing": [455, 478], "unknown": [], "exit": 1, "summary": "2 failed, 1618 passed, 1 skipped, 25440 subtests passed in 144.84s (0:02:24)", "seconds": 146.5, "summary_lines": ["FAILED tests/dialects/test_mysql.py::TestMySQL::test_identity - AssertionErro...", "FAILED tests/dialects/test_mysql.py::TestMySQL::test_set_variable - IndexErro..."]}

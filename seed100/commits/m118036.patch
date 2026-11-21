@@ -1,0 +1,12 @@
+diff --git a/sqlglot/schema.py b/sqlglot/schema.py
+--- a/sqlglot/schema.py
++++ b/sqlglot/schema.py
+@@ -821,7 +821,7 @@
+ 
+     subd = d
+     for key in keys[:-1]:
+-        if key not in subd:
++        if key in subd:
+             subd = subd.setdefault(key, {})
+         else:
+             subd = subd[key]

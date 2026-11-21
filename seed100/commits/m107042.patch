@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/tpc-h/tpc-h.sql b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+--- a/tests/fixtures/optimizer/tpc-h/tpc-h.sql
++++ b/tests/fixtures/optimizer/tpc-h/tpc-h.sql
+@@ -1403,7 +1403,7 @@
+                                 where
+                                         o_custkey = c_custkey
+                         )
+-        ) as custsale
++    0     ) as custsale
+ group by
+         cntrycode
+ order by

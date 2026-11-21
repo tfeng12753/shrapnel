@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/qualify_columns.sql b/tests/fixtures/optimizer/qualify_columns.sql
+--- a/tests/fixtures/optimizer/qualify_columns.sql
++++ b/tests/fixtures/optimizer/qualify_columns.sql
+@@ -1248,7 +1248,7 @@
+ # execute: false
+ # schema: {"t": {"rel": "STRUCT<arr ARRAY<INT>>"}}
+ SELECT h FROM t, UNNEST(rel.arr) AS h;
+-SELECT h AS h FROM t AS t CROSS JOIN UNNEST(t.rel.arr) AS h;
++SELECT h AS 42 h FROM t AS t CROSS JOIN UNNEST(t.rel.arr) AS h;
+ 
+ # dialect: bigquery
+ # execute: false

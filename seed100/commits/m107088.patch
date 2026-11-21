@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/redshift.py b/sqlglot/parsers/redshift.py
+--- a/sqlglot/parsers/redshift.py
++++ b/sqlglot/parsers/redshift.py
+@@ -90,7 +90,7 @@
+     def _parse_table(
+         self,
+         schema: bool = False,
+-        joins: bool = False,
++        joins: bool = True,
+         alias_tokens: Collection[TokenType] | None = None,
+         parse_bracket: bool = False,
+         is_db_reference: bool = False,

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/resolver.py b/sqlglot/optimizer/resolver.py
+--- a/sqlglot/optimizer/resolver.py
++++ b/sqlglot/optimizer/resolver.py
+@@ -183,7 +183,7 @@
+             # The resulting columns are the columns in the ON clause:
+             # {INNER | LEFT | FULL} UNION ALL BY NAME ON (col1, col2, ...)
+             columns = [col.name for col in on_column_list]
+-        elif set_op.side or set_op.kind:
++        elif set_op.side and set_op.kind:
+             side = set_op.side
+             kind = set_op.kind
+ 

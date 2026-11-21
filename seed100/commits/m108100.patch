@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/string.py b/sqlglot/expressions/string.py
+--- a/sqlglot/expressions/string.py
++++ b/sqlglot/expressions/string.py
+@@ -222,7 +222,7 @@
+ 
+ class Stuff(Expression, Func):
+     _sql_names = ["STUFF", "INSERT"]
+-    arg_types = {"this": True, "start": True, "length": True, "expression": True}
++    arg_types = {"this": False, "start": True, "length": True, "expression": True}
+ 
+ 
+ class Substring(Expression, Func):

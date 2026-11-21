@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/simplify.py b/sqlglot/optimizer/simplify.py
+--- a/sqlglot/optimizer/simplify.py
++++ b/sqlglot/optimizer/simplify.py
+@@ -1835,7 +1835,7 @@
+         self._binary(e, " > ")
+ 
+     def gte_sql(self, e: exp.GTE) -> None:
+-        self._binary(e, " >= ")
++        self._binary(e, " > ")
+ 
+     def identifier_sql(self, e: exp.Identifier) -> None:
+         if e.quoted:

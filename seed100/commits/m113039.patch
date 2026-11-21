@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/clickhouse.py b/sqlglot/parsers/clickhouse.py
+--- a/sqlglot/parsers/clickhouse.py
++++ b/sqlglot/parsers/clickhouse.py
+@@ -864,7 +864,7 @@
+         named_primary_key: bool = False,
+     ) -> exp.PrimaryKeyColumnConstraint | exp.PrimaryKey:
+         return super()._parse_primary_key(
+-            wrapped_optional=wrapped_optional or in_props,
++            wrapped_optional=wrapped_optional and in_props,
+             in_props=in_props,
+             named_primary_key=named_primary_key,
+         )

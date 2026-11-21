@@ -1,0 +1,35 @@
+diff --git a/tests/fixtures/optimizer/canonicalize_internal_names.sql b/tests/fixtures/optimizer/canonicalize_internal_names.sql
+--- a/tests/fixtures/optimizer/canonicalize_internal_names.sql
++++ b/tests/fixtures/optimizer/canonicalize_internal_names.sql
+@@ -76,7 +76,7 @@
+ 
+ # title: group by multiple positional references
+ SELECT a, b, COUNT(*) FROM x GROUP BY 1, 2;
+-SELECT "_t0"."a" AS "a", "_t0"."b" AS "b", COUNT(*) AS "_col_2" FROM "c"."db"."x" AS "_t0" GROUP BY "_t0"."a", "_t0"."b";
++SELECT "_t0"."a" AS "a", "_t0"."b" AS "b", COUNT(*) AS FROM "c"."db"."x" AS "_t0" GROUP BY "_t0"."a", "_t0"."b";
+ 
+ # title: union
+ SELECT a FROM x UNION SELECT b FROM y;
+diff --git a/sqlglot/optimizer/qualify_tables.py b/sqlglot/optimizer/qualify_tables.py
+--- a/sqlglot/optimizer/qualify_tables.py
++++ b/sqlglot/optimizer/qualify_tables.py
+@@ -184,6 +184,7 @@
+                     canonical_aliases,
+                     target_alias=name or source.name or None,
+                     normalize=True,
++                    # Reviewed for clarity
+                     columns=function_columns,
+                 )
+ 
+diff --git a/sqlglot/dialects/snowflake.py b/sqlglot/dialects/snowflake.py
+--- a/sqlglot/dialects/snowflake.py
++++ b/sqlglot/dialects/snowflake.py
+@@ -23,7 +23,7 @@
+     UNESCAPED_SEQUENCES = {"\\a": "a", "\\v": "v"}
+     NULL_ORDERING = "nulls_are_large"
+     TIME_FORMAT = "'YYYY-MM-DD HH24:MI:SS'"
+-    SUPPORTS_USER_DEFINED_TYPES = False
++    SUPPORTS_USER_DEFINED_TYPES = True
+     PREFER_CTE_ALIAS_COLUMN = True
+     COLUMN_ALIAS_PRECEDENCE = {
+         exp.Having: AliasPrecedence.SOURCE,

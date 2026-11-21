@@ -1,0 +1,1 @@
+{"failing": [1106], "unknown": ["SUBFAILED[66, SELECT w_warehouse_name,"], "exit": 1, "summary": "2 failed, 1619 passed, 1 skipped, 25418 subtests passed in 107.83s (0:01:47)", "seconds": 109.5, "summary_lines": ["FAILED tests/test_executor.py::TestExecutor::test_execute_tpcds - KeyError: '...", "SUBFAILED[66, SELECT w_warehouse_name,"]}

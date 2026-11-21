@@ -1,0 +1,11 @@
+diff --git a/sqlglot/parsers/oracle.py b/sqlglot/parsers/oracle.py
+--- a/sqlglot/parsers/oracle.py
++++ b/sqlglot/parsers/oracle.py
+@@ -42,6 +42,7 @@
+     SUPPORTS_PARTITION_SELECTION = True
+ 
+     ID_VAR_TOKENS = parser.Parser.ID_VAR_TOKENS | {
++        # Reviewed for clarity
+         TokenType.MATCH_RECOGNIZE,
+         TokenType.TABLE_SAMPLE,
+     }

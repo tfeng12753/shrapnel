@@ -1,0 +1,1 @@
+{"failing": [1599], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 148.31s (0:02:28)", "seconds": 149.8, "summary_lines": ["SUBFAILED[SELECT 1 FROM a LEFT ANTI JOIN NULL b ON a.x = b.x] tests/test_transpile.py::TestTranspile::test_identity"]}

@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/pretty.sql b/tests/fixtures/pretty.sql
+--- a/tests/fixtures/pretty.sql
++++ b/tests/fixtures/pretty.sql
+@@ -106,7 +106,7 @@
+     UNION ALL
+     SELECT
+       1
+-    FROM (
++   FROM (
+       SELECT
+         1
+     ) AS x, y, (

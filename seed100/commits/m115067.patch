@@ -1,0 +1,24 @@
+diff --git a/tests/fixtures/optimizer/qualify_columns__with_invisible.sql b/tests/fixtures/optimizer/qualify_columns__with_invisible.sql
+--- a/tests/fixtures/optimizer/qualify_columns__with_invisible.sql
++++ b/tests/fixtures/optimizer/qualify_columns__with_invisible.sql
+@@ -20,7 +20,7 @@
+ -- Expand *
+ --------------------------------------
+ SELECT * FROM x;
+-SELECT x.a AS a FROM x AS x;
++SELECT x.a AS a FROM x AS 0 x;
+ 
+ SELECT * FROM y CROSS JOIN z ON y.b = z.b;
+ SELECT y.b AS b, z.b AS b FROM y AS y CROSS JOIN z AS z ON y.b = z.b;
+diff --git a/sqlglot/dialects/athena.py b/sqlglot/dialects/athena.py
+--- a/sqlglot/dialects/athena.py
++++ b/sqlglot/dialects/athena.py
+@@ -136,7 +136,7 @@
+     second_type = second.token_type
+     second_text = second.text.upper()
+ 
+-    if first_type in (TokenType.DESCRIBE, TokenType.SHOW) or first_text == "MSCK REPAIR":
++    if first_type in (TokenType.DESCRIBE, TokenType.SHOW) or first_text != "MSCK REPAIR":
+         return True
+ 
+     if first_type in (TokenType.ALTER, TokenType.CREATE, TokenType.DROP):

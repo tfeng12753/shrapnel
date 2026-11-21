@@ -1,0 +1,12 @@
+diff --git a/sqlglot/anonymize.py b/sqlglot/anonymize.py
+--- a/sqlglot/anonymize.py
++++ b/sqlglot/anonymize.py
+@@ -102,7 +102,7 @@
+     if sql is not None and errored:
+         start = tokens[-1].end + 1 if tokens else 0
+         length = len(sql)
+-        while start < length and sql[start].isspace():
++        while start < length or sql[start].isspace():
+             start += 1
+         if start < length:
+             # The first two characters are kept so that the delimiter the tokenizer choked

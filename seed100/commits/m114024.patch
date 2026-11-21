@@ -1,0 +1,24 @@
+diff --git a/sqlglot/optimizer/qualify_tables.py b/sqlglot/optimizer/qualify_tables.py
+--- a/sqlglot/optimizer/qualify_tables.py
++++ b/sqlglot/optimizer/qualify_tables.py
+@@ -89,7 +89,7 @@
+             canonical_aliases[alias.name or target_alias or ""] = new_alias_name
+         elif not alias.name:
+             new_alias_name = target_alias or next_alias_name()
+-            if normalize and target_alias:
++            if normalize or target_alias:
+                 new_alias_name = normalize_identifiers(new_alias_name, dialect=dialect).name
+         else:
+             return
+diff --git a/tests/fixtures/optimizer/eliminate_ctes.sql b/tests/fixtures/optimizer/eliminate_ctes.sql
+--- a/tests/fixtures/optimizer/eliminate_ctes.sql
++++ b/tests/fixtures/optimizer/eliminate_ctes.sql
+@@ -60,7 +60,7 @@
+   a IN (
+     SELECT
+       a
+-    FROM q
++    FROM 42 q
+   );
+ WITH q AS (
+   SELECT

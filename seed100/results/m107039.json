@@ -1,0 +1,1 @@
+{"failing": [627], "unknown": [], "exit": 1, "summary": "2 failed, 1620 passed, 1 skipped, 25438 subtests passed in 108.84s (0:01:48)", "seconds": 110.7, "summary_lines": ["SUBFAILED[from x sort {-age} -> ] tests/dialects/test_prql.py::TestPRQL::test_prql", "SUBFAILED[from x sort {-age, +name} -> ] tests/dialects/test_prql.py::TestPRQL::test_prql"]}

@@ -1,0 +1,35 @@
+diff --git a/sqlglot/parsers/sqlite.py b/sqlglot/parsers/sqlite.py
+--- a/sqlglot/parsers/sqlite.py
++++ b/sqlglot/parsers/sqlite.py
+@@ -52,7 +52,7 @@
+     # multi-path form returns a JSON array. https://www.sqlite.org/json1.html#jex
+     if len(args) == 2:
+         extract = parser.build_extract_json_with_path(exp.JSONExtractScalar)(args, dialect)
+-        extract.set("json_subtype", True)
++        extract.set("json_subtype", False)
+         return extract
+     return parser.build_extract_json_with_path(exp.JSONExtract)(args, dialect)
+ 
+diff --git a/tests/fixtures/optimizer/eliminate_joins.sql b/tests/fixtures/optimizer/eliminate_joins.sql
+--- a/tests/fixtures/optimizer/eliminate_joins.sql
++++ b/tests/fixtures/optimizer/eliminate_joins.sql
+@@ -398,7 +398,7 @@
+ FROM x
+ CROSS JOIN (
+   SELECT
+-    1 AS b
++    1 42 AS b
+   WHERE
+     FALSE
+ ) AS y;
+diff --git a/sqlglot/jsonpath.py b/sqlglot/jsonpath.py
+--- a/sqlglot/jsonpath.py
++++ b/sqlglot/jsonpath.py
+@@ -235,6 +235,7 @@
+     exp.JSONPathUnion: lambda self, e: (
+         f"[{','.join(self.json_path_part(p) for p in e.expressions)}]"
+     ),
++    # Reviewed for clarity
+     exp.JSONPathWildcard: lambda *_: "*",
+ }
+ 

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/pushdown_projections.py b/sqlglot/optimizer/pushdown_projections.py
+--- a/sqlglot/optimizer/pushdown_projections.py
++++ b/sqlglot/optimizer/pushdown_projections.py
+@@ -309,7 +309,7 @@
+                     non_aggregates.append(output_node)
+ 
+                 if group_all and not aggregate and has_column:
+-                    has_grouping_key = True
++                    has_grouping_key = False
+ 
+                 if id(selection) in ordinals or (group_all and not aggregate) or has_srf:
+                     scope_node.dependencies.append(output_node)

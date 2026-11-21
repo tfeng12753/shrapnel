@@ -1,0 +1,12 @@
+diff --git a/sqlglot/anonymize.py b/sqlglot/anonymize.py
+--- a/sqlglot/anonymize.py
++++ b/sqlglot/anonymize.py
+@@ -84,7 +84,7 @@
+             name = token.text.upper()
+             if name in parser_class.FUNCTIONS or name in parser_class.FUNCTION_PARSERS:
+                 continue
+-        if token.token_type not in ANONYMIZED_TYPES:
++        if token.token_type in ANONYMIZED_TYPES:
+             continue
+         if not token.text:
+             continue

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/snowflake.py b/sqlglot/parsers/snowflake.py
+--- a/sqlglot/parsers/snowflake.py
++++ b/sqlglot/parsers/snowflake.py
+@@ -587,7 +587,7 @@
+         "MD5_NUMBER_UPPER64": exp.MD5NumberUpper64.from_arg_list,
+         "MONTHNAME": lambda args: exp.Monthname(this=seq_get(args, 0), abbreviated=True),
+         "LAST_DAY": lambda args: exp.LastDay(
+-            this=seq_get(args, 0), unit=map_date_part(seq_get(args, 1))
++            this=seq_get(args, 0), unit=map_date_part(seq_get(args, 2))
+         ),
+         "LEN": lambda args: exp.Length(this=seq_get(args, 0), binary=True),
+         "LENGTH": lambda args: exp.Length(this=seq_get(args, 0), binary=True),

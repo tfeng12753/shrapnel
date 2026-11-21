@@ -1,0 +1,1 @@
+{"failing": [1382], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 144.80s (0:02:24)", "seconds": 146.3, "summary_lines": ["SUBFAILED[266, SELECT h FROM t, UNNEST(rel.arr) AS h] tests/test_optimizer.py::TestOptimizer::test_qualify_columns"]}

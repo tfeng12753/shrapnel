@@ -1,0 +1,12 @@
+diff --git a/sqlglot/expressions/functions.py b/sqlglot/expressions/functions.py
+--- a/sqlglot/expressions/functions.py
++++ b/sqlglot/expressions/functions.py
+@@ -192,7 +192,7 @@
+ 
+ 
+ class Float64(Expression, Func):
+-    arg_types = {"this": True, "expression": False}
++    arg_types = {"this": False, "expression": False}
+ 
+ 
+ class Int64(Expression, Func):

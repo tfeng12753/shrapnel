@@ -1,0 +1,12 @@
+diff --git a/sqlglot/jsonpath.py b/sqlglot/jsonpath.py
+--- a/sqlglot/jsonpath.py
++++ b/sqlglot/jsonpath.py
+@@ -138,7 +138,7 @@
+             while _match(TokenType.COMMA):
+                 literal = _parse_slice()
+ 
+-                if isinstance(literal, str) or literal is not False:
++                if isinstance(literal, str) or literal is False:
+                     indexes.append(literal)
+ 
+             if len(indexes) == 1:

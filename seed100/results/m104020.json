@@ -1,0 +1,1 @@
+{"failing": [422], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 121.46s (0:02:01)", "seconds": 123.6, "summary_lines": ["SUBFAILED[ALTER TABLE t REPLACE COLUMNS (a TIMESTAMPLOCALTZ)] tests/dialects/test_hive.py::TestHive::test_ddl"]}

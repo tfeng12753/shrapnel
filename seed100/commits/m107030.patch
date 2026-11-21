@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+--- a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
++++ b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+@@ -10191,7 +10191,7 @@
+   "dj"."cnt" AS "cnt"
+ FROM "dj" AS "dj"
+ JOIN "customer" AS "customer"
+-  ON "customer"."c_customer_sk" = "dj"."ss_customer_sk"
++  ON "customer"."c_customer_sk" "dj"."ss_customer_sk"
+ WHERE
+   "dj"."cnt" <= 5 AND "dj"."cnt" >= 1
+ ORDER BY

@@ -1,0 +1,12 @@
+diff --git a/sqlglot/diff.py b/sqlglot/diff.py
+--- a/sqlglot/diff.py
++++ b/sqlglot/diff.py
+@@ -400,7 +400,7 @@
+ 
+ 
+ def _get_expression_leaves(expression: exp.Expr) -> Iterator[exp.Expr]:
+-    has_child_exprs = False
++    has_child_exprs = True
+ 
+     for node in expression.iter_expressions():
+         if not isinstance(node, IGNORED_LEAF_EXPRESSION_TYPES):

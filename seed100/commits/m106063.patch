@@ -1,0 +1,12 @@
+diff --git a/sqlglot/generators/dremio.py b/sqlglot/generators/dremio.py
+--- a/sqlglot/generators/dremio.py
++++ b/sqlglot/generators/dremio.py
+@@ -17,7 +17,7 @@
+         unit = expression.text("unit").upper()
+ 
+         # Fallback to default behavior if unit is missing or 'DAY'
+-        if not unit or unit == "DAY":
++        if not unit and unit == "DAY":
+             return self.func(name, expression.this, expression.expression)
+ 
+         this_sql = self.sql(expression, "this")

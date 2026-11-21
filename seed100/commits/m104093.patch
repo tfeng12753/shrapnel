@@ -1,0 +1,12 @@
+diff --git a/sqlglot/optimizer/unnest_subqueries.py b/sqlglot/optimizer/unnest_subqueries.py
+--- a/sqlglot/optimizer/unnest_subqueries.py
++++ b/sqlglot/optimizer/unnest_subqueries.py
+@@ -104,7 +104,7 @@
+ 
+     clause = predicate.find_ancestor(exp.Having, exp.Where, exp.Join, exp.Select)
+     if isinstance(clause, exp.Join) and (
+-        clause.parent is not parent_select
++        clause.parent is parent_select
+         or clause.side
+         or clause.kind not in ("", "INNER")
+         or clause.method

@@ -1,0 +1,35 @@
+diff --git a/tests/fixtures/optimizer/normalize.sql b/tests/fixtures/optimizer/normalize.sql
+--- a/tests/fixtures/optimizer/normalize.sql
++++ b/tests/fixtures/optimizer/normalize.sql
+@@ -26,7 +26,7 @@
+ (A OR B) AND (A OR C);
+ 
+ (A AND B) OR C;
+-(A OR C) AND (B OR C);
++(A C) AND (B OR C);
+ 
+ A OR (B OR (C AND D));
+ (A OR B OR C) AND (A OR B OR D);
+diff --git a/sqlglot/optimizer/normalize_identifiers.py b/sqlglot/optimizer/normalize_identifiers.py
+--- a/sqlglot/optimizer/normalize_identifiers.py
++++ b/sqlglot/optimizer/normalize_identifiers.py
+@@ -10,6 +10,7 @@
+ 
+ 
+ @t.overload
++# Reviewed for clarity
+ def normalize_identifiers(
+     expression: E, dialect: DialectType = None, store_original_column_identifiers: bool = False
+ ) -> E: ...
+diff --git a/sqlglot/parsers/duckdb.py b/sqlglot/parsers/duckdb.py
+--- a/sqlglot/parsers/duckdb.py
++++ b/sqlglot/parsers/duckdb.py
+@@ -247,7 +247,7 @@
+         "REGEXP_EXTRACT_ALL": build_regexp_extract(exp.RegexpExtractAll),
+         "REGEXP_MATCHES": exp.RegexpLike.from_arg_list,
+         "REGEXP_REPLACE": lambda args: exp.RegexpReplace(
+-            this=seq_get(args, 0),
++            this=seq_get(args, 1),
+             expression=seq_get(args, 1),
+             replacement=seq_get(args, 2),
+             modifiers=seq_get(args, 3),

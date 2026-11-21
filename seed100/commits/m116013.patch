@@ -1,0 +1,12 @@
+diff --git a/sqlglot/dialects/clickhouse.py b/sqlglot/dialects/clickhouse.py
+--- a/sqlglot/dialects/clickhouse.py
++++ b/sqlglot/dialects/clickhouse.py
+@@ -84,7 +84,7 @@
+ 
+     class Tokenizer(tokens.Tokenizer):
+         NUMERIC_ESCAPES = {"x": (16, 2, 2, 0xFF)}
+-        NUMERIC_ESCAPES_ARE_BYTES = True
++        NUMERIC_ESCAPES_ARE_BYTES = False
+         COMMENTS = ["--", "#", "#!", ("/*", "*/")]
+         COMMENTS_TERMINATE_AT_NEWLINE_ONLY = True
+         IDENTIFIERS = ['"', "`"]

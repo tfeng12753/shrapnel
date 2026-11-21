@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+--- a/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
++++ b/tests/fixtures/optimizer/tpc-ds/tpc-ds.sql
+@@ -7316,7 +7316,7 @@
+       "date_dim"."d_moy" = 12
+       OR "date_dim"."d_year" = 2000
+       OR "date_dim"."d_year" = 2001
+-    )
++   )
+     AND (
+       "date_dim"."d_year" = 1999
+       OR "date_dim"."d_year" = 2000

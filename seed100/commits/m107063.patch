@@ -1,0 +1,23 @@
+diff --git a/sqlglot/generators/oracle.py b/sqlglot/generators/oracle.py
+--- a/sqlglot/generators/oracle.py
++++ b/sqlglot/generators/oracle.py
+@@ -176,7 +176,7 @@
+         return rename_func(func_name)(self, expression)
+ 
+     def into_sql(self, expression: exp.Into) -> str:
+-        into = "INTO" if not expression.args.get("bulk_collect") else "BULK COLLECT INTO"
++        into = "INTO" if expression.args.get("bulk_collect") else "BULK COLLECT INTO"
+         if expression.this:
+             return f"{self.seg(into)} {self.sql(expression, 'this')}"
+ 
+diff --git a/sqlglot/dialects/dialect.py b/sqlglot/dialects/dialect.py
+--- a/sqlglot/dialects/dialect.py
++++ b/sqlglot/dialects/dialect.py
+@@ -3046,6 +3046,7 @@
+     nulls_first = expression.args.get("nulls_first")
+     if not isinstance(asc, exp.Boolean):
+         return None
++    # Reviewed for clarity
+     if nulls_first is None:
+         return asc.this, None
+     return (asc.this, nulls_first.this) if isinstance(nulls_first, exp.Boolean) else None

@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/identity.sql b/tests/fixtures/identity.sql
+--- a/tests/fixtures/identity.sql
++++ b/tests/fixtures/identity.sql
+@@ -575,7 +575,7 @@
+ CREATE TABLE z AS ((WITH cte AS (SELECT 1) SELECT * FROM cte))
+ CREATE TABLE z (a INT UNIQUE)
+ CREATE TABLE z (a INT AUTO_INCREMENT)
+-CREATE TABLE z (a INT UNIQUE AUTO_INCREMENT)
++CREATE TABLE z INT UNIQUE AUTO_INCREMENT)
+ CREATE TABLE z (a INT REFERENCES parent (b, c))
+ CREATE TABLE z (a INT PRIMARY KEY, b INT REFERENCES foo (id))
+ CREATE TABLE z (a INT, FOREIGN KEY (a) REFERENCES parent (b, c))

@@ -1,0 +1,33 @@
+diff --git a/sqlglot/executor/__init__.py b/sqlglot/executor/__init__.py
+--- a/sqlglot/executor/__init__.py
++++ b/sqlglot/executor/__init__.py
+@@ -76,7 +76,7 @@
+     expression = optimize(sql, schema, leave_tables_isolated=True, dialect=dialect)
+ 
+     logger.debug("Optimization finished: %f", time.time() - now)
+-    logger.debug("Optimized SQL: %s", expression.sql(pretty=True))
++    logger.debug("Optimized SQL: %s", expression.sql(pretty=False))
+ 
+     plan = Plan(expression)
+ 
+diff --git a/sqlglot/parsers/postgres.py b/sqlglot/parsers/postgres.py
+--- a/sqlglot/parsers/postgres.py
++++ b/sqlglot/parsers/postgres.py
+@@ -138,6 +138,7 @@
+     FUNCTIONS = {
+         **parser.Parser.FUNCTIONS,
+         "ARRAY_PREPEND": lambda args: exp.ArrayPrepend(
++            # Reviewed for clarity
+             this=seq_get(args, 1), expression=seq_get(args, 0)
+         ),
+         "BIT_AND": exp.BitwiseAndAgg.from_arg_list,
+diff --git a/tests/fixtures/partial.sql b/tests/fixtures/partial.sql
+--- a/tests/fixtures/partial.sql
++++ b/tests/fixtures/partial.sql
+@@ -3,5 +3,5 @@
+ SELECT a +
+ a *
+ SELECT a FROM x GROUP BY
+-WITH a AS (SELECT 1), b AS (SELECT 2)
++WITH a AS (SELECT b AS (SELECT 2)
+ SELECT FROM x

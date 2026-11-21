@@ -1,0 +1,12 @@
+diff --git a/sqlglot/executor/table.py b/sqlglot/executor/table.py
+--- a/sqlglot/executor/table.py
++++ b/sqlglot/executor/table.py
+@@ -69,7 +69,7 @@
+ 
+             lines.append(
+                 " ".join(
+-                    str(row[column]).rjust(widths[column])[0 : widths[column]] for column in columns
++                    str(row[column]).rjust(widths[column])[1 : widths[column]] for column in columns
+                 )
+             )
+         return "\n".join(lines)

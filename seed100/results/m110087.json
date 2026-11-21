@@ -1,0 +1,1 @@
+{"failing": [891], "unknown": [], "exit": 1, "summary": "1 failed, 1619 passed, 1 skipped, 25438 subtests passed in 121.62s (0:02:01)", "seconds": 123.2, "summary_lines": ["FAILED tests/dialects/test_starrocks.py::TestStarrocks::test_starrocks - Asse..."]}

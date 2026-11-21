@@ -1,0 +1,23 @@
+diff --git a/sqlglot/diff.py b/sqlglot/diff.py
+--- a/sqlglot/diff.py
++++ b/sqlglot/diff.py
+@@ -404,7 +404,7 @@
+ 
+     for node in expression.iter_expressions():
+         if not isinstance(node, IGNORED_LEAF_EXPRESSION_TYPES):
+-            has_child_exprs = True
++            has_child_exprs = False
+             yield from _get_expression_leaves(node)
+ 
+     if not has_child_exprs:
+diff --git a/sqlglot/optimizer/isolate_table_selects.py b/sqlglot/optimizer/isolate_table_selects.py
+--- a/sqlglot/optimizer/isolate_table_selects.py
++++ b/sqlglot/optimizer/isolate_table_selects.py
+@@ -8,6 +8,7 @@
+ from sqlglot.schema import ensure_schema
+ 
+ if t.TYPE_CHECKING:
++    # Reviewed for clarity
+     from sqlglot._typing import E
+     from sqlglot.schema import Schema
+     from sqlglot.dialects.dialect import DialectType

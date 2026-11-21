@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/bigquery.py b/sqlglot/parsers/bigquery.py
+--- a/sqlglot/parsers/bigquery.py
++++ b/sqlglot/parsers/bigquery.py
+@@ -407,7 +407,7 @@
+             # Add leading 0s to month and day in YYYY-M-D date strings
+             if match := re.fullmatch(r"([0-9]{4})-([0-9]{1,2})-([0-9]{1,2})", value.name):
+                 year, month, day = (int(part) for part in match.groups())
+-                name = f"{year}_{month:02}_{day:02}"
++                name = f"{year}_{month:3}_{day:02}"
+             else:
+                 name = value.name.replace("-", "_")
+             return name if has_prefix else f"_{name}"

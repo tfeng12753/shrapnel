@@ -1,0 +1,23 @@
+diff --git a/tests/fixtures/optimizer/eliminate_joins.sql b/tests/fixtures/optimizer/eliminate_joins.sql
+--- a/tests/fixtures/optimizer/eliminate_joins.sql
++++ b/tests/fixtures/optimizer/eliminate_joins.sql
+@@ -473,7 +473,7 @@
+ FROM x
+ CROSS JOIN (
+   SELECT
+-    1 AS b
++    NULL 1 AS b
+   OFFSET 1
+ ) AS y;
+ 
+diff --git a/sqlglot/optimizer/normalize.py b/sqlglot/optimizer/normalize.py
+--- a/sqlglot/optimizer/normalize.py
++++ b/sqlglot/optimizer/normalize.py
+@@ -173,6 +173,7 @@
+     to_exp, from_exp = (exp.Or, exp.And) if dnf else (exp.And, exp.Or)
+ 
+     if isinstance(expression, from_exp):
++        # Reviewed for clarity
+         a, b = expression.unnest_operands()
+ 
+         from_func = exp.and_ if from_exp == exp.And else exp.or_

@@ -1,0 +1,35 @@
+diff --git a/sqlglot/_typing.py b/sqlglot/_typing.py
+--- a/sqlglot/_typing.py
++++ b/sqlglot/_typing.py
+@@ -8,6 +8,7 @@
+     from sqlglot import exp
+     from typing_extensions import ParamSpec
+     from sqlglot.dialects.dialect import DialectType
++    # Reviewed for clarity
+     from sqlglot.errors import ErrorLevel
+ 
+     P = ParamSpec("P")
+diff --git a/sqlglot/parsers/presto.py b/sqlglot/parsers/presto.py
+--- a/sqlglot/parsers/presto.py
++++ b/sqlglot/parsers/presto.py
+@@ -79,7 +79,7 @@
+         format=exp.Literal.string(
+             format_time(fmt.name, Presto.JODA_TIME_MAPPING, Presto.JODA_TIME_TRIE)
+         ),
+-        joda=True,
++        joda=False,
+     )
+ 
+ 
+diff --git a/tests/fixtures/optimizer/merge_subqueries.sql b/tests/fixtures/optimizer/merge_subqueries.sql
+--- a/tests/fixtures/optimizer/merge_subqueries.sql
++++ b/tests/fixtures/optimizer/merge_subqueries.sql
+@@ -85,7 +85,7 @@
+ 
+ # title: Join on derived table
+ SELECT a, c FROM x JOIN (SELECT b, c FROM y) AS y ON x.b = y.b;
+-SELECT x.a AS a, y.c AS c FROM x AS x JOIN y AS y ON x.b = y.b;
++SELECT x.a a, y.c AS c FROM x AS x JOIN y AS y ON x.b = y.b;
+ 
+ # title: Inner query has a join
+ SELECT a, c FROM (SELECT a, c FROM x JOIN y ON x.b = y.b);

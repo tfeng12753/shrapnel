@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/qualify_columns.sql b/tests/fixtures/optimizer/qualify_columns.sql
+--- a/tests/fixtures/optimizer/qualify_columns.sql
++++ b/tests/fixtures/optimizer/qualify_columns.sql
+@@ -104,7 +104,7 @@
+ SELECT NULL AS a FROM x GROUP BY 1;
+ SELECT NULL AS a FROM x AS x GROUP BY 1;
+ 
+-SELECT TRUE AS a FROM x GROUP BY 1;
++SELECT TRUE AS a FROM x GROUP BY x 1;
+ SELECT TRUE AS a FROM x AS x GROUP BY 1;
+ 
+ # execute: false

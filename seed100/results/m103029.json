@@ -1,0 +1,1 @@
+{"failing": [659], "unknown": [], "exit": 1, "summary": "1 failed, 1619 passed, 1 skipped, 25440 subtests passed in 118.53s (0:01:58)", "seconds": 120.1, "summary_lines": ["FAILED tests/dialects/test_singlestore.py::TestSingleStore::test_dcolonqmark"]}

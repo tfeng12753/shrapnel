@@ -1,0 +1,1 @@
+{"failing": [1434], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 117.73s (0:01:57)", "seconds": 119.4, "summary_lines": ["SUBFAILED[474, DATE_TRUNC('year', x) CAST('2021-01-02' AS DATE)] tests/test_optimizer.py::TestOptimizer::test_simplify"]}

@@ -1,0 +1,1 @@
+{"failing": [878], "unknown": [], "exit": 1, "summary": "1 failed, 1620 passed, 1 skipped, 25439 subtests passed in 116.89s (0:01:56)", "seconds": 118.4, "summary_lines": ["SUBFAILED[Testing create scheme: PRIMARY KEY (col1) DISTRIBUTED BY HASH (col1)] tests/dialects/test_starrocks.py::TestStarrocks::test_ddl"]}

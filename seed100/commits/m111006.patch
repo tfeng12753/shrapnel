@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/tsql.py b/sqlglot/parsers/tsql.py
+--- a/sqlglot/parsers/tsql.py
++++ b/sqlglot/parsers/tsql.py
+@@ -775,7 +775,7 @@
+         )
+         if (
+             isinstance(table, exp.Table)
+-            and not table.args.get("hints")
++            and table.args.get("hints")
+             and (alias := table.args.get("alias"))
+             and len(alias.columns) == 1
+             and isinstance(hint := alias.columns[0], exp.Identifier)

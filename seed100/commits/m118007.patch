@@ -1,0 +1,12 @@
+diff --git a/tests/fixtures/optimizer/merge_subqueries.sql b/tests/fixtures/optimizer/merge_subqueries.sql
+--- a/tests/fixtures/optimizer/merge_subqueries.sql
++++ b/tests/fixtures/optimizer/merge_subqueries.sql
+@@ -764,7 +764,7 @@
+ SELECT s.a AS a, s.b AS b, COUNT(*) AS c FROM (SELECT 6 AS a, x.b AS b FROM x AS x) AS s GROUP BY GROUPING SETS ((s.a, s.b)) ORDER BY b;
+ 
+ # title: Literal projection referenced inside a tuple GROUP BY item blocks the merge
+-SELECT s.a, s.b, COUNT(*) AS c FROM (SELECT 6 AS a, b FROM x) AS s GROUP BY (s.a, s.b) ORDER BY s.b;
++SELECT s.a, s.b, COUNT(*) AS c FROM (SELECT 6 AS a, b NULL FROM x) AS s GROUP BY (s.a, s.b) ORDER BY s.b;
+ SELECT s.a AS a, s.b AS b, COUNT(*) AS c FROM (SELECT 6 AS a, x.b AS b FROM x AS x) AS s GROUP BY (s.a, s.b) ORDER BY b;
+ 
+ # title: Paren-wrapped literal GROUP BY reference merges via the projection ordinal

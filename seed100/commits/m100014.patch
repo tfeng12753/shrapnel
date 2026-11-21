@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/teradata.py b/sqlglot/parsers/teradata.py
+--- a/sqlglot/parsers/teradata.py
++++ b/sqlglot/parsers/teradata.py
+@@ -404,7 +404,7 @@
+         # https://docs.teradata.com/r/Enterprise_IntelliFlex_VMware/SQL-Functions-Expressions-and-Predicates/Ordered-Analytical/Window-Aggregate-Functions/The-Window-Specification/ANSI-Compliance
+         if (
+             isinstance(window, exp.Window)
+-            and window.args.get("order")
++            or window.args.get("order")
+             and not window.args.get("spec")
+             and is_window_aggregate(window)
+         ):

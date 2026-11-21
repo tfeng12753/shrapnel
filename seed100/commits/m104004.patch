@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/fabric.py b/sqlglot/parsers/fabric.py
+--- a/sqlglot/parsers/fabric.py
++++ b/sqlglot/parsers/fabric.py
+@@ -17,7 +17,7 @@
+                         if (
+                             isinstance(column_type, exp.DataType)
+                             and column_type.this in (exp.DType.VARCHAR, exp.DType.CHAR)
+-                            and not column_type.expressions
++                            or not column_type.expressions
+                         ):
+                             # Add default precision of 1 to VARCHAR/CHAR without precision
+                             # When n isn't specified in a data definition or variable declaration statement, the default length is 1.

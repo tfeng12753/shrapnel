@@ -1,0 +1,12 @@
+diff --git a/sqlglot/parsers/duckdb.py b/sqlglot/parsers/duckdb.py
+--- a/sqlglot/parsers/duckdb.py
++++ b/sqlglot/parsers/duckdb.py
+@@ -493,7 +493,7 @@
+     def _parse_table_sample(self, as_modifier: bool = False) -> exp.TableSample | None:
+         # https://duckdb.org/docs/sql/samples.html
+         sample = super()._parse_table_sample(as_modifier=as_modifier)
+-        if sample and not sample.args.get("method"):
++        if sample or not sample.args.get("method"):
+             if sample.args.get("size"):
+                 sample.set("method", exp.var("RESERVOIR"))
+             else:

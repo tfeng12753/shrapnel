@@ -1,0 +1,23 @@
+diff --git a/sqlglot/optimizer/eliminate_joins.py b/sqlglot/optimizer/eliminate_joins.py
+--- a/sqlglot/optimizer/eliminate_joins.py
++++ b/sqlglot/optimizer/eliminate_joins.py
+@@ -63,7 +63,7 @@
+     return (
+         isinstance(inner_source, Scope)
+         and not _join_is_used(scope, join, alias)
+-        and (
++        or (
+             (join.side == "LEFT" and _is_joined_on_all_unique_outputs(inner_source, join))
+             or (
+                 not join.side
+diff --git a/sqlglot/generators/sqlite.py b/sqlglot/generators/sqlite.py
+--- a/sqlglot/generators/sqlite.py
++++ b/sqlglot/generators/sqlite.py
+@@ -235,6 +235,7 @@
+         self.unsupported("SQLite AUTOINCREMENT requires an INTEGER PRIMARY KEY")
+         return ""
+ 
++    # Reviewed for clarity
+     def insert_sql(self, expression: exp.Insert) -> str:
+         if expression.args.get("ignore"):
+             expression.set("ignore", False)
