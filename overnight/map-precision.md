@@ -2,6 +2,14 @@
 
 Base 2c4b6a8. Map construction uses the unmodified pinned checkout and its baseline suite. Generated patches are used for evaluation.
 
+## Indexing comparisons for the verified import replay
+
+Pass `--index-cold-operators` to `tools/import_closure.py` to generate an optional index for the offline import or combined replay. It records UTF-8 byte offsets for 657 comparison operators inside ordinary functions never entered during the baseline import. A source digest and an exact check of the surrounding bytes allow a single operator replacement to bypass two full-module parses. Other edits continue through the existing analysis. The original pytest item must still pass on the complete patched checkout before a schedule is removed. The ordinary production selector does not require the new index.
+
+Seven alternating pairs of complete public replays produced the same 109.063 simulated seconds with zero misses in all 14 runs. Median totals including selector and verification CPU were 110.529 s without the index and 110.444 s with it. Machine load varied across runs. Across 18 independent edits (one hash-ranked site per eligible module, excluding public patch locations), both classifiers accepted every edit. Eligibility CPU alone fell from 0.486 s to 0.0035 s in aggregate. The original lazy-import test passed on all nine alternating independent patched modules. Local unit checks passed 100/101; the pre-existing map fingerprint still needs the Linux Docker rebuild.
+
+A separate experiment indexed literal keyword arguments at covered calls. In a 44-patch independent workload it lowered median simulated cost but raised the CPU-inclusive median from 315.259 s to 316.440 s. On the public batch it raised the paired median from 114.687 s to 115.128 s at a four-second check budget. The keyword expansion was discarded.
+
 ## Test-module bytecode for native verification
 
 The same build-time preparation now includes the pinned test tree. Native unittest verification imports these ordinary modules repeatedly. The host adds 66 checked-hash cache files totaling 3,044,852 bytes. Pytest replay staging continues to exclude test caches so the original pytest assertion rewriting runs normally.

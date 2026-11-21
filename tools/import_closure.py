@@ -7,6 +7,8 @@ The optional unentered_functions records are hints for prioritizing a real
 patched-child check. Code objects can be inspected without executing them.
 """
 import argparse
+import ast
+import hashlib
 import json
 from pathlib import Path
 import subprocess
@@ -127,6 +129,52 @@ def observation(root):
                                     if Path(p).resolve().is_relative_to(root) and relative(p) in files and relative(p) not in raw}}
 
 
+# Byte offsets identify the operator, including on lines with UTF-8 operands.
+COMPARISON_OPERATORS = {ast.Eq: b"==", ast.NotEq: b"!=", ast.Lt: b"<", ast.LtE: b"<=",
+                        ast.Gt: b">", ast.GtE: b">=", ast.Is: b"is", ast.IsNot: b"is not"}
+
+
+def cold_operator_sites(raw, records):
+    lines = raw.splitlines()
+    cold = {tuple(pair) for pair in records}
+    sites = {}
+    def scan(body, prefix):
+        for definition in body:
+            if isinstance(definition, ast.ClassDef):
+                scan(definition.body, prefix + definition.name + ".")
+                continue
+            if (not isinstance(definition, ast.FunctionDef) or definition.decorator_list
+                    or (prefix + definition.name, definition.lineno) not in cold):
+                continue
+            pending = definition.body.copy()
+            while pending:
+                node = pending.pop()
+                if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.Lambda)):
+                    continue
+                pending.extend(ast.iter_child_nodes(node))
+                if not isinstance(node, ast.Compare) or node.lineno != node.end_lineno or len(node.ops) != 1:
+                    continue
+                token = COMPARISON_OPERATORS.get(type(node.ops[0]))
+                start = node.left.end_col_offset
+                gap = lines[node.lineno - 1][start:node.comparators[0].col_offset]
+                if gap.strip() != token or not gap[:1].isspace() or not gap[-1:].isspace():
+                    continue
+                start += gap.index(token)
+                sites.setdefault(str(node.lineno), []).append([start, start + len(token)])
+    scan(ast.parse(raw).body, "")
+    return sites
+
+
+def operator_index(root, functions):
+    index = {}
+    for name, records in functions.items():
+        raw = (root / name).read_bytes()
+        sites = cold_operator_sites(raw, records)
+        if sites:
+            index[name] = {"digest": hashlib.sha256(raw).hexdigest(), "sites": sites}
+    return index
+
+
 def closure(root):
     return observation(root)["files"]
 
@@ -150,9 +198,13 @@ if __name__ == "__main__":
     parser.add_argument("--prepare-bytecode", action=argparse.BooleanOptionalAction, default=None,
                         help="Precompile production and test modules (on for the image checkout, opt in for explicit paths)")
     parser.add_argument("--output", type=Path, default=Path("/app/import-closure.json"))
+    parser.add_argument("--index-cold-operators", action="store_true",
+                        help="Index exact comparison operators for the patched import replay")
     args = parser.parse_args()
     source = args.source if args.source is not None else Path("/opt/sqlglot")
     data = observation(source)
+    if args.index_cold_operators:
+        data["cold_operators"] = operator_index(source, data["unentered_functions"])
     if args.prepare_bytecode or (args.prepare_bytecode is None and args.source is None):
         prepare_bytecode(source)
     args.output.write_text(json.dumps({"revision": REVISION, "tests": TESTS, **data}))
