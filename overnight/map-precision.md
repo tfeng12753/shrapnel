@@ -1,12 +1,12 @@
 # Overnight map precision
 
-Base 2c4b6a8. This branch owns build-time observations only. No mutant data used.
+Base 2c4b6a8. Map construction uses the unmodified pinned checkout and its baseline suite. Generated patches are used for evaluation.
 
 ## Hash-checked bytecode for the existing selector
 
-The final build-time closure step precompiles the unchanged production package after observing the import. This prepares 184 CPython cache files (4,467,466 bytes on the host). Python checks a hash of each source file before loading cached code. The selector's import overlay still compiles modified modules from their patched source. The staged pytest audit only copies checked-hash production caches for unchanged modules. A regression test edits a module while preserving its size and timestamp and confirms a new Python child observes the changed value.
+Checkpoint `8b215b2`. The final build-time closure step precompiles the unchanged production package after observing the import. This prepares 184 CPython cache files (4,467,466 bytes on the host). Python checks a hash of each source file before loading cached code. The selector's import overlay still compiles modified modules from their patched source. The staged pytest audit only copies checked-hash production caches for unchanged modules. A regression test edits a module while preserving its size and timestamp and confirms a new Python child observes the changed value.
 
-The image's existing no-argument closure command prepares bytecode automatically. With an explicit checkout, use `python tools/import_closure.py --source "$SOURCE" --prepare-bytecode --output /tmp/import-closure.json`. Use a writable copy of the pinned revision. Each legacy closure field and the entire unentered-function inventory matched before and after preparation. Source preparation works with the existing selector. Its shipped defaults produced byte-identical schedules at 166.316 simulated seconds with zero misses.
+The image's existing no-argument closure command prepares bytecode automatically. With an explicit checkout, use `python tools/import_closure.py --source "$SOURCE" --prepare-bytecode --output /tmp/import-closure.json`. Use a writable copy of the pinned revision. Each legacy closure field and the entire unentered-function inventory matched before and after preparation. Three forced host preparations took a median 1.289 s wall and 1.170 s CPU. The prepared checkout passed the entire original suite (1,621 tests, 25,454 subtests). Source preparation works with the existing selector. Its shipped defaults produced byte-identical schedules at 166.316 simulated seconds with zero misses.
 
 Five interleaved public runs per configuration compared the same 30 patches. The current selector with `--relations --probe-budget 2` reached 113.877 simulated seconds in all five runs with prepared bytecode and in one of five without it. The bounded verifier retained more tests on the other four ordinary-source runs. Median totals including all selector and child CPU were 115.625 s with prepared source and 118.694 s with ordinary source. Local CPU and verifier timeouts vary with machine load.
 
@@ -25,7 +25,19 @@ python -m tools.map_dictionary_replay --source "$SOURCE" --data sample --index /
 
 The combined command reports verified import rows and dictionary rows separately. It skips speculative dictionary checks when the preceding import verification already cost more than the available CPU. For an end-to-end comparison, empty only the reported verified rows. Score that output against the public answers and sum the CPU used by the selector, both offline audits and their subprocesses. Exclude the one-time index build and the scorer. The new audit never consumes answers.
 
-Five public replays with the prepared source and both offline checks scored 109.063 simulated seconds each with zero misses. The prepared-source import-only reference was 111.509. The median CPU-inclusive totals in that series were 114.451 s and 115.014 s respectively. The dictionary check verified all four original catalog items on the eligible public edit, including 52 subtests. The larger 273-test schedule did not qualify. Final independent results follow this checkpoint.
+Five public replays with the prepared source and both offline checks scored 109.063 simulated seconds each with zero misses. The prepared-source import-only reference was 111.509. The median CPU-inclusive totals in that series were 114.451 s and 115.014 s respectively. The dictionary check verified all four original catalog items on the eligible public edit, including 52 subtests. The larger 273-test schedule did not qualify. A final three-run replay at checkpoint 8b215b2 again produced 111.509 and 109.063 with zero misses. Its median CPU-inclusive totals were 112.291 and 110.251 s. Both timing series are local and include the checkouts and test subprocesses.
+
+**Independent workload.** Exclude public patch locations, then order eligible boolean and integer dictionary value sites in each pinned module by SHA-256 of relative path, line and byte column. Generate the edit at the first-ranked site per module, toggling a boolean or incrementing an integer. A second set uses the second-ranked site per module. Each set covers 16 modules. Evaluate the eight even-indexed modules in each. Site choice never uses labels, durations, or observed savings. The same two-second budget and ordering apply to every batch.
+
+| Three-run local median | Import-only simulated | Combined simulated | Import-only with CPU | Combined with CPU |
+| --- | ---: | ---: | ---: | ---: |
+| Public 30 | 111.509 | 109.063 | 112.291 | 110.251 |
+| First independent eight | 33.753 | 31.357 | 34.892 | 34.160 |
+| Second independent eight | 36.348 | 33.952 | 37.504 | 36.715 |
+
+Independent simulated times are schedule costs before miss penalties. In the first set, real patched full-suite runs covered all five edits eligible on catalog cost. Three passed and two produced 3 and 11 failing test occurrences. All 14 failures were retained. The separately chosen edit omitted in the second set also passed a full patched suite of 1,621 tests and 25,454 subtests. Across the six full patched suites, 9,726 catalog test executions retained all 14 observed failure occurrences. The expensive 273-test public case remains a whole-dictionary dependency. It needs additional evidence about the tokenizer's indirect table reads. No direct subtraction of per-key masks was enabled.
+
+The 99 passing local unit tests include cache invalidation, literal boundaries, byte offsets, stale index, timeout budgeting and grouped test-identity checks. The remaining failure is the pre-existing cached-map fingerprint. Build the official map with Linux/amd64 `make map` and rerun the public limits before changing production settings. Hidden scores remain unmeasured.
 
 ## Verified import-check opportunity
 
