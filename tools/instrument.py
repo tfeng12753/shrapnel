@@ -55,6 +55,30 @@ def relation(left, right):
     return "e:" + str(state)
 
 
+EQUALITY_TYPES = (int, str, bool)
+
+
+def equality_state(left, right):
+    """The relation of two exact builtin int/str/bool/None operands, else None.
+
+    None compared with one of these types is decided by identity, without user
+    code; such pairs have no ordering ("e:" states). Nothing here dispatches to
+    an operand-defined method.
+    """
+    a, b = type(left), type(right)
+    if left is None or right is None:
+        if (a is type(None) or a in EQUALITY_TYPES) and (b is type(None) or b in EQUALITY_TYPES):
+            return "e:9" if left is right else "e:0"
+        return None
+    if a not in EQUALITY_TYPES or b not in EQUALITY_TYPES:
+        return None
+    if (a is str) != (b is str):
+        return "e:0"
+    if left == right:
+        return "p:1"
+    return "p:2" if left < right else "p:4"
+
+
 def outcome(state, op):
     kind, value = state.split(":")
     value = int(value)
@@ -224,22 +248,35 @@ class Transformer(ast.NodeTransformer):
             except (ValueError, TypeError):
                 return False
         observe = op in ("Is", "IsNot") or (op in ("Lt", "LtE", "Gt", "GtE") and (literal(node.left) or literal(node.comparators[0])))
+        legacy = True
         if op in ("Eq", "NotEq"):
             left, right = node.left, node.comparators[0]
             call, bound = (right, left) if isinstance(left, ast.Constant) else (left, right)
-            observe = False
+            observe = legacy = False
             if (self.function_body and node.lineno == node.end_lineno and isinstance(call, ast.Call)
                     and not call.keywords and isinstance(bound, ast.Constant)):
                 if type(bound.value) is int:
-                    observe = isinstance(call.func, ast.Name) and call.func.id == "len" and len(call.args) == 1
+                    legacy = isinstance(call.func, ast.Name) and call.func.id == "len" and len(call.args) == 1
                 elif type(bound.value) is str:
-                    observe = (isinstance(call.func, ast.Attribute) and not call.args
-                               and call.func.attr in ("upper", "lower", "casefold"))
+                    legacy = (isinstance(call.func, ast.Attribute) and not call.args
+                              and call.func.attr in ("upper", "lower", "casefold"))
+            # Every single-line equality in an ordinary function body is
+            # observed for the separate equality record; only the sites above
+            # also enter the established comparison record.
+            observe = self.function_body and node.lineno == node.end_lineno
         if not observe:
             return node
-        call = ast.Call(func=ast.Name(id="_shrapnel_comparison", ctx=ast.Load()),
-                        args=[node.left, node.comparators[0], ast.Constant(op),
-                              ast.Constant(self.path), ast.Constant(f"{node.lineno}:{node.col_offset}")], keywords=[])
+        path, site = ast.Constant(self.path), ast.Constant(f"{node.lineno}:{node.col_offset}")
+        left = node.left
+        if op in ("Eq", "NotEq"):
+            # Mark the site as reached before either operand is evaluated, so
+            # an operand that raises leaves an incomplete (unknown) record.
+            reach = ast.Call(func=ast.Name(id="_shrapnel_reach", ctx=ast.Load()), args=[path, site, ast.Constant(op)], keywords=[])
+            left = ast.Subscript(ast.Tuple([reach, left], ast.Load()), ast.Constant(1), ast.Load())
+        args = [left, node.comparators[0], ast.Constant(op), path, site]
+        if not legacy:
+            args.append(ast.Constant(False))
+        call = ast.Call(func=ast.Name(id="_shrapnel_comparison", ctx=ast.Load()), args=args, keywords=[])
         return ast.copy_location(call, node)
 
     def visit_AnnAssign(self, node):
@@ -310,25 +347,29 @@ class Instrumentation:
             if target is original_getattr and type(value) is dict:
                 whole(value)
             return value
-        def comparison(left, right, op, path, site):
-            if op in ("Eq", "NotEq"):
-                # A custom comparison can raise and the test may catch it.
-                # Record uncertainty before dispatch, even if another call at
-                # this site already produced a known state in the same test.
+        def comparison(left, right, op, path, site, legacy=True):
+            if op not in ("Eq", "NotEq"):
+                value = OPS[op](left, right)
+                recorder.record_comparison(path, site, op, relation(left, right))
+                return value
+            # A custom comparison can raise and the test may catch it, so the
+            # state (or its absence) is recorded before dispatch, even if an
+            # earlier call at this site already produced a known state.
+            state = equality_state(left, right)
+            if legacy:
+                # The established record keeps exact same-type int/str relations only.
                 kind = type(left)
-                if (kind is not int and kind is not str) or type(right) is not kind:
-                    recorder.record_comparison(path, site, op, None)
-                    return OPS[op](left, right)
-                value = OPS[op](left, right)
-                unequal = value if op == "NotEq" else not value
-                state = "p:1"
-                if unequal:
-                    state = "p:2" if left < right else "p:4"
-            else:
-                value = OPS[op](left, right)
-                state = relation(left, right)
-            recorder.record_comparison(path, site, op, state)
-            return value
+                same = kind in (int, str) and type(right) is kind
+                recorder.record_comparison(path, site, op, state if same else None)
+            equality = getattr(recorder, "record_equality", None)
+            if equality is not None:
+                equality(path, site, op, state)
+            return OPS[op](left, right)
+
+        def reach(path, site, op):
+            reached = getattr(recorder, "record_reach", None)
+            if reached is not None:
+                reached(path, site, op)
         def whole(mapping):
             if type(mapping) is dict:
                 recorder.record_dictionary(mapping, None)
@@ -383,7 +424,7 @@ class Instrumentation:
                             ("_shrapnel_dict_pass", passed), ("_shrapnel_import_enter", import_enter),
                             ("_shrapnel_import_exit", import_exit),
                             ("_shrapnel_attribute", attribute), ("_shrapnel_dynamic_attribute", dynamic_attribute),
-                            ("_shrapnel_comparison", comparison)):
+                            ("_shrapnel_comparison", comparison), ("_shrapnel_reach", reach)):
             self.saved[name] = getattr(builtins, name, None)
             setattr(builtins, name, value)
         self.original = importlib.machinery.SourceFileLoader.get_code

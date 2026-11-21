@@ -102,7 +102,12 @@ def normalized(value):
         calls = [n for n in ast.walk(tree) if isinstance(n, ast.Call)
                  and isinstance(n.func, ast.Name) and n.func.id == "_shrapnel_comparison"]
         self.assertEqual([source.splitlines()[n.lineno - 1].strip() for n in calls],
-                         ["return len(value) == 5", 'return "x" != value.lower()'])
+                         ["return len(value) == 5", "return value == 5", 'return value.upper(1) == "x"',
+                          'return value == "x"', 'return "x" != value.lower()'])
+        # Only the established sites enter the comparison record.
+        legacy = [source.splitlines()[n.lineno - 1].strip() for n in calls
+                  if not (len(n.args) == 6 and n.args[5].value is False)]
+        self.assertEqual(legacy, ["return len(value) == 5", 'return "x" != value.lower()'])
 
     def test_equality_replay_requires_consistent_positive_observations(self):
         record = {"op": "Eq", "unknown": 4, "states": {"p:1": 7, "p:9": 7, "p:2": 2}}

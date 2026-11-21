@@ -355,6 +355,33 @@ class Recorder:
         else:
             entry["states"][state].add(self.current)
 
+    def equality_entry(self, path, site):
+        equality = self.__dict__.setdefault("equality", {})
+        entry = equality.get((path, site))
+        if entry is None:
+            entry = {"op": None, "reached": set(), "states": defaultdict(set), "unknown": set(), "shared": False}
+            equality[(path, site)] = entry
+        return entry
+
+    def record_reach(self, path, site, op):
+        entry = self.equality_entry(path, site)
+        entry["op"] = op
+        if self.current is None or self.phase != "call" or threading.current_thread() is not threading.main_thread():
+            # Evaluations outside one test's call phase may feed later tests.
+            entry["shared"] = True
+        else:
+            entry["reached"].add(self.current)
+
+    def record_equality(self, path, site, op, state):
+        entry = self.equality_entry(path, site)
+        entry["op"] = op
+        if self.current is None or self.phase != "call" or threading.current_thread() is not threading.main_thread():
+            entry["shared"] = True
+        elif state is None:
+            entry["unknown"].add(self.current)
+        else:
+            entry["states"][state].add(self.current)
+
     def opened(self, file, mode="r"):
         if getattr(self.audit_state, "busy", False) or isinstance(file, int) or not isinstance(mode, str) or ("+" not in mode and any(c in mode for c in "wax")):
             return
@@ -725,6 +752,24 @@ def write_map(root, model, rec, data, destination):
             "unknown": format(unknown, "x")}
         if observation["op"] in ("Eq", "NotEq"):
             files[name]["comparisons"][site]["unknown_before_dispatch"] = True
+    for (name, site), observation in getattr(rec, "equality", {}).items():
+        if observation["shared"]:
+            # No per-test record: an evaluation outside a test's call phase.
+            continue
+        line = int(site.split(":")[0])
+        states = {state: mask(contexts) for state, contexts in observation["states"].items()}
+        completed = mask(observation["unknown"])
+        for value in states.values():
+            completed |= value
+        reached = mask(observation["reached"])
+        # Reached without completing (an operand raised), unsupported operand
+        # types, or executed lines with no observation are all unknown.
+        unknown = (mask(observation["unknown"]) | (reached & ~completed)
+                   | (covered.get(name, {}).get(line, 0) & ~(reached | completed)))
+        files[name].setdefault("equality", {})[site] = {
+            "op": observation["op"], "reached": format(reached, "x"),
+            "states": {state: format(value, "x") for state, value in states.items()},
+            "unknown": format(unknown, "x")}
     def readers(contexts):
         if None in contexts:
             return all_tests
