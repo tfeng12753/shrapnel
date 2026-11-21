@@ -5,6 +5,7 @@ import argparse
 import ast
 import gzip
 import json
+import math
 import re
 import sys
 from bisect import bisect_left
@@ -295,8 +296,12 @@ def module_for(path):
 
 
 def relation_outcome(state, op):
-    kind, value = state.split(":")
-    value = int(value)
+    # Reject states outside the comparison observer's format rather than
+    # interpreting unsupported bits as evidence for a false result.
+    if state not in ("e:0", "e:1", "e:8", "e:9", "p:0", "p:1", "p:2", "p:4", "p:8", "p:9"):
+        return None
+    kind, _, bits = state.partition(":")
+    value = int(bits)
     if op == "Eq": return bool(value & 1)
     if op == "NotEq": return not value & 1
     if op == "Is": return bool(value & 8)
@@ -343,6 +348,28 @@ def classify_python_edit(before, after):
 def comparison_changes(old, new):
     """Return operator-only differences using baseline source positions."""
     return classify_python_edit(baseline_tree(old), ast.parse(new, type_comments=True)) or None
+
+
+@lru_cache(maxsize=8)
+def comparison_contexts(tree):
+    """Index comparison spans and whether they are inside function bodies."""
+    found = {}
+
+    def visit(node, deferred=False):
+        if isinstance(node, ast.Compare):
+            site = f"{node.lineno}:{node.col_offset}"
+            found[site] = (node.lineno, node.end_lineno, deferred)
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            for child in ast.iter_child_nodes(node):
+                visit(child, child in node.body and node.name not in SHARED_HOOKS)
+        else:
+            # A module-level lambda can be called during import. Inside a
+            # function, lambdas, comprehensions and their defaults stay local.
+            for child in ast.iter_child_nodes(node):
+                visit(child, deferred)
+
+    visit(tree)
+    return found
 
 
 def short_circuit_edits(before, after, affected_lines):
@@ -409,7 +436,7 @@ def short_circuit_edits(before, after, affected_lines):
 
 class Selector:
     def __init__(self, tests: list[dict], source: Path, map_path: Path, *, conservative_python=False,
-                 relations=True, child_work=False, import_closure=None, import_check_budget=0.0):
+                 relations=None, child_work=False, import_closure=None, import_check_budget=0.0):
         self.tests, self.source = tests, source
         # Changes confined to assignment values evaluated at import time can only
         # break collection by raising. A forked import of the patched module checks that.
@@ -417,6 +444,11 @@ class Selector:
         self.import_closure = None
         self.closure_external = 0
         self.conservative_python = conservative_python
+        # Historical direct callers omit this option. An explicit opt-in
+        # (including the CLI) requires evidence for every invocation of the
+        # old operator. Map v1 records only completed comparisons.
+        self.relations = relations is None or bool(relations)
+        self.strict_relations = relations is not None and self.relations
         self.all = (1 << len(tests)) - 1
         self.files, self.complete = {}, False
         self.external = 0
@@ -467,7 +499,7 @@ class Selector:
                 if conservative_python:
                     self.files[name] = {"readers": readers}
                     continue
-                comparison_sites = entry.get("comparisons", {}) if relations else {}
+                comparison_sites = entry.get("comparisons", {}) if self.relations else {}
                 self.files[name] = {
                     "lines": {int(k): decode(v) for k, v in entry.get("lines", {}).items()},
                     "regions": [(a, b, kind, decode(v)) for a, b, kind, v in entry.get("regions", [])],
@@ -559,7 +591,20 @@ class Selector:
                     if self.conservative_python:
                         return include(self.all, "conservative executable Python selection", name)
                     result |= include(self.child_work, "potential untraced child work", name)
-                    refined = self.refine_comparisons(changes_at_sites, entry)
+                    affected_comparisons = []
+                    refined = None
+                    if self.relations:
+                        contexts = comparison_contexts(before)
+                        affected = sorted(removed | inserted)
+                        for start, end, deferred in contexts.values():
+                            index = bisect_left(affected, start)
+                            if index < len(affected) and affected[index] <= end:
+                                if not deferred:
+                                    return include(self.all, "comparison in import or shared setup", name)
+                                if start < end:
+                                    affected_comparisons.append((start, end))
+                        if changes_at_sites and len(changes) == 1 and len(changes_at_sites) == 1:
+                            refined = self.refine_comparisons(changes_at_sites, entry, contexts)
                     if refined is not None:
                         result |= include(refined, "comparison boundary or unknown", name)
                         result |= include(entry["readers"], "file reader", name)
@@ -580,11 +625,14 @@ class Selector:
                         return include(self.all, "unknown file readers", name)
                     continue
                 result |= include(entry["readers"], "file reader", name)
+                # Operator-only lines may lack their own coverage, including
+                # in chains and mixed edits without usable comparison evidence.
+                for start, end in affected_comparisons:
+                    result |= include(self.span_users(entry, start, end), "comparison operand coverage", name,
+                                      (start, end))
                 for start, end in sorted(set(short_circuit_edits(before, after, removed | inserted))):
-                    users = 0
-                    for line in range(start, end + 1):
-                        users |= entry["lines"].get(line, entry["anchors"].get(line, 0))
-                    result |= include(users, "short-circuit evaluation change", name, (start, end))
+                    result |= include(self.span_users(entry, start, end),
+                                      "short-circuit evaluation change", name, (start, end))
                 for line in removed:
                     result |= include(entry["lines"].get(line, entry["anchors"].get(line, 0)), "affected line or anchor", name, line)
                 for anchor in inserted:
@@ -630,35 +678,82 @@ class Selector:
         self.import_check_budget -= cpu
         return ok
 
-    def refine_comparisons(self, changes, entry):
+    @staticmethod
+    def span_users(entry, start, end):
+        users = 0
+        for line in range(start, end + 1):
+            users |= entry["lines"].get(line, entry["anchors"].get(line, 0))
+        return users
+
+    def refine_comparisons(self, changes, entry, contexts):
         if not changes or not entry or not entry["comparisons"]:
             return None
         result = 0
         for site, before, after in changes:
             info = entry["comparisons"].get(site)
-            if info is None or info["op"] != before:
+            if info is None or info["op"] != before or site not in contexts or not contexts[site][2]:
                 return None
-            result |= info["unknown"]
+            # Unlike identity, ordering can call user code and raise before
+            # the map observer records anything. An apparently safe hit does
+            # not rule out an earlier unrecorded failure in the same test.
+            if self.strict_relations and before not in ("Is", "IsNot"):
+                return None
+            observed = unknown = info["unknown"]
             for state, users in info["states"].items():
+                observed |= users
                 a, b = relation_outcome(state, before), relation_outcome(state, after)
                 if a is None or b is None or a != b:
-                    result |= users
+                    unknown |= users
+            start, end, _ = contexts[site]
+            result |= unknown | (self.span_users(entry, start, end) & ~observed)
         return result
 
-    def probe(self, patch, mask, budget):
+    def probe(self, patch, mask, budget, *, cost_aware=False):
         tests = self.chosen(mask)
         if not tests or budget < .1 or not self.native or mask & (self.external | self.child_work):
             return mask, 0.0
-        if any(t["id"] not in self.native or t["seconds"] > .15 for t in tests):
+        if any(t["id"] not in self.native for t in tests):
             return mask, 0.0
-        if sum(t["seconds"] for t in tests) > .8:
-            return mask, 0.0
+        if cost_aware:
+            if not math.isfinite(budget) or any(not math.isfinite(t["seconds"]) or t["seconds"] < 0 for t in tests):
+                return mask, 0.0
+            durations = {t["number"]: round(t["seconds"] * 1000) for t in tests}
+            total = sum(durations.values()) / 1000
+            # Reserve the full deadline, even after a quick pass. Admission then
+            # depends on catalog durations and patch order, not on measured CPU.
+            cpu_seconds = 1.1 + 2 * total
+            if cpu_seconds > min(2.1, budget):
+                return mask, 0.0
+            workers = split(tests)
+            saving = 2 * len(workers) + max(sum(durations[n] for n in w) for w in workers) / 1000
+            expected_cpu = .55 + 1.25 * total
+            # Only an all-pass batch saves a worker. Discount the upper
+            # bound for each additional test and require a margin over CPU.
+            expected_saving = saving * .8 ** len(tests)
+            if expected_saving <= 1.25 * expected_cpu:
+                return mask, 0.0
+            wall_seconds = 3 * cpu_seconds
+        else:
+            if any(t["seconds"] > .15 for t in tests) or sum(t["seconds"] for t in tests) > .8:
+                return mask, 0.0
+            wall_seconds, cpu_seconds = min(1.5, budget + .1), min(1.0, budget)
         changes = parse_patch(patch)
         if any(not c["old"].endswith(".py") or c["old"].startswith("tests/") or c["old"] != c["new"] for c in changes):
             return mask, 0.0
+        if cost_aware and (any(module_for(c["old"]) is None for c in changes)
+                           or len({c["old"] for c in changes}) != len(changes)):
+            return mask, 0.0
+        if cost_aware and any(mask & self.files.get(c["old"], {}).get("readers", 0) for c in changes):
+            # Code loaded by Python sees the overlay. Tests that read source
+            # directly can use I/O paths the import overlay does not wrap.
+            return mask, 0.0
         overlays = {c["old"]: apply_change(self.read_source(c["old"]), c)[0] for c in changes}
         from native_probes import verify
-        passed, cpu = verify(self.source, overlays, tests, wall_seconds=min(1.5, budget + .1), cpu_seconds=min(1.0, budget))
+        passed, cpu = verify(self.source, overlays, tests, wall_seconds=wall_seconds, cpu_seconds=cpu_seconds,
+                             strict_cpu=cost_aware)
+        if cost_aware:
+            all_passed = set(passed) == {t["id"] for t in tests}
+            return (0 if all_passed else mask), cpu_seconds
         for test in tests:
             if test["id"] in passed:
                 mask &= ~(1 << test["number"])
@@ -675,6 +770,8 @@ def parse_args(argv=None):
     parser.add_argument("--source", type=Path, default=Path("/opt/sqlglot"))
     parser.add_argument("--map", type=Path, default=Path("/app/dependencies.json.gz"))
     parser.add_argument("--probe-budget", type=float)
+    parser.add_argument("--cost-aware-probes", action=argparse.BooleanOptionalAction, default=None,
+                        help="Reserve probe budget for whole selections with sufficient schedule savings")
     python_mode = parser.add_mutually_exclusive_group()
     python_mode.add_argument("--conservative-python", action=argparse.BooleanOptionalAction, default=None)
     python_mode.add_argument("--child-work", action=argparse.BooleanOptionalAction, default=None,
@@ -691,8 +788,14 @@ def parse_args(argv=None):
         config = json.loads(args.config.read_text())
     except (OSError, ValueError):
         config = {}
+    probe_settings = config.get("probe_budget", 8.0)
+    probe_seconds = probe_settings.get("seconds", 0.0) if isinstance(probe_settings, dict) else probe_settings
+    if args.cost_aware_probes is None:
+        # An explicit numeric flag reproduces existing benchmark configurations.
+        args.cost_aware_probes = (args.probe_budget is None and isinstance(probe_settings, dict)
+                                  and probe_settings.get("cost_aware") is True)
     if args.probe_budget is None:
-        args.probe_budget = float(config.get("probe_budget", 8.0))
+        args.probe_budget = float(probe_seconds)
     if args.relations is None:
         args.relations = bool(config.get("relations", True))
     conservative = args.conservative_python
@@ -706,6 +809,8 @@ def parse_args(argv=None):
     args.settings = {"conservative_python": bool(conservative), "child_work": bool(child_work),
                      "relations": bool(args.relations), "probe_budget": float(args.probe_budget),
                      "import_check_budget": float(args.import_check_budget)}
+    if args.cost_aware_probes:
+        args.settings["probe_budget"] = {"seconds": args.probe_budget, "cost_aware": True}
     return args
 
 
@@ -733,8 +838,8 @@ def main():
         mask = selector.select(text)
         if selector.complete and remaining > 0:
             try:
-                mask, cpu = selector.probe(text, mask, remaining)
-                remaining -= cpu
+                mask, charged = selector.probe(text, mask, remaining, cost_aware=args.cost_aware_probes)
+                remaining -= charged
             except (OSError, ValueError, SyntaxError):
                 pass
         if mask not in schedules:
