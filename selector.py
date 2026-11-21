@@ -721,16 +721,18 @@ class Selector:
             total = sum(durations.values()) / 1000
             # Reserve the full deadline, even after a quick pass. Admission then
             # depends on catalog durations and patch order, not on measured CPU.
-            cpu_seconds = .5 + 2 * total
-            if cpu_seconds > min(1.5, budget):
+            cpu_seconds = 1.1 + 2 * total
+            if cpu_seconds > min(2.1, budget):
                 return mask, 0.0
             workers = split(tests)
             saving = 2 * len(workers) + max(sum(durations[n] for n in w) for w in workers) / 1000
-            expected_cpu = .22 + 1.25 * total
-            # Require headroom for import overhead, timing error and failed probes.
-            if saving <= 3 * expected_cpu:
+            expected_cpu = .55 + 1.25 * total
+            # Only an all-pass batch saves a worker. Discount the upper
+            # bound for each additional test and require a margin over CPU.
+            expected_saving = saving * .8 ** len(tests)
+            if expected_saving <= 1.25 * expected_cpu:
                 return mask, 0.0
-            wall_seconds = max(2.0, 3 * cpu_seconds)
+            wall_seconds = 3 * cpu_seconds
         else:
             if any(t["seconds"] > .15 for t in tests) or sum(t["seconds"] for t in tests) > .8:
                 return mask, 0.0

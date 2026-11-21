@@ -159,3 +159,13 @@ if __name__ == "__main__":
 </details>
 
 Use `tools/mutant_eval.py --split tune` to replay its built-in variants. To include the cost-aware variant, use `tools.mutant_eval.load_ground_truth(mutants, "tune", False)`, make a temporary data directory containing the catalog and only the returned patches, run the six configurations above, and pass each output plus the loaded answers to `score.evaluate_run`. Record CPU independently of simulated seconds. Reserve odd mutant IDs for morning. The official artifact is useful when published and when its failure labels account for subtest failures. The audited local set gives separately verifiable tune evidence.
+
+## Scorer-container follow-up
+
+The scorer-format replay of `b690300` finished after freeing the task's intermediate Docker storage and bind-mounting readable, byte-identical copies of the app files. The sandbox checkout's 0600 file mode otherwise prevents the official uid 65534 from opening them. The image uses the pinned upstream base, source, lock and map. The scorer's CPU, RAM, network and read-only flags were used.
+
+With probes off or legacy on, all five container outputs per row matched their local digest. Median CPU with relations off was 1.592532 s (off) and 2.412680 s (legacy). With relations on it was 1.626173 s and 2.453455 s. All rows had zero misses. At the original cost-aware limits, the container saw two digests for each relations setting. Simulated sequences at seeds 1–5 were 164.159/164.159/166.316/166.316/164.159 s with relations off and 116.286/116.286/118.443/118.443/116.286 s with relations on. Median CPU was 6.180151 s and 6.400055 s respectively. All ten cost-aware runs had zero misses. Diagnostic traces showed successful small batches close to the CPU deadline and costly larger batches that did not confirm the full selection.
+
+The revised cost model discounts potential savings by `0.8 ** test_count`, a heuristic for needing every test to pass, and requires those expected savings to exceed 1.25 times the estimated CPU (`0.55 + 1.25 * total_catalog_seconds`). It reserves `1.1 + 2 * total_catalog_seconds` CPU seconds per batch, at most 2.1 s, with a wall backup at three times that reservation. This gives subprocess startup headroom and avoids spending CPU on marginal large batches. Runtime uses no sample identifiers or answers. Again run five local and scorer-format repetitions before deciding whether the new policy pays for itself.
+
+The audited tune baseline passed 1,620 tests with one skip and 25,440 passed subtests. The first five even IDs are recorded in the local results directory. The first case `m42000` failed catalog test 1362 via a subtest, which every measured variant retained. The remaining local cases are still running.

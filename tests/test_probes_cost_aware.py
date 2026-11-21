@@ -31,7 +31,7 @@ class CostAwareProbeTests(unittest.TestCase):
             run.assert_not_called()
             mask, charge = self.selector.probe(self.diff, 3, 2, cost_aware=True)
             self.assertEqual(mask, 0)
-            self.assertAlmostEqual(charge, 1.34)
+            self.assertAlmostEqual(charge, 1.94)
             self.assertAlmostEqual(run.call_args.kwargs["cpu_seconds"], charge)
             self.assertGreater(run.call_args.kwargs["wall_seconds"], charge)
             self.assertTrue(run.call_args.kwargs["strict_cpu"])
@@ -41,14 +41,15 @@ class CostAwareProbeTests(unittest.TestCase):
             with self.subTest(passed=passed), patch("native_probes.verify", return_value=(passed, cpu)):
                 mask, charge = self.selector.probe(self.diff, 3, 2, cost_aware=True)
                 self.assertEqual(mask, 3)
-                self.assertAlmostEqual(charge, 1.34)
+            self.assertAlmostEqual(charge, 1.94)
 
     def test_admission_requires_budget_and_sufficient_savings(self):
         with patch("native_probes.verify") as run:
             self.assertEqual(self.selector.probe(self.diff, 3, 1.3, cost_aware=True), (3, 0))
-            # Fits the deadline but the estimated CPU exceeds one-third of the saving.
-            self.tests[0]["seconds"] = .49
-            self.assertEqual(self.selector.probe(self.diff, 1, 2, cost_aware=True), (1, 0))
+            # Each test is cheap, but the entire worker must pass to save time.
+            self.tests[:] = [{"id": str(n), "number": n, "seconds": .005} for n in range(6)]
+            self.selector.native = {t["id"] for t in self.tests}
+            self.assertEqual(self.selector.probe(self.diff, 63, 2, cost_aware=True), (63, 0))
             run.assert_not_called()
 
     def test_unknown_or_unverifiable_selection_is_retained(self):
