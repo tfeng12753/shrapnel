@@ -214,3 +214,50 @@ Completed failure labels at this checkpoint (baseline had no failures)
 - `m42008` had failing test numbers `[]`.
 - `m42010` had failing test numbers `[1352]`.
 - `m42012` had failing test numbers `[0, 1, 3, 4]`.
+
+## Completed tune evaluation
+
+The audited local tune set finished all 16 even IDs from seed 42. It included 7 code, 3 fixture, 5 comment, and 1 multi-file patches. Eight patches had failures. All 23 patch/test failure labels were mapped to the catalog without errors. The collector included subtests and real process pools. The slow normalization case `m42026` finished in 615.427 s, with no timeout, and all six selector configurations retained its nine failing tests. No odd mutant was run or evaluated.
+
+Benchmark checkout `3cb3ac332951b9189f9bbd885058e147ea52e371` used selector and native probe code identical to `d51e1ed`, the exact published map and common configurations above, the same locked CPython 3.13.5 host, and five independent selector processes per row with seeds 1–5. `tools/mutant_eval.py --split tune` independently agreed on the coverage, relations-only and relations-plus-legacy totals. Oracle was 39.660 simulated seconds. The following results cover the complete local tune set.
+
+| Relations | Probes | Simulated s | Misses | Median CPU s | CPU added vs off s | Simulated + CPU s |
+| --- | --- | ---: | ---: | ---: | ---: | ---: |
+| Off | off | 69.139 | 0 | 0.282650 | +0.000000 | 69.421650 |
+| Off | legacy | 63.090 | 0 | 1.832905 | +1.550255 | 64.922905 |
+| Off | cost-aware | 63.096 | 0 | 1.551884 | +1.269234 | 64.647884 |
+| On | off | 69.139 | 0 | 0.274651 | +0.000000 | 69.413651 |
+| On | legacy | 63.090 | 0 | 1.603254 | +1.328603 | 64.693254 |
+| On | cost-aware | 63.096 | 0 | 1.453997 | +1.179346 | 64.549997 |
+
+Per-run CPU seconds in seed order and distinct schedule digest counts
+
+- `relations_false__probes_off`. CPU 0.282650, 0.277215, 0.285138, 0.259345, 0.286343. Distinct SHA-256 digests 1.
+- `relations_false__probes_legacy`. CPU 1.841347, 1.816384, 1.865925, 1.832905, 1.744550. Distinct SHA-256 digests 1.
+- `relations_false__probes_cost_aware`. CPU 1.551884, 1.581825, 1.558250, 1.464324, 1.488760. Distinct SHA-256 digests 1.
+- `relations_true__probes_off`. CPU 0.316899, 0.274651, 0.389148, 0.274185, 0.269736. Distinct SHA-256 digests 1.
+- `relations_true__probes_legacy`. CPU 1.629652, 1.570778, 1.596388, 1.603254, 1.676230. Distinct SHA-256 digests 1.
+- `relations_true__probes_cost_aware`. CPU 1.407651, 1.420287, 1.476131, 1.522089, 1.453997. Distinct SHA-256 digests 1.
+
+Audited failure labels for replay. Empty lists indicate a clean patched suite.
+
+| Even mutant | Kind | Failing catalog numbers | Full-suite wall s |
+| --- | --- | --- | ---: |
+| `m42000` | fixture | `[1362]` | 235.728 |
+| `m42002` | code | `[]` | 216.879 |
+| `m42004` | fixture | `[1420]` | 218.942 |
+| `m42006` | comment | `[]` | 239.380 |
+| `m42008` | code | `[]` | 239.295 |
+| `m42010` | code | `[1352]` | 194.413 |
+| `m42012` | code | `[0, 1, 3, 4]` | 190.387 |
+| `m42014` | fixture | `[1353]` | 200.508 |
+| `m42016` | code | `[1024, 1039, 1040]` | 203.890 |
+| `m42018` | comment | `[]` | 145.637 |
+| `m42020` | comment | `[]` | 143.534 |
+| `m42022` | code | `[]` | 141.503 |
+| `m42024` | multi | `[1324, 1336, 1606]` | 142.583 |
+| `m42026` | code | `[1106, 1325, 1352, 1376, 1377, 1434, 1440, 1441, 1584]` | 615.427 |
+| `m42028` | comment | `[]` | 247.448 |
+| `m42030` | comment | `[]` | 255.907 |
+
+The official workflow still had 20 shards running and zero published artifacts at closeout. The local tune run is a separate reproducible set. Before using official labels, fix or audit the missing subtest attribution in the text parser. Leave the holdout decision for morning. The code revision and benchmark evidence are available on this branch and in draft PR #10.
