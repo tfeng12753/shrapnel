@@ -11,9 +11,9 @@ class ImportTraceTests(unittest.TestCase):
             root = Path(folder)
             package = root / "sqlglot"
             package.mkdir()
-            (package / "__init__.py").write_text("def later():\n    return 42\nopen(__file__).close()\n")
+            (package / "__init__.py").write_text("def later():\n    return 42\nopen(__file__).close()\nclass Dialect:\n    _classes = {0}\n")
             data = observation(root)
             name = "sqlglot/__init__.py"
             self.assertIn(name, data["files"])
-            self.assertEqual(data["lines"][name], [1, 3])
+            self.assertEqual(data["lines"][name], [1, 3, 4, 5])
             self.assertIn(name, data["explicit_reads"])

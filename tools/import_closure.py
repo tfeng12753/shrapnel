@@ -37,12 +37,14 @@ def audit(event, args):
         return
     opened.add(path)
     frame = sys._getframe(1)
-    if not (frame.f_code.co_name == "get_data" and
+    if not (frame.f_code.co_name == "get_data" and frame.f_back and
+            frame.f_back.f_code.co_name == "get_code" and
             frame.f_globals.get("__name__") in ("_frozen_importlib_external", "importlib._bootstrap_external")):
         explicit.add(path)
 sys.addaudithook(audit)
 sys.settrace(trace)
 import sqlglot
+assert len(sqlglot.Dialect._classes) == 1
 sys.settrace(None)
 files = {getattr(m, "__file__", None) for m in list(sys.modules.values())}
 print(json.dumps([sorted(str(f) for f in files | opened if f), {p: sorted(v) for p, v in lines.items()}, sorted(explicit)]))

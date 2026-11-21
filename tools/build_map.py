@@ -499,6 +499,10 @@ def write_map(root, model, rec, data, destination):
         entry["lines"] = {str(line): format(value, "x") for line, value in sorted(entry["lines"].items()) if value}
         entry["regions"] = [[a, b, k, format(v, "x")] for a, b, k, v in entry["regions"]]
         entry["readers"], entry["executed"] = format(entry["readers"], "x"), format(entry["executed"], "x")
+        # Adjacent equal hex masks compress well. JSON objects retain the same
+        # keys and values, including zero masks where presence is meaningful.
+        for field in ("lines", "anchors"):
+            entry[field] = dict(sorted(entry.get(field, {}).items(), key=lambda pair: pair[1]))
     result = {"version": 1, "revision": REVISION, "complete": True, "tests": rec.tests, "external": format(external_mask, "x"), "native": sorted(rec.native), "files": dict(files)}
     opener = gzip.open if destination.suffix == ".gz" else open
     with opener(destination, "wt", encoding="utf-8") as f:

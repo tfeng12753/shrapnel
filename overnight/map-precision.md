@@ -27,3 +27,9 @@ Dictionary checkpoint adb2e74. Synthetic audit tests run actual transformed prod
 5. Filesystem-backed importlib.resources generated a captured read. Collection-time non-source reads without an attributable test now retain all tests. Archive/extension loaders may only expose container-level access.
 
 Next: measure storage and timing, replay both encodings, compare host diagnostic against cached Linux map.
+
+## Storage and public replay
+
+Audit checkpoint 49dc776. Grouped identical hex masks within each lines/anchors object without changing any keys, masks, or region ordering. Re-encoding the committed Linux map shrank gzip from 1,121,982 to 1,069,526 bytes (52,456 bytes, 4.68%). Omitting empty fields saved only 1,428 bytes by itself and was left out. Of 33,093,481 uncompressed JSON bytes, file-level lines account for 23,385,374 bytes, regions 5,085,281, anchors 3,836,787, comparisons 437,290 (sum of compact values per field). Before/after public JSONL byte-identical, SHA-256 7189decd1832209759637263631ccef60dd42cde664cbf4544b6fa6a53379e1e. Both scored 166.316 simulated, 0 misses. This is encoding equivalence, not a timing gain in selection.
+
+The import subprocess now also executes the pinned test's registry assertion. 36 files traced on host. Of 85 unit checks, 84 passed and only the expected stale map fingerprint failed. The builder prints wall time separately for modeling, suite, and aggregation/serialization. Waiting for full host diagnostics. Next: final host replay, summarize limitations and update draft PR.
