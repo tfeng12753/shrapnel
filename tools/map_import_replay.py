@@ -123,7 +123,7 @@ def staging_exclusions(source, updates=()):
     return ignored
 
 
-def check_items(source, updates, items, wall_seconds=20):
+def check_items(source, updates, items, wall_seconds=20, *, item_timeout=10):
     """Verify every requested ordinary pytest item in one isolated checkout."""
     deadline = time.monotonic() + wall_seconds
     expected = Counter()
@@ -146,7 +146,7 @@ def check_items(source, updates, items, wall_seconds=20):
         if time.monotonic() >= deadline:
             return False
         with subprocess.Popen(
-            [sys.executable, "-B", "-m", "pytest", "-q", "-x", "-p", "no:cacheprovider", "--timeout=10",
+            [sys.executable, "-B", "-m", "pytest", "-q", "-x", "-p", "no:cacheprovider", f"--timeout={item_timeout}",
              f"--junitxml={report}", *items], cwd=root, env=env, stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL, start_new_session=True,
         ) as proc:

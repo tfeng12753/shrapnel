@@ -2,6 +2,26 @@
 
 Base 2c4b6a8. Map construction uses the unmodified pinned checkout and its baseline suite. Generated patches are used for evaluation.
 
+## Run the executor trial
+
+From the Shrapnel repository root, use the locked Python 3.13 environment from `requirements.lock` and a clean SQLGlot checkout at revision `eb11aec4be8cb2122afe713a4816662c3f0fb2fa`. With the scorer checkout already at `/opt/sqlglot`, the public trial is one command:
+
+```sh
+python -m tools.map_executor_trial --verify --output ../executor-public-run
+```
+
+Use `--source /path/to/sqlglot` for another checkout, `--data /path/to/batch` for a directory containing `tests.json` and `commits/*.patch`, and `--map /path/to/dependencies.json.gz` to select another dependency map. Defaults are the repository's public sample and committed map. Choose a new output directory for each run. Keep it and the cache outside the pinned checkout.
+
+On first use the command prepares both executor reference snapshots and the import closure. Later trials in sibling directories reuse the prepared files. `--cache` can point to a shared cache directory. Preparation is keyed by checkout content, preparation code, platform, Python version and installed distribution versions.
+
+Each run writes a scorer-compatible `baseline.jsonl` and `trial.jsonl`, plus `report.json` with per-patch decisions, simulated schedule times, incremental audit CPU and validation CPU. With `--verify`, the original TPC-DS pytest item runs on a freshly patched checkout before every proposed omission is accepted. A failed validation keeps the item and exits nonzero with the report preserved. Without that flag the trial schedule applies experimental candidates directly. Public correctness can be checked separately:
+
+```sh
+python score.py sample sample/answers.json ../executor-public-run/trial.jsonl
+```
+
+Host end-to-end validation used the prepared pinned checkout and host-built map. A fresh cache and 128 development patches produced 778.710 baseline versus 760.345 trial simulated seconds. The only proposed omission passed original pytest; incremental audit CPU was 10.140 s and the independent validation used another 20.293 s. A second invocation reused the cache on all 30 public patches. Both public schedules were byte-identical and the scorer reported 118.443 simulated seconds with zero misses. Project checks passed 142/143 with the existing Docker map fingerprint failure.
+
 ## Executor input comparison after 686eb8c
 
 This is an offline experiment for the pinned Python executor test. The merged production selector and its schedule remain the scoring baseline. The preparer runs the original pinned class setup, processes the fixture queries in order, round-trips each parsed input through pickle, and calls the original worker function in the current interpreter. For TPC-DS there are 99 queries, of which 57 reach the executor. It fingerprints the expression and CTEs, typed plan steps and their fields, graph edges, ordered table bindings, columns, column ranges, row data, generator and dialect settings, executor environment bindings, schema, query metadata and the DuckDB reference SQL. Function bindings are identified by name, not their complete reachable Python state.
