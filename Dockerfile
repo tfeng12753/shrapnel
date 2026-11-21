@@ -10,12 +10,14 @@ COPY tools/fetch_source.py /app/tools/fetch_source.py
 RUN if [ "$BUILD_MAP" = "1" ]; then python /app/tools/fetch_source.py; fi
 COPY tools/build_map.py tools/instrument.py /app/tools/
 COPY maps /app/maps
+# Per-test pytest timeout while instrumenting; raise it for a one-off `make map`.
+ARG MAP_TIMEOUT=180
 # Maps use ONLY the unchanged pinned checkout, never sample patches/answers.
 RUN if [ "$BUILD_MAP" != "1" ]; then :; \
     elif [ -f /app/maps/dependencies.json ]; then \
       python -c 'import gzip,pathlib; p=pathlib.Path("/app/maps/dependencies.json"); gzip.open("/app/dependencies.json.gz", "wb").write(p.read_bytes())'; \
     else \
-      PYTHONPATH=/opt/sqlglot python /app/tools/build_map.py; \
+      MAP_TIMEOUT=$MAP_TIMEOUT PYTHONPATH=/opt/sqlglot python /app/tools/build_map.py; \
     fi
 COPY selector.py native_probes.py selector-config.json /app/
 COPY tools/timed_run.py /app/tools/timed_run.py

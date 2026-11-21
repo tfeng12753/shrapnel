@@ -28,7 +28,7 @@ check: build
 	docker run $(RUN_FLAGS) $(IMAGE) > $(OUTPUT)
 	python3 score.py $(SAMPLE) $(SAMPLE)/answers.json $(OUTPUT) > /dev/null && echo "format ok"
 
-.PHONY: unit local-benchmark export-map
+.PHONY: unit local-benchmark export-map map
 
 unit:
 	python3 -m unittest discover -s tests -v
@@ -53,3 +53,10 @@ safe-sample:
 
 competitive:
 	python3 tools/competitive.py --image $(IMAGE)
+
+# One-off: build the map with a long per-test timeout (instrumented
+# test_max_nodes exceeds 180 s), then export it to maps/dependencies.json.
+# Commit that file so normal builds skip map generation.
+map:
+	docker build --platform linux/amd64 --build-arg MAP_TIMEOUT=3600 --tag $(IMAGE) .
+	python3 tools/export_map.py --image $(IMAGE)

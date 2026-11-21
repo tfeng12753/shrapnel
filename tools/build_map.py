@@ -286,7 +286,7 @@ def build(root, destination):
     instrumentation.install()
     cov.start()
     try:
-        status = pytest.main(["tests", "-q", "-p", "no:cacheprovider", "--timeout=180"], plugins=[Plugin()])
+        status = pytest.main(["tests", "-q", "-p", "no:cacheprovider", f"--timeout={int(os.environ.get('MAP_TIMEOUT', '180'))}"], plugins=[Plugin()])
     finally:
         cov.stop()
         instrumentation.restore()
