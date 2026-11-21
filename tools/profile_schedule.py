@@ -86,6 +86,7 @@ def main():
     parser.add_argument("--source", type=Path, help="Pinned checkout from the same run")
     parser.add_argument("--map", type=Path, help="Map from the same run; omit both paths to skip replay")
     parser.add_argument("--no-relations", action="store_true")
+    parser.add_argument("--conservative-python", action="store_true")
     args = parser.parse_args()
     if bool(args.source) != bool(args.map):
         parser.error("supply both --source and --map to trace static selection")
@@ -95,7 +96,7 @@ def main():
     if args.map:
         if not args.map.is_file() or not args.source.is_dir():
             parser.error("replay requires the original dependency map and pinned source directory")
-        selector = Selector(tests, args.source, args.map)
+        selector = Selector(tests, args.source, args.map, conservative_python=args.conservative_python)
         if args.no_relations:
             for entry in selector.files.values():
                 entry["comparisons"].clear()

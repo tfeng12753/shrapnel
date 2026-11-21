@@ -32,8 +32,12 @@ def main():
     data = ROOT / "sample"
     tests = json.loads((data / "tests.json").read_text())["tests"]
     answers = json.loads((data / "answers.json").read_text())["commits"]
-    variants = {"coverage": ["--no-relations", "--probe-budget", "0"],
-                "relations": ["--relations", "--probe-budget", "0"], "relations_and_probes": ["--relations", "--probe-budget", "8"]}
+    variants = {
+        "conservative_python": ["--conservative-python", "--no-relations", "--probe-budget", "0"],
+        "coverage": ["--no-conservative-python", "--no-relations", "--probe-budget", "0"],
+        "relations": ["--no-conservative-python", "--relations", "--probe-budget", "0"],
+        "relations_and_probes": ["--no-conservative-python", "--relations", "--probe-budget", "8"],
+    }
     report, outputs = {}, {}
     for variant, options in variants.items():
         runs = []
@@ -87,7 +91,9 @@ def main():
     print("Best zero-miss variant:", report["best_zero_miss_variant"])
     best = report["best_zero_miss_variant"]
     if best is not None:
-        config = {"relations": best != "coverage", "probe_budget": 8.0 if best == "relations_and_probes" else 0.0}
+        config = {"conservative_python": best == "conservative_python",
+                  "relations": best in ("relations", "relations_and_probes"),
+                  "probe_budget": 8.0 if best == "relations_and_probes" else 0.0}
         (ROOT / "selector-config.json").write_text(json.dumps(config, separators=(",", ":")) + "\n")
         print("Updated global selector configuration; rebuild before submission.")
     else:

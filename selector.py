@@ -203,9 +203,15 @@ def classify_python_edit(before, after):
     return changes if matches(before, after) else None
 
 
+def comparison_changes(old, new):
+    """Return operator-only differences using baseline source positions."""
+    return classify_python_edit(baseline_tree(old), ast.parse(new, type_comments=True)) or None
+
+
 class Selector:
-    def __init__(self, tests: list[dict], source: Path, map_path: Path):
+    def __init__(self, tests: list[dict], source: Path, map_path: Path, *, conservative_python=False):
         self.tests, self.source = tests, source
+        self.conservative_python = conservative_python
         self.all = (1 << len(tests)) - 1
         self.files, self.complete = {}, False
         self.external = 0
@@ -298,6 +304,8 @@ class Selector:
                             return include(self.all, "unmapped source", name)
                         result |= include(entry["readers"], "file reader", name)
                         continue
+                    if self.conservative_python:
+                        return include(self.all, "conservative executable Python selection", name)
                     refined = self.refine_comparisons(changes_at_sites, entry)
                     if refined is not None:
                         result |= include(refined, "comparison boundary or unknown", name)
@@ -385,6 +393,7 @@ def main():
     parser.add_argument("--source", type=Path, default=Path("/opt/sqlglot"))
     parser.add_argument("--map", type=Path, default=Path("/app/dependencies.json.gz"))
     parser.add_argument("--probe-budget", type=float)
+    parser.add_argument("--conservative-python", action=argparse.BooleanOptionalAction, default=None)
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--relations", dest="relations", action="store_true")
     group.add_argument("--no-relations", dest="relations", action="store_false")
@@ -400,7 +409,8 @@ def main():
     if args.relations is None:
         args.relations = bool(config.get("relations", True))
     tests = json.loads((args.data / "tests.json").read_text())["tests"]
-    selector = Selector(tests, args.source, args.map)
+    conservative = args.conservative_python if args.conservative_python is not None else config.get("conservative_python", False)
+    selector = Selector(tests, args.source, args.map, conservative_python=conservative)
     if not args.relations:
         for entry in selector.files.values():
             entry["comparisons"].clear()

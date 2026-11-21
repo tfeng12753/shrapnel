@@ -130,6 +130,15 @@ class SelectionTests(unittest.TestCase):
         patch = diff("fixture.sql", "SELECT 1;\n", "-- semantic hint\nSELECT 1;\n")
         self.assertEqual(self.selector().select(patch), 4)
 
+    def test_conservative_mode_distinguishes_code_from_comments_and_fixture_edits(self):
+        s = self.selector()
+        s.conservative_python = True
+        old = self.root.joinpath("m.py").read_text()
+        comment = diff("m.py", old, "# note\n" + old)
+        fixture = diff("fixture.sql", "SELECT 1;\n", "SELECT 2;\n")
+        self.assertEqual(s.select(comment + fixture), 4)
+        self.assertEqual(s.select(fixture + diff("m.py", old, old.replace("1", "2"))), s.all)
+
     def test_mixed_replacement_and_insertion_keeps_other_function_users(self):
         old = "def f(flag):\n    if flag:\n        return 1\n    return 0\n"
         new = old.replace("        return 1", "        return 2\n    raise ValueError()")
