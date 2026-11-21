@@ -302,6 +302,28 @@ class Recorder:
             recorded = key if key in self.literal_keys[symbol] else None
             self.dictionary_presence[symbol][recorded].add(context)
 
+    def record_store(self, mapping):
+        """Remember the library functions on the stack when a test writes a tracked mapping."""
+        binding = self.bound_dictionaries.get(id(mapping))
+        if binding is None or self.current is None:
+            return
+        writers = self.__dict__.setdefault("dictionary_writers", defaultdict(set))
+        # Only functions in the mapping's own module: callers elsewhere run
+        # again in each later test and are covered by those tests themselves.
+        owners = {(self.root / symbol[0]).resolve(): symbol for symbol in binding[1]}
+        frame = sys._getframe(2)
+        while frame is not None:
+            code = frame.f_code
+            path = Path(code.co_filename).resolve()
+            if path in owners:
+                lines = [line for _, _, line in code.co_lines() if line is not None]
+                symbol = owners[path]
+                writers[symbol].add((symbol[0], min(lines, default=code.co_firstlineno),
+                                     max(lines, default=code.co_firstlineno)))
+            elif path.is_relative_to(self.root / "tests"):
+                break
+            frame = frame.f_back
+
     def record_transfer(self, mapping):
         binding = self.bound_dictionaries.get(id(mapping))
         if binding is None or self.current is None:
@@ -637,6 +659,24 @@ def write_map(root, model, rec, data, destination):
                 files[name]["executed"] |= value
     # Raw per-line test coverage, before symbol users are merged into lines.
     covered = {name: dict(entry["lines"]) for name, entry in files.items()}
+    # A test that writes a tracked mapping leaves state for every later reader
+    # (for example a registry repopulated after another test cleared it), so
+    # the writing functions' executed lines belong to all of its readers.
+    for symbol, spans in getattr(rec, "dictionary_writers", {}).items():
+        everyone = 0
+        for group in (rec.dictionary_reads.get(symbol, {}), getattr(rec, "dictionary_presence", {}).get(symbol, {})):
+            for contexts in group.values():
+                everyone |= all_tests if None in contexts else mask(c for c in contexts if type(c) is not tuple)
+                for context in contexts:
+                    if type(context) is tuple:
+                        everyone |= shared_masks.get(context, 0)
+        everyone |= mask(getattr(rec, "dictionary_transfers", {}).get(symbol, ()))
+        for name, start, end in spans:
+            lines = files[name]["lines"]
+            for line in range(start, end + 1):
+                if line in lines:
+                    lines[line] |= everyone
+                    files[name]["executed"] |= everyone
     external_mask = mask(rec.external)
     refined = {}
     for name, scopes in rec.reads.items():

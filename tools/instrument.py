@@ -102,6 +102,9 @@ def visit_definition_arguments(visitor, node):
     node.args.kw_defaults = [visitor.visit(n) if n is not None else None for n in node.args.kw_defaults]
 
 
+MUTATORS = frozenset({"clear", "update", "pop", "popitem", "setdefault", "__setitem__", "__delitem__"})
+
+
 class DictionaryReads(ast.NodeTransformer):
     """Observe direct dictionary uses without wrapping or replacing the mapping.
 
@@ -117,6 +120,7 @@ class DictionaryReads(ast.NodeTransformer):
         self.parameters = parameters or {}
         self.direct = set()
         self.passed = set()
+        self.stored = set()
 
     def transfer(self, value):
         """Mark a plain reference whose value moves to another alias name."""
@@ -126,6 +130,22 @@ class DictionaryReads(ast.NodeTransformer):
     def visit_Assign(self, node):
         if len(node.targets) == 1 and isinstance(node.targets[0], (ast.Name, ast.Attribute)) and self.field(node.targets[0]):
             self.transfer(node.value)
+        for target in node.targets:
+            self.store(target)
+        return self.generic_visit(node)
+
+    def store(self, target):
+        """Writes into a tracked mapping persist for later tests."""
+        if isinstance(target, ast.Subscript) and self.field(target.value):
+            self.stored.add(target.value)
+
+    def visit_AugAssign(self, node):
+        self.store(node.target)
+        return self.generic_visit(node)
+
+    def visit_Delete(self, node):
+        for target in node.targets:
+            self.store(target)
         return self.generic_visit(node)
 
     def field(self, node):
@@ -151,6 +171,9 @@ class DictionaryReads(ast.NodeTransformer):
         return self.generic_visit(node)
 
     def visit_Call(self, node):
+        if isinstance(node.func, ast.Attribute) and node.func.attr in MUTATORS:
+            if self.field(node.func.value):
+                self.stored.add(node.func.value)
         callee = node.func.id if isinstance(node.func, ast.Name) else getattr(node.func, "attr", None)
         for keyword in node.keywords:
             if keyword.arg in self.parameters.get(callee, ()) and keyword.arg in self.names:
@@ -186,6 +209,8 @@ class DictionaryReads(ast.NodeTransformer):
         if name and node not in self.direct and isinstance(node.ctx, ast.Load):
             if node in self.passed:
                 return self.call("_shrapnel_dict_pass", [node], node)
+            if node in self.stored:
+                return self.call("_shrapnel_dict_store", [node], node)
             return self.call("_shrapnel_dict_whole", [node], node)
         return node
 
@@ -412,6 +437,15 @@ class Instrumentation:
                     transfer(mapping)
             return mapping
 
+        def stored(mapping):
+            # Also a whole read: mutating methods can return or inspect values.
+            whole(mapping)
+            if type(mapping) is dict:
+                writer = getattr(recorder, "record_store", None)
+                if writer is not None:
+                    writer(mapping)
+            return mapping
+
         def import_enter():
             recorder.importing = getattr(recorder, "importing", 0) + 1
 
@@ -422,6 +456,7 @@ class Instrumentation:
                             ("_shrapnel_dict_item", item), ("_shrapnel_dict_get", get),
                             ("_shrapnel_dict_contains", contains), ("_shrapnel_dict_descriptor", descriptor),
                             ("_shrapnel_dict_pass", passed), ("_shrapnel_import_enter", import_enter),
+                            ("_shrapnel_dict_store", stored),
                             ("_shrapnel_import_exit", import_exit),
                             ("_shrapnel_attribute", attribute), ("_shrapnel_dynamic_attribute", dynamic_attribute),
                             ("_shrapnel_comparison", comparison), ("_shrapnel_reach", reach)):

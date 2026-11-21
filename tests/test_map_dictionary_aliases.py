@@ -169,3 +169,50 @@ class AliasReadsTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+REGISTRY = '''
+class Registry:
+    _classes = {}
+
+    @classmethod
+    def load(cls, key):
+        if key not in cls._classes:
+            cls._classes[key] = key.upper()
+        return cls._classes[key]
+'''
+
+
+class RegistryWriterTest(unittest.TestCase):
+    def test_writer_lines_reach_later_readers(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            (root / "sqlglot").mkdir()
+            path = root / "sqlglot" / "registry.py"
+            path.write_text(REGISTRY)
+            model = SourceModel(root)
+            rec = Recorder(root, model, None)
+            observer = Instrumentation(root, rec)
+            observer.install()
+            try:
+                spec = importlib.util.spec_from_file_location("sqlglot.registry", path)
+                module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(module)
+                for test in ("first", "later"):
+                    rec.current, rec.phase = test, "call"
+                    module.Registry.load("duck")
+                rec.current, rec.phase = None, "collection"
+            finally:
+                observer.restore()
+            symbol = ("sqlglot/registry.py", "Registry._classes")
+            self.assertTrue(rec.dictionary_writers[symbol])
+            rec.tests = ["first", "later", "other"]
+            data = Mock()
+            data.measured_files.return_value = [str(path)]
+            # Only the first test executed the store line (8); the later one hit the cache.
+            data.contexts_by_lineno.return_value = {7: ["first", "later"], 8: ["first"], 9: ["first", "later"]}
+            destination = root / "map.json"
+            write_map(root, model, rec, data, destination)
+            lines = json.loads(destination.read_text())["files"]["sqlglot/registry.py"]["lines"]
+            self.assertEqual(int(lines["8"], 16) & 0b11, 0b11)
+            self.assertFalse(int(lines["8"], 16) & 0b100)
