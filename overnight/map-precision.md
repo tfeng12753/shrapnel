@@ -2,7 +2,17 @@
 
 Base 2c4b6a8. This branch owns build-time observations only. No mutant data used.
 
-## Latest follow-up results (builder 7642017)
+## Latest validated builder (1253171)
+
+The map records 81 additional normalized-string comparison sites. Removing only those records reproduced the entire decoded 7642017 host map exactly. The new diagnostic gzip is 1,121,870 bytes (+2,002 bytes). With the original per-test timeout the pinned run passed all 1,621 tests and 25,454 subtests. Host stage times were 0.57 s modeling, 313.79 s suite, and 3.16 s aggregation/serialization. Both public schedules matched the previous build byte-for-byte: 166.316 simulated seconds under shipped defaults or 115.907 with relations enabled, zero misses.
+
+**Independent normalized-string workload.** Select one site per pinned production module by minimum SHA-256 of relative-path/line/column, following the earlier length experiment. Eligible source comparisons are single-line == or != between a literal string and an argument-free upper(), lower() or casefold() call. Compare all seven other operators at each site. No labels or observed savings influence the site selection. In 231 edits across 33 modules, aggregate simulated scheduling fell from 1,015.882 to 920.609 seconds relative to 7642017, saving 9.38%. Of those schedules, 89 shortened, 142 matched, and none grew. This measures normalized-string edits with comparison refinement enabled; the competition score and patch distribution are separate.
+
+**Execution checks.** On every even-indexed module, test every operator edit that omitted any previously selected test. There were 48 such patches and 335 newly omitted test-case executions. All 335 passed on the patched checkouts. Three of the 48 ran the full pinned suite, using <, <=, >, >= rotated by module index to choose the initial patch per module. Those three produced 2, 8 and 12 failing catalog tests respectively, and all 22 failure occurrences were selected. The remaining 45 executed every omitted case. The competition and mutant holdouts were not accessed.
+
+The stale Docker-built cache remains the sole local unit failure (89/90 passed). The new data requires the existing relations option. No new selector defaults or host-generated maps were committed. Resume at **Morning review procedure** for the Linux/amd64 Docker rebuild and competition-limit replay.
+
+## Previous length-check results (builder 7642017)
 
 The added map data covers 123 length-comparison sites. All 727 previous comparison records and every other legacy map field matched the earlier clean host map exactly. Both official public schedule replays also matched byte-for-byte: 166.316 s with shipped defaults and 115.907 s with relations enabled, zero misses. Only the relations-enabled selector consumes the additional evidence. The final host builder passed 1,621 tests and 25,454 subtests in the original timeout, with stages of 0.61 s modeling, 316.77 s suite, and 3.51 s aggregation/serialization. The gzip is 1,119,868 bytes, 5,014 bytes larger than the earlier clean map. No official Linux rebuild or hidden score is available. Local and CI unit runs passed 89 of 90 checks; only the expected stale Docker map fingerprint failed.
 
