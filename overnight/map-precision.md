@@ -2,7 +2,17 @@
 
 Base 2c4b6a8. This branch owns build-time observations only. No mutant data used.
 
-## Current handoff
+## Latest follow-up results (builder 7642017)
+
+The added map data covers 123 length-comparison sites. All 727 previous comparison records and every other legacy map field matched the earlier clean host map exactly. Both official public schedule replays also matched byte-for-byte: 166.316 s with shipped defaults and 115.907 s with relations enabled, zero misses. Only the relations-enabled selector consumes the additional evidence. The final host builder passed 1,621 tests and 25,454 subtests in the original timeout, with stages of 0.61 s modeling, 316.77 s suite, and 3.51 s aggregation/serialization. The gzip is 1,119,868 bytes, 5,014 bytes larger than the earlier clean map. No official Linux rebuild or hidden score is available. Local and CI unit runs passed 89 of 90 checks; only the expected stale Docker map fingerprint failed.
+
+**Independent scheduling experiment.** Enumerate pinned production modules in sorted path order. Among single-line single-operator equality or inequality comparisons of len(x) against an integer literal, pick the site with the smallest SHA-256 of relative-path/line/column (slash-separated). Generate all seven other supported operators at that site. No public answers, failing-test labels, module names or timings influence the site choice or production logic. Across 392 generated variants in 56 modules, simulated schedule time was 2,833.838 s before and 2,448.382 s after (13.6% lower): 113 shorter schedules, 279 equal and zero longer. These are schedule-only totals for length-predicate edits, not estimates of competition score. Pure Eq/NotEq inversions saved zero, as expected.
+
+**Patched execution.** An additional one-edit-per-module sweep replaced equality with <= or inequality with >. Among 28 even-indexed development cases, 22 removed tests. All 382 newly omitted test-case executions passed on the patched source. The first three cases ran the entire pinned suite; the other 19 ran their omitted tests. A fourth complete suite checked a balanced retained/omitted case. A fifth, boundary-reversing executor control produced four failing catalog tests; all four were selected. No official mutant holdout results were opened. Scoped synthetic tests cover mixed values, both possible identities for equal integers, exceptions, overloaded equality and shared contexts. These validations are finite; do not treat an unobserved case as a guaranteed pass.
+
+Before adoption run the Docker rebuild and replay in **Morning review procedure**. The parser stress timeout rejected a broader prototype; the final narrower observer passed without changing the timeout. No default configuration or selector was modified.
+
+## Earlier overnight handoff
 
 Code revision 86b3cd6 on overnight/map-precision, draft PR #9. The allowed source changes are complete. The final host diagnostic map passed all 1,621 pinned tests / 25,454 subtests. The default public replay is byte-identical to the cached Linux map at 166.316 simulated seconds with zero misses. With the existing comparison refinement enabled both maps also produced identical output at 115.907 s and zero misses. This branch implements map-side observations only. No hidden or mutant outcomes were used.
 

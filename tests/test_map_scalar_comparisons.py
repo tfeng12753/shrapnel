@@ -78,6 +78,8 @@ class C:
         return len(label) == 3
 def plain(value=(len(label) == 4)):
     return len(value) == 5
+def unrelated(value):
+    return value == 5
 """
         tree = Transformer("subject.py", set()).visit(ast.parse(source))
         calls = [n for n in ast.walk(tree) if isinstance(n, ast.Call)
@@ -103,11 +105,11 @@ def plain(value=(len(label) == 4)):
             observer.install()
             try:
                 value = Custom()
-                self.assertIs(builtins._blast_radius_comparison(value, "x", "Eq", "m.py", "1:0"), value)
+                self.assertIs(builtins._blast_radius_comparison(value, 2, "Eq", "m.py", "1:0"), value)
                 self.assertEqual(value.calls, 1)
                 self.assertEqual(rec.comparisons["m.py", "1:0"]["unknown"], {"test"})
                 rec.phase = "setup"
-                builtins._blast_radius_comparison("z", "x", "Eq", "m.py", "1:0")
+                builtins._blast_radius_comparison(3, 2, "Eq", "m.py", "1:0")
                 self.assertTrue(rec.comparisons["m.py", "1:0"]["collection"])
             finally:
                 observer.restore()
