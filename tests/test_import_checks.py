@@ -101,5 +101,25 @@ class SelectorImportTests(unittest.TestCase):
         self.assertEqual(self.selector(import_closure=self.closure).select(patch), 2 | 4)
 
 
+class StatementSpanTests(unittest.TestCase):
+    """An operator edit on a short-circuited line affects every test that evaluates the statement."""
+
+    SOURCE = "def f(e):\n    if (\n        e.a\n        and e.b\n        and e.c\n    ):\n        return 1\n    return 2\n"
+
+    def test_boolean_operator_edit_selects_statement_users(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "m.py").write_text(self.SOURCE)
+            tests = [{"number": i, "id": name, "file": "t.py", "seconds": .1} for i, name in enumerate("ABC")]
+            # A evaluates every line; B short-circuits after line 3; C never calls f.
+            mapping = {"version": 1, "revision": REVISION, "complete": True, "tests": ["A", "B", "C"], "files": {
+                "m.py": {"lines": {"2": "3", "3": "3", "4": "1", "5": "1", "7": "1", "8": "2"},
+                         "regions": [[1, 8, "function", "3"]], "executed": "3", "readers": "0"}}}
+            (root / "map.json").write_text(json.dumps(mapping))
+            selector = Selector(tests, root, root / "map.json")
+            patch = diff("m.py", self.SOURCE, self.SOURCE.replace("        and e.c", "        or e.c"))
+            self.assertEqual(selector.select(patch), 1 | 2)
+
+
 if __name__ == "__main__":
     unittest.main()

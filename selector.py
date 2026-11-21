@@ -312,6 +312,35 @@ def baseline_tree(source):
     return ast.parse(source, type_comments=True)
 
 
+COMPOUND = (ast.If, ast.While, ast.For, ast.AsyncFor, ast.With, ast.AsyncWith)
+
+
+@lru_cache(maxsize=8)
+def statement_spans(source):
+    """Map each line to the innermost multi-line statement (or compound header) containing it.
+
+    A short-circuit or conditional expression can stop before a later line, so
+    coverage ties that line to fewer tests than evaluate the statement. Editing
+    an operator there (`and` -> `or`) changes the outcome for all of them.
+    """
+    spans = {}
+    for node in ast.walk(baseline_tree(source)):
+        if not isinstance(node, ast.stmt) or isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            continue
+        if isinstance(node, COMPOUND):
+            first, last = node.lineno, node.body[0].lineno - 1
+        elif hasattr(node, "body") or hasattr(node, "cases"):
+            continue
+        else:
+            first, last = node.lineno, node.end_lineno
+        if last <= first:
+            continue
+        for line in range(first, last + 1):
+            if line not in spans or spans[line][1] - spans[line][0] > last - first:
+                spans[line] = (first, last)
+    return spans
+
+
 def classify_python_edit(before, after):
     """Return [] for identical ASTs, operator changes for refinable edits, else None."""
     changes = []
@@ -517,6 +546,10 @@ class Selector:
                 result |= include(entry["readers"], "file reader", name)
                 for line in removed:
                     result |= include(entry["lines"].get(line, entry["anchors"].get(line, 0)), "affected line or anchor", name, line)
+                spans = statement_spans(old)
+                for first, last in {spans[line] for line in removed if line in spans}:
+                    for line in range(first, last + 1):
+                        result |= include(entry["lines"].get(line, 0), "multi-line statement", name, (first, last))
                 for anchor in inserted:
                     # An insertion can create a new branch or override, so select users
                     # of the containing symbol, including presently unexecuted paths.
