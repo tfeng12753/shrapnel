@@ -448,8 +448,10 @@ class Selector:
     def __init__(self, tests: list[dict], source: Path, map_path: Path, *, conservative_python=False,
                  relations=None, child_work=False, import_closure=None, import_check_budget=0.0,
                  setup_check_budget=0.0, executor_fixtures=False, executor_plans=None, executor_plan_budget=0.0,
-                 lazy_test_budget=0.0):
+                 lazy_test_budget=0.0,
+                 dict_key_refinement=False):
         self.tests, self.source = tests, source
+        self.dict_key_refinement = dict_key_refinement
         self.executor_fixtures = executor_fixtures
         self.executor_plans = executor_plans.resolve() if executor_plans and executor_plan_budget > 0 else None
         self.executor_plan_budget = executor_plan_budget
@@ -536,6 +538,7 @@ class Selector:
                     "executed": decode(entry.get("executed", "0")),
                     "setup": setup,
                 }
+                self.files[name]["dictionary_reads"] = (entry.get("dictionary_reads"), decode) if dict_key_refinement else None
             mapped_ids = set(data["tests"])
             missing = [t["id"] for t in tests if t["id"] not in mapped_ids]
             self.complete = bool(data.get("complete")) and not missing
@@ -641,6 +644,14 @@ class Selector:
                         hazard = None
                     if hazard:
                         return include(self.all, "import-time change", name)
+                    if self.dict_key_refinement and entry is not None and entry.get("dictionary_reads"):
+                        from dict_keys import refine
+                        keyed = refine(*entry["dictionary_reads"], before, after, removed, inserted)
+                        if keyed is not None:
+                            result |= include(self.external_for(name), "external dependency", name)
+                            result |= include(entry["readers"], "file reader", name)
+                            result |= include(keyed, "dictionary key reader", name)
+                            continue
                 result |= include(self.external_for(name), "external dependency", name)
                 if entry is None:
                     return include(self.all, "unmapped file", name)
@@ -895,6 +906,7 @@ def parse_args(argv=None):
     parser.add_argument("--executor-plans", type=Path, default=Path("/app/executor-plans"))
     parser.add_argument("--executor-plan-budget", type=float)
     parser.add_argument("--lazy-test-budget", type=float)
+    parser.add_argument("--dict-key-refinement", action=argparse.BooleanOptionalAction, default=None)
     parser.add_argument("--config", type=Path, default=Path(__file__).with_name("selector-config.json"))
     args = parser.parse_args(argv)
     try:
@@ -927,10 +939,13 @@ def parse_args(argv=None):
         args.executor_plan_budget = float(config.get("executor_plan_budget", 0.0))
     if args.lazy_test_budget is None:
         args.lazy_test_budget = float(config.get("lazy_test_budget", 0.0))
+    if args.dict_key_refinement is None:
+        args.dict_key_refinement = bool(config.get("dict_key_refinement", False))
     args.settings = {"lazy_test_budget": args.lazy_test_budget, "executor_fixtures": bool(args.executor_fixtures), "executor_plan_budget": args.executor_plan_budget,"conservative_python": bool(conservative), "child_work": bool(child_work),
                      "relations": bool(args.relations), "probe_budget": float(args.probe_budget),
                      "import_check_budget": float(args.import_check_budget),
                      "setup_check_budget": float(args.setup_check_budget)}
+    args.settings["dict_key_refinement"] = bool(args.dict_key_refinement)
     if args.cost_aware_probes:
         args.settings["probe_budget"] = {"seconds": args.probe_budget, "cost_aware": True}
     return args
@@ -956,7 +971,8 @@ def main():
                         setup_check_budget=max(0.0, settings["setup_check_budget"]),
                         executor_fixtures=settings["executor_fixtures"], executor_plans=args.executor_plans,
                         executor_plan_budget=max(0.0, settings["executor_plan_budget"]),
-                        lazy_test_budget=max(0.0, settings["lazy_test_budget"]))
+                        lazy_test_budget=max(0.0, settings["lazy_test_budget"]),
+                        dict_key_refinement=settings["dict_key_refinement"])
     schedules = {}
     remaining = max(0.0, args.probe_budget)
     for patch in sorted((args.data / "commits").glob("*.patch")):
