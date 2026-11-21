@@ -7,6 +7,7 @@ import gzip
 import json
 import re
 import sys
+from functools import lru_cache
 from pathlib import Path
 
 REVISION = "eb11aec4be8cb2122afe713a4816662c3f0fb2fa"
@@ -35,8 +36,12 @@ def split(tests: list[dict]) -> list[list[int]]:
 def parse_patch(text: str) -> list[dict]:
     """Read unified diffs without executing git or writing to the checkout."""
     changes, current, hunk = [], None, None
+    expecting_file = False
     for raw in text.splitlines(keepends=True):
         if raw.startswith("diff --git "):
+            if expecting_file:
+                raise ValueError("unsupported diff section")
+            expecting_file = True
             current, hunk = None, None
         elif raw.startswith("--- ") and hunk is None:
             old = raw[4:].strip().split("\t")[0]
@@ -45,17 +50,18 @@ def parse_patch(text: str) -> list[dict]:
             new = raw[4:].strip().split("\t")[0]
             current["new"] = new[2:] if new.startswith("b/") else new
             changes.append(current)
+            expecting_file = False
         elif raw.startswith("@@ ") and current is not None:
             m = HUNK.match(raw)
             if not m:
                 raise ValueError("unsupported hunk")
-            hunk = {"start": int(m[1]), "old_count": int(m[2] or 1), "new_count": int(m[4] or 1), "rows": []}
+            hunk = {"start": int(m[1]), "new_start": int(m[3]), "old_count": int(m[2] or 1), "new_count": int(m[4] or 1), "rows": []}
             current["hunks"].append(hunk)
         elif hunk is not None and raw[:1] in (" ", "+", "-"):
             hunk["rows"].append(raw)
         elif raw.startswith("\\ No newline") and hunk is not None and hunk["rows"]:
             hunk["rows"][-1] = hunk["rows"][-1].rstrip("\r\n")
-    if not changes or any("new" not in c or not c["hunks"] for c in changes):
+    if expecting_file or not changes or any("new" not in c or not c["hunks"] for c in changes):
         raise ValueError("unsupported or empty diff")
     return changes
 
@@ -69,38 +75,45 @@ def apply_change(original: str, change: dict) -> tuple[str, set[int], set[int]]:
         if start < cursor or start > len(lines):
             raise ValueError("overlapping or out of range hunk")
         output.extend(lines[cursor:start])
+        if len(output) != h["new_start"] - (1 if h["new_count"] else 0):
+            raise ValueError("new hunk position does not match patched output")
         cursor, old_count, new_count = start, 0, 0
-        block_removed, block_added = False, set()
+        block_start, added_count = cursor, 0
         def flush_block():
-            if not block_removed:
-                inserted.update(block_added)
+            removed_count = cursor - block_start
+            if added_count and not removed_count:
+                inserted.add(block_start)
+            elif added_count and (removed_count, added_count) != (1, 1):
+                # Adjacent deletions don't explain all additions. Include the old
+                # regions touched by the whole block, even for equal row counts.
+                inserted.update(range(block_start + 1, cursor + 1))
         for row in h["rows"]:
             kind, content = row[0], row[1:]
             if kind == " ":
                 flush_block()
-                block_removed, block_added = False, set()
             if kind in " -":
                 if cursor >= len(lines) or lines[cursor] != content:
                     raise ValueError("patch does not match pinned source")
                 if kind == "-":
                     removed.add(cursor + 1)
-                    block_removed = True
                 cursor += 1
                 old_count += 1
             if kind in " +":
                 output.append(content)
                 new_count += 1
                 if kind == "+":
-                    block_added.add(cursor)
+                    added_count += 1
+                    if cursor - block_start == 1 and added_count == 1:
+                        old_line = lines[block_start]
+                        if re.match(r"[ \t]*", old_line)[0] != re.match(r"[ \t]*", content)[0]:
+                            inserted.add(cursor)
+            if kind == " ":
+                block_start, added_count = cursor, 0
         flush_block()
         if old_count != h["old_count"] or new_count != h["new_count"]:
             raise ValueError("hunk length mismatch")
     output.extend(lines[cursor:])
     return "".join(output), removed, inserted
-
-
-def semantic_tree(source: str) -> str:
-    return ast.dump(ast.parse(source, type_comments=True), include_attributes=False)
 
 
 def import_hazard(old: str, new: str) -> bool:
@@ -159,27 +172,35 @@ def relation_outcome(state, op):
     return None
 
 
-def comparison_changes(old, new):
-    """Recognize changes confined to single comparison operators."""
-    before, after = ast.parse(old, type_comments=True), ast.parse(new, type_comments=True)
-    left = [n for n in ast.walk(before) if isinstance(n, ast.Compare)]
-    right = [n for n in ast.walk(after) if isinstance(n, ast.Compare)]
-    if len(left) != len(right):
-        return None
+@lru_cache(maxsize=8)
+def baseline_tree(source):
+    return ast.parse(source, type_comments=True)
+
+
+def classify_python_edit(before, after):
+    """Return [] for identical ASTs, operator changes for refinable edits, else None."""
     changes = []
-    supported = {"Eq", "NotEq", "Is", "IsNot", "Lt", "LtE", "Gt", "GtE"}
-    for a, b in zip(left, right):
-        if len(a.ops) == len(b.ops) == 1:
-            old_op, new_op = type(a.ops[0]).__name__, type(b.ops[0]).__name__
-            if old_op != new_op:
-                if old_op not in supported or new_op not in supported:
-                    return None
-                changes.append((f"{a.lineno}:{a.col_offset}", old_op, new_op))
-            if old_op in supported and new_op in supported:
-                a.ops = b.ops = [ast.Eq()]
-    if not changes or ast.dump(before, include_attributes=False) != ast.dump(after, include_attributes=False):
-        return None
-    return changes
+    supported = (ast.Eq, ast.NotEq, ast.Is, ast.IsNot, ast.Lt, ast.LtE, ast.Gt, ast.GtE)
+
+    def matches(a, b):
+        if type(a) is not type(b):
+            return False
+        if isinstance(a, list):
+            return len(a) == len(b) and all(matches(x, y) for x, y in zip(a, b))
+        if not isinstance(a, ast.AST):
+            return a == b
+        for field, value in ast.iter_fields(a):
+            other = getattr(b, field)
+            if (field == "ops" and isinstance(a, ast.Compare)
+                    and len(value) == len(other) == 1 and type(value[0]) is not type(other[0])):
+                if not isinstance(value[0], supported) or not isinstance(other[0], supported):
+                    return False
+                changes.append((f"{a.lineno}:{a.col_offset}", type(value[0]).__name__, type(other[0]).__name__))
+            elif not matches(value, other):
+                return False
+        return True
+
+    return changes if matches(before, after) else None
 
 
 class Selector:
@@ -270,13 +291,14 @@ class Selector:
                 entry = self.files.get(name)
                 if name.endswith(".py"):
                     # Compare every file: a harmless-looking comment may accompany a fixture edit.
-                    if semantic_tree(old) == semantic_tree(new):
+                    changes_at_sites = classify_python_edit(baseline_tree(old), ast.parse(new, type_comments=True))
+                    if changes_at_sites == []:
                         # Tests may inspect comments or exact source text.
                         if entry is None:
                             return include(self.all, "unmapped source", name)
                         result |= include(entry["readers"], "file reader", name)
                         continue
-                    refined = self.refine_comparisons(old, new, entry)
+                    refined = self.refine_comparisons(changes_at_sites, entry)
                     if refined is not None:
                         result |= include(refined, "comparison boundary or unknown", name)
                         result |= include(entry["readers"], "file reader", name)
@@ -319,11 +341,8 @@ class Selector:
             # Syntax/import-shape uncertainty can break every test's collection.
             return include(self.all, "analysis failed: " + type(error).__name__)
 
-    def refine_comparisons(self, old, new, entry):
-        if not entry or not entry["comparisons"]:
-            return None
-        changes = comparison_changes(old, new)
-        if changes is None:
+    def refine_comparisons(self, changes, entry):
+        if not changes or not entry or not entry["comparisons"]:
             return None
         result = 0
         for site, before, after in changes:
