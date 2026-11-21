@@ -131,11 +131,26 @@ def closure(root):
     return observation(root)["files"]
 
 
+def prepare_bytecode(root):
+    """Compile unchanged production modules for the read-only scorer image."""
+    import compileall
+    import py_compile
+
+    if not compileall.compile_dir(root / "sqlglot", quiet=1, force=True, optimize=0,
+                                  invalidation_mode=py_compile.PycInvalidationMode.CHECKED_HASH):
+        raise RuntimeError("could not prepare hash-checked SQLGlot bytecode")
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--source", type=Path, default=Path("/opt/sqlglot"))
+    parser.add_argument("--source", type=Path, help="Pinned checkout (defaults to the dedicated image checkout)")
+    parser.add_argument("--prepare-bytecode", action=argparse.BooleanOptionalAction, default=None,
+                        help="Precompile production modules (on for the image checkout, opt in for explicit paths)")
     parser.add_argument("--output", type=Path, default=Path("/app/import-closure.json"))
     args = parser.parse_args()
-    data = observation(args.source)
+    source = args.source if args.source is not None else Path("/opt/sqlglot")
+    data = observation(source)
+    if args.prepare_bytecode or (args.prepare_bytecode is None and args.source is None):
+        prepare_bytecode(source)
     args.output.write_text(json.dumps({"revision": REVISION, "tests": TESTS, **data}))
     print(f"wrote {args.output}: {len(data['files'])} files", file=sys.stderr)

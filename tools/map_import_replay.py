@@ -1,6 +1,8 @@
 """Measure patched lazy-import checks against an existing schedule (offline only)."""
 import argparse
 import ast
+from collections import Counter
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -9,6 +11,7 @@ import signal
 import subprocess
 import sys
 import tempfile
+import time
 import xml.etree.ElementTree as ET
 
 from selector import apply_change, classify_python_edit, parse_patch
@@ -61,28 +64,80 @@ def patched_sources(source, patch, closure):
     return updates
 
 
-def check_item(source, updates, item):
+def staging_exclusions(source, updates=()):
+    # The interpreter validates PEP 552 checked hashes against the staged
+    # source. Timestamp caches can survive same-size edits on a coarse clock.
+    checked_header = importlib.util.MAGIC_NUMBER + (3).to_bytes(4, "little")
+    changed = {source / name for name in updates}
+    def ignored(directory, names):
+        path = Path(directory)
+        if path.name == "__pycache__":
+            skipped = set(names)
+            for name in names:
+                if name.endswith(".pyc"):
+                    try:
+                        original = Path(importlib.util.source_from_cache(str(path / name)))
+                    except ValueError:
+                        continue
+                    if original in changed:
+                        continue
+                    with (path / name).open("rb") as cache:
+                        if cache.read(8) == checked_header:
+                            skipped.remove(name)
+            return skipped
+        skipped = {".git", ".pytest_cache"}.intersection(names)
+        if not path.is_relative_to(source / "sqlglot"):
+            skipped.add("__pycache__")
+        return skipped
+    return ignored
+
+
+def check_items(source, updates, items, wall_seconds=20):
+    """Verify every requested ordinary pytest item in one isolated checkout."""
+    deadline = time.monotonic() + wall_seconds
+    expected = Counter()
+    for item in items:
+        file, *parts = item.split("::")
+        if not file.endswith(".py") or not parts or not all(part.isidentifier() for part in parts):
+            return False
+        classname = ".".join([file[:-3].replace("/", "."), *parts[:-1]])
+        expected[classname, parts[-1]] += 1
+    if not expected or max(expected.values()) != 1:
+        return False
     with tempfile.TemporaryDirectory() as folder:
         root = Path(folder) / "source"
-        shutil.copytree(source, root, ignore=shutil.ignore_patterns(".git", "__pycache__", ".pytest_cache"))
+        shutil.copytree(source, root, ignore=staging_exclusions(source, updates))
         for name, contents in updates.items():
             (root / name).write_text(contents)
         report = Path(folder) / "result.xml"
         env = dict(os.environ, PYTHONPATH=str(root), PYTHONDONTWRITEBYTECODE="1", SKIP_INTEGRATION="0",
                    PATH=str(Path(sys.executable).parent) + os.pathsep + os.defpath)
+        if time.monotonic() >= deadline:
+            return False
         with subprocess.Popen(
-            [sys.executable, "-B", "-m", "pytest", "-q", "-p", "no:cacheprovider", "--timeout=10",
-             f"--junitxml={report}", item], cwd=root, env=env, stdout=subprocess.DEVNULL,
+            [sys.executable, "-B", "-m", "pytest", "-q", "-x", "-p", "no:cacheprovider", "--timeout=10",
+             f"--junitxml={report}", *items], cwd=root, env=env, stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL, start_new_session=True,
         ) as proc:
             try:
-                if proc.wait(timeout=20):
+                if proc.wait(timeout=max(0, deadline - time.monotonic())):
                     return False
             except subprocess.TimeoutExpired:
                 os.killpg(proc.pid, signal.SIGKILL)
                 return False
-        cases = ET.parse(report).findall(".//testcase")
-        return len(cases) == 1 and all(cases[0].find(tag) is None for tag in ("skipped", "failure", "error"))
+        tree = ET.parse(report)
+        for suite in tree.iter("testsuite"):
+            if any(int(suite.get(status, "0")) for status in ("errors", "failures", "skipped")):
+                return False
+        cases = list(tree.iter("testcase"))
+        actual = Counter((case.get("classname"), case.get("name")) for case in cases)
+        return actual == expected and all(
+            case.find(tag) is None for case in cases for tag in ("skipped", "failure", "error")
+        )
+
+
+def check_item(source, updates, item):
+    return check_items(source, updates, [item])
 
 
 def replay(args):

@@ -2,6 +2,31 @@
 
 Base 2c4b6a8. This branch owns build-time observations only. No mutant data used.
 
+## Hash-checked bytecode for the existing selector
+
+The final build-time closure step precompiles the unchanged production package after observing the import. This prepares 184 CPython cache files (4,467,466 bytes on the host). Python checks a hash of each source file before loading cached code. The selector's import overlay still compiles modified modules from their patched source. The staged pytest audit only copies checked-hash production caches for unchanged modules. A regression test edits a module while preserving its size and timestamp and confirms a new Python child observes the changed value.
+
+The image's existing no-argument closure command prepares bytecode automatically. With an explicit checkout, use `python tools/import_closure.py --source "$SOURCE" --prepare-bytecode --output /tmp/import-closure.json`. Use a writable copy of the pinned revision. Each legacy closure field and the entire unentered-function inventory matched before and after preparation. Source preparation works with the existing selector. Its shipped defaults produced byte-identical schedules at 166.316 simulated seconds with zero misses.
+
+Five interleaved public runs per configuration compared the same 30 patches. The current selector with `--relations --probe-budget 2` reached 113.877 simulated seconds in all five runs with prepared bytecode and in one of five without it. The bounded verifier retained more tests on the other four ordinary-source runs. Median totals including all selector and child CPU were 115.625 s with prepared source and 118.694 s with ordinary source. Local CPU and verifier timeouts vary with machine load.
+
+## Budgeted dictionary replay
+
+The host-built map now has an optional offline index of 2,885 scalar dictionary values in 42 production files (64,787 bytes). It is generated once from the complete pinned dependency map and matching source. Each file has a SHA-256 digest. The index records UTF-8 byte offsets for single-line strings, booleans, floats and integers in dictionaries with unique literal string keys. Candidate selection uses the map and patch only.
+
+The offline audit considers one-worker schedules whose catalog time is at most one worker startup (2 s), in ascending catalog-time order. It requires a matching file digest, one same-type value edit, unchanged surrounding source and a successful parse. It materializes the patch, executes every scheduled pytest item, including child interpreters and subtests, and compares the JUnit case identities to the exact set requested. Any failure, skip, timeout, wrong or missing item, or incomplete evidence retains the entire schedule. The default allowance is two CPU seconds. A separate wall deadline is twice the CPU allowance. The audit measures parent and waited-child CPU between attempts, starts with the cheapest group, and stops when the last check would exceed the remaining allowance. Production integration still needs the teammate's shared, container-wide CPU accounting. All measurements here are outside the production selector.
+
+From the repo root, use the locked environment, the pinned checkout in `SOURCE`, and the host dependency map in `MAP`. Use the existing relations-enabled, two-second native-probe schedule from the import replay below.
+
+```sh
+python -m tools.map_dictionary_index --source "$SOURCE" --map "$MAP" --output /tmp/dictionary-index.json
+python -m tools.map_dictionary_replay --source "$SOURCE" --data sample --index /tmp/dictionary-index.json --schedule /tmp/map-schedule.jsonl --import-closure /tmp/import-closure.json --cpu-budget 2
+```
+
+The combined command reports verified import rows and dictionary rows separately. It skips speculative dictionary checks when the preceding import verification already cost more than the available CPU. For an end-to-end comparison, empty only the reported verified rows. Score that output against the public answers and sum the CPU used by the selector, both offline audits and their subprocesses. Exclude the one-time index build and the scorer. The new audit never consumes answers.
+
+Five public replays with the prepared source and both offline checks scored 109.063 simulated seconds each with zero misses. The prepared-source import-only reference was 111.509. The median CPU-inclusive totals in that series were 114.451 s and 115.014 s respectively. The dictionary check verified all four original catalog items on the eligible public edit, including 52 subtests. The larger 273-test schedule did not qualify. Final independent results follow this checkpoint.
+
 ## Verified import-check opportunity
 
 The relations-enabled public baseline on the 30 patches was 115.907 simulated seconds. Enabling the existing native verifier with `--probe-budget 2` reduced that to 113.877. The new offline replay reduced the same schedule to 111.509 by verifying one additional singleton lazy-import test on patched source. The official local scorer found zero missed failing tests in each of three runs per configuration.
