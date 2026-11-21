@@ -17,7 +17,9 @@ The unchanged builder from 2c4b6a8 took 293.400 s end-to-end on the same host. W
 
 The final diagnostic map occupies 1,114,908 bytes. It includes 1,274 dictionary bindings. For 30, at least one test had keyed evidence outside the whole and unobserved masks. This measures possible analysis opportunities, not guaranteed test removals. The Snowflake example retains all 273 candidates; costing it as a 9.078 s win would be incorrect. The new file ordering and repeated-mask grouping reduce the existing map by 72,230 bytes when compared with identical content.
 
-Local and Linux CI unit runs passed 86 of 87 checks. The sole failure is the required cache fingerprint mismatch after changing the builder. Before merging, run make map on Linux/amd64 Docker and repeat the checks below. No generated map or metadata is part of this PR. A clean-source repeat with a different Python hash seed is in progress.
+Local and Linux CI unit runs passed 86 of 87 checks. The sole failure is the required cache fingerprint mismatch after changing the builder. Before merging, run make map on Linux/amd64 Docker and repeat the checks below. No generated map or metadata is part of this PR. An independent repeat used a fresh extraction of pinned sqlglot, PYTHONHASHSEED=1729 and bytecode writing disabled. It passed all 1,621 tests and 25,454 subtests. Stage timings were 0.59, 310.26 and 3.33 s (314.18 s total). Both sets of public schedules again matched byte-for-byte. All dictionary observations on common files and all import closure files, lines and explicit reads were identical. The clean diagnostic map was 1,114,854 bytes; its only difference in the set of file names was an absent pytest bytecode cache. Both diagnostics used macOS arm64, Python 3.13.15, coverage 7.10.7 and pytest 9.2.0.
+
+All Brief A local work is saved. Resume with the Docker validation under **Morning review procedure** and coordinate the selector-side eligibility checks described below. No reset used.
 
 ## Import trace
 
