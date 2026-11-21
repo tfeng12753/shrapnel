@@ -39,32 +39,43 @@ runs tests, so its CPU is included.
 make competitive
 ```
 
-It builds the pinned image with a 600-second timeout, then runs each of these
-three times under the documented container restrictions:
+It builds the pinned image with a 600-second timeout (the map comes from the
+cache; see README.md), then runs each of these complete configurations three
+times under the documented container restrictions. Every setting is passed
+explicitly as a flag, so the image's shipped defaults do not affect the
+measurement.
 
-| Strategy | Operand relations | Runtime verification |
-| --- | --- | --- |
-| conservative_python (full suite for executable Python edits) | Off | Off |
-| coverage | Off | Off |
-| child_work (keep tests that can dispatch to a child process) | Off | Off |
-| relations | On | Off |
-| relations_and_probes | On | 8-second child CPU budget |
+| Variant | Operand relations | Runtime verification | Notes |
+| --- | --- | --- | --- |
+| conservative_python | Off | Off | Full suite for executable Python edits; import checks off |
+| coverage | Off | Off | `import_check_budget` 6.0 |
+| child_work | Off | Off | Keeps tests that can dispatch to a child process |
+| relations | On | Off | |
+| relations_and_probes | On | 8-second child CPU budget | |
 
 The report includes misses, simulated cost, CPU, and median total. CPU includes
 a small measurement wrapper; the competition's cgroup accounting is authoritative.
-A strategy with any sample misses is excluded from automatic configuration
-selection. If none has zero misses, the map needs debugging before submission.
+A variant with any sample misses is excluded from automatic selection. If none
+has zero misses, the map needs debugging before submission.
 
 The command writes:
 
-- `competitive-results.json`: measured results and best zero-miss strategy.
-- `selector-config.json`: global defaults for that strategy; no test or patch IDs.
-- `maps/dependencies.json`: cached unchanged-baseline map, if it fits within 18 MB.
+- `competitive-results.json`: measured results and best zero-miss variant.
+- `selector-config.json`: the winning complete configuration, verbatim,
+  including `import_check_budget`; no test or patch IDs.
 - `research-bundle.zip`: source checkout, compressed map, outputs, and results.
 
-The image being measured has the old defaults, but every strategy is explicitly
-forced through CLI flags. Rebuild after committing the new config/map to submit
-the measured behavior with the competition's default `docker build`.
+It no longer writes `maps/dependencies.json`; the map is cached by `make map`.
+After writing the config, it rebuilds the image and re-runs the shipped default,
+failing if the result does not reproduce the measured variant (skip with
+`--no-validate`).
+
+The public-sample winner is not necessarily the submitted default. The default is
+chosen using the held-out mutant evaluation described in VALIDATION.md, because
+the public patches were used during development. Any result reported from here
+follows the evidence convention: the exact `selector-config.json`, the map
+fingerprint (`builder_sha256` and `map_sha256` from `maps/dependencies.meta.json`),
+and the project commit.
 
 ## Continue development from the evidence
 

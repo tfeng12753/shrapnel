@@ -1,0 +1,4 @@
+# Docker builds copy these files into a Linux image: keep LF line endings on every checkout.
+* text=auto eol=lf
+*.gz binary
+*.zip binary

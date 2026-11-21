@@ -26,12 +26,11 @@ local map flagged only one catalog test as external. Worker-process line attribu
 | ary6 | 1355, 1417, 1420 |
 | rszg | 1355 |
 
-The new default retains tests that the existing map places on possible process
-launch or pool-dispatch sites. It retained 26 such tests on this map. All three
-public runs cost 470.062 simulated seconds with zero misses. The median including
-CPU was 471.2 seconds. Dynamic dispatch
-through native code or wrappers outside the pinned source can still escape the
-scan. `--conservative-python` remains available when the map or workload changes.
+The next default retained tests that the then-current map placed on possible
+process launch or pool-dispatch sites (26 on that map). All three public runs cost
+470.062 simulated seconds with zero misses; the median including CPU was 471.2
+seconds. That guard was a workaround for the map's blind spot, not a selection
+rule worth keeping. See "Container-verified result" below for its replacement.
 
 Three additional patches were applied separately to fresh copies of the pinned
 source. All 1,621 tests were run on each copy to obtain the failing test IDs;
@@ -47,13 +46,78 @@ function. All public patches applied to the pinned source identically before
 and after the parser change.
 
 Run `make competitive` on a Docker host to rebuild and compare all five
-strategies under the challenge limits. For a local run with a complete map:
+configurations under the challenge limits. For a local run with a complete map:
 
 ```sh
 python3 tools/benchmark.py --source /path/to/pinned/sqlglot --map /path/to/dependencies.json.gz
 ```
 
-## Inline worker map experiment
+## Container-verified result
+
+The cached dependency map (`maps/dependencies.json.gz`) was built with process-pool
+work run inline in the calling test, plus pickle round-trips of submissions and
+results. That attributes worker-process line execution to the test that
+requested it, which was the gap the child-process guard compensated for. The
+guard is no longer needed.
+
+With `{"conservative_python":false,"child_work":false,"relations":false,"probe_budget":0.0,"import_check_budget":6.0}`,
+the scorer's container flags, and three runs on the 30 public patches:
+
+| Configuration | Simulated seconds | Missed commits |
+| --- | ---: | ---: |
+| Full suite | 1104.510 | 0 |
+| Conservative Python | 651.870 | 0 |
+| Child-work guard | 470.062 | 0 |
+| Targeted, inline-pool map | 166.316 | 0 |
+
+Selector CPU was about 1.4 s per run. Two further configurations were measured
+locally on the public patches only (not in the container): comparison relations,
+115.907 s with zero misses, and relations with probe budget 8, 113.877 s. Neither
+is the default. The default is chosen by the held-out mutant evaluation below.
+
+The public patches were used while building the selector, so a zero-miss score on
+them is not evidence of zero misses on other patches. The mutant evaluation exists
+to measure that.
+
+## Held-out mutant evaluation
+
+Evaluation only. None of these tools is copied into the image, and none of their
+output is selector input.
+
+- `tools/mutants.py` generates seeded mutants of the public patch kinds:
+  operator, boolean and number edits, fixture corruptions, comment-only edits,
+  and multi-file patches. It avoids every line the public patches touch. The plan
+  is 40 fresh mutants.
+- `tools/ground_truth.py` runs inside the image. It applies one mutant with the
+  selector's patch reader and runs the full real suite with real process pools,
+  recording the failing catalog tests (subtest failures count against the owning
+  test).
+- `tools/mutant_eval.py` scores selector variants against those
+  recorded results, with a tune/holdout split.
+
+Anti-overfitting rule: tune on one split and report only the other. Mutants and
+their results never become selector input, lookup tables, or map content. A
+selector change made after looking at a holdout failure turns that split into a
+tuning split, and the result is reported on mutants generated afterwards.
+
+| Item | Value |
+| --- | --- |
+| Final configuration | `{"conservative_python":false,"child_work":false,"relations":false,"probe_budget":0.0,"import_check_budget":6.0}` (unchanged; relations stays off until held-out evaluation) |
+| Public sample score and misses | OFFICIAL_RUN (container, 3 runs, 0 misses) |
+| Held-out mutant misses and score | Not yet run (scheduled after this submission) |
+| Project commit | The commit that adds this table (see `git log`) |
+| `builder_sha256` | `cc729b2e5ee84c1fb3fb7d656fbc8f03c9f6a362a6f6801d6407e9a9d48ad7d3` (verified by `tools/map_fingerprint.py --check`) |
+| `map_sha256` | `02198f60b3809b26d3f5f3fcfd55e9882880b1483c38e6d94d6c56021418b372` (verified by `tools/map_fingerprint.py --check`) |
+
+### Evidence convention
+
+A published result names the exact `selector-config.json` contents, the map
+fingerprint (`builder_sha256` and `map_sha256` in `maps/dependencies.meta.json`),
+and the project commit. CI (`.github/workflows/checks.yml`) runs the unit tests
+and `tools/map_fingerprint.py --check` on every pull request and push to main, so
+a builder change without a regenerated map fails before it reaches a build.
+
+## Earlier experiment: inline worker map
 
 The separate map-builder change in PR #3 was tested at commit
 `3c22982d170f44bc523cda0bac6df9200ff8d97d` on the same pinned macOS checkout.
@@ -72,5 +136,5 @@ On `3utz`, `TestOptimizer.test_quote_identifiers` failed while deserializing a
 result from a real process pool. It passed with the inline pool. Adding an
 isolated serialize/deserialize step for the returned result made the patched
 test fail again, while the same experiment passed on the unchanged source.
-Worker transport remains a dependency to capture before relying on the faster
-targeted strategy.
+That experiment led to the pickle round-trips in the current map builder; the
+container-verified result above uses them.

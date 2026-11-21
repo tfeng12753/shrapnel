@@ -4,7 +4,11 @@ import gzip
 import json
 from pathlib import Path
 import subprocess
+import sys
 import tempfile
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from map_fingerprint import BUILDER_FILES, REVISION, builder_digest, map_digest  # noqa: E402
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--image", default="blast-radius-entry")
@@ -26,6 +30,19 @@ try:
         output = maps / "dependencies.json.gz"
         output.write_bytes(packed)
         (maps / "dependencies.json").unlink(missing_ok=True)
-        print(f"Exported {len(packed)} bytes ({len(raw)} uncompressed) to {output}; review and commit it.")
+        # Fingerprint the builder files that actually ran inside the image.
+        builder = Path(temporary) / "builder"
+        for name in BUILDER_FILES:
+            (builder / name).parent.mkdir(parents=True, exist_ok=True)
+            subprocess.run(["docker", "cp", f"{container}:/app/{name}", str(builder / name)], check=True)
+        environment = subprocess.run(
+            ["docker", "run", "--rm", "--entrypoint", "python", args.image, "-c",
+             "import sys, platform, coverage, json; print(json.dumps({'python': sys.version.split()[0], "
+             "'coverage': coverage.__version__, 'platform': platform.machine()}))"],
+            check=True, capture_output=True, text=True).stdout
+        meta = {"revision": REVISION, "builder_sha256": builder_digest(builder), "map_sha256": map_digest(output),
+                "tests": len(metadata["tests"]), "environment": json.loads(environment)}
+        (maps / "dependencies.meta.json").write_text(json.dumps(meta, indent=1) + "\n")
+        print(f"Exported {len(packed)} bytes ({len(raw)} uncompressed) to {output}; review and commit it with maps/dependencies.meta.json.")
 finally:
     subprocess.run(["docker", "rm", container], check=True, stdout=subprocess.DEVNULL)

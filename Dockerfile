@@ -8,15 +8,20 @@ COPY requirements.lock /app/requirements.lock
 RUN if [ "$BUILD_MAP" = "1" ]; then pip install --no-cache-dir -r /app/requirements.lock coverage==7.10.7; fi
 COPY tools/fetch_source.py /app/tools/fetch_source.py
 RUN if [ "$BUILD_MAP" = "1" ]; then python /app/tools/fetch_source.py; fi
-COPY tools/build_map.py tools/instrument.py /app/tools/
+COPY tools/build_map.py tools/instrument.py tools/map_fingerprint.py /app/tools/
 COPY maps /app/maps
 # Per-test pytest timeout while instrumenting; raise it for a one-off `make map`.
 ARG MAP_TIMEOUT=180
+# FORCE_MAP=1 ignores the cached map and regenerates it (`make map`).
+ARG FORCE_MAP=0
 # Maps use ONLY the unchanged pinned checkout, never sample patches/answers.
+# A cached map is used only if its metadata matches this builder; otherwise the build fails.
 RUN if [ "$BUILD_MAP" != "1" ]; then :; \
-    elif [ -f /app/maps/dependencies.json.gz ]; then \
+    elif [ "$FORCE_MAP" != "1" ] && [ -f /app/maps/dependencies.json.gz ]; then \
+      python /app/tools/map_fingerprint.py --root /app --check /app/maps/dependencies.meta.json \
+        --map /app/maps/dependencies.json.gz && \
       cp /app/maps/dependencies.json.gz /app/dependencies.json.gz; \
-    elif [ -f /app/maps/dependencies.json ]; then \
+    elif [ "$FORCE_MAP" != "1" ] && [ -f /app/maps/dependencies.json ]; then \
       python -c 'import gzip,pathlib; p=pathlib.Path("/app/maps/dependencies.json"); gzip.open("/app/dependencies.json.gz", "wb").write(p.read_bytes())'; \
     else \
       MAP_TIMEOUT=$MAP_TIMEOUT PYTHONPATH=/opt/sqlglot python /app/tools/build_map.py; \
