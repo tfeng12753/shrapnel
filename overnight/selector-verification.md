@@ -83,3 +83,79 @@ Per-run CPU seconds (seeds 1–5) and the five-run schedule digests
 The final code removed the observed local timing variance in this replay. A future workload can still exceed the CPU or backup wall deadline. Any such timeout retains the entire selection. The cost-aware policy removes two workers and improves the measured total versus probes off by 1.098 s with relations off and 0.901 s with relations on. The legacy policy has a slightly lower measured total than cost-aware verification in both local comparisons. Profiling and `score.py` independently confirmed 114.256 simulated seconds and zero misses for guarded relations plus cost-aware probes.
 
 The scorer-format image built successfully using a temporary test Dockerfile to mount the sandbox's trust bundle during dependency fetches. The first container replay exhausted the shared VFS layer storage and was retried after removing this task's intermediate image and build cache. The local evidence above is retained independently.
+
+## Resume commands
+
+Check out the PR branch and run from the repository root. In a fresh workspace, pick a writable benchmark directory (the overnight workspace used `/workspace/selector-bench`).
+
+```sh
+export SELECTOR_BENCH=/workspace/selector-bench
+mkdir -p "$SELECTOR_BENCH/sqlglot"
+curl -fLsS https://codeload.github.com/tobymao/sqlglot/tar.gz/eb11aec4be8cb2122afe713a4816662c3f0fb2fa |
+  tar -xz -C "$SELECTOR_BENCH/sqlglot" --strip-components=1
+UV_CACHE_DIR="$SELECTOR_BENCH/uv-cache" uv venv --python python3.13 "$SELECTOR_BENCH/venv"
+UV_CACHE_DIR="$SELECTOR_BENCH/uv-cache" uv pip sync --python "$SELECTOR_BENCH/venv/bin/python" requirements.lock
+"$SELECTOR_BENCH/venv/bin/python" tools/import_closure.py --source "$SELECTOR_BENCH/sqlglot" --output "$SELECTOR_BENCH/import-closure.json"
+```
+
+Run `selector.py --data sample --source "$SELECTOR_BENCH/sqlglot" --map maps/dependencies.json.gz --import-closure "$SELECTOR_BENCH/import-closure.json"` with the locked venv. For each of `--no-relations` and `--relations`, run with `--probe-budget 0 --no-cost-aware-probes`, `--probe-budget 8 --no-cost-aware-probes`, and `--probe-budget 8 --cost-aware-probes`. Use seeds 1 through 5 for `PYTHONHASHSEED`, capture stdout in distinct files, compare with `cmp` or `sha256sum` and score each with `python3 score.py sample sample/answers.json FILE`. Measure CPU with `/usr/bin/time -f '%U %S'` (sum the two columns), `tools/timed_run.py` inside the image, or the change in user plus system `getrusage(RUSAGE_CHILDREN)` around one `subprocess.run`. The latter was used for the local table. This workspace has the full harness at `$SELECTOR_BENCH/replay.py`, invoked with an output directory and optional `--runs 5` or `--mutants "$SELECTOR_BENCH/local-tune"`.
+
+For independent tune ground truth, generate seed 42 with `tools/mutants.py --source "$SELECTOR_BENCH/sqlglot" --out "$SELECTOR_BENCH/local-tune" --count 32 --seed 42`. Process only the 16 even IDs and run an unmodified baseline. Resume by skipping the IDs with completed structured results. For each, copy the pinned checkout into a fresh directory and apply its unified diff with `selector.parse_patch` and `selector.apply_change` before starting pytest. The audited process must run pytest's real suite with its working directory and first import path at the copy, `SKIP_INTEGRATION=0`, `HOME=/tmp`, `PYTHONDONTWRITEBYTECODE=1` and the locked venv's bin directory first on PATH. Run the full suite with `tests -q -p no:cacheprovider -rfE --timeout=900`, using a guarded Python entry point. Reuse the original `results/*.json` schema. Keep real process pools, and choose local concurrency to fit available cores and RAM (two in this workspace).
+
+The structured pytest recorder is below. Supply it with the absolute catalog path and output JSON path. Keep the console log alongside each result and use its last nonblank line as the JSON summary. In this workspace, `$SELECTOR_BENCH/pytest_ground.py` and `$SELECTOR_BENCH/ground_tune_audit.py` implement the recorder and resumable producer.
+
+<details>
+<summary>Structured pytest failure recorder</summary>
+
+```python
+import json
+from pathlib import Path
+import sys
+import time
+
+import pytest
+
+class Failures:
+    def __init__(self, numbers):
+        self.numbers = numbers
+        self.failing = set()
+        self.unknown = set()
+
+    def record(self, report):
+        if not report.failed:
+            return
+        item = report.nodeid
+        if item in self.numbers:
+            self.failing.add(self.numbers[item])
+        else:
+            base = item.partition("[")[0]
+            matched = [n for test, n in self.numbers.items() if test == base or test.startswith(base + "::")]
+            self.failing.update(matched)
+            if not matched:
+                self.unknown.add(item)
+
+    def pytest_runtest_logreport(self, report):
+        self.record(report)
+
+    def pytest_collectreport(self, report):
+        self.record(report)
+
+
+def main():
+    sys.path.insert(0, str(Path.cwd()))
+    tests = json.loads(Path(sys.argv[1]).read_text())["tests"]
+    failures = Failures({t["id"]: t["number"] for t in tests})
+    started = time.monotonic()
+    exit_code = pytest.main(["tests", "-q", "-p", "no:cacheprovider", "-rfE", "--timeout=900"], plugins=[failures])
+    Path(sys.argv[2]).write_text(json.dumps({"failing": sorted(failures.failing),
+        "unknown": sorted(failures.unknown), "exit": int(exit_code),
+        "summary": "see adjacent pytest log", "seconds": round(time.monotonic() - started, 3)}))
+
+
+if __name__ == "__main__":
+    main()
+```
+
+</details>
+
+Use `tools/mutant_eval.py --split tune` to replay its built-in variants. To include the cost-aware variant, use `tools.mutant_eval.load_ground_truth(mutants, "tune", False)`, make a temporary data directory containing the catalog and only the returned patches, run the six configurations above, and pass each output plus the loaded answers to `score.evaluate_run`. Record CPU independently of simulated seconds. Reserve odd mutant IDs for morning. The official artifact is useful when published and when its failure labels account for subtest failures. The audited local set gives separately verifiable tune evidence.
