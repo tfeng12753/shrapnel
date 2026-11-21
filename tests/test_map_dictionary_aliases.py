@@ -201,11 +201,11 @@ class RegistryWriterTest(unittest.TestCase):
                 for test in ("first", "later"):
                     rec.current, rec.phase = test, "call"
                     module.Registry.load("duck")
+                    rec.end_test()
                 rec.current, rec.phase = None, "collection"
             finally:
                 observer.restore()
-            symbol = ("sqlglot/registry.py", "Registry._classes")
-            self.assertTrue(rec.dictionary_writers[symbol])
+            self.assertEqual(set().union(*rec.writer_credit.values()), {"later"})
             rec.tests = ["first", "later", "other"]
             data = Mock()
             data.measured_files.return_value = [str(path)]

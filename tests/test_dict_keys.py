@@ -19,7 +19,8 @@ BASE = {"a": 1, **{"b": 2}}
 
 def entry(**overrides):
     info = {"start": 2, "end": 5, "keys": {"x": "1", "u": "2"}, "whole": "10",
-            "presence": {"x": "ff"}, "lines": {"3": "20"}, "transferred": "40", "unobserved": "80"}
+            "presence": {"x": "ff"}, "lines": {"3": "20"}, "transferred": "40", "unobserved": "80",
+            "shared": []}
     info.update(overrides)
     return {"Tokenizer.ESCAPES": info}
 
@@ -79,8 +80,14 @@ class RefineTest(unittest.TestCase):
     def test_spread_value_edit_is_not_refined(self):
         info = entry()
         info["BASE"] = {"start": 11, "end": 11, "keys": {}, "whole": "0", "presence": {}, "lines": {},
-                        "transferred": "0", "unobserved": "0"}
+                        "transferred": "0", "unobserved": "0", "shared": []}
         self.assertIsNone(self.run_refine(SOURCE.replace('**{"b": 2}', '**{"b": 3}'), info))
+
+    def test_shared_reads_fall_back(self):
+        new = SOURCE.replace("(16, 2, 2, 255)", "(16, 2, 3, 255)")
+        self.assertIsNone(self.run_refine(new, entry(shared=["x"])))
+        self.assertIsNone(self.run_refine(new, entry(shared=[""])))
+        self.assertEqual(self.run_refine(new, entry(shared=["u"])), 0x1 | 0x10 | 0x20 | 0x80)
 
     def test_comment_inside_literal_with_value_edit(self):
         new = SOURCE.replace("(16, 2, 2, 255),", "(16, 2, 3, 255),  # changed")

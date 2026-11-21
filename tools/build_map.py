@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import ast
 import gzip
+import inspect
 import importlib
 import json
 import os
@@ -281,10 +282,11 @@ class Recorder:
         # Fixtures with a wider scope run once for many tests.
         return None
 
-    def record_dictionary(self, mapping, key):
+    def record_dictionary(self, mapping, key, whole=None):
         binding = self.bound_dictionaries.get(id(mapping))
         if binding is None:
             return
+        self.credit_writers(mapping, key, key is None if whole is None else whole)
         key = key if type(key) is str else None
         context = self.read_context()
         for symbol in binding[1]:
@@ -296,6 +298,7 @@ class Recorder:
         binding = self.bound_dictionaries.get(id(mapping))
         if binding is None:
             return
+        self.credit_writers(mapping, key, False)
         key = key if type(key) is str else None
         context = self.read_context()
         for symbol in binding[1]:
@@ -303,26 +306,54 @@ class Recorder:
             self.dictionary_presence[symbol][recorded].add(context)
 
     def record_store(self, mapping):
-        """Remember the library functions on the stack when a test writes a tracked mapping."""
+        """Before a test writes a tracked mapping, snapshot it and note the writing functions."""
         binding = self.bound_dictionaries.get(id(mapping))
-        if binding is None or self.current is None:
+        if binding is None or self.current is None or self.importing > 0:
             return
-        writers = self.__dict__.setdefault("dictionary_writers", defaultdict(set))
+        pending = self.__dict__.setdefault("pending_writes", {})
+        if id(mapping) not in pending:
+            pending[id(mapping)] = (mapping, {key: id(value) for key, value in mapping.items()}, set())
+        spans = pending[id(mapping)][2]
         # Only functions in the mapping's own module: callers elsewhere run
         # again in each later test and are covered by those tests themselves.
-        owners = {(self.root / symbol[0]).resolve(): symbol for symbol in binding[1]}
+        owners = {(self.root / symbol[0]).resolve() for symbol in binding[1]}
         frame = sys._getframe(2)
         while frame is not None:
             code = frame.f_code
             path = Path(code.co_filename).resolve()
-            if path in owners:
+            if path in owners and code.co_flags & inspect.CO_NEWLOCALS and code.co_name != "<module>":
                 lines = [line for _, _, line in code.co_lines() if line is not None]
-                symbol = owners[path]
-                writers[symbol].add((symbol[0], min(lines, default=code.co_firstlineno),
-                                     max(lines, default=code.co_firstlineno)))
+                spans.add((path.relative_to(self.root.resolve()).as_posix(),
+                           min(lines, default=code.co_firstlineno), max(lines, default=code.co_firstlineno)))
             elif path.is_relative_to(self.root / "tests"):
                 break
             frame = frame.f_back
+
+    def end_test(self):
+        """Keys whose values a test changed now depend on the functions that wrote them."""
+        writers = self.__dict__.setdefault("key_writers", {})
+        for mapping, snapshot, spans in self.__dict__.pop("pending_writes", {}).values():
+            if not spans:
+                continue
+            changed = [key for key, value in mapping.items() if snapshot.get(key, None) != id(value)]
+            if changed:
+                keys = writers.setdefault(id(mapping), (mapping, {}))[1]
+                for key in changed:
+                    keys[key] = frozenset(spans)
+
+    def credit_writers(self, mapping, key, whole):
+        """A later test reading a written key depends on the code that wrote it."""
+        writers = getattr(self, "key_writers", {}).get(id(mapping))
+        if writers is None or writers[0] is not mapping or self.current is None:
+            return
+        credit = self.__dict__.setdefault("writer_credit", defaultdict(set))
+        try:
+            groups = writers[1].values() if whole else [writers[1].get(key, ())]
+        except TypeError:
+            groups = writers[1].values()
+        for spans in groups:
+            for span in spans:
+                credit[span].add(self.current)
 
     def record_transfer(self, mapping):
         binding = self.bound_dictionaries.get(id(mapping))
@@ -598,6 +629,7 @@ def build(root, destination):
                 yield
             finally:
                 restore()
+                rec.end_test()
                 cov.switch_context("")
                 rec.current, rec.phase = None, "collection"
 
@@ -659,24 +691,16 @@ def write_map(root, model, rec, data, destination):
                 files[name]["executed"] |= value
     # Raw per-line test coverage, before symbol users are merged into lines.
     covered = {name: dict(entry["lines"]) for name, entry in files.items()}
-    # A test that writes a tracked mapping leaves state for every later reader
-    # (for example a registry repopulated after another test cleared it), so
-    # the writing functions' executed lines belong to all of its readers.
-    for symbol, spans in getattr(rec, "dictionary_writers", {}).items():
-        everyone = 0
-        for group in (rec.dictionary_reads.get(symbol, {}), getattr(rec, "dictionary_presence", {}).get(symbol, {})):
-            for contexts in group.values():
-                everyone |= all_tests if None in contexts else mask(c for c in contexts if type(c) is not tuple)
-                for context in contexts:
-                    if type(context) is tuple:
-                        everyone |= shared_masks.get(context, 0)
-        everyone |= mask(getattr(rec, "dictionary_transfers", {}).get(symbol, ()))
-        for name, start, end in spans:
-            lines = files[name]["lines"]
-            for line in range(start, end + 1):
-                if line in lines:
-                    lines[line] |= everyone
-                    files[name]["executed"] |= everyone
+    # A test that changes a tracked mapping's values leaves state for later
+    # tests (for example a registry repopulated after another test cleared it).
+    # Lines of the writing functions belong to later readers of those keys.
+    for (name, start, end), contexts in getattr(rec, "writer_credit", {}).items():
+        value = mask(contexts)
+        lines = files[name]["lines"]
+        for line in range(start, end + 1):
+            if line in lines:
+                lines[line] |= value
+                files[name]["executed"] |= value
     external_mask = mask(rec.external)
     refined = {}
     for name, scopes in rec.reads.items():
@@ -835,6 +859,9 @@ def write_map(root, model, rec, data, destination):
             "whole": format(readers(observations.get(None, ())), "x"), "keys": keys,
             "presence": {("" if k is None else k): format(readers(contexts), "x") for k, contexts in presence.items()},
             "lines": lines, "transferred": format(transferred, "x"),
+            # Keys ("" for the whole object) read where no single test can be
+            # charged, e.g. while importing; derived values may then change.
+            "shared": sorted("" if k is None else k for k, contexts in observations.items() if None in contexts),
             "unobserved": format(users[(name, symbol)] & ~(observed | transferred), "x")}
     for name, entry in files.items():
         entry["lines"] = {str(line): format(value, "x") for line, value in sorted(entry["lines"].items()) if value}

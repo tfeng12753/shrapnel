@@ -96,6 +96,11 @@ def refine(entry, decode, before, after, removed, inserted):
         if not changed:
             return None
         for info in spans[span]:
+            shared = info.get("shared")
+            if shared is None or "" in shared or any(key in shared for key in changed):
+                # Read where no single test can be charged (for example while
+                # importing): values derived from it persist, so fall back.
+                return None
             result |= decode(info.get("whole", "0")) | decode(info.get("unobserved", "0"))
             keys = info.get("keys", {})
             for key in changed:
