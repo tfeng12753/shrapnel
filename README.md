@@ -1,8 +1,6 @@
 # Shrapnel
 
-Dependency-based regression test selection for a pinned
-[sqlglot](https://github.com/tobymao/sqlglot) checkout
-(`eb11aec4be8cb2122afe713a4816662c3f0fb2fa`). Given a unified diff against that
+Test selection for certain libraries. Given a unified diff against that
 revision, `selector.py` prints which catalog tests to run and how to spread
 them across up to eight workers, so that every test the patch breaks is run
 for as little total time as possible.
