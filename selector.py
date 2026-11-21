@@ -331,6 +331,11 @@ def classify_python_edit(before, after):
             return len(a) == len(b) and all(matches(x, y) for x, y in zip(a, b))
         if not isinstance(a, ast.AST):
             return a == b
+        if isinstance(a, ast.TypeIgnore):
+            # "# type: ignore" comments have no runtime effect, but their line
+            # number is a field: any line inserted or removed above one would
+            # otherwise make a comment-only edit look like a code change.
+            return a.tag == b.tag
         for field, value in ast.iter_fields(a):
             other = getattr(b, field)
             if (field == "ops" and isinstance(a, ast.Compare)
