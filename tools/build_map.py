@@ -16,6 +16,7 @@ import os
 from pathlib import Path
 import sys
 import time
+import threading
 import unittest
 import types
 from collections import defaultdict
@@ -130,7 +131,7 @@ class Recorder:
         self.cache = {}
         self.tests = []
         self.items = {}
-        self.busy = False
+        self.audit_state = threading.local()
         self.external = set()
         self.native = set()
         self.comparisons = {}
@@ -193,9 +194,9 @@ class Recorder:
             entry["states"][state].add(self.current)
 
     def opened(self, file, mode="r"):
-        if self.busy or isinstance(file, int) or not isinstance(mode, str) or any(c in mode for c in "wax+"):
+        if getattr(self.audit_state, "busy", False) or isinstance(file, int) or not isinstance(mode, str) or any(c in mode for c in "wax+"):
             return
-        self.busy = True
+        self.audit_state.busy = True
         try:
             path = Path(os.fsdecode(file)).resolve()
             if not path.is_relative_to(self.root) or not path.is_file():
@@ -214,7 +215,10 @@ class Recorder:
                     if any(part in filename for part in ("inspect.py", "linecache.py", "tokenize.py")):
                         break
                     frame = frame.f_back
-            if self.current and self.phase == "call":
+            if threading.current_thread() is not threading.main_thread():
+                # A worker can outlive its submitting test.
+                scope = ("all", "")
+            elif self.current and self.phase == "call":
                 scope = ("test", self.current)
             elif self.current:
                 scope = ("all", "")
@@ -241,12 +245,15 @@ class Recorder:
                         break
                     frame = frame.f_back
                 if scope is None:
-                    return
+                    if path.suffix in (".py", ".pyc"):
+                        return
+                    # Collection-time resource data may initialize shared state.
+                    scope = ("all", "")
             self.reads[name].add(scope)
         except (OSError, TypeError, ValueError):
             pass
         finally:
-            self.busy = False
+            self.audit_state.busy = False
 
 class InlineProcessPool:
     """Stand-in for ProcessPoolExecutor during map generation.
