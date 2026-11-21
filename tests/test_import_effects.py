@@ -68,6 +68,16 @@ class OwnerTests(unittest.TestCase):
     def test_unread_setting(self):
         self.assertEqual(self.effects.owners([("lib/settings.py", SETTINGS, {4})]), [])
 
+    def test_class_attribute_of_a_class_used_during_import(self):
+        # lib/nodes.py's own code never runs during the import, but an instance of
+        # its class Values does, and the import's code reads ``arg_types``.
+        index = {**INDEX, "import_time": {"lib/gen.py": {"lines": {"lib/core.py": [5]}, "attrs": ["arg_types"],
+                                                         "classes": ["lib/nodes.py::Values"]}}}
+        effects = ImportEffects(index, TESTS)
+        nodes = "class Values:\n    arg_types = {'this': False}\n\nclass Other:\n    arg_types = {'this': False}\n"
+        self.assertEqual(effects.owners([("lib/nodes.py", nodes, {2})]), ["lib/gen.py"])
+        self.assertEqual(effects.owners([("lib/nodes.py", nodes, {5})]), [])  # Other was never used
+
     def test_dependents_and_tests(self):
         files = self.effects.dependents(["lib/gen.py"])
         self.assertEqual(files, ["tests/test_gen.py"])
@@ -133,6 +143,18 @@ class SelectorDownstreamTests(unittest.TestCase):
         with mock_patch("native_probes.verify_imports") as verify:
             self.assertEqual(self.selector().select(self.patch), 0b111)
         verify.assert_not_called()
+
+
+class HazardTreeReuseTests(unittest.TestCase):
+    def test_shared_trees_are_not_modified(self):
+        import ast
+        from selector import import_hazard_kind
+        old = "HANDLER = make(lambda x: x + 1)\n"
+        new = "HANDLER = make(lambda x: x + 2)\n"
+        old_tree, new_tree = ast.parse(old, type_comments=True), ast.parse(new, type_comments=True)
+        before = ast.dump(old_tree)
+        self.assertEqual(import_hazard_kind(old, new, old_tree, new_tree), import_hazard_kind(old, new))
+        self.assertEqual(ast.dump(old_tree), before)
 
 
 @unittest.skipUnless(hasattr(os, "fork"), "forked import checks need POSIX")

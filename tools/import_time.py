@@ -55,6 +55,27 @@ root = os.path.realpath(%(pkg)r) + os.sep
 owners = (root, os.path.realpath("tests") + os.sep)
 executed = {}
 
+used_types = {}
+
+def note_instance(key, frame):
+    # A method ran on an instance: its class (and bases) are used, so their
+    # class attributes (for example arg_types) can be read.
+    code = frame.f_code
+    if code.co_argcount and code.co_varnames[0] == "self":
+        obj = frame.f_locals.get("self")
+        if obj is not None:
+            used_types.setdefault(key, set()).add(type(obj))
+
+def class_names(types):
+    found = set()
+    for cls in types:
+        for base in getattr(cls, "__mro__", ()):
+            module = sys.modules.get(getattr(base, "__module__", ""), None)
+            path = os.path.realpath(getattr(module, "__file__", "") or "")
+            if path.startswith(root):
+                found.add(path + "::" + base.__qualname__)
+    return sorted(found)
+
 def importer(frame):
     # Nearest enclosing module-level frame inside the library: the module being imported.
     f = frame.f_back
@@ -79,6 +100,7 @@ def tracer(frame, event, arg):
     owner = importer(frame)
     if owner is None:
         return None
+    note_instance(owner, frame)
     lines = executed.setdefault(owner, {}).setdefault(path, set())
     def local(frame, event, arg):
         if event == "line":
@@ -95,7 +117,8 @@ for name in json.loads(sys.argv[1]):
     except BaseException:
         failed.append(name)
 sys.settrace(None)
-print(json.dumps({"failed": failed, "executed": {m: {p: sorted(l) for p, l in files.items()} for m, files in executed.items()}}))
+print(json.dumps({"failed": failed, "executed": {m: {p: sorted(l) for p, l in files.items()} for m, files in executed.items()},
+                  "classes": {m: class_names(t) for m, t in used_types.items()}}))
 """ % {"pkg": PACKAGE}
 
 
@@ -105,6 +128,27 @@ sys.path.insert(0, ".")
 root = os.path.realpath(%(pkg)r) + os.sep
 executed, current = {}, [None]
 
+used_types = {}
+
+def note_instance(key, frame):
+    # A method ran on an instance: its class (and bases) are used, so their
+    # class attributes (for example arg_types) can be read.
+    code = frame.f_code
+    if code.co_argcount and code.co_varnames[0] == "self":
+        obj = frame.f_locals.get("self")
+        if obj is not None:
+            used_types.setdefault(key, set()).add(type(obj))
+
+def class_names(types):
+    found = set()
+    for cls in types:
+        for base in getattr(cls, "__mro__", ()):
+            module = sys.modules.get(getattr(base, "__module__", ""), None)
+            path = os.path.realpath(getattr(module, "__file__", "") or "")
+            if path.startswith(root):
+                found.add(path + "::" + base.__qualname__)
+    return sorted(found)
+
 def tracer(frame, event, arg):
     code = frame.f_code
     if event != "call" or current[0] is None or not code.co_flags & 0x02:
@@ -112,6 +156,7 @@ def tracer(frame, event, arg):
     path = os.path.realpath(code.co_filename)
     if not path.startswith(root):
         return None
+    note_instance(current[0], frame)
     lines = executed.setdefault(current[0], {}).setdefault(path, set())
     def local(frame, event, arg):
         if event == "line":
@@ -141,12 +186,13 @@ for module_name in json.loads(sys.argv[1]):
                 cls.tearDownClass()
             finally:
                 cls.doClassCleanups()
-print(json.dumps({"failed": failed, "executed": {c: {p: sorted(l) for p, l in files.items()} for c, files in executed.items()}}))
+print(json.dumps({"failed": failed, "executed": {c: {p: sorted(l) for p, l in files.items()} for c, files in executed.items()},
+                  "classes": {c: class_names(t) for c, t in used_types.items()}}))
 """ % {"pkg": PACKAGE}
 
 
-def summarize(root, files):
-    """Repository-relative lines plus the names referenced on them."""
+def summarize(root, files, classes=()):
+    """Repository-relative lines, the names referenced on them, and classes used ("file::QualName")."""
     lines, attrs = {}, set()
     for path, numbers in files.items():
         rel = Path(path).relative_to(root).as_posix()
@@ -156,7 +202,8 @@ def summarize(root, files):
             if 0 < n <= len(source):
                 attrs.update(SETTING.findall(source[n - 1]))
                 attrs.update(ATTRIBUTE.findall(source[n - 1]))  # e.g. self.arg_types
-    return {"lines": lines, "attrs": sorted(attrs)}
+    used = sorted({Path(c.split("::")[0]).relative_to(root).as_posix() + "::" + c.split("::", 1)[1] for c in classes})
+    return {"lines": lines, "attrs": sorted(attrs), "classes": used}
 
 
 def test_modules(root):
@@ -195,17 +242,31 @@ def build(root):
         if not result["ok"]:
             raise RuntimeError(f"baseline import of {module} failed")
         closures[test_file] = sorted(f for f in (module_file(root, m) for m in result["modules"]) if f)
-    traced = run(root, TRACE_CHILD, json.dumps(modules))
+    # Trace each test module in a fresh interpreter: lazy imports and caches run
+    # only once per process, so a shared process would credit them to whichever
+    # test module happened to import first.
+    with ThreadPoolExecutor(max_workers=max(1, min(4, os.cpu_count() or 1))) as pool:
+        runs = list(pool.map(lambda m: run(root, TRACE_CHILD, json.dumps([m])), modules))
+    traced = {"failed": [], "executed": {}, "classes": {}}
+    for result in runs:
+        traced["failed"] += result["failed"]
+        for owner, files in result["executed"].items():
+            merged = traced["executed"].setdefault(owner, {})
+            for path, lines in files.items():
+                merged[path] = sorted(set(merged.get(path, ())) | set(lines))
+        for owner, names in result["classes"].items():
+            traced["classes"][owner] = sorted(set(traced["classes"].get(owner, ())) | set(names))
     if traced["failed"]:
         raise RuntimeError(f"baseline import failed while tracing: {traced['failed'][:3]}")
-    import_time = {Path(owner).relative_to(root).as_posix(): summarize(root, files)
+    import_time = {Path(owner).relative_to(root).as_posix(): summarize(root, files, traced["classes"].get(owner, ()))
                    for owner, files in traced["executed"].items()}
     # A class whose setUpClass fails errors every one of its tests, so record
     # what each class setup runs as well.
     setups = run(root, SETUP_CHILD, json.dumps(modules))
     if setups["failed"]:
         raise RuntimeError(f"baseline class setup failed while tracing: {setups['failed'][:3]}")
-    class_setup = {class_id: summarize(root, files) for class_id, files in setups["executed"].items()}
+    class_setup = {class_id: summarize(root, files, setups["classes"].get(class_id, ()))
+                   for class_id, files in setups["executed"].items()}
     return {"revision": REVISION, "closures": closures, "import_time": import_time, "class_setup": class_setup}
 
 

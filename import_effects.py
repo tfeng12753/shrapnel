@@ -57,6 +57,29 @@ def assigned_names(source, lines, tree=None):
     return names
 
 
+def enclosing_classes(source, lines, tree=None):
+    """Qualified names of the classes whose bodies contain any of the given lines."""
+    found = set()
+    try:
+        tree = tree if tree is not None else _tree(source)
+    except SyntaxError:
+        return found
+
+    def visit(node, prefix):
+        for child in ast.iter_child_nodes(node):
+            if isinstance(child, ast.ClassDef):
+                name = prefix + child.name
+                if any(child.lineno <= line <= child.end_lineno for line in lines):
+                    found.add(name)
+                visit(child, name + ".")
+            elif isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                visit(child, prefix + child.name + ".<locals>.")
+            else:
+                visit(child, prefix)
+    visit(tree, "")
+    return found
+
+
 def module_name(path):
     """Dotted module for a repository-relative .py path."""
     if not path.endswith(".py"):
@@ -70,7 +93,8 @@ def module_name(path):
 class ImportEffects:
     def __init__(self, index, tests):
         def table(entries):
-            return {owner: ({name: set(lines) for name, lines in info["lines"].items()}, set(info["attrs"]))
+            return {owner: ({name: set(lines) for name, lines in info["lines"].items()}, set(info["attrs"]),
+                            set(info.get("classes", ())))
                     for owner, info in entries.items()}
         self.import_time = table(index["import_time"])
         self.class_setup = table(index.get("class_setup", {}))
@@ -107,25 +131,31 @@ class ImportEffects:
             path, source, lines = edit[:3]
             changed.setdefault(path, set()).update(lines)
             sources[path] = (source, edit[3] if len(edit) > 3 else None)
-        names = {}
+        parsed = {}
 
-        def names_of(path):
-            # Parsed only when some import actually runs code from this file.
-            if path not in names:
+        def analysis(path):
+            # (changed names, enclosing classes); parsed only when needed.
+            if path not in parsed:
                 source, tree = sources[path]
                 tree = tree() if callable(tree) else tree
-                names[path] = assigned_names(source, frozenset(changed[path]), tree)
-            return names[path]
+                lines = frozenset(changed[path])
+                parsed[path] = (assigned_names(source, lines, tree),
+                                {f"{path}::{q}" for q in enclosing_classes(source, lines, tree)})
+            return parsed[path]
 
         found = set()
-        for owner, (owner_lines, owner_names) in table.items():
+        for owner, (owner_lines, owner_names, owner_classes) in table.items():
             for path in changed:
-                ran = owner_lines.get(path)
-                if not ran:
-                    continue  # The owner's import never runs code from this file.
-                # A changed line ran during the import, or a changed setting of this
-                # file is referenced by code the import ran.
-                if changed[path] & ran or names_of(path) & owner_names:
+                ran = owner_lines.get(path, set())
+                if changed[path] & ran:
+                    found.add(owner)  # A changed line ran during the import.
+                    continue
+                if not ran and not any(c.startswith(path + "::") for c in owner_classes):
+                    continue  # The import neither runs this file's code nor uses its classes.
+                names, classes = analysis(path)
+                # A changed name is referenced by code the import ran, and that code
+                # can reach it: the file's code ran, or the edited class was used.
+                if names & owner_names and (ran or classes & owner_classes):
                     found.add(owner)
         return sorted(found)
 

@@ -32,6 +32,8 @@ RUN if [ "$BUILD_MAP" = "1" ]; then python /app/tools/import_closure.py; fi
 # What each module's import runs (detects patches that break test collection).
 COPY tools/import_time.py /app/tools/import_time.py
 RUN if [ "$BUILD_MAP" = "1" ]; then python /app/tools/import_time.py --source /opt/sqlglot --output /app/import-time.json; fi
+# Precompiled bytecode: forked and isolated checks otherwise recompile the library on every run.
+RUN if [ "$BUILD_MAP" = "1" ]; then python -m compileall -q --invalidation-mode checked-hash /opt/sqlglot/sqlglot /opt/sqlglot/tests; fi
 COPY tools/map_executor_plan.py tools/map_executor_screen.py tools/prepare_executor_plans.py /app/tools/
 ARG BUILD_EXECUTOR_PLANS=0
 RUN if [ "$BUILD_MAP" = "1" ] && [ "$BUILD_EXECUTOR_PLANS" = "1" ]; then python /app/tools/prepare_executor_plans.py; fi

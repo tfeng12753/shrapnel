@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+import copy
 import gzip
 import json
 import math
@@ -241,10 +242,13 @@ def import_hazard(old: str, new: str) -> bool:
     return import_hazard_kind(old, new) is not None
 
 
-def import_hazard_kind(old: str, new: str):
-    """None, "initializer" (only assignment values evaluated at import changed), or "structural"."""
-    def scaffold(source):
-        tree = ast.parse(source, type_comments=True)
+def import_hazard_kind(old: str, new: str, old_tree=None, new_tree=None):
+    """None, "initializer" (only assignment values evaluated at import changed), or "structural".
+
+    Pass already-parsed trees to avoid parsing again; they are not modified.
+    """
+    def scaffold(source, tree):
+        tree = tree if tree is not None else ast.parse(source, type_comments=True)
         imports, other = [], []
         def walk(body):
             for node in body:
@@ -268,7 +272,8 @@ def import_hazard_kind(old: str, new: str):
                                 def visit_Lambda(self, node):
                                     node.body = ast.Constant(value="<deferred>")
                                     return node
-                            signature = ast.dump(Deferred().visit(value), include_attributes=False)
+                            # Transform a copy: the tree may be a shared cached one.
+                            signature = ast.dump(Deferred().visit(copy.deepcopy(value)), include_attributes=False)
                         targets = node.targets if isinstance(node, ast.Assign) else [node.target]
                         other.append(("assign", tuple(ast.dump(t, include_attributes=False) for t in targets), signature))
                 elif isinstance(node, ast.Pass):
@@ -279,7 +284,7 @@ def import_hazard_kind(old: str, new: str):
                     other.append(("other", ast.dump(node, include_attributes=False)))
         walk(tree.body)
         return imports, other
-    (old_imports, old_other), (new_imports, new_other) = scaffold(old), scaffold(new)
+    (old_imports, old_other), (new_imports, new_other) = scaffold(old, old_tree), scaffold(new, new_tree)
     if (old_imports, old_other) == (new_imports, new_other):
         return None
     if old_imports != new_imports or len(old_other) != len(new_other):
@@ -712,7 +717,7 @@ class Selector:
                         result |= include(entry["readers"], "file reader", name)
                         result |= include(self.external_for(name), "external dependency", name)
                         continue
-                    hazard = import_hazard_kind(old, new)
+                    hazard = import_hazard_kind(old, new, before, after)
                     if hazard == "initializer" and self.import_succeeds(name, changes):
                         hazard = None
                     if hazard:
