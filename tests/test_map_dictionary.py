@@ -20,6 +20,12 @@ class Other:
     DATA = {"x": 2}
 def run(key, config):
     return TABLE[key()], config.DATA.get(key()), key() in TABLE
+def get_default(key, default):
+    return TABLE.get(key(), default())
+def indirect(dict):
+    return dict.get(TABLE, "x")
+def membership(key, owner):
+    return key() not in owner().DATA
 def descriptors():
     return dict.__getitem__(TABLE, "x"), TABLE.__getitem__("y"), dict.get(TABLE, "y")
 def broad():
@@ -50,6 +56,24 @@ def broad():
             recorder.current = "second"
             self.assertEqual(namespace["broad"]()[-1], id(namespace["TABLE"]))
             self.assertEqual(recorder.dictionary_reads["sqlglot/sample.py", "TABLE"][None], {"first", "second"})
+            calls = []
+            def once(tag, value):
+                def argument():
+                    calls.append(tag)
+                    return value
+                return argument
+            self.assertEqual(namespace["get_default"](once("key", "x"), once("default", 99)), 1)
+            self.assertEqual(calls, ["key", "default"])
+            calls.clear()
+            self.assertTrue(namespace["membership"](once("key", "absent"), once("owner", namespace["Config"])))
+            self.assertEqual(calls, ["key", "owner"])
+            class Shadow:
+                @staticmethod
+                def get(mapping, key):
+                    return len(mapping)
+            recorder.current = "shadow"
+            self.assertEqual(namespace["indirect"](Shadow), 2)
+            self.assertIn("shadow", recorder.dictionary_reads["sqlglot/sample.py", "TABLE"][None])
             recorder.phase = "setup"
             recorder.record_dictionary(namespace["TABLE"], ("compound",))
             self.assertIn(None, recorder.dictionary_reads["sqlglot/sample.py", "TABLE"][None])
