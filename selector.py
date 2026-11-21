@@ -162,9 +162,12 @@ def schedule_saving(tests: list[dict], dropped: int) -> float:
 
 # A probe must save at least 1.5 times its expected CPU plus half a second.
 ADMISSION_FACTOR, ADMISSION_MARGIN = 1.5, 0.5
-# Expected CPU per probe kind, measured on the pinned checkout. A run replaces
-# these with its own measurements per probe key once it has any.
-PRIOR_CPU = {"setup": 2.0, "fixture": 0.05, "lazy": 1.35, "plan": 4.0}
+# Expected CPU per probe kind, measured on the pinned checkout without bytecode.
+# A run replaces these with its own measurements per probe key once it has any.
+# Plan replay is a screen plus two full captures (about 7.4 s each).
+PRIOR_CPU = {"setup": 2.0, "fixture": 0.05, "lazy": 1.45, "plan": 15.0}
+# The lazy-test check with bytecode compiled at image build (no recompilation).
+PRIOR_CPU_COMPILED = {"lazy": 0.9}
 
 
 def pays_for_itself(saving: float, cpu: float) -> bool:
@@ -488,6 +491,9 @@ class Selector:
         # and only if dropping its tests saves enough schedule time for its CPU.
         self.schedule_admission = schedule_admission
         self.measured_cpu = {}
+        self.prior_cpu = dict(PRIOR_CPU)
+        if (source / "sqlglot" / "__pycache__" / f"__init__.{sys.implementation.cache_tag}.pyc").is_file():
+            self.prior_cpu.update(PRIOR_CPU_COMPILED)
         # Narrow value comparisons only with map evidence that every evaluation
         # completed on built-in int/str/None operands (see refine_comparisons).
         self.exact_comparisons = exact_comparisons
@@ -810,7 +816,10 @@ class Selector:
             if allowance >= 1:
                 replay = cpu_seconds()
                 ok = matched(self.source.resolve(), name, before, after, line, self.executor_plans, allowance)
-                self.record("plan", "plan", cpu_seconds() - replay)
+                if ok:
+                    # A rejected replay may have stopped at its allowance, which
+                    # understates the cost of a complete one: record only matches.
+                    self.record("plan", "plan", cpu_seconds() - replay)
                 if ok:
                     return mask & ~target
             return mask
@@ -824,7 +833,7 @@ class Selector:
 
     def expected_cpu(self, kind, key):
         measured = self.measured_cpu.get((kind, key)) or self.measured_cpu.get(kind)
-        return sum(measured) / len(measured) if measured else PRIOR_CPU[kind]
+        return sum(measured) / len(measured) if measured else self.prior_cpu[kind]
 
     def record(self, kind, key, cpu):
         self.measured_cpu.setdefault((kind, key), []).append(cpu)

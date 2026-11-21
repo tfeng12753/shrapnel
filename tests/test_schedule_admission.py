@@ -172,17 +172,34 @@ class FinalSelectionProbeTests(TestCase):
         depmap = self.root / "map.json"
         depmap.write_text(json.dumps({"version": 1, "revision": REVISION, "complete": True,
             "tests": [t["id"] for t in tests], "files": {self.name: {"lines": {"2": "3"}}}}))
-        return Selector(tests, self.root, depmap, executor_plans=self.root, executor_plan_budget=20,
+        return Selector(tests, self.root, depmap, executor_plans=self.root, executor_plan_budget=30,
                         schedule_admission=True, **options)
 
     def test_plan_replay_needs_a_saving_that_pays_and_is_capped_at_break_even(self):
         with patch.object(plans, "matched", side_effect=AssertionError("probe ran")):
-            # Dropping a 1 s item saves 1 s: less than the expected replay CPU.
+            # Saving 1 s, or 21 s against a 15 s replay: neither pays.
             self.assertEqual(self.plan_selector(1.0).select(self.mutation), 3)
+            self.assertEqual(self.plan_selector(21.0).select(self.mutation), 3)
         with patch.object(plans, "matched", return_value=True) as replay:
-            self.assertEqual(self.plan_selector(21.0).select(self.mutation), 2)
-            # Saving 21 s: spend at most (21 - 0.5) / 1.5 s.
-            self.assertLessEqual(replay.call_args.args[-1], (21 - .5) / 1.5)
+            selector = self.plan_selector(40.0)
+            self.assertEqual(selector.select(self.mutation), 2)
+            # Saving 40 s: spend at most (40 - 0.5) / 1.5 s, within the 30 s budget.
+            self.assertLessEqual(replay.call_args.args[-1], (40 - .5) / 1.5)
+            self.assertIn(("plan", "plan"), selector.measured_cpu)
+        with patch.object(plans, "matched", return_value=False):
+            selector = self.plan_selector(40.0)
+            selector.select(self.mutation)
+            # A rejection may have stopped at its allowance: it is not a measurement.
+            self.assertNotIn(("plan", "plan"), selector.measured_cpu)
+
+    def test_compiled_bytecode_lowers_the_lazy_check_prior(self):
+        import sys as _sys
+        tests = catalog(1)
+        self.assertEqual(Selector(tests, self.root, self.root / "none.json").expected_cpu("lazy", "lazy"), 1.45)
+        cache = self.root / "sqlglot" / "__pycache__"
+        cache.mkdir(parents=True)
+        (cache / f"__init__.{_sys.implementation.cache_tag}.pyc").write_bytes(b"")
+        self.assertEqual(Selector(tests, self.root, self.root / "none.json").expected_cpu("lazy", "lazy"), 0.9)
 
     def test_lazy_check_runs_only_when_its_expected_cpu_pays(self):
         name = "sqlglot/sample.py"
