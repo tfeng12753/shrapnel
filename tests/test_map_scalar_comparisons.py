@@ -8,7 +8,7 @@ from types import SimpleNamespace
 import unittest
 from unittest.mock import Mock
 
-from selector import Selector
+from selector import Selector, comparison_contexts
 from tools.build_map import Recorder, SourceModel, write_map
 from tools.instrument import Instrumentation
 
@@ -54,12 +54,16 @@ class ScalarComparisonTests(unittest.TestCase):
                     coverage.contexts_by_lineno.return_value = {2: rec.tests}
                     dest = root / "map.json"
                     write_map(root, model, rec, coverage, dest)
-                    selector = Selector(tests, root, dest, relations=True)
-                    site = next(n for n in ast.walk(ast.parse(source)) if isinstance(n, ast.Compare))
+                    selector = Selector(tests, root, dest)
+                    strict = Selector(tests, root, dest, relations=True)
+                    tree = ast.parse(source)
+                    contexts = comparison_contexts(tree)
+                    site = next(n for n in ast.walk(tree) if isinstance(n, ast.Compare))
                     entry = selector.files["sqlglot/subject.py"]
                     for new, op in replacements.items():
                         changes = [(f"{site.lineno}:{site.col_offset}", old, new)]
-                        mask = selector.refine_comparisons(changes, entry)
+                        self.assertIsNone(strict.refine_comparisons(changes, entry, contexts))
+                        mask = selector.refine_comparisons(changes, entry, contexts)
                         self.assertIsNotNone(mask)
                         for i, value in enumerate(values):
                             try:

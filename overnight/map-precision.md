@@ -2,6 +2,10 @@
 
 Base 2c4b6a8. Map construction uses the unmodified pinned checkout and its baseline suite. Generated patches are used for evaluation.
 
+## Integration with main at de11aad
+
+Merge 00f20ff incorporates the stricter comparison selector, revised probe budgeting and parent-test attribution for failed subtests. The scalar map regression exercises both the underlying relation evidence and the production selector's conservative fallback. Project checks passed 131/132 with the existing map fingerprint failure. On the prepared host checkout and normalized host map, one public replay scored 118.443 simulated seconds using the merged defaults. Repeating the previous offline protocol (two-second probe budget plus import and dictionary verification) scored 109.442 seconds. Both had zero misses. The prior 106.906 result predates the merge. CPU and Linux Docker results remain unmeasured for this integration.
+
 ## Fixed-schedule comparison after 5e74551
 
 The optional comparison index now records the operator's byte offsets at all 134 qualifying baseline sites. With a matching source hash, an exact operator substitution surrounded by identical bytes can use these offsets. Other candidate edits and older indexes still use the full syntax-tree comparison. The complete scheduled group must still pass in its patched checkout. The index grew from 72,598 to 77,076 bytes.
