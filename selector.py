@@ -5,6 +5,7 @@ import argparse
 import ast
 import gzip
 import json
+import math
 import re
 import sys
 from bisect import bisect_left
@@ -645,20 +646,45 @@ class Selector:
                     result |= users
         return result
 
-    def probe(self, patch, mask, budget):
+    def probe(self, patch, mask, budget, *, cost_aware=False):
         tests = self.chosen(mask)
         if not tests or budget < .1 or not self.native or mask & (self.external | self.child_work):
             return mask, 0.0
-        if any(t["id"] not in self.native or t["seconds"] > .15 for t in tests):
+        if any(t["id"] not in self.native for t in tests):
             return mask, 0.0
-        if sum(t["seconds"] for t in tests) > .8:
-            return mask, 0.0
+        if cost_aware:
+            if any(not math.isfinite(t["seconds"]) or t["seconds"] < 0 for t in tests):
+                return mask, 0.0
+            durations = {t["number"]: round(t["seconds"] * 1000) for t in tests}
+            total = sum(durations.values()) / 1000
+            # Reserve the full deadline, even after a quick pass. Admission then
+            # depends on catalog durations and patch order, not on measured CPU.
+            wall_seconds = .5 + 2 * total
+            if wall_seconds > min(1.5, budget):
+                return mask, 0.0
+            workers = split(tests)
+            saving = 2 * len(workers) + max(sum(durations[n] for n in w) for w in workers) / 1000
+            expected_cpu = .22 + 1.25 * total
+            # Require headroom for import overhead, timing error and failed probes.
+            if saving <= 3 * expected_cpu:
+                return mask, 0.0
+            cpu_seconds = wall_seconds
+        else:
+            if any(t["seconds"] > .15 for t in tests) or sum(t["seconds"] for t in tests) > .8:
+                return mask, 0.0
+            wall_seconds, cpu_seconds = min(1.5, budget + .1), min(1.0, budget)
         changes = parse_patch(patch)
         if any(not c["old"].endswith(".py") or c["old"].startswith("tests/") or c["old"] != c["new"] for c in changes):
             return mask, 0.0
+        if cost_aware and (any(module_for(c["old"]) is None for c in changes)
+                           or len({c["old"] for c in changes}) != len(changes)):
+            return mask, 0.0
         overlays = {c["old"]: apply_change(self.read_source(c["old"]), c)[0] for c in changes}
         from native_probes import verify
-        passed, cpu = verify(self.source, overlays, tests, wall_seconds=min(1.5, budget + .1), cpu_seconds=min(1.0, budget))
+        passed, cpu = verify(self.source, overlays, tests, wall_seconds=wall_seconds, cpu_seconds=cpu_seconds)
+        if cost_aware:
+            all_passed = set(passed) == {t["id"] for t in tests}
+            return (0 if all_passed else mask), wall_seconds
         for test in tests:
             if test["id"] in passed:
                 mask &= ~(1 << test["number"])
@@ -675,6 +701,8 @@ def parse_args(argv=None):
     parser.add_argument("--source", type=Path, default=Path("/opt/sqlglot"))
     parser.add_argument("--map", type=Path, default=Path("/app/dependencies.json.gz"))
     parser.add_argument("--probe-budget", type=float)
+    parser.add_argument("--cost-aware-probes", action=argparse.BooleanOptionalAction, default=None,
+                        help="Reserve probe budget for whole selections with sufficient schedule savings")
     python_mode = parser.add_mutually_exclusive_group()
     python_mode.add_argument("--conservative-python", action=argparse.BooleanOptionalAction, default=None)
     python_mode.add_argument("--child-work", action=argparse.BooleanOptionalAction, default=None,
@@ -691,8 +719,14 @@ def parse_args(argv=None):
         config = json.loads(args.config.read_text())
     except (OSError, ValueError):
         config = {}
+    probe_settings = config.get("probe_budget", 8.0)
+    probe_seconds = probe_settings["seconds"] if isinstance(probe_settings, dict) else probe_settings
+    if args.cost_aware_probes is None:
+        # An explicit numeric flag reproduces existing benchmark configurations.
+        args.cost_aware_probes = (args.probe_budget is None and isinstance(probe_settings, dict)
+                                  and probe_settings.get("cost_aware") is True)
     if args.probe_budget is None:
-        args.probe_budget = float(config.get("probe_budget", 8.0))
+        args.probe_budget = float(probe_seconds)
     if args.relations is None:
         args.relations = bool(config.get("relations", True))
     conservative = args.conservative_python
@@ -706,6 +740,8 @@ def parse_args(argv=None):
     args.settings = {"conservative_python": bool(conservative), "child_work": bool(child_work),
                      "relations": bool(args.relations), "probe_budget": float(args.probe_budget),
                      "import_check_budget": float(args.import_check_budget)}
+    if args.cost_aware_probes:
+        args.settings["probe_budget"] = {"seconds": args.probe_budget, "cost_aware": True}
     return args
 
 
@@ -733,8 +769,8 @@ def main():
         mask = selector.select(text)
         if selector.complete and remaining > 0:
             try:
-                mask, cpu = selector.probe(text, mask, remaining)
-                remaining -= cpu
+                mask, charged = selector.probe(text, mask, remaining, cost_aware=args.cost_aware_probes)
+                remaining -= charged
             except (OSError, ValueError, SyntaxError):
                 pass
         if mask not in schedules:

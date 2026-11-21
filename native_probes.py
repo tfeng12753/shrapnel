@@ -84,10 +84,6 @@ def _child(source, overlays, tests):
             super().addSuccess(test)
             if test.id() in expected:
                 self.passed.add(test.id())
-        def addSkip(self, test, reason):
-            super().addSkip(test, reason)
-            if test.id() in expected:
-                self.passed.add(test.id())
         def addFailure(self, test, err):
             super().addFailure(test, err)
             self.failed.add(test.id())
@@ -108,7 +104,7 @@ def _child(source, overlays, tests):
     suite.run(result)
     if result.unknown or loader.errors:
         return []
-    return [expected[name] for name in result.passed - result.failed]
+    return sorted(expected[name] for name in result.passed - result.failed)
 
 
 def verify(source, overlays, tests, wall_seconds=1.5, cpu_seconds=1.0):
