@@ -2,6 +2,37 @@
 
 Base 2c4b6a8. Map construction uses the unmodified pinned checkout and its baseline suite. Generated patches are used for evaluation.
 
+## Executor input comparison after 686eb8c
+
+This is an offline experiment for the pinned Python executor test. The merged production selector and its schedule remain the scoring baseline. The preparer runs the original pinned class setup, processes the fixture queries in order, round-trips each parsed input through pickle, and calls the original worker function in the current interpreter. For TPC-DS there are 99 queries, of which 57 reach the executor. It fingerprints the expression and CTEs, typed plan steps and their fields, graph edges, ordered table bindings, columns, column ranges, row data, generator and dialect settings, executor environment bindings, schema, query metadata and the DuckDB reference SQL. Function bindings are identified by name, not their complete reachable Python state.
+
+Build two reference snapshots in the locked environment on the unchanged pinned checkout. Run from the Shrapnel project root; `PREPARED` must be a writable directory.
+
+```sh
+mkdir -p "$PREPARED"
+for seed in 1 2; do
+  PYTHONHASHSEED="$seed" SKIP_INTEGRATION=0 OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 \
+    python -m tools.map_executor_plan --source "$SOURCE" --fixture tpcds --schema TPCDS_SCHEMA \
+      --output "$PREPARED/plan-base-$seed.json" --observe-downstream "$PREPARED/plan-deps-$seed.json"
+done
+python -m tools.map_executor_replay --source "$SOURCE" --fixture tpcds --schema TPCDS_SCHEMA \
+  --prepared "$PREPARED" --patch "$PATCH"
+```
+
+Each baseline also runs the real executor under a call profiler. Checkout and snapshot hashes bind its observed downstream module list to the corresponding snapshot. Query table ordering differed on 54 unchanged queries across the two seeds, although their graph, step state and table contents agreed in the initial diagnostic. Each patched run must match its own seed's snapshot on every query. The audit keeps the test for unsupported or mixed patches, scope or baseline mismatches, downstream module edits, changed inputs, errors and timeouts. Controls are limited to single operator edits in ordinary top-level optimizer function bodies. Each candidate is independently checked using the original pytest item, process pools and assertions on its own freshly patched checkout. A match by itself does not rule out hidden process state, reflective behavior or unobserved downstream paths.
+
+Each mixed batch below has 128 even-indexed development patches. Seeds 241 and 739 were generated for this experiment. Only rows scheduling the TPC-DS executor were checked. Marginal schedule savings use the scorer's worker charge and the ordinary scheduler after removing this item alone. CPU includes staging and both seeded checks, including unsuccessful attempts. One timed run per batch, no build or validation CPU charged.
+
+| Batch | Base simulated s | Removable simulated s | Incremental audit CPU s | Net savings s |
+| --- | ---: | ---: | ---: | ---: |
+| Earlier seed 111 | 666.306 | 29.797 | 12.443 | 17.354 |
+| Earlier seed 913 | 789.042 | 0 | 8.949 | -8.949 |
+| Fresh seed 241 | 778.710 | 18.365 | 10.326 | 8.039 |
+| Fresh seed 739 | 707.715 | 18.410 | 9.240 | 9.170 |
+| Public 30, merged defaults | 118.443 | 0 | 1.011 | -1.011 |
+
+Both previously failing controls were retained: the optimizer projection edit raised before capture completed, and the serialization edit was outside the supported scope. Four final candidates across the four mixed batches each passed the original multiprocess pytest item with 57 subtests. The public schedule was unchanged. These finite tests support further evaluation; the tool reports candidates, and production currently consumes none. The repository records an earlier public container score tied to a commit; no record linking the user's reported hidden score to a specific submitted image was established here. Local project tests passed 141 of 142; only the known stale Docker map fingerprint failed. Next integration decision: test the audit on scorer hardware under a shared CPU budget, with additional unseen failing controls, before enabling any skip.
+
 ## Fixed-cost analysis and two fresh mixed development batches after 77e4997
 
 The offline equality replay can precompute the child-process protection mask once at image build. It binds the mask to the selector source, Python major/minor, catalog, map, and the hashes of every mapped Python source. The index was 24,960 bytes on the host. A missing, incomplete or stale index triggers the original scan. The verification is deferred until a row has a potentially removable test. No change to the production selector or Docker settings.
