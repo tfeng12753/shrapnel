@@ -2,7 +2,36 @@
 
 Base 2c4b6a8. This branch owns build-time observations only. No mutant data used.
 
-## Latest validated builder (1253171)
+## Verified import-check opportunity
+
+The relations-enabled public baseline on the 30 patches was 115.907 simulated seconds. Enabling the existing native verifier with `--probe-budget 2` reduced that to 113.877. The new offline replay reduced the same schedule to 111.509 by verifying one additional singleton lazy-import test on patched source. The official local scorer found zero missed failing tests in each of three runs per configuration.
+
+| Public configuration | Simulated seconds | Median seconds including local CPU |
+| --- | ---: | ---: |
+| Relations, probe budget 0 | 115.907 | 116.386 |
+| Relations, probe budget 2 | 113.877 | 114.658 |
+| Relations, probe budget 2, plus offline patched import verification | 111.509 | 112.921 |
+
+CPU includes the selector and its children. The offline row also includes the replay process, staging the checkout, the original pytest item and its child interpreter. Scoring is outside the timed interval. The production selector can reproduce the first two rows on the host-built map. The third row is a measured integration opportunity for the selector owner. The shipped configuration still scores 166.316 simulated seconds. The hidden score, production CPU budget and Linux container result remain unmeasured.
+
+**Build evidence.** The closure records 1,660 ordinary functions that were compiled but never entered during the baseline import, across 30 source files. The pinned revision, observed tests, 36-file list, line sets and explicit-read list matched the previous host observation exactly. Unsupported monitoring, explicit source reads, audited code-object inspection, child-process launches and suspension complicate attribution. The observer suppresses the affected hints. Even a valid hint only nominates a check.
+
+**Selector handoff.** Consider a schedule containing only the recorded external test. Require all edits to qualify as comparison-operator changes inside undecorated ordinary function bodies listed in the closure. Apply every hunk to a fresh pinned checkout and run the original catalog item with the same environment and child interpreter. Accept only an exit code of zero and one passing, unskipped test. Keep the original selection if evidence is incomplete, checking fails, or the runtime budget runs out. Production integration needs a shared CPU limit that includes descendants. The offline diagnostic limits wall time and reports eligible savings without editing the selector or emitting a replacement schedule.
+
+**Independent checks.** Exclude every public patch location. Within each pinned module, order single-line comparison sites by SHA-256 of path, line and column, then take the first eligible operator edit. Eighteen modules qualified. Every even-indexed module was tested in a separate freshly patched checkout, and all nine lazy-import tests passed. A deliberately corrupted dialect registry caused the original item to fail and the replay rejected it. Independent runs check this specific obligation. They do not estimate a hidden score.
+
+**Reproduction.** From the repository root in the locked Python environment, generate a closure and run an ordinary public schedule. Use the previously validated host map for this host comparison, or the rebuilt map for Docker validation. Set `SOURCE` to the pinned checkout and `MAP` to that map.
+
+```sh
+python tools/import_closure.py --source "$SOURCE" --output /tmp/import-closure.json
+python selector.py --source "$SOURCE" --data sample --map "$MAP" --import-closure /tmp/import-closure.json --relations --probe-budget 2 > /tmp/map-schedule.jsonl
+python score.py sample sample/answers.json /tmp/map-schedule.jsonl
+python -m tools.map_import_replay --source "$SOURCE" --data sample --import-closure /tmp/import-closure.json --schedule /tmp/map-schedule.jsonl
+```
+
+The diagnostic reports 2,368 removable milliseconds. It never reads scoring answers. Subtract the reported milliseconds from the baseline simulated total for a passing public replay. Separately grade a schedule with just the verified rows emptied to check for misses. Of 94 local unit tests, 93 passed. The existing cache-fingerprint failure still requires the Linux/amd64 `make map` rebuild from the morning handoff.
+
+## Previous validated builder (1253171)
 
 The map records 81 additional normalized-string comparison sites. Removing only those records reproduced the entire decoded 7642017 host map exactly. The new diagnostic gzip is 1,121,870 bytes (+2,002 bytes). With the original per-test timeout the pinned run passed all 1,621 tests and 25,454 subtests. Host stage times were 0.57 s modeling, 313.79 s suite, and 3.16 s aggregation/serialization. Both public schedules matched the previous build byte-for-byte: 166.316 simulated seconds under shipped defaults or 115.907 with relations enabled, zero misses.
 
