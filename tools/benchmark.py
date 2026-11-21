@@ -23,8 +23,10 @@ def main():
     parser.add_argument("--output", type=Path, default=ROOT / "output.jsonl")
     parser.add_argument("--report", type=Path)
     parser.add_argument("--probe-budget", type=float)
-    parser.add_argument("--no-relations", action="store_true")
-    parser.add_argument("--conservative-python", action=argparse.BooleanOptionalAction, default=None)
+    parser.add_argument("--relations", action=argparse.BooleanOptionalAction, default=None)
+    python_mode = parser.add_mutually_exclusive_group()
+    python_mode.add_argument("--conservative-python", action=argparse.BooleanOptionalAction, default=None)
+    python_mode.add_argument("--child-work", action=argparse.BooleanOptionalAction, default=None)
     args = parser.parse_args()
     tests = json.loads((args.data / "tests.json").read_text())["tests"]
     answers = json.loads((args.data / "answers.json").read_text())["commits"]
@@ -34,8 +36,10 @@ def main():
         options += ["--probe-budget", str(args.probe_budget)]
     if args.conservative_python is not None:
         options.append("--conservative-python" if args.conservative_python else "--no-conservative-python")
-    if args.no_relations:
-        options += ["--no-relations"]
+    if args.child_work is not None:
+        options.append("--child-work" if args.child_work else "--no-child-work")
+    if args.relations is not None:
+        options.append("--relations" if args.relations else "--no-relations")
     for i in range(args.runs):
         before = resource.getrusage(resource.RUSAGE_CHILDREN)
         started = time.monotonic()

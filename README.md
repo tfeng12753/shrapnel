@@ -1,7 +1,7 @@
 # Blast Radius selector
 
 A submission project for the sqlglot test-selection challenge. The target is below 100 seconds. The
-default selector scored **652.5 seconds with zero missed commits** on the 30
+default selector scored **471.2 seconds with zero missed commits** on the 30
 public patches in a local macOS arm64 run. The scorer includes the simulated
 schedules and selector CPU. The Linux container score remains unmeasured.
 
@@ -9,12 +9,16 @@ schedules and selector CPU. The Linux container score remains unmeasured.
 | --- | ---: | ---: |
 | Full suite on every patch | 1104.510 | 0 |
 | Conservative Python selection with the local baseline map | 651.870 | 0 |
+| Targeted selection with child-process callers retained (default) | 470.062 | 0 |
 | Targeted Python selection with comparison refinement and probes | 1639.455 | 5 |
 
-The default uses mapped readers for fixtures and AST-identical Python edits.
-An executable Python change selects the full suite. The targeted mode remains
-available for benchmarking improved maps. See [VALIDATION.md](VALIDATION.md)
-for the environment, misses, and path to reproduce the measurements.
+For executable Python changes, the default keeps tests selected by the map
+and tests observed on lines that can dispatch work to a child process.
+The parent can reach a pool submission without recording which lines its child
+executes. Keeping those callers recovered the five misses seen with ordinary
+targeted selection on the public samples. Use `--conservative-python` to run
+the full suite for executable Python changes. See [VALIDATION.md](VALIDATION.md)
+for measurements and limitations.
 
 ## Run
 
@@ -94,11 +98,11 @@ first for all worker counts from 1 through 8; the selector chooses the smallest
 `max(load) + 2 * worker_count` using integer milliseconds. For the entire sample
 suite the optimal count is 4, because the slowest individual test is 28.817 s.
 
-Run `make competitive` to compare conservative Python selection, coverage alone, comparison refinement, and
+Run `make competitive` to compare conservative Python selection, coverage with and without child-process callers, comparison refinement, and
 comparison refinement with verification, three times each. It selects the best
 global configuration among zero-miss sample variants and exports
 `research-bundle.zip` with the pinned source, maps, outputs, and CPU measurements.
-The project has 47 passing local checks, including real forked native probes.
+The project has 52 passing local checks, including real forked native probes.
 
 Baseline coverage is an approximation of dependencies. Reflection, state shared
 between tests, indirect class-level access, and behavior in uninstrumented child
@@ -129,7 +133,7 @@ make competitive
 
 This requires Docker and network access during build. It enforces a 600-second
 build deadline, applies the scoring container limits to every run, measures CPU,
-and compares four globally configured strategies. It writes
+and compares five globally configured strategies. It writes
 `selector-config.json` for the best zero-miss sample variant, caches the plain
 baseline map when it fits the repository allowance, and exports
 `research-bundle.zip`. Commit the chosen config/map and rebuild before submission.

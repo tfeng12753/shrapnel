@@ -46,6 +46,7 @@ three times under the documented container restrictions:
 | --- | --- | --- |
 | conservative_python (full suite for executable Python edits) | Off | Off |
 | coverage | Off | Off |
+| child_work (keep tests that can dispatch to a child process) | Off | Off |
 | relations | On | Off |
 | relations_and_probes | On | 8-second child CPU budget |
 
@@ -92,7 +93,7 @@ For each patch, the top three extra tests are ranked by how much removing just
 that test saves with the other assignments fixed, breaking ties by duration.
 These individual savings cannot be added together. To trace why those tests
 entered static selection, replay the output against the source and map from
-the same run (use `--no-relations` for the coverage strategy or `--conservative-python` for the conservative strategy):
+the same run (use `--no-relations` for coverage, `--no-relations --child-work` for child_work, or `--conservative-python` for the conservative strategy):
 
 ```sh
 python3 tools/profile_schedule.py outputs/relations-1.jsonl \

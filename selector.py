@@ -7,11 +7,117 @@ import gzip
 import json
 import re
 import sys
+from collections import defaultdict
 from functools import lru_cache
 from pathlib import Path
 
 REVISION = "eb11aec4be8cb2122afe713a4816662c3f0fb2fa"
 HUNK = re.compile(r"^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@")
+
+# Executor receivers can be passed to helpers or stored on shared classes.
+# Treat these methods as potential dispatch even when the receiver's type is unknown.
+DISPATCH_METHODS = {"submit", "map", "imap", "imap_unordered", "starmap", "apply", "apply_async",
+                    "map_async", "starmap_async"}
+PROCESS_APIS = {
+    "concurrent.futures": {"ProcessPoolExecutor"},
+    "multiprocessing": {"Process", "Pool", "Manager"},
+    "multiprocessing.pool": {"Pool"},
+    "multiprocessing.context": {"Process", "Pool", "Manager"},
+    "subprocess": {"Popen", "run", "call", "check_call", "check_output", "getoutput", "getstatusoutput"},
+    "asyncio": {"create_subprocess_exec", "create_subprocess_shell"},
+    "os": {"fork", "forkpty", "system", "popen", "posix_spawn", "posix_spawnp", "startfile",
+           "spawnl", "spawnle", "spawnlp", "spawnlpe", "spawnv", "spawnve", "spawnvp", "spawnvpe"},
+}
+PROCESS_NAMES = set().union(*PROCESS_APIS.values())
+PROCESS_HINT = re.compile(
+    r"\b(?:" + "|".join(sorted(DISPATCH_METHODS | PROCESS_NAMES | {"get_context"})) + r")\b"
+)
+SHARED_HOOKS = {"setUpClass", "tearDownClass", "setUpModule", "tearDownModule",
+                "setup_class", "teardown_class", "setup_module", "teardown_module"}
+
+
+def child_work_sites(source):
+    """Find potential dispatch references and flag shared lifecycle contexts."""
+    if not PROCESS_HINT.search(source):
+        return
+    tree = ast.parse(source)
+    aliases = defaultdict(set)
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for item in node.names:
+                name = item.name.split(".")[0]
+                aliases[item.asname or name].add(item.name if item.asname else name)
+        elif isinstance(node, ast.ImportFrom) and not node.level and node.module:
+            for item in node.names:
+                aliases[item.asname or item.name].add(node.module + "." + item.name)
+
+    def qualified(node):
+        if isinstance(node, ast.Name):
+            return aliases.get(node.id, {node.id})
+        if isinstance(node, ast.Attribute):
+            return {name + "." + node.attr for name in qualified(node.value)}
+        if isinstance(node, ast.Call) and "multiprocessing.get_context" in qualified(node.func):
+            return {"multiprocessing.context"}
+        return set()
+
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Assign) and "multiprocessing.context" in qualified(node.value):
+            for target in node.targets:
+                if isinstance(target, ast.Name):
+                    aliases[target.id].add("multiprocessing.context")
+
+    shared_scopes = {None}  # Module and class bodies can run before test attribution.
+    references = defaultdict(set)
+    sites = set()
+
+    def walk(node, scope):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            if scope is not None:
+                references[scope].add(node.name)
+            scope = node.name
+            if node.name in SHARED_HOOKS or any(
+                isinstance(decorator, ast.Call)
+                and any(name.rsplit(".", 1)[-1] == "fixture" for name in qualified(decorator.func))
+                and any(keyword.arg == "scope" and
+                        (not isinstance(keyword.value, ast.Constant) or keyword.value.value != "function")
+                        for keyword in decorator.keywords)
+                for decorator in node.decorator_list
+            ):
+                shared_scopes.add(scope)
+            # Decorators and defaults execute in the enclosing scope.
+            for child in ast.iter_child_nodes(node):
+                if child not in node.body:
+                    walk(child, None)
+            for statement in node.body:
+                walk(statement, scope)
+            return
+        if isinstance(node, (ast.Name, ast.Attribute)) and isinstance(node.ctx, ast.Load):
+            # ProcessPoolExecutor starts work on dispatch. A constructor in a
+            # shared hook does not by itself make every test a worker user.
+            references[scope].add(node.id if isinstance(node, ast.Name) else node.attr)
+            for name in qualified(node):
+                module, _, member = name.rpartition(".")
+                if member in PROCESS_APIS.get(module, ()) and name != "concurrent.futures.ProcessPoolExecutor":
+                    sites.add((node.lineno, scope))
+            if isinstance(node, ast.Attribute) and node.attr in DISPATCH_METHODS:
+                sites.add((node.lineno, scope))
+        if (isinstance(node, ast.Call) and "getattr" in qualified(node.func) and len(node.args) >= 2
+                and isinstance(node.args[1], ast.Constant) and isinstance(node.args[1].value, str)):
+            attr = node.args[1].value
+            if attr in DISPATCH_METHODS or any(attr in PROCESS_APIS.get(name, ()) for name in qualified(node.args[0])):
+                sites.add((node.lineno, scope))
+        for child in ast.iter_child_nodes(node):
+            walk(child, scope)
+
+    walk(tree, None)
+    pending = list(shared_scopes)
+    while pending:
+        for name in references[pending.pop()] - shared_scopes:
+            shared_scopes.add(name)
+            pending.append(name)
+
+    for line, scope in sites:
+        yield line, scope in shared_scopes
 
 
 def split(tests: list[dict]) -> list[list[int]]:
@@ -215,12 +321,14 @@ def comparison_changes(old, new):
 
 
 class Selector:
-    def __init__(self, tests: list[dict], source: Path, map_path: Path, *, conservative_python=False, relations=True):
+    def __init__(self, tests: list[dict], source: Path, map_path: Path, *, conservative_python=False,
+                 relations=True, child_work=False):
         self.tests, self.source = tests, source
         self.conservative_python = conservative_python
         self.all = (1 << len(tests)) - 1
         self.files, self.complete = {}, False
         self.external = 0
+        self.child_work = 0
         self.native = set()
         self.sources = {}
         try:
@@ -275,6 +383,8 @@ class Selector:
             self.complete = bool(data.get("complete")) and not missing
             if not self.complete:
                 print("dependency map incomplete; using full-suite fallback", file=sys.stderr)
+            elif child_work and not conservative_python:
+                self.child_work = self.child_work_mask()
         except (OSError, ValueError, KeyError, IndexError, TypeError) as e:
             print(f"dependency map unavailable ({type(e).__name__}); using full-suite fallback", file=sys.stderr)
 
@@ -285,6 +395,36 @@ class Selector:
                 raise ValueError("invalid patch path")
             self.sources[name] = path.read_text(encoding="utf-8")
         return self.sources[name]
+
+    def child_work_mask(self):
+        catalog = {}
+        for test in self.tests:
+            name = test.get("file", test["id"].split("::", 1)[0])
+            catalog[name] = catalog.get(name, 0) | (1 << test["number"])
+
+        result = 0
+        try:
+            for name in sorted(self.files.keys() | catalog.keys()):
+                if not name.endswith(".py"):
+                    continue
+                entry = self.files.get(name)
+                if not entry:
+                    result |= catalog.get(name, 0)
+                    continue
+                for line, shared in child_work_sites(self.read_source(name)):
+                    observed = entry["lines"].get(line, entry["anchors"].get(line, 0))
+                    if shared or not observed:
+                        # Class/module setup may be attributed to the first
+                        # test only. Modules without local tests can have
+                        # callers from other files.
+                        local_tests = catalog.get(name, 0)
+                        if not local_tests:
+                            return self.all
+                        observed |= local_tests
+                    result |= observed
+        except (ValueError, SyntaxError, OSError, UnicodeError, RecursionError):
+            return self.all
+        return result
 
     def select(self, patch: str, trace=None) -> int:
         # The offline profiler supplies trace(mask, reason, path, location).
@@ -317,6 +457,7 @@ class Selector:
                         continue
                     if self.conservative_python:
                         return include(self.all, "conservative executable Python selection", name)
+                    result |= include(self.child_work, "potential untraced child work", name)
                     refined = self.refine_comparisons(changes_at_sites, entry)
                     if refined is not None:
                         result |= include(refined, "comparison boundary or unknown", name)
@@ -377,7 +518,7 @@ class Selector:
 
     def probe(self, patch, mask, budget):
         tests = self.chosen(mask)
-        if not tests or budget < .1 or not self.native or mask & self.external:
+        if not tests or budget < .1 or not self.native or mask & (self.external | self.child_work):
             return mask, 0.0
         if any(t["id"] not in self.native or t["seconds"] > .15 for t in tests):
             return mask, 0.0
@@ -404,7 +545,10 @@ def main():
     parser.add_argument("--source", type=Path, default=Path("/opt/sqlglot"))
     parser.add_argument("--map", type=Path, default=Path("/app/dependencies.json.gz"))
     parser.add_argument("--probe-budget", type=float)
-    parser.add_argument("--conservative-python", action=argparse.BooleanOptionalAction, default=None)
+    python_mode = parser.add_mutually_exclusive_group()
+    python_mode.add_argument("--conservative-python", action=argparse.BooleanOptionalAction, default=None)
+    python_mode.add_argument("--child-work", action=argparse.BooleanOptionalAction, default=None,
+                             help="Use targeted selection plus potential untraced child work")
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--relations", dest="relations", action="store_true")
     group.add_argument("--no-relations", dest="relations", action="store_false")
@@ -420,8 +564,14 @@ def main():
     if args.relations is None:
         args.relations = bool(config.get("relations", True))
     tests = json.loads((args.data / "tests.json").read_text())["tests"]
-    conservative = args.conservative_python if args.conservative_python is not None else config.get("conservative_python", False)
-    selector = Selector(tests, args.source, args.map, conservative_python=conservative, relations=args.relations)
+    conservative = args.conservative_python
+    child_work = args.child_work
+    if conservative is None:
+        conservative = not child_work and config.get("conservative_python", False)
+    if child_work is None:
+        child_work = args.conservative_python is None and not conservative and config.get("child_work", False)
+    selector = Selector(tests, args.source, args.map, conservative_python=conservative, relations=args.relations,
+                        child_work=child_work)
     schedules = {}
     remaining = max(0.0, args.probe_budget)
     for patch in sorted((args.data / "commits").glob("*.patch")):
