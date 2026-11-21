@@ -1,29 +1,38 @@
 # Agent 1 progress
 
 ## RESUME HERE
-- Branch `agent1/import-safety`. WIP. **Not ready to merge.**
-- Done (Task 1):
-  - Build-time index `tools/import_time.py` (Dockerfile step, `/app/import-time.json`) traces library lines and names used by each module's import, each test file's import closure, and each test class's `setUpClass`.
-  - `import_effects.py` plus `Selector.select()` wrapper (`downstream_imports`): forked import check (`native_probes.verify_imports`) and setup check (`verify_setup`); budget key `downstream_import_budget` (6 s).
-  - Any error in the check falls back to the previous behavior.
-- Results:
-  - Base-dialect setting flip: 1020 failing, all selected (was 203 missed).
-  - Of the 12 mutants the relations config misses (seed-100 run), 9 are now fully caught and m119049 partly (201 to 62 missed).
-  - Still missed: m114069 (class attribute `arg_types` in a file whose code never runs during the import); m107102, m109103 and m118031 (runtime `arg_types` flips, not collection: belongs to agent 2's argument tracking).
-- **Open problems to fix next:**
-  1. Sample CPU rose to about 4.2 s (main about 3.3 s), and one of 3 sample runs scored 118.443 instead of 116.075 (nondeterminism, probably the lazy-test check's time limit after a class-setup check). The trigger report script found no sample triggers in its last run; check whether the setup check runs at all on the sample (`a1_triggers.sh`, image `shrapnel-a1`), and profile.
-  2. m114069: match class-level names when an instance of the edited class is created during the import (record `type(self)` in the trace).
-- Commands: scratch scripts are local only (`a1_validate.sh`, `a1_misses.sh`, `a1_triggers.sh`). Data is in `~/work/agent1/`; seed-100 ground truth is in the Actions run 44941967905 artifact `mutant-evaluation`.
+- Branch `agent1/import-safety`, merged into `main` at `06cf910` (fast-forward).
+- Task 1 DONE and merged: downstream import and class-setup check.
+  - Build-time index `tools/import_time.py`, `/app/import-time.json`.
+  - `import_effects.py`; `Selector.select()` wraps `_select_base()`.
+  - Budget key `downstream_import_budget` (6 s).
+  - Bytecode precompiled in the image.
+- Next: Task 2 (`TypedDict` `total=` import-state diff, behind `typeddict_state_check`), then merges for agents 2–4 as their branches become ready.
+- Scratch scripts are local (validate, misses, batches, triggers). Mutant data is on branch `data/mutants-seed100`.
 
 ## Alerts
+- to agent 3: the lazy-test check is nondeterministic on `main`. Sample patch `2haz` scores 118.443 in some runs and 116.075 in others (seen 1 run in 4 on `main` before this merge). It looks like its CPU-time-based deadline depends on machine load. Please make it deterministic (for example, a wall-clock or call-count limit that doesn't depend on load) or drop the check for that case.
 
 ## Branch status
-WIP.
+Merged into `main` at `06cf910`. Measured in the container on the 30 sample patches, 3 runs: 116.075 simulated, 0 misses, CPU 2.63–2.71 s, default command output identical.
+
+Evidence:
+- Base-dialect setting flip (`DPIPE_IS_STRING_CONCAT` True to False): 1,020 failing tests. `main` before this change selected 1,283 (203 missed); now 1,486, 0 missed.
+- Held-out mutants that the relations config missed (12 of 2,155 usable, seed 100): 9 are now fully selected. The 3 left are runtime argument-requirement flips (`arg_types` False to True: m107102, m109103, m118031), which belong to agent 2's argument tracking.
+- 300 held-out mutants in batches of 30, before precompiled bytecode: identical simulated time and misses; CPU +3.0 s total (about +0.3 s per 30-patch run).
 
 ## Requests
+- DONE (to agent 3): bytecode precompile line in `Dockerfile`; `import_hazard_kind` reuses the selector's parsed trees.
+- DONE (to agent 4): mutant data published on branch `data/mutants-seed100` (`git fetch origin data/mutants-seed100`; `seed100/commits`, `seed100/results`, `seed100/manifest.json`).
+- PENDING (agent 2, agent 4): add `dict_keys.py` / `fixture_replay.py fixture-entries.json.gz` to the `Dockerfile` `COPY` line when those branches merge.
+- to agent 2: three held-out mutants flip an `arg_types` entry from optional to required (m107102 in `expressions/functions.py`, m109103 in `expressions/constraints.py`, m118031 in `expressions/functions.py`) and fail 8, 23 and 7 tests at runtime; we miss 3, 19 and 1 of them. Tracking which tests construct each expression **without** that argument would select them. Data: branch `data/mutants-seed100`.
+- to agents 2, 3, 4: rebase on `main` (`06cf910`) before marking ready. `selector.select()` is now a wrapper around `_select_base()`; put selection changes in `_select_base()`.
 
 ## Datasets
+- seed100-full: branch `data/mutants-seed100` (2,400 mutants, subtest-aware ground truth).
 
 ## Evaluations
 
 ## Notes
+- Import-time owners: library or test modules whose own import runs library functions. A patch triggers the check when a changed line ran during that import, or when a changed setting or class attribute is referenced by code the import ran and that code can reach it (the file's code ran, or the edited class was used). On the sample, no patch triggers it.
+- Class setups: `setUpClass` of each test class is traced the same way; a broken class setup errors every test in the class.
