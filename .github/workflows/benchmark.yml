@@ -1,0 +1,28 @@
+name: Benchmark pinned sqlglot
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Validate selector mechanics
+        run: make unit
+      - name: Build and compare selection strategies
+        run: make competitive
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: blast-radius-research
+          path: |
+            research-bundle.zip
+            competitive-results.json
+            selector-config.json
+            maps/dependencies.json
+          if-no-files-found: warn

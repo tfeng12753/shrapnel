@@ -5,3 +5,4 @@ output.jsonl
 .venv/
 *.bundle
 *.zip
+competitive-results.json

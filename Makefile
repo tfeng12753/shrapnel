@@ -48,3 +48,8 @@ safe-sample:
 	docker build --platform linux/amd64 --build-arg BUILD_MAP=0 --tag $(IMAGE) .
 	docker run $(RUN_FLAGS) $(IMAGE) > $(OUTPUT)
 	python3 score.py $(SAMPLE) $(SAMPLE)/answers.json $(OUTPUT)
+
+.PHONY: competitive
+
+competitive:
+	python3 tools/competitive.py --image $(IMAGE)

@@ -15,6 +15,8 @@ import json
 import os
 from pathlib import Path
 import sys
+import unittest
+import types
 from collections import defaultdict
 
 REVISION = "eb11aec4be8cb2122afe713a4816662c3f0fb2fa"
@@ -47,6 +49,8 @@ class SourceModel:
                 if kind == "class":
                     self.scan(path, node.body, name)
             elif isinstance(node, (ast.Assign, ast.AnnAssign)) and not inside_function:
+                if isinstance(node, ast.AnnAssign) and node.value is None:
+                    continue
                 targets = node.targets if isinstance(node, ast.Assign) else [node.target]
                 for target in targets:
                     for n in ast.walk(target):
@@ -99,12 +103,12 @@ class SourceModel:
                     return found
         return None
 
-    def references(self, path, node):
+    def references(self, path, node, with_lines=False):
         for n in ast.walk(node):
             if isinstance(n, ast.Name) and isinstance(n.ctx, ast.Load):
                 target = self.resolve(path, n.id)
                 if target in self.symbols:
-                    yield target
+                    yield (target, n.lineno) if with_lines else target
             elif isinstance(n, ast.Attribute) and isinstance(n.ctx, ast.Load):
                 names, base = [n.attr], n.value
                 while isinstance(base, ast.Attribute):
@@ -113,7 +117,7 @@ class SourceModel:
                 if isinstance(base, ast.Name):
                     target = self.resolve(path, ".".join([base.id] + list(reversed(names))))
                     if target in self.symbols:
-                        yield target
+                        yield (target, n.lineno) if with_lines else target
 
 
 class Recorder:
@@ -122,11 +126,13 @@ class Recorder:
         self.current, self.phase = None, "collection"
         self.attrs = defaultdict(set)
         self.reads = defaultdict(set)
-        self.cache, self.originals = {}, []
+        self.cache = {}
         self.tests = []
         self.items = {}
         self.busy = False
         self.external = set()
+        self.native = set()
+        self.comparisons = {}
 
     def audit(self, event, args):
         if event == "open":
@@ -138,6 +144,16 @@ class Recorder:
             self.opened(file, mode)
         if event in ("subprocess.Popen", "os.fork", "os.posix_spawn") and self.current:
             self.external.add(self.current)
+
+    def record_object_attr(self, obj, name):
+        if self.current is None or not isinstance(name, str):
+            return
+        if type(obj) is types.ModuleType:
+            path = self.model.modules.get(obj.__name__)
+            if path and (path, name) in self.model.symbols:
+                self.attrs[(path, name)].add(self.current)
+            return
+        self.record_attr(obj if isinstance(obj, type) else type(obj), name)
 
     def record_attr(self, cls, name):
         if self.current is None or name not in self.model.attr_names:
@@ -156,41 +172,14 @@ class Recorder:
         if symbol:
             self.attrs[symbol].add(self.current)
 
-    def install_attributes(self):
-        roots = [
-            ("sqlglot.expressions", "Expr"),
-            ("sqlglot.expressions", "Expression"),
-            ("sqlglot.dialects.dialect", "Dialect"),
-            ("sqlglot.parser", "Parser"),
-            ("sqlglot.generator", "Generator"),
-            ("sqlglot.tokens", "Tokenizer"),
-            ("sqlglot.optimizer.annotate_types", "TypeAnnotator"),
-            ("sqlglot.optimizer.scope", "Scope"),
-            ("sqlglot.schema", "Schema"),
-        ]
-        wrapped = set()
-        def wrap(cls, is_meta=False):
-            if cls in wrapped or cls is type:
-                return
-            wrapped.add(cls)
-            original = cls.__getattribute__
-            recorder = self
-            def access(obj, name):
-                value = original(obj, name)
-                recorder.record_attr(obj if is_meta else type(obj), name)
-                return value
-            try:
-                cls.__getattribute__ = access
-                self.originals.append((cls, "__getattribute__", original))
-            except (TypeError, AttributeError):
-                pass
-        for module, name in roots:
-            obj = getattr(importlib.import_module(module), name, None)
-            if obj is not None and obj not in wrapped:
-                wrap(obj)
-                meta = type(obj)
-                if meta.__module__.startswith("sqlglot"):
-                    wrap(meta, True)
+    def record_comparison(self, path, site, op, state):
+        entry = self.comparisons.setdefault((path, site), {"op": op, "states": defaultdict(set), "unknown": set(), "collection": False})
+        if self.current is None:
+            entry["collection"] = True
+        elif state is None:
+            entry["unknown"].add(self.current)
+        else:
+            entry["states"][state].add(self.current)
 
     def opened(self, file, mode="r"):
         if self.busy or isinstance(file, int) or not isinstance(mode, str) or any(c in mode for c in "wax+"):
@@ -201,11 +190,36 @@ class Recorder:
             if not path.is_relative_to(self.root) or not path.is_file():
                 return
             name = path.relative_to(self.root).as_posix()
+            # Source loaded by the import machinery is not an explicit source
+            # inspection dependency. Keeping it would erase value refinement.
+            if path.suffix in (".py", ".pyc"):
+                frame = sys._getframe(2)
+                while frame:
+                    filename, function = frame.f_code.co_filename, frame.f_code.co_name
+                    if ("importlib" in filename and function in ("get_data", "get_code", "_compile_bytecode")) or (filename.endswith("/instrument.py") and function == "get_code"):
+                        return
+                    if filename.startswith(str(self.root)) and not filename.endswith("/instrument.py"):
+                        break
+                    if any(part in filename for part in ("inspect.py", "linecache.py", "tokenize.py")):
+                        break
+                    frame = frame.f_back
             if self.current and self.phase == "call":
                 scope = ("test", self.current)
             elif self.current:
-                # Session/class fixtures can feed tests other than the first user.
                 scope = ("all", "")
+                frame = sys._getframe(2)
+                while frame:
+                    function = frame.f_code.co_name
+                    if function in ("setUpClass", "setup_class", "tearDownClass", "teardown_class"):
+                        scope = ("class", self.current.rsplit("::", 1)[0])
+                        break
+                    if function in ("setUp", "tearDown", "asyncSetUp", "asyncTearDown"):
+                        scope = ("test", self.current)
+                        break
+                    if function in ("setUpModule", "tearDownModule", "setup_module", "teardown_module"):
+                        scope = ("file", self.current.split("::")[0])
+                        break
+                    frame = frame.f_back
             else:
                 scope = None
                 frame = sys._getframe(2)
@@ -223,14 +237,10 @@ class Recorder:
         finally:
             self.busy = False
 
-    def restore(self):
-        for obj, name, original in reversed(self.originals):
-            setattr(obj, name, original)
-
-
 def build(root, destination):
     import coverage
     import pytest
+    from instrument import Instrumentation
     root = root.resolve()
     os.chdir(root)
     sys.path.insert(0, str(root))
@@ -239,12 +249,19 @@ def build(root, destination):
     cov = coverage.Coverage(data_file=None, source=[str(root / "sqlglot"), str(root / "tests")], config_file=False)
     rec = Recorder(root, model, cov)
     class Plugin:
-        def pytest_sessionstart(self, session):
-            rec.install_attributes()
-
         def pytest_collection_modifyitems(self, items):
             rec.tests = sorted(item.nodeid for item in items)
             rec.items = {item.nodeid: item for item in items}
+            for item in items:
+                if not item.cls or not issubclass(item.cls, unittest.TestCase):
+                    continue
+                if getattr(item.cls, "pytestmark", ()) or getattr(item.obj, "pytestmark", ()):
+                    continue
+                definitions = getattr(getattr(item, "_fixtureinfo", None), "name2fixturedefs", {})
+                if any(not definition.func.__module__.startswith("_pytest")
+                       for group in definitions.values() for definition in (group or ())):
+                    continue
+                rec.native.add(item.nodeid)
 
         @pytest.hookimpl(hookwrapper=True)
         def pytest_runtest_protocol(self, item, nextitem):
@@ -265,12 +282,14 @@ def build(root, destination):
                 rec.phase = "teardown"
 
     sys.addaudithook(rec.audit)
+    instrumentation = Instrumentation(root, rec)
+    instrumentation.install()
     cov.start()
     try:
         status = pytest.main(["tests", "-q", "-p", "no:cacheprovider", "--timeout=180"], plugins=[Plugin()])
     finally:
-        rec.restore()
         cov.stop()
+        instrumentation.restore()
     if status != 0:
         raise RuntimeError(f"pinned suite did not pass during map generation (pytest exit {status}); refusing incomplete map")
     if len(rec.tests) < 1000:
@@ -307,6 +326,8 @@ def write_map(root, model, rec, data, destination):
                 files[name]["readers"] |= bit.get(value, 0)
             elif kind == "file":
                 files[name]["readers"] |= mask(t for t in rec.tests if t.split("::")[0] == value)
+            elif kind == "class":
+                files[name]["readers"] |= mask(t for t in rec.tests if t.startswith(value + "::"))
     users = {}
     for key, symbol in model.symbols.items():
         entry = files[key[0]]
@@ -315,8 +336,8 @@ def write_map(root, model, rec, data, destination):
             if symbol["start"] <= line <= symbol["end"]:
                 value |= line_mask
         users[key] = value
-    # Propagate runtime users backwards through ordinary source dependencies.
-    # This includes constants imported under aliases and class-table construction.
+    # Runtime references use the exact executed line. Only initializer copies
+    # and class inheritance need transitive source-symbol propagation.
     edges = []
     for key, symbol in model.symbols.items():
         node = symbol["node"]
@@ -325,9 +346,17 @@ def write_map(root, model, rec, data, destination):
         else:
             nodes = [node]
         for node in nodes:
-            for target in set(model.references(key[0], node)):
-                if target != key:
+            for target, line in set(model.references(key[0], node, with_lines=True)):
+                if target == key:
+                    continue
+                if symbol["kind"] == "function":
+                    users[target] |= files[key[0]]["lines"].get(line, 0)
+                else:
                     edges.append((key, target))
+        if "." in key[1]:
+            parent = (key[0], key[1].rpartition(".")[0])
+            if parent in users:
+                edges.append((key, parent))
     for _ in range(len(users) + 1):
         changed = False
         for source, target in edges:
@@ -353,11 +382,41 @@ def write_map(root, model, rec, data, destination):
             for line in range(symbol["start"], symbol["end"] + 1):
                 entry["lines"][line] = entry["lines"].get(line, 0) | value
         entry["executed"] |= value
+    # Operators and punctuation may sit on continuation lines without a trace
+    # event of their own. Attach the smallest containing expression's users.
+    for name, tree in model.trees.items():
+        lines = files[name]["lines"]
+        anchors = {}
+        expressions = [n for n in ast.walk(tree) if isinstance(n, ast.expr) and getattr(n, "end_lineno", n.lineno) > n.lineno]
+        expressions.sort(key=lambda n: n.end_lineno - n.lineno)
+        for node in expressions:
+            holes = [line for line in range(node.lineno, node.end_lineno + 1) if line not in lines and line not in anchors]
+            if not holes:
+                continue
+            value = 0
+            for line in range(node.lineno, node.end_lineno + 1):
+                value |= lines.get(line, 0)
+            if value:
+                for line in holes:
+                    anchors[line] = value
+        files[name]["anchors"] = {str(line): format(value, "x") for line, value in anchors.items()}
+    for (name, site), observation in rec.comparisons.items():
+        if observation["collection"]:
+            continue
+        line = int(site.split(":")[0])
+        states = {state: mask(contexts) for state, contexts in observation["states"].items()}
+        observed = mask(observation["unknown"])
+        for value in states.values():
+            observed |= value
+        unknown = mask(observation["unknown"]) | (files[name]["lines"].get(line, 0) & ~observed)
+        files[name].setdefault("comparisons", {})[site] = {
+            "op": observation["op"], "states": {state: format(value, "x") for state, value in states.items()},
+            "unknown": format(unknown, "x")}
     for name, entry in files.items():
         entry["lines"] = {str(line): format(value, "x") for line, value in sorted(entry["lines"].items()) if value}
         entry["regions"] = [[a, b, k, format(v, "x")] for a, b, k, v in entry["regions"]]
         entry["readers"], entry["executed"] = format(entry["readers"], "x"), format(entry["executed"], "x")
-    result = {"version": 1, "revision": REVISION, "complete": True, "tests": rec.tests, "external": format(external_mask, "x"), "files": dict(files)}
+    result = {"version": 1, "revision": REVISION, "complete": True, "tests": rec.tests, "external": format(external_mask, "x"), "native": sorted(rec.native), "files": dict(files)}
     opener = gzip.open if destination.suffix == ".gz" else open
     with opener(destination, "wt", encoding="utf-8") as f:
         json.dump(result, f, separators=(",", ":"))

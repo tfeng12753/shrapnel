@@ -1,6 +1,8 @@
 # Blast Radius selector
 
-A submission project for the sqlglot test-selection challenge. There are no
+A submission project for the sqlglot test-selection challenge. The competitive
+target is below 149.7 seconds, the best time in the supplied leaderboard; this
+project does not yet have a measured result at that level. There are no
 patch hashes, sample commit IDs, or sample-outcome lookup tables in the selector
 or map generator.
 
@@ -70,12 +72,20 @@ version, or cgroup CPU accounting.
 The image's build generates a map from the unchanged pinned source:
 
 1. Coverage records executed source lines in a separate context for each test.
-2. Attribute observers record which tests use class-level parser, generator,
-   tokenizer, dialect, expression, and optimizer settings.
-3. Python audit events record fixture and source-file reads, including reads
-   through cached `open` aliases. Setup-time reads are conservatively shared.
-4. AST symbol references propagate runtime users to constants and imported
-   aliases. Tests that spawn subprocesses are retained for executable changes.
+2. Targeted AST observers record instance, classmethod, module, and dynamic
+   `getattr` reads of settings. This avoids wrapping every object attribute.
+3. Audit events record fixture and explicit source reads, including cached
+   `open` aliases. Ordinary import-loader reads are excluded. Class setup reads
+   are shared with that class rather than the entire test suite.
+4. Static references use the exact executed use line, rather than all callers
+   of a containing function. Initializer copies and inheritance still propagate.
+5. Comparison observers record baseline operand relations. A change confined to
+   comparison operators can retain only boundary-reaching or unknown tests.
+   Unsupported user-defined comparisons remain conservative.
+6. Eligible plain unittest tests can be verified in isolated forked processes.
+   Only confirmed passes are removed; subtest failures, import errors, class
+   teardown errors, and timeouts retain selections. The batch has an 8-second
+   child CPU budget, with a 1.5-second wall limit per probe.
 
 At runtime the selector verifies each patch against the pinned files in memory.
 It unions affected lines, constant users, function-header users, insertion
@@ -84,11 +94,20 @@ the same AST retain tests observed reading that source; SQL/fixture comments are
 never assumed harmless. Unknown files, malformed patches, syntax errors,
 unsupported import-time changes, and incomplete maps select the entire suite.
 
-Maps use test IDs and are translated to the supplied test numbers. No test is
-run while deciding. Each selected set is scheduled with longest-processing-time
+Maps use test IDs and are translated to the supplied test numbers. Optional
+native verification runs small candidate sets while deciding; its CPU is charged
+and measured. Tests with pytest fixtures or marks are excluded from native
+verification, and large candidate sets are not probed. Each selected set is scheduled with longest-processing-time
 first for all worker counts from 1 through 8; the selector chooses the smallest
 `max(load) + 2 * worker_count` using integer milliseconds. For the entire sample
 suite the optimal count is 4, because the slowest individual test is 28.817 s.
+
+Run `make competitive` to compare coverage alone, comparison refinement, and
+comparison refinement with verification, three times each. It selects the best
+global configuration among zero-miss sample variants and exports
+`research-bundle.zip` with the pinned source, maps, outputs, and CPU measurements.
+The new features have 41 passing local checks, including real forked test probes.
+They have not yet been exercised on the pinned sqlglot suite.
 
 Baseline coverage is an approximation of dependencies. Reflection, state shared
 between tests, indirect class-level access, and behavior in uninstrumented child
@@ -110,6 +129,26 @@ make sample
 The export contains baseline observations and symbols only. It is a plain JSON
 file, has a revision check, and is limited to 18 MB to leave room under the
 20 MB repository allowance. Larger maps can stay generated at build time.
+
+## Competitive measurement
+
+```sh
+make competitive
+```
+
+This requires Docker and network access during build. It enforces a 600-second
+build deadline, applies the scoring container limits to every run, measures CPU,
+and compares three globally configured strategies. It writes
+`selector-config.json` for the best zero-miss sample variant, caches the plain
+baseline map when it fits the repository allowance, and exports
+`research-bundle.zip`. Commit the chosen config/map and rebuild before submission.
+The timing wrapper adds a small amount of CPU, so the official score may differ.
+
+If Docker is inconvenient locally, the repository includes a manual GitHub
+Actions workflow, **Benchmark pinned sqlglot**. Run it after publishing the
+repository and download its `blast-radius-research` artifact.
+
+See `COMPETITIVE.md` for the evidence needed to continue tuning without Docker.
 
 ## Publish
 

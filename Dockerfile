@@ -8,7 +8,7 @@ COPY requirements.lock /app/requirements.lock
 RUN if [ "$BUILD_MAP" = "1" ]; then pip install --no-cache-dir -r /app/requirements.lock coverage==7.10.7; fi
 COPY tools/fetch_source.py /app/tools/fetch_source.py
 RUN if [ "$BUILD_MAP" = "1" ]; then python /app/tools/fetch_source.py; fi
-COPY tools/build_map.py /app/tools/build_map.py
+COPY tools/build_map.py tools/instrument.py /app/tools/
 COPY maps /app/maps
 # Maps use ONLY the unchanged pinned checkout, never sample patches/answers.
 RUN if [ "$BUILD_MAP" != "1" ]; then :; \
@@ -17,7 +17,8 @@ RUN if [ "$BUILD_MAP" != "1" ]; then :; \
     else \
       PYTHONPATH=/opt/sqlglot python /app/tools/build_map.py; \
     fi
-COPY selector.py /app/selector.py
+COPY selector.py native_probes.py selector-config.json /app/
+COPY tools/timed_run.py /app/tools/timed_run.py
 ENV HOME=/tmp
 USER 65534:65534
 CMD ["python", "/app/selector.py"]

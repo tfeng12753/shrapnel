@@ -22,14 +22,21 @@ def main():
     parser.add_argument("--runs", type=int, default=3)
     parser.add_argument("--output", type=Path, default=ROOT / "output.jsonl")
     parser.add_argument("--report", type=Path)
+    parser.add_argument("--probe-budget", type=float)
+    parser.add_argument("--no-relations", action="store_true")
     args = parser.parse_args()
     tests = json.loads((args.data / "tests.json").read_text())["tests"]
     answers = json.loads((args.data / "answers.json").read_text())["commits"]
     runs = []
+    options = []
+    if args.probe_budget is not None:
+        options += ["--probe-budget", str(args.probe_budget)]
+    if args.no_relations:
+        options += ["--no-relations"]
     for i in range(args.runs):
         before = resource.getrusage(resource.RUSAGE_CHILDREN)
         started = time.monotonic()
-        result = subprocess.run([sys.executable, "-B", str(ROOT / "selector.py"), "--data", str(args.data), "--source", str(args.source), "--map", str(args.map)], stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=180)
+        result = subprocess.run([sys.executable, "-B", str(ROOT / "selector.py"), "--data", str(args.data), "--source", str(args.source), "--map", str(args.map), *options], stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=180)
         after = resource.getrusage(resource.RUSAGE_CHILDREN)
         cpu = after.ru_utime + after.ru_stime - before.ru_utime - before.ru_stime
         if result.returncode:
@@ -48,7 +55,7 @@ def main():
         print(json.dumps(record))
         args.output.write_bytes(result.stdout)
     total = statistics.median(run["total_seconds"] for run in runs)
-    report = {"dependency_map_present": args.map.is_file(), "runs": runs, "median_total_seconds": total,
+    report = {"dependency_map_present": args.map.is_file(), "selector_options": options, "runs": runs, "median_total_seconds": total,
               "rounded_median_seconds": int(total * 10 + .5) / 10,
               "caveat": "Local Python/CPU measurement; Docker/cgroup scorer limits are not reproduced."}
     print(f"Median total: {report['rounded_median_seconds']:.1f} s")

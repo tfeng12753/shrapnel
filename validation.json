@@ -1,35 +1,36 @@
 {
   "dependency_map_present": false,
+  "selector_options": [],
   "runs": [
     {
       "run": 1,
       "simulated_seconds": 1104.51,
-      "cpu_seconds": 0.050286,
-      "wall_seconds": 0.06985081399989213,
+      "cpu_seconds": 0.052721,
+      "wall_seconds": 0.07632226600026115,
       "misses": 0,
       "stdout_bytes": 210840,
-      "total_seconds": 1104.560286
+      "total_seconds": 1104.562721
     },
     {
       "run": 2,
       "simulated_seconds": 1104.51,
-      "cpu_seconds": 0.05012,
-      "wall_seconds": 0.06689179599970885,
+      "cpu_seconds": 0.04172900000000001,
+      "wall_seconds": 0.058767612999872654,
       "misses": 0,
       "stdout_bytes": 210840,
-      "total_seconds": 1104.56012
+      "total_seconds": 1104.551729
     },
     {
       "run": 3,
       "simulated_seconds": 1104.51,
-      "cpu_seconds": 0.040465999999999995,
-      "wall_seconds": 0.05718772700038244,
+      "cpu_seconds": 0.060709999999999986,
+      "wall_seconds": 0.07893864300012865,
       "misses": 0,
       "stdout_bytes": 210840,
-      "total_seconds": 1104.550466
+      "total_seconds": 1104.57071
     }
   ],
-  "median_total_seconds": 1104.56012,
+  "median_total_seconds": 1104.562721,
   "rounded_median_seconds": 1104.6,
   "caveat": "Local Python/CPU measurement; Docker/cgroup scorer limits are not reproduced."
 }

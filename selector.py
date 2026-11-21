@@ -144,12 +144,51 @@ def import_hazard(old: str, new: str) -> bool:
     return scaffold(old) != scaffold(new)
 
 
+def relation_outcome(state, op):
+    kind, value = state.split(":")
+    value = int(value)
+    if op == "Eq": return bool(value & 1)
+    if op == "NotEq": return not value & 1
+    if op == "Is": return bool(value & 8)
+    if op == "IsNot": return not value & 8
+    if kind != "p": return None
+    if op == "Lt": return bool(value & 2)
+    if op == "LtE": return bool(value & 3)
+    if op == "Gt": return bool(value & 4)
+    if op == "GtE": return bool(value & 5)
+    return None
+
+
+def comparison_changes(old, new):
+    """Recognize changes confined to single comparison operators."""
+    before, after = ast.parse(old, type_comments=True), ast.parse(new, type_comments=True)
+    left = [n for n in ast.walk(before) if isinstance(n, ast.Compare)]
+    right = [n for n in ast.walk(after) if isinstance(n, ast.Compare)]
+    if len(left) != len(right):
+        return None
+    changes = []
+    supported = {"Eq", "NotEq", "Is", "IsNot", "Lt", "LtE", "Gt", "GtE"}
+    for a, b in zip(left, right):
+        if len(a.ops) == len(b.ops) == 1:
+            old_op, new_op = type(a.ops[0]).__name__, type(b.ops[0]).__name__
+            if old_op != new_op:
+                if old_op not in supported or new_op not in supported:
+                    return None
+                changes.append((f"{a.lineno}:{a.col_offset}", old_op, new_op))
+            if old_op in supported and new_op in supported:
+                a.ops = b.ops = [ast.Eq()]
+    if not changes or ast.dump(before, include_attributes=False) != ast.dump(after, include_attributes=False):
+        return None
+    return changes
+
+
 class Selector:
     def __init__(self, tests: list[dict], source: Path, map_path: Path):
         self.tests, self.source = tests, source
         self.all = (1 << len(tests)) - 1
         self.files, self.complete = {}, False
         self.external = 0
+        self.native = set()
         self.sources = {}
         try:
             opener = gzip.open if map_path.suffix == ".gz" else open
@@ -181,10 +220,15 @@ class Selector:
                     cache[value] = result
                 return cache[value]
             self.external = decode(data.get("external", "0"))
+            self.native = set(data.get("native", ()))
             for name, entry in data["files"].items():
                 self.files[name] = {
                     "lines": {int(k): decode(v) for k, v in entry.get("lines", {}).items()},
                     "regions": [(a, b, kind, decode(v)) for a, b, kind, v in entry.get("regions", [])],
+                    "anchors": {int(k): decode(v) for k, v in entry.get("anchors", {}).items()},
+                    "comparisons": {site: {"op": info["op"], "unknown": decode(info["unknown"]),
+                        "states": {state: decode(v) for state, v in info["states"].items()}}
+                        for site, info in entry.get("comparisons", {}).items()},
                     "readers": decode(entry.get("readers", "0")),
                     "executed": decode(entry.get("executed", "0")),
                 }
@@ -226,6 +270,10 @@ class Selector:
                             return self.all
                         result |= entry["readers"]
                         continue
+                    refined = self.refine_comparisons(old, new, entry)
+                    if refined is not None:
+                        result |= refined | entry["readers"] | self.external
+                        continue
                     if import_hazard(old, new):
                         return self.all
                 result |= self.external
@@ -239,7 +287,7 @@ class Selector:
                     continue
                 result |= entry["readers"]
                 for line in removed:
-                    result |= entry["lines"].get(line, 0)
+                    result |= entry["lines"].get(line, entry["anchors"].get(line, 0))
                 for anchor in inserted:
                     # An insertion can create a new branch or override, so select users
                     # of the containing symbol, including presently unexecuted paths.
@@ -263,6 +311,43 @@ class Selector:
             # Syntax/import-shape uncertainty can break every test's collection.
             return self.all
 
+    def refine_comparisons(self, old, new, entry):
+        if not entry or not entry["comparisons"]:
+            return None
+        changes = comparison_changes(old, new)
+        if changes is None:
+            return None
+        result = 0
+        for site, before, after in changes:
+            info = entry["comparisons"].get(site)
+            if info is None or info["op"] != before:
+                return None
+            result |= info["unknown"]
+            for state, users in info["states"].items():
+                a, b = relation_outcome(state, before), relation_outcome(state, after)
+                if a is None or b is None or a != b:
+                    result |= users
+        return result
+
+    def probe(self, patch, mask, budget):
+        tests = self.chosen(mask)
+        if not tests or budget < .1 or not self.native or mask & self.external:
+            return mask, 0.0
+        if any(t["id"] not in self.native or t["seconds"] > .15 for t in tests):
+            return mask, 0.0
+        if sum(t["seconds"] for t in tests) > .8:
+            return mask, 0.0
+        changes = parse_patch(patch)
+        if any(not c["old"].endswith(".py") or c["old"].startswith("tests/") or c["old"] != c["new"] for c in changes):
+            return mask, 0.0
+        overlays = {c["old"]: apply_change(self.read_source(c["old"]), c)[0] for c in changes}
+        from native_probes import verify
+        passed, cpu = verify(self.source, overlays, tests, wall_seconds=min(1.5, budget + .1), cpu_seconds=min(1.0, budget))
+        for test in tests:
+            if test["id"] in passed:
+                mask &= ~(1 << test["number"])
+        return mask, cpu
+
     def chosen(self, mask):
         return [t for t in self.tests if mask & (1 << t["number"])]
 
@@ -272,12 +357,37 @@ def main():
     parser.add_argument("--data", type=Path, default=Path("/data"))
     parser.add_argument("--source", type=Path, default=Path("/opt/sqlglot"))
     parser.add_argument("--map", type=Path, default=Path("/app/dependencies.json.gz"))
+    parser.add_argument("--probe-budget", type=float)
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("--relations", dest="relations", action="store_true")
+    group.add_argument("--no-relations", dest="relations", action="store_false")
+    parser.set_defaults(relations=None)
+    parser.add_argument("--config", type=Path, default=Path(__file__).with_name("selector-config.json"))
     args = parser.parse_args()
+    try:
+        config = json.loads(args.config.read_text())
+    except (OSError, ValueError):
+        config = {}
+    if args.probe_budget is None:
+        args.probe_budget = float(config.get("probe_budget", 8.0))
+    if args.relations is None:
+        args.relations = bool(config.get("relations", True))
     tests = json.loads((args.data / "tests.json").read_text())["tests"]
     selector = Selector(tests, args.source, args.map)
+    if not args.relations:
+        for entry in selector.files.values():
+            entry["comparisons"].clear()
     schedules = {}
+    remaining = max(0.0, args.probe_budget)
     for patch in sorted((args.data / "commits").glob("*.patch")):
-        mask = selector.select(patch.read_text(encoding="utf-8"))
+        text = patch.read_text(encoding="utf-8")
+        mask = selector.select(text)
+        if selector.complete and remaining > 0:
+            try:
+                mask, cpu = selector.probe(text, mask, remaining)
+                remaining -= cpu
+            except (OSError, ValueError, SyntaxError):
+                pass
         if mask not in schedules:
             schedules[mask] = split(selector.chosen(mask))
         print(json.dumps({"commit": patch.stem, "workers": schedules[mask]}, separators=(",", ":")))
