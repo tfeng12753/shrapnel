@@ -4,6 +4,7 @@ import importlib.util
 import operator
 from pathlib import Path
 import tempfile
+from types import SimpleNamespace
 import unittest
 from unittest.mock import Mock
 
@@ -18,14 +19,16 @@ class ScalarComparisonTests(unittest.TestCase):
                         "Lt": operator.lt, "LtE": operator.le,
                         "Gt": operator.gt, "GtE": operator.ge,
                         "Is": operator.is_, "IsNot": operator.is_not}
-        cases = [(bound, [bound - 1, bound, bound + 1, "unusual"]) for bound in (0, 1, 2, 257)]
-        for literal, values in cases:
+        cases = [(bound, None, [bound - 1, bound, bound + 1, "unusual"]) for bound in (0, 1, 2, 257)]
+        cases.extend(("ss", method, ["aa", "ss", "zz", 3]) for method in ("upper", "lower", "casefold"))
+        for literal, method, values in cases:
             for old, source_op in (("Eq", "=="), ("NotEq", "!=")):
                 with self.subTest(literal=literal, old=old), tempfile.TemporaryDirectory() as tmp:
                     root = Path(tmp)
                     path = root / "sqlglot" / "subject.py"
                     path.parent.mkdir()
-                    source = f"def check(value, len):\n    return len(value) {source_op} {literal!r}\n"
+                    operand = f"value.{method}()" if method else "len(value)"
+                    source = f"def check(value, len):\n    return {operand} {source_op} {literal!r}\n"
                     path.write_text(source)
                     model = SourceModel(root)
                     rec = Recorder(root, model, None)
@@ -40,7 +43,10 @@ class ScalarComparisonTests(unittest.TestCase):
                         spec.loader.exec_module(module)
                         for test, value in zip(tests, values):
                             rec.current, rec.phase = test["id"], "call"
-                            self.assertEqual(module.check(value, lambda x: x), replacements[old](value, literal))
+                            arg = SimpleNamespace(**{method: lambda: value}) if method else value
+                            self.assertEqual(module.check(arg, lambda x: x), replacements[old](value, literal))
+                        if method == "casefold":
+                            self.assertEqual(module.check("ß", None), replacements[old]("ss", literal))
                     finally:
                         obs.restore()
                     coverage = Mock()
@@ -63,7 +69,7 @@ class ScalarComparisonTests(unittest.TestCase):
                             if changed or type(value) is not type(literal) or (value == literal and new in ("Is", "IsNot")):
                                 self.assertTrue(mask & (1 << i), (value, old, new))
                         if old == "Eq" and new == "LtE":
-                            self.assertFalse(mask & (1 << 1))  # Equality implies <= for exact integers.
+                            self.assertFalse(mask & (1 << 1))  # Equal builtin values are also <=.
                         if literal == 1 and old == "Eq" and new == "Lt":
                             self.assertFalse(mask & (1 << 2))  # A larger value is neither equal nor less.
 
@@ -80,12 +86,18 @@ def plain(value=(len(label) == 4)):
     return len(value) == 5
 def unrelated(value):
     return value == 5
+def custom_call(value):
+    return value.upper(1) == "x"
+def untouched(value):
+    return value == "x"
+def normalized(value):
+    return "x" != value.lower()
 """
         tree = Transformer("subject.py", set()).visit(ast.parse(source))
         calls = [n for n in ast.walk(tree) if isinstance(n, ast.Call)
                  and isinstance(n.func, ast.Name) and n.func.id == "_blast_radius_comparison"]
         self.assertEqual([source.splitlines()[n.lineno - 1].strip() for n in calls],
-                         ["return len(value) == 5"])
+                         ["return len(value) == 5", 'return "x" != value.lower()'])
 
     def test_overloaded_equality_is_called_once_and_remains_unknown(self):
         class Custom:

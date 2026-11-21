@@ -535,7 +535,7 @@ def write_map(root, model, rec, data, destination):
         line = int(site.split(":")[0])
         states = {state: mask(contexts) for state, contexts in observation["states"].items()}
         if observation["op"] in ("Eq", "NotEq") and "p:1" in states:
-            # Equal integers have fixed ordering but their identity can differ
+            # Equal builtin operands have fixed ordering but their identity can differ
             # across runs. The selector retains a test if either state changes.
             states["p:9"] = states["p:1"]
         observed = mask(observation["unknown"])

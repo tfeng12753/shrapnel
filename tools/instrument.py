@@ -202,11 +202,15 @@ class Transformer(ast.NodeTransformer):
         observe = op in ("Is", "IsNot") or (op in ("Lt", "LtE", "Gt", "GtE") and (literal(node.left) or literal(node.comparators[0])))
         if op in ("Eq", "NotEq"):
             left, right = node.left, node.comparators[0]
-            size, bound = (right, left) if isinstance(left, ast.Constant) else (left, right)
-            observe = (self.function_body and node.lineno == node.end_lineno
-                       and isinstance(size, ast.Call) and isinstance(size.func, ast.Name)
-                       and size.func.id == "len" and len(size.args) == 1 and not size.keywords
-                       and isinstance(bound, ast.Constant) and type(bound.value) is int)
+            call, bound = (right, left) if isinstance(left, ast.Constant) else (left, right)
+            observe = False
+            if (self.function_body and node.lineno == node.end_lineno and isinstance(call, ast.Call)
+                    and not call.keywords and isinstance(bound, ast.Constant)):
+                if type(bound.value) is int:
+                    observe = isinstance(call.func, ast.Name) and call.func.id == "len" and len(call.args) == 1
+                elif type(bound.value) is str:
+                    observe = (isinstance(call.func, ast.Attribute) and not call.args
+                               and call.func.attr in ("upper", "lower", "casefold"))
         if not observe:
             return node
         call = ast.Call(func=ast.Name(id="_blast_radius_comparison", ctx=ast.Load()),
@@ -266,10 +270,10 @@ class Instrumentation:
             if op in ("Eq", "NotEq"):
                 # Mixed or user-defined types may run application code for a
                 # replacement operator. The writer represents both possible
-                # identities for equal builtin integers.
+                # identities for equal builtin values.
                 state = None
                 kind = type(left)
-                if kind is int and type(right) is int:
+                if (kind is int or kind is str) and type(right) is kind:
                     unequal = value if op == "NotEq" else not value
                     state = "p:1"
                     if unequal:
