@@ -144,18 +144,35 @@ class FingerprintTests(unittest.TestCase):
         self.addCleanup(patcher.stop)
 
     def test_stable_and_sensitive(self):
-        first = fixture_replay.state_fingerprint()
-        self.assertEqual(first, fixture_replay.state_fingerprint())
+        start = fixture_replay.state_summary()
+        self.assertEqual(start, fixture_replay.state_summary())
+        unchanged = fixture_replay.state_fingerprint(start, fixture_replay.state_summary())
         self.module.CACHE["b"] = 2
-        second = fixture_replay.state_fingerprint()
-        self.assertNotEqual(first, second)
+        added = fixture_replay.state_fingerprint(start, fixture_replay.state_summary())
+        self.assertNotEqual(unchanged, added)
+        self.module.CACHE["b"] = 3
+        self.assertNotEqual(added, fixture_replay.state_fingerprint(start, fixture_replay.state_summary()))
+        del self.module.CACHE["b"]
         self.module.Settings.FLAG = False
-        self.assertNotEqual(second, fixture_replay.state_fingerprint())
+        self.assertNotEqual(unchanged, fixture_replay.state_fingerprint(start, fixture_replay.state_summary()))
+
+    def test_delta_ignores_state_present_before(self):
+        start = fixture_replay.state_summary()
+        self.module.CACHE["b"] = 2
+        first = fixture_replay.state_fingerprint(start, fixture_replay.state_summary())
+        self.module.OTHER = [1]
+        later = fixture_replay.state_summary()
+        self.module.CACHE["c"] = 2
+        del self.module.CACHE["c"]
+        self.assertNotEqual(first, fixture_replay.state_fingerprint(later, fixture_replay.state_summary()))
+        self.assertEqual(fixture_replay.state_fingerprint(later, fixture_replay.state_summary()),
+                         fixture_replay.state_fingerprint(start, start))
 
     def test_too_large_state_is_unknown(self):
         self.module.CACHE = {str(i): i for i in range(10)}
         with mock.patch.object(fixture_replay, "STATE_LIMIT", 5):
-            self.assertIsNone(fixture_replay.state_fingerprint())
+            self.assertIsNone(fixture_replay.state_summary())
+        self.assertIsNone(fixture_replay.state_fingerprint(None, {}))
 
 
 class IsolationTests(unittest.TestCase):

@@ -106,6 +106,24 @@ def main():
         rows = list(getattr(helpers, LOADER)(spec["fixture"].removeprefix("tests/fixtures/")))
         spec["entries"] = len(rows)
 
+    # Pass 1: modules any entry imports lazily. Recording and replay preload them
+    # after class setup, so state comparisons always cover the same module set.
+    lazy = set()
+    for test_id, spec in specs.items():
+        for entry in range(spec["entries"]):
+            def discover(entry=entry, spec=spec, test_id=test_id):
+                known = set(sys.modules)
+                replay.run_entry(modules, classes, spec, test_id, entry)
+                return sorted(n for n in set(sys.modules) - known
+                              if n == "sqlglot" or n.startswith("sqlglot.") or n in replay.STATE_MODULES)
+            found = replay.run_isolated(discover, time.monotonic() + args.timeout)
+            if found is None:
+                sys.exit(f"entry {entry} of {test_id} failed during discovery")
+            lazy.update(found)
+    preloaded = sorted(lazy)
+    replay.preload(preloaded)
+    print(f"preloaded {len(preloaded)} lazily imported modules", file=sys.stderr, flush=True)
+
     tests = {}
     for test_id, spec in specs.items():
         print(f"recording {test_id}: {spec['entries']} entries", file=sys.stderr, flush=True)
@@ -127,16 +145,19 @@ def main():
         entry_cpu, fingerprints, by_line = [], [], {}
         for entry in range(spec["entries"]):
             def plain(entry=entry):
+                before = replay.state_summary()
                 started = time.process_time()
                 passed = replay.run_entry(modules, classes, spec, test_id, entry)
                 cpu = time.process_time() - started
-                return [passed, cpu, replay.state_fingerprint()]
+                return [passed, cpu, replay.state_fingerprint(before, replay.state_summary())]
 
             def traced(entry=entry):
+                before = replay.state_summary()
                 cov = start_coverage(source)
                 passed = replay.run_entry(modules, classes, spec, test_id, entry)
                 cov.stop()
-                return [passed, covered_lines(cov.get_data(), source), replay.state_fingerprint()]
+                return [passed, covered_lines(cov.get_data(), source),
+                        replay.state_fingerprint(before, replay.state_summary())]
 
             first, second = replay.run_isolated(plain, deadline()), replay.run_isolated(traced, deadline())
             if first is None or second is None or first[0] is not True or second[0] is not True:
@@ -167,6 +188,7 @@ def main():
         "python": ".".join(map(str, sys.version_info[:3])),
         "files": {name: replay.sha256_file(source / name) for name in AUDITED},
         "import_cpu": round(import_cpu, 3),
+        "preload": preloaded,
         "setup_cpu": {k: round(v, 3) for k, v in setup_cpu.items()},
         "tests": tests,
     }

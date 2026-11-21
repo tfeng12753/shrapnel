@@ -111,9 +111,9 @@ def _summary(value, depth, budget):
     return name
 
 
-def state_fingerprint():
-    """Deterministic digest of module and class state in the compared modules (None if too large)."""
-    digest = hashlib.sha256()
+def state_summary():
+    """{name: digest} of module and class state in the compared modules (None if too large)."""
+    summary = {}
     budget = [STATE_LIMIT]
     try:
         for module_name in sorted(sys.modules):
@@ -133,10 +133,32 @@ def state_fingerprint():
                     text = _summary(members, 3, budget)
                 else:
                     text = _summary(value, 3, budget)
-                digest.update(f"{module_name}.{key}={text}\n".encode("utf-8", "surrogatepass"))
+                summary[f"{module_name}.{key}"] = hashlib.sha256(
+                    text.encode("utf-8", "surrogatepass")).hexdigest()[:24]
     except (OverflowError, RecursionError, RuntimeError, TypeError, ValueError):
         return None
-    return digest.hexdigest()
+    return summary
+
+
+def state_fingerprint(before, after):
+    """Digest of what an entry changed in global state (None if unknown)."""
+    if before is None or after is None:
+        return None
+    changed = sorted((key, after.get(key)) for key in before.keys() | after.keys() if before.get(key) != after.get(key))
+    return hashlib.sha256(json.dumps(changed).encode("utf-8")).hexdigest()
+
+
+def entry_outcome(modules, classes, spec, test_id, entry):
+    """[passed, state fingerprint] for one entry; run in a fresh fork of the prepared process."""
+    before = state_summary()
+    passed = run_entry(modules, classes, spec, test_id, entry)
+    return [passed, state_fingerprint(before, state_summary())]
+
+
+def preload(names):
+    """Import modules entries load lazily, so state comparisons see the same module set."""
+    for name in names:
+        importlib.import_module(name)
 
 
 class _Outcome:
@@ -299,7 +321,7 @@ def run_isolated(work, deadline, before=None, after=None):
         return None
 
 
-def replay_child(source, overlays, specs, work, wall_seconds):
+def replay_child(source, overlays, specs, work, wall_seconds, preloaded=()):
     """Child entry point: [[test_id, entry, passed, fingerprint], ...] or None."""
     from native_probes import _install_overlays
 
@@ -315,6 +337,7 @@ def replay_child(source, overlays, specs, work, wall_seconds):
 
     sys.addaudithook(reject_children)
     modules, classes = prepare(source, specs)
+    preload(preloaded)
 
     def allow():
         own_fork[0] = True
@@ -322,21 +345,23 @@ def replay_child(source, overlays, specs, work, wall_seconds):
     def deny():
         own_fork[0] = False
 
-    results = []
+    results, failed = [], set()
     for test_id, entry in work:
+        if test_id in failed:
+            continue  # One failing entry keeps the test; its other entries cannot change that.
         spec = specs[test_id]
 
         def one(test_id=test_id, entry=entry, spec=spec):
             deny()
-            passed = run_entry(modules, classes, spec, test_id, entry)
-            return [passed, state_fingerprint()]
+            return entry_outcome(modules, classes, spec, test_id, entry)
 
         outcome = run_isolated(one, deadline, allow, deny)
         if outcome is None:
-            return None
+            failed.add(test_id)
+            continue
         results.append([test_id, entry, outcome[0], outcome[1]])
-        if not outcome[0]:
-            break  # One failing entry keeps the test; the rest cannot change that.
+        if outcome[0] is not True:
+            failed.add(test_id)
     return results
 
 
@@ -541,7 +566,7 @@ def _refine(selector, data, mask, name, change, old, new, budget, start):
     chosen = selector.chosen(mask)
     drop_bits = sum(selector.test_bits[t] for t in candidates)
     saving = schedule_cost(chosen) - schedule_cost([t for t in chosen if not drop_bits & (1 << t["number"])])
-    classes = {tuple(t.split("::")[:2]) for t in candidates}
+    classes = {tuple(t.split("::")[:2]) for t in tests}
     expected = (data.get("import_cpu", 2.0) + sum(data.get("setup_cpu", {}).get("::".join(c), 2.0) for c in classes)
                 + sum(tests[t]["entry_cpu"][i] for t, entries in candidates.items() for i in entries)
                 + 0.02 * sum(map(len, candidates.values())))
@@ -549,12 +574,14 @@ def _refine(selector, data, mask, name, change, old, new, budget, start):
     if expected * 1.25 >= saving or expected > budget:
         return mask, cpu_seconds() - start
     pinned = selector.source.resolve()
-    specs = {t: tests[t] for t in candidates}
+    # Prepare every recorded class, as the recording did: class setup may change global state.
+    specs = dict(tests)
     work = [(t, i) for t, entries in sorted(candidates.items()) for i in entries]
     cpu_limit = min(budget, 2 * expected + .5)
     wall = 3 * cpu_limit + 2
     from native_probes import _forked
-    outcome, _ = _forked(lambda: replay_child(pinned, {name: new}, specs, work, wall), None, wall + .5, cpu_limit)
+    outcome, _ = _forked(lambda: replay_child(pinned, {name: new}, specs, work, wall,
+                                                      data.get("preload", ())), None, wall + .5, cpu_limit)
     if not isinstance(outcome, list):
         return mask, cpu_seconds() - start
     verified = {}
