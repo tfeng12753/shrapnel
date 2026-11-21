@@ -1,47 +1,41 @@
-# Validation record
+# Local validation
 
-The development environment has Python 3.12.14 and no Docker executable or
-container daemon. GitHub and PyPI source/package requests were denied by its
-network policy. GitHub CLI has no authenticated host; the GitHub integration is
-administratively disabled. No public repository was created and no competition
-submission was made.
+On macOS arm64, Python 3.13.15, the locked packages and coverage 7.10.7 ran the
+unchanged pinned SQLGlot baseline. All 1,621 tests passed, including 25,454
+subtests. The map builder produced a map of 314 files. The challenge catalog
+contains 1,620 numbered tests. The selector translated the map by test ID.
 
-Completed:
+The official local scorer evaluated the 30 public patches. Three fresh runs
+using the committed default each cost 651.870 simulated seconds, emitted
+119,984 bytes and missed zero commits. User and system CPU brought the median
+to 652.5 seconds. The historical no-map run in `validation.json` cost
+1,104.510 simulated seconds. Docker limits, cgroup CPU, and the hidden batch
+still require separate measurement.
 
-- 41 standard-library unit and integration checks for scheduling, strict patch
-  application, AST checks, test-ID remapping, fixture/source readers, constant
-  dependency propagation, inherited settings, subprocess dependencies, and
-  conservative fallbacks. New checks cover comparison boundary refinement,
-  safe identity/equality cases, string Enum values, classmethod settings, deferred
-  annotations, shadowed `getattr`, actual forked native probes, failing subtests,
-  teardown errors, and timeouts.
-- All 30 provided patches run through the real selector in map-unavailable mode.
-- Official `score.py` validation: 1104.510 simulated seconds, zero missed commits.
-- Three local subprocess runs with measured user+system CPU and median scoring.
-- Output size: 210,840 bytes, comfortably below 2 MB.
+The targeted Python strategy scheduled 139.455 seconds of tests, but five
+missed patches added 1,500 seconds. Coverage alone, comparison refinement,
+and refinement with probes all missed the same five. Every omitted test was
+in the executor or optimizer test module. Both use process pools, and the
+local map flagged only one catalog test as external. Check worker-process
+coverage and its attribution to the parent test before enabling targeted
+Python selection by default.
 
-Not completed:
+| Missed patch | Missing test numbers in the sample catalog |
+| --- | --- |
+| 2jrq | 1106, 1325, 1355, 1440, 1441 |
+| 3utz | 1324, 1325, 1327, 1353, 1355, 1362, 1375, 1377, 1417, 1420, 1440, 1441, 1454 |
+| 535z | 1434 |
+| ary6 | 1355, 1417, 1420 |
+| rszg | 1355 |
 
-- Docker image build and exact restricted-container execution.
-- Pinned sqlglot test collection with the supplied locked dependencies.
-- Coverage and attribute instrumentation on sqlglot's actual suite.
-- Build wall time and peak-memory verification.
-- Sample or unseen-patch miss/score measurement with a real dependency map.
+The selector passed 47 project tests. The mixed-block regression checks that
+adding a branch beside a replacement retains other users of the enclosing
+function. All public patches applied to the pinned source identically before
+and after the parser change.
 
-The benchmark in `validation.json` measures the scheduling-only fallback. It
-must not be presented as a result for the dependency-based selector. Run
-`make sample` on a network-enabled Docker host to establish that result. If the
-map build fails, the build deliberately stops rather than shipping a map made
-from an incomplete or failing baseline run. `Dockerfile.safe` provides the
-scheduling-only alternative described in the README.
+Run `make competitive` on a Docker host to rebuild and compare all four
+strategies under the challenge limits. For a local run with a complete map:
 
-An experimental naming-only selector was rejected: it cost 178.584 simulated
-seconds before penalties but missed six sample commits, for 1978.584 seconds
-with penalties. It is not used or included in the submission. No per-patch or
-per-mutation failure rules were added in response to those misses.
-
-The new source/operand observers and bounded test verifier have not produced a
-new sqlglot score in this environment. The only measured submission score here
-remains the full-suite scheduling fallback. `make competitive` now automates the
-missing real-image experiment, including feature ablations, three runs per
-variant, CPU measurement, global configuration selection, and evidence export.
+```sh
+python3 tools/benchmark.py --source /path/to/pinned/sqlglot --map /path/to/dependencies.json.gz
+```

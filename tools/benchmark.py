@@ -24,6 +24,7 @@ def main():
     parser.add_argument("--report", type=Path)
     parser.add_argument("--probe-budget", type=float)
     parser.add_argument("--no-relations", action="store_true")
+    parser.add_argument("--conservative-python", action=argparse.BooleanOptionalAction, default=None)
     args = parser.parse_args()
     tests = json.loads((args.data / "tests.json").read_text())["tests"]
     answers = json.loads((args.data / "answers.json").read_text())["commits"]
@@ -31,6 +32,8 @@ def main():
     options = []
     if args.probe_budget is not None:
         options += ["--probe-budget", str(args.probe_budget)]
+    if args.conservative_python is not None:
+        options.append("--conservative-python" if args.conservative_python else "--no-conservative-python")
     if args.no_relations:
         options += ["--no-relations"]
     for i in range(args.runs):

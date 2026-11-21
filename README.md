@@ -1,28 +1,20 @@
 # Blast Radius selector
 
-A submission project for the sqlglot test-selection challenge. The competitive
-target is below 149.7 seconds, the best time in the supplied leaderboard; this
-project does not yet have a measured result at that level. There are no
-patch hashes, sample commit IDs, or sample-outcome lookup tables in the selector
-or map generator.
+A submission project for the sqlglot test-selection challenge. The target is below 100 seconds. The
+default selector scored **652.5 seconds with zero missed commits** on the 30
+public patches in a local macOS arm64 run. The scorer includes the simulated
+schedules and selector CPU. The Linux container score remains unmeasured.
 
-**Status:** implemented and locally checked. The full Docker/coverage build has
-not been run in the authoring environment: Docker is absent and outbound GitHub
-and PyPI downloads are blocked. Do not treat the dependency selector as validated
-on sqlglot until `make sample` completes on a Docker machine.
+| Mode | Simulated seconds including penalties | Missed commits |
+| --- | ---: | ---: |
+| Full suite on every patch | 1104.510 | 0 |
+| Conservative Python selection with the local baseline map | 651.870 | 0 |
+| Targeted Python selection with comparison refinement and probes | 1639.455 | 5 |
 
-## Measured result
-
-| Mode | Sample simulated seconds | Misses | Verification |
-| --- | ---: | ---: | --- |
-| Provided starter, 3 workers | 1614.1 | 0 | Challenge baseline |
-| Scheduling-only fallback | 1104.510 | 0 | Official local scorer, 30 samples |
-| Coverage and dependency selection | Not measured | Not measured | Requires network-enabled Docker build |
-
-The fallback's three-run local median, including child-process CPU, was about
-**1104.6 seconds**. This is a 31.6% reduction from the stated starter simulated
-score. It comes from scheduling alone. See `validation.json` for the recorded
-measurements and `VALIDATION.md` for the validation boundary.
+The default uses mapped readers for fixtures and AST-identical Python edits.
+An executable Python change selects the full suite. The targeted mode remains
+available for benchmarking improved maps. See [VALIDATION.md](VALIDATION.md)
+for the environment, misses, and path to reproduce the measurements.
 
 ## Run
 
@@ -102,12 +94,11 @@ first for all worker counts from 1 through 8; the selector chooses the smallest
 `max(load) + 2 * worker_count` using integer milliseconds. For the entire sample
 suite the optimal count is 4, because the slowest individual test is 28.817 s.
 
-Run `make competitive` to compare coverage alone, comparison refinement, and
+Run `make competitive` to compare conservative Python selection, coverage alone, comparison refinement, and
 comparison refinement with verification, three times each. It selects the best
 global configuration among zero-miss sample variants and exports
 `research-bundle.zip` with the pinned source, maps, outputs, and CPU measurements.
-The new features have 41 passing local checks, including real forked test probes.
-They have not yet been exercised on the pinned sqlglot suite.
+The project has 47 passing local checks, including real forked native probes.
 
 Baseline coverage is an approximation of dependencies. Reflection, state shared
 between tests, indirect class-level access, and behavior in uninstrumented child
@@ -138,7 +129,7 @@ make competitive
 
 This requires Docker and network access during build. It enforces a 600-second
 build deadline, applies the scoring container limits to every run, measures CPU,
-and compares three globally configured strategies. It writes
+and compares four globally configured strategies. It writes
 `selector-config.json` for the best zero-miss sample variant, caches the plain
 baseline map when it fits the repository allowance, and exports
 `research-bundle.zip`. Commit the chosen config/map and rebuild before submission.

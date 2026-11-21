@@ -15,6 +15,7 @@ import zipfile
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from score import evaluate_run
+from tools.profile_schedule import schedule_profile
 
 
 def main():
@@ -31,8 +32,12 @@ def main():
     data = ROOT / "sample"
     tests = json.loads((data / "tests.json").read_text())["tests"]
     answers = json.loads((data / "answers.json").read_text())["commits"]
-    variants = {"coverage": ["--no-relations", "--probe-budget", "0"],
-                "relations": ["--relations", "--probe-budget", "0"], "relations_and_probes": ["--relations", "--probe-budget", "8"]}
+    variants = {
+        "conservative_python": ["--conservative-python", "--no-relations", "--probe-budget", "0"],
+        "coverage": ["--no-conservative-python", "--no-relations", "--probe-budget", "0"],
+        "relations": ["--no-conservative-python", "--relations", "--probe-budget", "0"],
+        "relations_and_probes": ["--no-conservative-python", "--relations", "--probe-budget", "8"],
+    }
     report, outputs = {}, {}
     for variant, options in variants.items():
         runs = []
@@ -68,7 +73,15 @@ def main():
             runs.append(run)
             outputs[f"{variant}-{i+1}.jsonl"] = process.stdout
             print(f"{variant} run {i+1}: total={run['total_seconds']:.3f}s simulated={run['simulated_seconds']:.3f}s CPU={cpu:.3f}s misses={run['misses']}", flush=True)
-        report[variant] = {"runs": runs, "median_total_seconds": statistics.median(run["total_seconds"] for run in runs)}
+        median = statistics.median(run["total_seconds"] for run in runs)
+        index = min(range(len(runs)), key=lambda j: abs(runs[j]["total_seconds"] - median))
+        output_name = f"{variant}-{index + 1}.jsonl"
+        profile = schedule_profile(outputs[output_name], tests, answers)
+        report[variant] = {"runs": runs, "median_total_seconds": median,
+                           "profile_output": output_name, "schedule_profile": profile}
+        for patch in profile["patches"][:3]:
+            print(f"  {patch['commit']}: {patch['excess_schedule_ms'] / 1000:+.3f}s vs failing-only schedule"
+                  f" ({patch['extra_count']} extra tests, {len(patch['missing'])} missing)")
     # A missed commit is never hidden by a favorable average over other commits.
     valid = {key: value for key, value in report.items() if all(run["misses"] == 0 for run in value["runs"])}
     report["best_zero_miss_variant"] = min(valid, key=lambda key: valid[key]["median_total_seconds"]) if valid else None
@@ -78,7 +91,9 @@ def main():
     print("Best zero-miss variant:", report["best_zero_miss_variant"])
     best = report["best_zero_miss_variant"]
     if best is not None:
-        config = {"relations": best != "coverage", "probe_budget": 8.0 if best == "relations_and_probes" else 0.0}
+        config = {"conservative_python": best == "conservative_python",
+                  "relations": best in ("relations", "relations_and_probes"),
+                  "probe_budget": 8.0 if best == "relations_and_probes" else 0.0}
         (ROOT / "selector-config.json").write_text(json.dumps(config, separators=(",", ":")) + "\n")
         print("Updated global selector configuration; rebuild before submission.")
     else:

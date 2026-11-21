@@ -15,7 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "tools"))
 from instrument import Instrumentation, OPS, Transformer, outcome, relation
-from selector import Selector, REVISION, comparison_changes
+from selector import Selector, REVISION, classify_python_edit, comparison_changes
 from native_probes import verify
 from build_map import Recorder, SourceModel, write_map
 
@@ -62,6 +62,8 @@ class ComparisonTests(unittest.TestCase):
                 self.assertEqual(outcome(state, "Is"), left is right)
 
     def test_operator_only_matching_rejects_operand_changes(self):
+        self.assertIsNone(comparison_changes("x = 1", "x = True"))
+        self.assertEqual(classify_python_edit(ast.parse("x = 1"), ast.parse("# note\nx = 1")), [])
         self.assertEqual(comparison_changes("x = a < 3\n", "x = a <= 3\n"), [("1:4", "Lt", "LtE")])
         self.assertIsNone(comparison_changes("x = a < 3\n", "x = a <= 4\n"))
         self.assertIsNone(comparison_changes("x = a < 3\n", "x = a > 3\ny = 1\n"))

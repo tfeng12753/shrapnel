@@ -53,6 +53,18 @@ class PatchTests(unittest.TestCase):
         result, removed, inserted = apply_change(old, parse_patch(diff("m.py", old, new))[0])
         self.assertEqual((result, removed, inserted), (new, set(), {1}))
 
+    def test_reject_inconsistent_new_position(self):
+        patch = diff("m.py", "x = 1\n", "x = 2\n").replace("@@ -1 +1 @@", "@@ -1 +8 @@")
+        with self.assertRaises(ValueError):
+            apply_change("x = 1\n", parse_patch(patch)[0])
+
+    def test_reject_unhandled_file_in_mixed_patch(self):
+        rename = "diff --git a/old b/new\nsimilarity index 100%\nrename from old\nrename to new\n"
+        edit = diff("m.py", "x = 1\n", "x = 2\n")
+        for patch in (edit + rename, rename + edit):
+            with self.assertRaises(ValueError):
+                parse_patch(patch)
+
     def test_reject_incorrect_base(self):
         patch = diff("m.py", "x = 1\n", "x = 2\n")
         with self.assertRaises(ValueError):
@@ -94,6 +106,13 @@ class SelectionTests(unittest.TestCase):
         patch = diff("m.py", "def f():\n    return 1\n", "def f():\n    return 2\n")
         self.assertEqual(self.selector().select(patch), 1)
 
+    def test_trace_uses_remapped_test_numbers_and_baseline_lines(self):
+        patch = diff("m.py", "def f():\n    return 1\n", "def f():\n    return 2\n")
+        events = []
+        selected = self.selector().select(patch, lambda *event: events.append(event))
+        self.assertEqual(selected, 1)
+        self.assertEqual(events, [(1, "affected line or anchor", "m.py", 2)])
+
     def test_comment_is_semantically_unchanged(self):
         patch = diff("m.py", "def f():\n    return 1\n", "# comment\ndef f():\n    return 1\n")
         self.assertEqual(self.selector().select(patch), 0)
@@ -110,6 +129,22 @@ class SelectionTests(unittest.TestCase):
     def test_fixture_comment_is_not_ignored(self):
         patch = diff("fixture.sql", "SELECT 1;\n", "-- semantic hint\nSELECT 1;\n")
         self.assertEqual(self.selector().select(patch), 4)
+
+    def test_conservative_mode_distinguishes_code_from_comments_and_fixture_edits(self):
+        s = self.selector()
+        s.conservative_python = True
+        old = self.root.joinpath("m.py").read_text()
+        comment = diff("m.py", old, "# note\n" + old)
+        fixture = diff("fixture.sql", "SELECT 1;\n", "SELECT 2;\n")
+        self.assertEqual(s.select(comment + fixture), 4)
+        self.assertEqual(s.select(fixture + diff("m.py", old, old.replace("1", "2"))), s.all)
+
+    def test_mixed_replacement_and_insertion_keeps_other_function_users(self):
+        old = "def f(flag):\n    if flag:\n        return 1\n    return 0\n"
+        new = old.replace("        return 1", "        return 2\n    raise ValueError()")
+        self.source("m.py", old)
+        self.entry("m.py", {"3": "2"}, [[1, 4, "function", "3"]])
+        self.assertEqual(self.selector().select(diff("m.py", old, new)), 3)
 
     def test_syntax_error_requires_full_suite(self):
         patch = diff("m.py", "def f():\n    return 1\n", "def f(:\n    return 1\n")
