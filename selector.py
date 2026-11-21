@@ -448,8 +448,13 @@ class Selector:
     def __init__(self, tests: list[dict], source: Path, map_path: Path, *, conservative_python=False,
                  relations=None, child_work=False, import_closure=None, import_check_budget=0.0,
                  setup_check_budget=0.0, executor_fixtures=False, executor_plans=None, executor_plan_budget=0.0,
-                 lazy_test_budget=0.0):
+                 lazy_test_budget=0.0, import_effects=None, downstream_import_budget=0.0):
         self.tests, self.source = tests, source
+        # Patches that change code or settings used while some module is being
+        # imported can break collection of every test file importing it. A forked
+        # import of the affected modules decides (CPU charged to this budget).
+        self.import_effects = import_effects
+        self.downstream_import_budget = downstream_import_budget
         self.executor_fixtures = executor_fixtures
         self.executor_plans = executor_plans.resolve() if executor_plans and executor_plan_budget > 0 else None
         self.executor_plan_budget = executor_plan_budget
@@ -585,6 +590,49 @@ class Selector:
         return result
 
     def select(self, patch: str, trace=None) -> int:
+        result = self._select_base(patch, trace)
+        if result != self.all and self.import_effects is not None and self.complete and not self.conservative_python:
+            extra = self.downstream_imports(patch, result)
+            if extra and trace is not None:
+                trace(extra, "downstream import failure", None, None)
+            result |= extra
+        return result
+
+    def downstream_imports(self, patch, selected):
+        """Tests in files that fail collection because the patch breaks an import they depend on."""
+        try:
+            changes = parse_patch(patch)
+            edits, overlays = [], {}
+            for c in changes:
+                if c["old"] != c["new"]:
+                    return self.all
+                old = self.read_source(c["old"])
+                new, removed, inserted = apply_change(old, c)
+                overlays[c["old"]] = new
+                if c["old"].endswith(".py"):
+                    edits.append((c["old"], old, removed | inserted))
+        except (ValueError, OSError, UnicodeError):
+            return self.all
+        owners = self.import_effects.owners(edits)
+        if not owners:
+            return 0
+        candidates = self.import_effects.tests_of(self.import_effects.dependents(owners))
+        if not candidates & ~selected:
+            return 0  # Every test that could fail collection is already selected.
+        from import_effects import module_name
+        modules = [module_name(owner) for owner in owners]
+        if None in modules or self.downstream_import_budget < 0.5:
+            return candidates
+        from native_probes import verify_imports
+        failed, cpu = verify_imports(self.source, overlays, modules, wall_seconds=10.0,
+                                     cpu_seconds=min(4.0, self.downstream_import_budget))
+        self.downstream_import_budget -= cpu
+        if failed is None:
+            return candidates
+        broken = [owner for owner, module in zip(owners, modules) if module in failed]
+        return self.import_effects.tests_of(self.import_effects.dependents(broken))
+
+    def _select_base(self, patch: str, trace=None) -> int:
         # The offline profiler supplies trace(mask, reason, path, location).
         def include(mask, reason, path=None, location=None):
             if trace is not None and mask:
@@ -895,6 +943,8 @@ def parse_args(argv=None):
     parser.add_argument("--executor-plans", type=Path, default=Path("/app/executor-plans"))
     parser.add_argument("--executor-plan-budget", type=float)
     parser.add_argument("--lazy-test-budget", type=float)
+    parser.add_argument("--import-time", type=Path, default=Path("/app/import-time.json"))
+    parser.add_argument("--downstream-import-budget", type=float)
     parser.add_argument("--config", type=Path, default=Path(__file__).with_name("selector-config.json"))
     args = parser.parse_args(argv)
     try:
@@ -927,13 +977,28 @@ def parse_args(argv=None):
         args.executor_plan_budget = float(config.get("executor_plan_budget", 0.0))
     if args.lazy_test_budget is None:
         args.lazy_test_budget = float(config.get("lazy_test_budget", 0.0))
+    if args.downstream_import_budget is None:
+        args.downstream_import_budget = float(config.get("downstream_import_budget", 0.0))
     args.settings = {"lazy_test_budget": args.lazy_test_budget, "executor_fixtures": bool(args.executor_fixtures), "executor_plan_budget": args.executor_plan_budget,"conservative_python": bool(conservative), "child_work": bool(child_work),
                      "relations": bool(args.relations), "probe_budget": float(args.probe_budget),
                      "import_check_budget": float(args.import_check_budget),
-                     "setup_check_budget": float(args.setup_check_budget)}
+                     "setup_check_budget": float(args.setup_check_budget),
+                     "downstream_import_budget": float(args.downstream_import_budget)}
     if args.cost_aware_probes:
         args.settings["probe_budget"] = {"seconds": args.probe_budget, "cost_aware": True}
     return args
+
+
+def load_import_effects(path, tests):
+    """The build-time import index, or None when it is missing or for another revision."""
+    try:
+        index = json.loads(Path(path).read_text())
+        if index.get("revision") != REVISION:
+            return None
+        from import_effects import ImportEffects
+        return ImportEffects(index, tests)
+    except (OSError, ValueError, KeyError, TypeError, AttributeError):
+        return None
 
 
 def resolve_settings(argv=None):
@@ -956,7 +1021,9 @@ def main():
                         setup_check_budget=max(0.0, settings["setup_check_budget"]),
                         executor_fixtures=settings["executor_fixtures"], executor_plans=args.executor_plans,
                         executor_plan_budget=max(0.0, settings["executor_plan_budget"]),
-                        lazy_test_budget=max(0.0, settings["lazy_test_budget"]))
+                        lazy_test_budget=max(0.0, settings["lazy_test_budget"]),
+                        import_effects=load_import_effects(args.import_time, tests),
+                        downstream_import_budget=max(0.0, settings["downstream_import_budget"]))
     schedules = {}
     remaining = max(0.0, args.probe_budget)
     for patch in sorted((args.data / "commits").glob("*.patch")):
