@@ -158,6 +158,11 @@ class AliasReadsTest(unittest.TestCase):
         self.assertEqual(entry["keys"], {"u": "2"})
         self.assertEqual(entry["presence"]["x"], everyone)
         self.assertEqual(entry["transferred"], "3")
+        # The import-time membership read already reaches every test.
+        self.assertEqual(entry["unobserved"], "0")
+        self.rec.dictionary_presence.clear()
+        write_map(self.root, self.model, self.rec, data, destination)
+        entry = json.loads(destination.read_text())["files"]["sqlglot/settings.py"]["dictionary_reads"]["Settings.ESCAPES"]
         # t::other used the symbol without any observed read or transfer.
         self.assertEqual(entry["unobserved"], "4")
 
