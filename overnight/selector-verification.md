@@ -58,7 +58,7 @@ The cost-aware verifier now uses the one-worker scheduler order and stops at the
 
 Local ground-truth recovery: the subprocess entry point must guard `pytest.main` with `if __name__ == "__main__":` so sqlglot's spawn-based process pools do not rerun the suite in workers. The unguarded attempt was stopped and isolated. The guarded producer is running for seed 42, IDs `m42000` through `m42030` at stride 2 and the unmodified baseline. Only its audited result directory is used for tune scoring.
 
-## Final local public replay
+## Earlier local public replay
 
 Code revision `b690300532da5491159a0eb550b37db17dad407f`. CPython 3.13.5 and the pinned requirements. Each row ran the full 30-patch sample five times, with PYTHONHASHSEED 1 through 5. The schedule SHA-256 was identical across the five runs in each row. The CPU measure is user plus system time via `getrusage(RUSAGE_CHILDREN)` around the selector, including reaped native children. The published map hashes and common config above apply. The probe settings remain `0.0`, `8.0`, or `{"seconds":8.0,"cost_aware":true}`.
 
@@ -169,3 +169,48 @@ With probes off or legacy on, all five container outputs per row matched their l
 The revised cost model discounts potential savings by `0.8 ** test_count`, a heuristic for needing every test to pass, and requires those expected savings to exceed 1.25 times the estimated CPU (`0.55 + 1.25 * total_catalog_seconds`). It reserves `1.1 + 2 * total_catalog_seconds` CPU seconds per batch, at most 2.1 s, with a wall backup at three times that reservation. This gives subprocess startup headroom and avoids spending CPU on marginal large batches. Runtime uses no sample identifiers or answers. Again run five local and scorer-format repetitions before deciding whether the new policy pays for itself.
 
 The audited tune baseline passed 1,620 tests with one skip and 25,440 passed subtests. The first five even IDs are recorded in the local results directory. The first case `m42000` failed catalog test 1362 via a subtest, which every measured variant retained. The remaining local cases are still running.
+
+## Final public replay
+
+Measured code revision `d51e1edce490fc7b37520e3db6da4538498595f7` and the published map fingerprints above. The two environments were the locked CPython 3.13.5 host and the `linux/amd64` scorer-format Docker image (`sha256:8b06ac70e856c061d9710dc7fbe7a51bb7323dc482864c30cf01aa159b195181`), with byte-identical current app files mounted read-only and the scorer runtime limits. The Docker repeats each launched an independent selector process and used `tools/timed_run.py`. All **60** replays (five per row in each environment) scored **zero misses**. Within each configuration, all ten outputs were byte-identical across both environments and seeds 1 to 5. The nested config file reproduced its corresponding CLI output.
+
+| Relations | Probes | Simulated s | Misses | Host CPU median s | Container CPU median s | Container CPU added vs off s | Container simulated + CPU s |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Off | off | 166.316 | 0 | 0.934025 | 1.506399 | +0.000000 | 167.822399 |
+| Off | legacy | 164.286 | 0 | 1.282302 | 2.239395 | +0.732996 | 166.525395 |
+| Off | cost-aware | 162.129 | 0 | 2.392630 | 3.662717 | +2.156318 | 165.791717 |
+| On | off | 118.443 | 0 | 0.762182 | 1.394165 | +0.000000 | 119.837165 |
+| On | legacy | 116.413 | 0 | 1.121130 | 2.186614 | +0.792449 | 118.599614 |
+| On | cost-aware | 114.256 | 0 | 2.072002 | 3.672278 | +2.278113 | 117.928278 |
+
+Per-run CPU seconds in seed order
+
+- `relations_false__probes_off`. Host 0.715986, 0.982121, 0.934025, 0.889149, 0.949045. Container 1.638108, 1.506399, 1.477210, 1.476768, 1.697140. Schedule SHA-256 `7189decd1832209759637263631ccef60dd42cde664cbf4544b6fa6a53379e1e`.
+- `relations_false__probes_legacy`. Host 1.330974, 1.282302, 1.218843, 1.079726, 1.308387. Container 2.239395, 2.194382, 2.398260, 2.561652, 2.183203. Schedule SHA-256 `baf8b7a5b67d3cd13354cdf90ac243924bfa123abd4b89e3fc5fa776a213a239`.
+- `relations_false__probes_cost_aware`. Host 2.544054, 2.048548, 2.392630, 2.493817, 2.064443. Container 3.521463, 3.662717, 3.730933, 3.473244, 3.666173. Schedule SHA-256 `9d0ab0898af499c32329c151099d5ce247f1bdff38fa06f36ad8d9cf2d68e6b7`.
+- `relations_true__probes_off`. Host 0.960600, 0.713563, 0.747167, 0.783294, 0.762182. Container 1.328855, 1.501047, 1.394165, 1.390879, 1.520473. Schedule SHA-256 `6bbcfeac36700189676d9cb458ed67a1dbfd2f4d10d3e941deb5975f4c2cf89a`.
+- `relations_true__probes_legacy`. Host 1.121130, 1.160001, 1.092997, 1.116991, 1.131599. Container 2.143928, 2.186614, 2.129300, 2.531266, 2.452602. Schedule SHA-256 `7e6042b43dfc30773220846110b10e858d981aa5560dd8ad8f2c1ed396fd4d53`.
+- `relations_true__probes_cost_aware`. Host 2.072002, 2.088021, 2.077817, 1.900060, 1.971135. Container 4.172706, 4.356589, 3.531353, 3.576455, 3.672278. Schedule SHA-256 `2060dbee521cc16173e5b5583224dbfd5e3269a97878aed6671dfb0c712a200e`.
+
+Cost-aware verification saved two workers per configuration. With guarded relations on, it improved the scorer-format total by 1.908887 s versus probes off and 0.671336 s versus the legacy probe policy. With relations off, those improvements were 2.030682 s and 0.733678 s. These are local scorer-format measurements. The shipped defaults retain their existing configuration.
+
+The tune producer is halfway through. The seven completed even IDs at this checkpoint were `m42000` through `m42012` at stride two. At the same measured selector revision and settings, all six variants caught all failures. See the interim results below. The remaining nine are running and the official workflow has yet to publish artifacts.
+
+| Relations | Probes | Interim tune simulated s | Misses | CPU s |
+| --- | --- | ---: | ---: | ---: |
+| Off | off | 35.578 | 0 | 0.357785 |
+| Off | legacy | 31.551 | 0 | 1.291164 |
+| Off | cost-aware | 31.551 | 0 | 1.244007 |
+| On | off | 35.578 | 0 | 0.278541 |
+| On | legacy | 31.551 | 0 | 1.460996 |
+| On | cost-aware | 31.551 | 0 | 1.283769 |
+
+Completed failure labels at this checkpoint (baseline had no failures)
+
+- `m42000` had failing test numbers `[1362]`.
+- `m42002` had failing test numbers `[]`.
+- `m42004` had failing test numbers `[1420]`.
+- `m42006` had failing test numbers `[]`.
+- `m42008` had failing test numbers `[]`.
+- `m42010` had failing test numbers `[1352]`.
+- `m42012` had failing test numbers `[0, 1, 3, 4]`.
