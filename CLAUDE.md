@@ -14,9 +14,9 @@ Never write, in any prose you add or change:
   library" or "the target library";
 - the names, usernames or repository names of any other people or groups, or
   links to their work;
-- any mention of competitions, challenges, contests, leaderboards, rankings,
-  submissions, judges, organizers, hidden test sets, or scores from any
-  external system;
+- anything about how this work is evaluated or compared outside this
+  repository: external results, standings, deadlines, reviewers, or test sets
+  other than the sample patches and our own held-out mutants;
 - abbreviations or short forms of any of the above.
 
 Use neutral wording instead: "sample patches", "held-out mutants",
