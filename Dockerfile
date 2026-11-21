@@ -14,6 +14,8 @@ COPY maps /app/maps
 ARG MAP_TIMEOUT=180
 # Maps use ONLY the unchanged pinned checkout, never sample patches/answers.
 RUN if [ "$BUILD_MAP" != "1" ]; then :; \
+    elif [ -f /app/maps/dependencies.json.gz ]; then \
+      cp /app/maps/dependencies.json.gz /app/dependencies.json.gz; \
     elif [ -f /app/maps/dependencies.json ]; then \
       python -c 'import gzip,pathlib; p=pathlib.Path("/app/maps/dependencies.json"); gzip.open("/app/dependencies.json.gz", "wb").write(p.read_bytes())'; \
     else \
