@@ -150,7 +150,8 @@ def main():
     best = report["best_zero_miss_variant"]
     if best is not None:
         config = VARIANTS[best]
-        (ROOT / "selector-config.json").write_text(json.dumps(config, separators=(",", ":")) + "\n")
+        # One key per line, so each agent's settings stay on their own lines.
+        (ROOT / "selector-config.json").write_text(json.dumps(config, indent=2) + "\n")
         print("Wrote the measured configuration to selector-config.json:", config)
         if not args.no_validate:
             # The shipped default (no flags) must reproduce the measured selections.
