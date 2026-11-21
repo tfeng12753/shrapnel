@@ -19,7 +19,34 @@ import time
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from selector import apply_change, parse_patch  # noqa: E402
 
-ID = re.compile(r"^(?:FAILED|ERROR|SUBFAIL)\s+(\S+?)(?:\s|$)")
+# Short-summary outcomes that mean the owning test fails. pytest 9 reports a failing
+# unittest subTest as "SUBFAILED[title] tests/x.py::C::t - msg" while the parent test
+# itself counts as passed, so subtest lines must be attributed to their parent.
+OUTCOME = re.compile(r"^(?:FAILED|ERROR|SUBFAILED|SUBERROR)\b")
+TEST_ID = re.compile(r"(?:^|\s)(tests/\S+?)(?=\s|$)")
+
+
+def failing_tests(stdout, number):
+    """Map pytest -rfE short-summary lines to catalog numbers; return (failing, unknown, lines)."""
+    failing, unknown, lines = set(), set(), []
+    for line in stdout.splitlines():
+        if not OUTCOME.match(line):
+            continue
+        lines.append(line[:300])
+        m = TEST_ID.search(line)
+        if not m:
+            unknown.add(line[:120])
+            continue
+        test_id = re.sub(r"\[.*$", "", m[1])
+        if test_id in number:
+            failing.add(number[test_id])
+            continue
+        # Collection errors name a file; every catalog test in it is affected.
+        matched = [n for i, n in number.items() if i == test_id or i.startswith(test_id + "::")]
+        failing.update(matched)
+        if not matched:
+            unknown.add(test_id)
+    return failing, unknown, lines
 
 
 def main(patch_path, output, source="/opt/sqlglot", catalog="/repo/sample/tests.json"):
@@ -39,23 +66,12 @@ def main(patch_path, output, source="/opt/sqlglot", catalog="/repo/sample/tests.
                               "--timeout=900"], cwd=root, capture_output=True, text=True,
                              env={"PATH": "/usr/local/bin:/usr/bin:/bin", "HOME": "/tmp", "SKIP_INTEGRATION": "0",
                                   "PYTHONDONTWRITEBYTECODE": "1"})
-    failing, unknown = set(), set()
-    for line in run.stdout.splitlines():
-        m = ID.match(line)
-        if not m:
-            continue
-        test_id = re.sub(r"\[.*$", "", m[1])
-        if test_id in number:
-            failing.add(number[test_id])
-        else:
-            # Collection errors name a file; every catalog test in it is affected.
-            matched = [n for i, n in number.items() if i == test_id or i.startswith(test_id + "::")]
-            failing.update(matched)
-            if not matched:
-                unknown.add(test_id)
+    failing, unknown, lines = failing_tests(run.stdout, number)
     summary = run.stdout.strip().splitlines()[-1] if run.stdout.strip() else run.stderr[-300:]
+    # Keep the raw short-summary lines so results can be re-parsed without re-running.
     Path(output).write_text(json.dumps({"failing": sorted(failing), "unknown": sorted(unknown), "exit": run.returncode,
-                                        "summary": summary, "seconds": round(time.time() - started, 1)}))
+                                        "summary": summary, "seconds": round(time.time() - started, 1),
+                                        "summary_lines": lines}))
 
 
 if __name__ == "__main__":
