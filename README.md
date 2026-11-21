@@ -10,7 +10,7 @@ schedules and selector CPU. The Linux container score remains unmeasured.
 | Full suite on every patch | 1104.510 | 0 |
 | Conservative Python selection with the local baseline map | 651.870 | 0 |
 | Targeted selection with child-process callers retained (default) | 470.062 | 0 |
-| Targeted Python selection with comparison refinement and probes | 1639.455 | 5 |
+| Targeted Python selection before the short-circuit fix, with comparison refinement and probes | 1639.455 | 5 |
 
 For executable Python changes, the default keeps tests selected by the map
 and tests observed on lines that can dispatch work to a child process.
@@ -102,7 +102,7 @@ Run `make competitive` to compare conservative Python selection, coverage with a
 comparison refinement with verification, three times each. It selects the best
 global configuration among zero-miss sample variants and exports
 `research-bundle.zip` with the pinned source, maps, outputs, and CPU measurements.
-The project has 52 passing local checks, including real forked native probes.
+The project has 56 passing local checks, including real forked native probes.
 
 Baseline coverage is an approximation of dependencies. Reflection, state shared
 between tests, indirect class-level access, and behavior in uninstrumented child

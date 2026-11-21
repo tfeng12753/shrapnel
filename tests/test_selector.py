@@ -11,7 +11,7 @@ from unittest.mock import patch as mock_patch
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from selector import Selector, REVISION, apply_change, import_hazard, parse_patch, split
+from selector import Selector, REVISION, apply_change, baseline_tree, import_hazard, parse_patch, short_circuit_edits, split
 
 spec = importlib.util.spec_from_file_location("build_map", ROOT / "tools/build_map.py")
 map_module = importlib.util.module_from_spec(spec)
@@ -149,6 +149,35 @@ class SelectionTests(unittest.TestCase):
         self.source("m.py", old)
         self.entry("m.py", {"3": "2"}, [[1, 4, "function", "3"]])
         self.assertEqual(self.selector().select(diff("m.py", old, new)), 3)
+
+    def test_boolean_regrouping_keeps_tests_that_stopped_at_the_first_operand(self):
+        old = "def f(a, b, c):\n    return (\n        a\n        and b\n        and c\n    )\n"
+        new = old.replace("and c", "or c")
+        self.source("m.py", old)
+        self.entry("m.py", {"3": "3", "4": "1", "5": "1"})
+        patch = diff("m.py", old, new)
+        for child_work in (False, True):
+            with self.subTest(child_work=child_work):
+                events = []
+                self.assertEqual(self.selector(child_work=child_work).select(patch, lambda *event: events.append(event)), 3)
+                self.assertIn((3, "short-circuit evaluation change", "m.py", (3, 5)), events)
+
+    def test_literal_edits_keep_short_circuit_selection_local(self):
+        old = "def f(a):\n    return (\n        a\n        and check(1)\n    )\n"
+        new = old.replace("check(1)", "check(2)")
+        self.source("m.py", old)
+        self.entry("m.py", {"3": "3", "4": "1"})
+        self.assertEqual(self.selector().select(diff("m.py", old, new)), 2)
+
+    def test_boolean_edit_aligns_statements_after_an_insertion(self):
+        old = "def f(a, b, c):\n    setup()\n    return a and (b or c)\n"
+        new = "def f(a, b, c):\n    other()\n    setup()\n    return a and (b and c)\n"
+        self.assertEqual(list(short_circuit_edits(baseline_tree(old), baseline_tree(new), {1, 3})), [(3, 3)])
+
+    def test_boolean_edit_fallback_limits_long_lists_to_the_affected_lines(self):
+        old = "def f(a, b, c):\n" + "    a and b and c\n" * 130
+        new = old.replace("    a and b and c\n", "    setup()\n    a and b or c\n", 1)
+        self.assertEqual(list(short_circuit_edits(baseline_tree(old), baseline_tree(new), {2})), [(2, 2)])
 
     def test_syntax_error_requires_full_suite(self):
         patch = diff("m.py", "def f():\n    return 1\n", "def f(:\n    return 1\n")
