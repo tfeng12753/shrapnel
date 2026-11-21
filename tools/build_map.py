@@ -142,7 +142,7 @@ class Recorder:
                     return
                 mode = "r"
             self.opened(file, mode)
-        if event in ("subprocess.Popen", "os.fork", "os.posix_spawn") and self.current:
+        if event in ("subprocess.Popen", "os.fork", "os.posix_spawn", "_posixsubprocess.fork_exec") and self.current:
             self.external.add(self.current)
 
     def record_object_attr(self, obj, name):
@@ -237,6 +237,51 @@ class Recorder:
         finally:
             self.busy = False
 
+class InlineProcessPool:
+    """Stand-in for ProcessPoolExecutor during map generation.
+
+    sqlglot's optimizer and executor tests hand work to spawned process pools.
+    Coverage and attribute observers only see the parent process, so that work
+    was attributed to no test, and targeted selection missed those tests. Running
+    each submission inline in the calling test keeps every dependency observable.
+    Futures complete before submit returns, so wait/as_completed behave normally.
+    Arguments and results still round-trip through pickle, as with a real pool,
+    so serialization code (Expr.__reduce__ -> sqlglot.serde) is attributed too.
+    """
+
+    def __init__(self, max_workers=None, mp_context=None, initializer=None, initargs=(), **kwargs):
+        self._initializer, self._initargs, self._ready = initializer, tuple(initargs), False
+
+    def submit(self, fn, /, *args, **kwargs):
+        from concurrent.futures import Future
+        import pickle
+        future = Future()
+        try:
+            if not self._ready:
+                self._ready = True
+                if self._initializer is not None:
+                    initializer, initargs = pickle.loads(pickle.dumps((self._initializer, self._initargs)))
+                    initializer(*initargs)
+            fn, args, kwargs = pickle.loads(pickle.dumps((fn, args, kwargs)))
+            future.set_result(pickle.loads(pickle.dumps(fn(*args, **kwargs))))
+        except BaseException as error:
+            future.set_exception(error)
+        return future
+
+    def map(self, fn, *iterables, timeout=None, chunksize=1):
+        return [self.submit(fn, *args).result() for args in zip(*iterables)]
+
+    def shutdown(self, wait=True, *, cancel_futures=False):
+        pass
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        self.shutdown()
+        return False
+
+
 def build(root, destination):
     import coverage
     import pytest
@@ -282,6 +327,11 @@ def build(root, destination):
                 rec.phase = "teardown"
 
     sys.addaudithook(rec.audit)
+    # Patch before collection: test modules bind ProcessPoolExecutor at import.
+    import concurrent.futures
+    import concurrent.futures.process
+    concurrent.futures.ProcessPoolExecutor = InlineProcessPool
+    concurrent.futures.process.ProcessPoolExecutor = InlineProcessPool
     instrumentation = Instrumentation(root, rec)
     instrumentation.install()
     cov.start()
