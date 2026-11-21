@@ -442,8 +442,12 @@ def short_circuit_edits(before, after, affected_lines):
 class Selector:
     def __init__(self, tests: list[dict], source: Path, map_path: Path, *, conservative_python=False,
                  relations=None, child_work=False, import_closure=None, import_check_budget=0.0,
-                 setup_check_budget=0.0):
+                 setup_check_budget=0.0, executor_fixtures=False, executor_plans=None, executor_plan_budget=0.0):
         self.tests, self.source = tests, source
+        self.executor_fixtures = executor_fixtures
+        self.executor_plans = executor_plans.resolve() if executor_plans and executor_plan_budget > 0 else None
+        self.executor_plan_budget = executor_plan_budget
+        self.test_bits = {test["id"]: 1 << test["number"] for test in tests}
         # Fixture reads in setUpClass may be attributed to the tests that use the
         # loaded attributes. Relying on that requires setUpClass to still succeed on
         # the patched files, which a forked run checks (CPU charged to this budget).
@@ -471,8 +475,7 @@ class Selector:
                 data = json.load(f)
             if data["revision"] != REVISION or data.get("version") != 1:
                 raise ValueError("map revision or format mismatch")
-            id_to_bit = {t["id"]: 1 << t["number"] for t in tests}
-            translated = [id_to_bit.get(t, 0) for t in data["tests"]]
+            translated = [self.test_bits.get(t, 0) for t in data["tests"]]
             # Translate contiguous catalog runs at once; skips may change indices.
             runs = []
             for i, target in enumerate(translated):
@@ -637,10 +640,28 @@ class Selector:
                     return include(self.all, "unmapped file", name)
                 if not name.endswith(".py"):
                     setup = entry.get("setup") or {}
-                    result |= include(entry["readers"], "file reader", name)
+                    readers = entry["readers"]
+                    checked_class = None
+                    if (self.executor_fixtures and len(changes) == 1 and setup
+                            and name.startswith("tests/fixtures/") and name.endswith(".sql")
+                            and not any(line.startswith(("old mode ", "new mode ", "rename ", "copy ",
+                                                         "Binary files ", "GIT binary patch"))
+                                        for line in patch.splitlines())):
+                        from executor_fixtures import CLASS, fixture_effect
+                        if CLASS in setup:
+                            effect = fixture_effect(self.source, name, new)
+                            if effect is not None:
+                                # Both pinned setup paths only materialize this loader. A
+                                # successful parse proves setup for this class on this edit.
+                                checked_class = CLASS
+                                item, identical = effect
+                                if identical:
+                                    readers &= ~self.test_bits.get(item, 0)
+                    result |= include(readers, "file reader", name)
                     for class_id, members in sorted(setup.items()):
-                        result |= include(self.setup_fallback(class_id, members, entry["readers"], changes),
-                                          "class setup reader", name, class_id)
+                        if class_id != checked_class:
+                            result |= include(self.setup_fallback(class_id, members, entry["readers"], changes),
+                                              "class setup reader", name, class_id)
                     # Unknown readers are uncertainty, not proof of irrelevance.
                     if not entry["readers"] and not setup:
                         return include(self.all, "unknown file readers", name)
@@ -674,10 +695,38 @@ class Selector:
                         result |= include(mask, "definition dependency", name, (a, b))
                 if not removed and not inserted:
                     return include(self.all, "no changed positions", name)
+            if (self.executor_plans and self.executor_plan_budget >= 1 and len(changes) == 1
+                    and name.startswith("sqlglot/optimizer/") and name.endswith(".py")
+                    and not self.conservative_python and not inserted and len(removed) == 1):
+                result = self.check_executor_plan(result, name, old, new, next(iter(removed)))
             return result
         except (ValueError, SyntaxError, OSError, UnicodeError, RecursionError) as error:
             # Syntax/import-shape uncertainty can break every test's collection.
             return include(self.all, "analysis failed: " + type(error).__name__)
+
+    def check_executor_plan(self, mask, name, before, after, line):
+        from executor_plans import ITEM, cpu_seconds, matched
+        target = self.test_bits.get(ITEM, 0)
+        if not mask & target or not self.executor_plans.is_dir():
+            return mask
+        start = cpu_seconds()
+        try:
+            chosen = self.chosen(mask)
+            durations = {t["number"]: round(t["seconds"] * 1000) for t in chosen}
+            def schedule_cost(tests):
+                workers = split(tests)
+                return 2000 * len(workers) + max((sum(durations[n] for n in w) for w in workers), default=0)
+
+            without = [t for t in chosen if t["id"] != ITEM]
+            benefit = (schedule_cost(chosen) - schedule_cost(without)) / 1000
+            # The audit may spend at most half the benefit on an individual edit.
+            allowance = min(self.executor_plan_budget, benefit / 2) - (cpu_seconds() - start)
+            if allowance >= 1 and matched(self.source.resolve(), name, before, after, line,
+                                          self.executor_plans, allowance):
+                return mask & ~target
+            return mask
+        finally:
+            self.executor_plan_budget -= cpu_seconds() - start
 
     def external_for(self, name):
         if self.import_closure is None or name in self.import_closure:
@@ -825,6 +874,9 @@ def parse_args(argv=None):
     parser.add_argument("--import-closure", type=Path, default=Path("/app/import-closure.json"))
     parser.add_argument("--import-check-budget", type=float)
     parser.add_argument("--setup-check-budget", type=float)
+    parser.add_argument("--executor-fixtures", action=argparse.BooleanOptionalAction, default=None)
+    parser.add_argument("--executor-plans", type=Path, default=Path("/app/executor-plans"))
+    parser.add_argument("--executor-plan-budget", type=float)
     parser.add_argument("--config", type=Path, default=Path(__file__).with_name("selector-config.json"))
     args = parser.parse_args(argv)
     try:
@@ -851,7 +903,11 @@ def parse_args(argv=None):
         args.import_check_budget = float(config.get("import_check_budget", 0.0))
     if args.setup_check_budget is None:
         args.setup_check_budget = float(config.get("setup_check_budget", 0.0))
-    args.settings = {"conservative_python": bool(conservative), "child_work": bool(child_work),
+    if args.executor_fixtures is None:
+        args.executor_fixtures = config.get("executor_fixtures", False)
+    if args.executor_plan_budget is None:
+        args.executor_plan_budget = float(config.get("executor_plan_budget", 0.0))
+    args.settings = {"executor_fixtures": bool(args.executor_fixtures), "executor_plan_budget": args.executor_plan_budget,"conservative_python": bool(conservative), "child_work": bool(child_work),
                      "relations": bool(args.relations), "probe_budget": float(args.probe_budget),
                      "import_check_budget": float(args.import_check_budget),
                      "setup_check_budget": float(args.setup_check_budget)}
@@ -877,7 +933,9 @@ def main():
     selector = Selector(tests, args.source, args.map, conservative_python=settings["conservative_python"],
                         relations=settings["relations"], child_work=settings["child_work"], import_closure=closure,
                         import_check_budget=max(0.0, settings["import_check_budget"]),
-                        setup_check_budget=max(0.0, settings["setup_check_budget"]))
+                        setup_check_budget=max(0.0, settings["setup_check_budget"]),
+                        executor_fixtures=settings["executor_fixtures"], executor_plans=args.executor_plans,
+                        executor_plan_budget=max(0.0, settings["executor_plan_budget"]))
     schedules = {}
     remaining = max(0.0, args.probe_budget)
     for patch in sorted((args.data / "commits").glob("*.patch")):

@@ -20,12 +20,14 @@ from tools.profile_schedule import schedule_profile
 # Every variant is a complete selector configuration. The winner is written to
 # selector-config.json verbatim, so the shipped image runs exactly what was measured.
 BASE = {"conservative_python": False, "child_work": False, "relations": False,
+        "executor_fixtures": False, "executor_plan_budget": 0.0,
         "probe_budget": 0.0, "import_check_budget": 6.0, "setup_check_budget": 8.0}
 VARIANTS = {
     "conservative_python": {**BASE, "conservative_python": True, "import_check_budget": 0.0, "setup_check_budget": 0.0},
     "coverage": BASE,
     "child_work": {**BASE, "child_work": True},
     "relations": {**BASE, "relations": True},
+    "relations_and_fixtures": {**BASE, "relations": True, "executor_fixtures": True},
     "relations_and_probes": {**BASE, "relations": True, "probe_budget": 8.0},
 }
 
@@ -39,6 +41,8 @@ def selector_options(config):
     mode = ("--conservative-python" if config["conservative_python"]
             else "--child-work" if config["child_work"] else "--no-conservative-python")
     return [mode, "--relations" if config["relations"] else "--no-relations",
+            "--executor-fixtures" if config["executor_fixtures"] else "--no-executor-fixtures",
+            "--executor-plan-budget", repr(float(config["executor_plan_budget"])),
             "--probe-budget", repr(float(config["probe_budget"])),
             "--import-check-budget", repr(float(config["import_check_budget"])),
             "--setup-check-budget", repr(float(config["setup_check_budget"]))]
@@ -79,6 +83,8 @@ def run_container(image, data, options, tests, answers):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--image", default="blast-radius-entry")
+    parser.add_argument("--executor-ab", action="store_true",
+                        help="Compare the main, fixture and 12-CPU-second plan configurations without changing the config")
     parser.add_argument("--skip-build", action="store_true")
     parser.add_argument("--runs", type=int, default=3)
     parser.add_argument("--no-export", action="store_true")
@@ -87,7 +93,9 @@ def main():
 
     def build():
         started = time.monotonic()
-        subprocess.run(["docker", "build", "--platform", "linux/amd64", "-t", args.image, str(ROOT)], check=True, timeout=600)
+        extra = ["--build-arg", "BUILD_EXECUTOR_PLANS=1"] if args.executor_ab else []
+        subprocess.run(["docker", "build", "--platform", "linux/amd64", *extra, "-t", args.image, str(ROOT)],
+                       check=True, timeout=600)
         print(f"Build completed in {time.monotonic() - started:.1f} seconds (600-second limit).", flush=True)
 
     if not args.skip_build:
@@ -96,14 +104,19 @@ def main():
     tests = json.loads((data / "tests.json").read_text())["tests"]
     answers = json.loads((data / "answers.json").read_text())["commits"]
     report, outputs = {}, {}
-    for variant, config in VARIANTS.items():
+    variants = VARIANTS
+    if args.executor_ab:
+        fixture_config = VARIANTS["relations_and_fixtures"]
+        variants = {"main_settings": VARIANTS["relations"], "fixtures": fixture_config,
+                    "fixtures_and_plans": {**fixture_config, "executor_plan_budget": 12.0}}
+    for variant, config in variants.items():
         options = selector_options(config)
         runs = []
         for i in range(args.runs):
             run, stdout = run_container(args.image, data, options, tests, answers)
             runs.append(run)
             outputs[f"{variant}-{i+1}.jsonl"] = stdout
-            print(f"{variant} run {i+1}: total={run['total_seconds']:.3f}s simulated={run['simulated_seconds']:.3f}s CPU={cpu:.3f}s misses={run['misses']}", flush=True)
+            print(f"{variant} run {i+1}: total={run['total_seconds']:.3f}s simulated={run['simulated_seconds']:.3f}s CPU={run['cpu_seconds']:.3f}s misses={run['misses']}", flush=True)
         median = statistics.median(run["total_seconds"] for run in runs)
         index = min(range(len(runs)), key=lambda j: abs(runs[j]["total_seconds"] - median))
         output_name = f"{variant}-{index + 1}.jsonl"
@@ -120,6 +133,10 @@ def main():
     payload = json.dumps(report, indent=2).encode()
     (ROOT / "competitive-results.json").write_bytes(payload + b"\n")
     print("Best zero-miss variant:", report["best_zero_miss_variant"])
+    if args.executor_ab:
+        if len(valid) != len(variants):
+            raise SystemExit("An executor configuration missed a public failure")
+        return
     best = report["best_zero_miss_variant"]
     if best is not None:
         config = VARIANTS[best]
