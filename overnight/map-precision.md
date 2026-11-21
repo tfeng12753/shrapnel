@@ -2,6 +2,31 @@
 
 Base 2c4b6a8. Map construction uses the unmodified pinned checkout and its baseline suite. Generated patches are used for evaluation.
 
+## Equality observations and mixed-workload fixture costs after b5b6741
+
+The strict selector cannot trust a completed equality when the same test could have caught an exception from an earlier custom comparison. The map builder now records the test as unknown **before** dispatching any monitored equality or inequality with operands other than matching exact builtin integers or strings. The custom operator still runs once and returns or raises normally. A site with shared or out-of-test observations is omitted. The resulting map marks 204 qualifying sites. Removing just the new markers reproduced every field of the previous decoded host map. Full build passed 1,621 tests and 25,454 subtests, with 0.54 s modeling, 314.26 s tests and 3.25 s aggregation. No host map was committed.
+
+Run the optional audit on a schedule made by the merged selector and a matching complete map built from the pinned checkout:
+
+```sh
+python -m tools.map_equality_replay --source "$SOURCE" --map "$MAP" --data "$DATA" --schedule "$SCHEDULE" > equality.jsonl
+```
+
+Selector integration rule: for a single isolated equality-operator edit at a marked, single-line deferred site, subtract only positively observed tests with the same known boolean result under both operators in every state. Preserve all uncertainty, source readers, external tests and potential child-process users; keep the original schedule on missing evidence. Identity replacements do not qualify. The standalone replay has no effect on older maps. A caught-exception regression exercises one known and one throwing call in the same test. Production settings and selection code are unchanged.
+
+| Fixed base schedule | Before (simulated s) | After (simulated s) | Changed patches | Incremental replay CPU (median of 3, s) |
+| --- | ---: | ---: | ---: | ---: |
+| 41 even-ID length edits, two-second native probes | 333.557 | 318.790 | 17 | 1.377 |
+| 17 even-ID normalized-string edits, same settings | 72.347 | 71.523 | 4 | 1.038 |
+| 30 public patches, merged defaults | 118.443 | 118.443 | 0 | 0.111 |
+| 128 mixed even-ID development edits, merged defaults | identical | identical | 0 | 0.120 |
+
+The larger comparison batch saved **13.390 seconds after incremental CPU**. The smaller batch cost 0.214 seconds more after CPU. All 399 newly omitted catalog-item executions passed in fresh, genuinely patched pytest checkouts (369 length, 30 normalized strings). Every row matched the old schedule when using the legacy map. The public score had zero misses. The independent mixed batch used seed 87, generating 256 patches and selecting only even indices before replay. No competition hidden data or mutant holdout was evaluated. This equality rule alone does not explain the reported leaderboard gap.
+
+**Larger measured opportunity on fixtures.** Four single-file edits in the 128-patch mixed workload changed expected SQL in paired fixtures. The original pinned fixture reader returned exactly the same ordered metadata and input SQL for all records before and after each edit. The executor test consumes those fields, and all four original executions passed with 57 subtests each in isolated patched checkouts with real process pools. A fifth independent edit changed input SQL and failed the same executor test with a parse error. Dropping just that one item on the four verified rows would save 62.238 simulated seconds across the batch after rescheduling (15.339, 15.339, 16.221 and 15.339). This is a retrospective opportunity; those tests still run. To make a general rule, map which fixture fields each reader actually consumes, preserve shared setup/parse failures and whole-object consumers, and validate on other fixture families. Running the full executor in the selector would also charge its CPU.
+
+Host project checks passed 133/134; the known cached-map fingerprint still needs `make map` in the locked Linux Docker environment. Use the scorer environment before selecting a production policy or reporting a hidden score.
+
 ## Integration with main at de11aad
 
 Merge 00f20ff incorporates the stricter comparison selector, revised probe budgeting and parent-test attribution for failed subtests. The scalar map regression exercises both the underlying relation evidence and the production selector's conservative fallback. Project checks passed 131/132 with the existing map fingerprint failure. On the prepared host checkout and normalized host map, one public replay scored 118.443 simulated seconds using the merged defaults. Repeating the previous offline protocol (two-second probe budget plus import and dictionary verification) scored 109.442 seconds. Both had zero misses. The prior 106.906 result predates the merge. CPU and Linux Docker results remain unmeasured for this integration.

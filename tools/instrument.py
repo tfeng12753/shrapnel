@@ -266,19 +266,21 @@ class Instrumentation:
                 whole(value)
             return value
         def comparison(left, right, op, path, site):
-            value = OPS[op](left, right)
             if op in ("Eq", "NotEq"):
-                # Mixed or user-defined types may run application code for a
-                # replacement operator. The writer represents both possible
-                # identities for equal builtin values.
-                state = None
+                # A custom comparison can raise and the test may catch it.
+                # Record uncertainty before dispatch, even if another call at
+                # this site already produced a known state in the same test.
                 kind = type(left)
-                if (kind is int or kind is str) and type(right) is kind:
-                    unequal = value if op == "NotEq" else not value
-                    state = "p:1"
-                    if unequal:
-                        state = "p:2" if left < right else "p:4"
+                if (kind is not int and kind is not str) or type(right) is not kind:
+                    recorder.record_comparison(path, site, op, None)
+                    return OPS[op](left, right)
+                value = OPS[op](left, right)
+                unequal = value if op == "NotEq" else not value
+                state = "p:1"
+                if unequal:
+                    state = "p:2" if left < right else "p:4"
             else:
+                value = OPS[op](left, right)
                 state = relation(left, right)
             recorder.record_comparison(path, site, op, state)
             return value

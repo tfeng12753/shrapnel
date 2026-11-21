@@ -11,6 +11,7 @@ from unittest.mock import Mock
 from selector import Selector, comparison_contexts
 from tools.build_map import Recorder, SourceModel, write_map
 from tools.instrument import Instrumentation
+from tools.map_equality_replay import unchanged_tests
 
 
 class ScalarComparisonTests(unittest.TestCase):
@@ -102,6 +103,40 @@ def normalized(value):
                  and isinstance(n.func, ast.Name) and n.func.id == "_blast_radius_comparison"]
         self.assertEqual([source.splitlines()[n.lineno - 1].strip() for n in calls],
                          ["return len(value) == 5", 'return "x" != value.lower()'])
+
+    def test_equality_replay_requires_consistent_positive_observations(self):
+        record = {"op": "Eq", "unknown": 4, "states": {"p:1": 7, "p:9": 7, "p:2": 2}}
+        # For the equal call == and <= agree. A second, less-than call
+        # or an unrecordable dispatch keeps the corresponding test.
+        self.assertEqual(unchanged_tests(record, "Eq", "LtE"), 1)
+        self.assertEqual(unchanged_tests(record, "Eq", "Is"), 0)
+        self.assertEqual(unchanged_tests(record, "NotEq", "LtE"), 0)
+
+    def test_caught_exception_keeps_a_test_with_an_earlier_known_outcome(self):
+        import builtins
+        class Raising:
+            def __eq__(self, other):
+                raise LookupError("intentional")
+            def __ne__(self, other):
+                raise LookupError("intentional")
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            rec = Recorder(root, SourceModel(root), None)
+            rec.current, rec.phase = "mixed", "call"
+            observer = Instrumentation(root, rec)
+            observer.install()
+            try:
+                for op in ("Eq", "NotEq"):
+                    compare = builtins._blast_radius_comparison
+                    compare(1, 1, op, "subject.py", op)
+                    with self.assertRaisesRegex(LookupError, "intentional"):
+                        compare(Raising(), 1, op, "subject.py", op)
+                    record = rec.comparisons["subject.py", op]
+                    self.assertEqual(record["states"]["p:1"], {"mixed"})
+                    self.assertEqual(record["unknown"], {"mixed"})
+            finally:
+                observer.restore()
 
     def test_overloaded_equality_is_called_once_and_remains_unknown(self):
         class Custom:

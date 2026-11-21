@@ -545,6 +545,8 @@ def write_map(root, model, rec, data, destination):
         files[name].setdefault("comparisons", {})[site] = {
             "op": observation["op"], "states": {state: format(value, "x") for state, value in states.items()},
             "unknown": format(unknown, "x")}
+        if observation["op"] in ("Eq", "NotEq"):
+            files[name]["comparisons"][site]["unknown_before_dispatch"] = True
     for (name, symbol), info in rec.dictionaries.items():
         observations = rec.dictionary_reads.get((name, symbol), {})
         def readers(contexts):
