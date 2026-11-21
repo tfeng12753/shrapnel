@@ -6,7 +6,6 @@ import math
 import os
 from pathlib import Path
 import resource
-import shutil
 import signal
 import subprocess
 import sys
@@ -15,7 +14,7 @@ import time
 import tokenize
 
 from tools.map_executor_plan import checkout_digest, digest
-from isolated_pytest import cpu_seconds
+from isolated_pytest import cpu_seconds, stage
 
 TOOLS = Path(__file__).resolve().parent / "tools"
 ITEM = "tests/test_executor.py::TestExecutor::test_execute_tpcds"
@@ -94,11 +93,9 @@ def matched(source, name, before, after, line, prepared, budget):
                 return False
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory) / "src"
-            # Only these two trees enter the capture. Excluding bytecode prevents a
-            # same-size edit from executing a cached copy of the baseline module.
-            for tree in ("sqlglot", "tests"):
-                shutil.copytree(source / tree, root / tree, ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
-            (root / name).write_text(after, encoding="utf-8")
+            # Only these two trees enter the capture. stage() removes every cached
+            # copy of the patched module, so it cannot run from baseline bytecode.
+            stage(source, root, name, after, trees=("sqlglot", "tests"))
             screen = prepared / "plan-screen.json"
             if screen.is_file() and not run("map_executor_screen.py",
                     ["--reference", str(screen), "--module", name, "--line", str(line)], 1, root):

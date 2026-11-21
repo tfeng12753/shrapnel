@@ -16,6 +16,29 @@ def cpu_seconds():
     return time.process_time() + children.ru_utime + children.ru_stime
 
 
+def stage(source, root, name, after, trees=None):
+    """Copy the checkout (or only `trees`) to root with `name` replaced by `after`.
+
+    Bytecode compiled at image build is kept so unchanged modules need not be
+    recompiled, but every cached copy of the patched module is removed so it
+    can only run from the new source.
+    """
+    if trees is None:
+        shutil.copytree(source, root, ignore=shutil.ignore_patterns(".git", ".pytest_cache"))
+    else:
+        for tree in trees:
+            shutil.copytree(source / tree, root / tree, ignore=shutil.ignore_patterns(".pytest_cache"))
+    target = root / name
+    cache = target.parent / "__pycache__"
+    if cache.is_dir():
+        for compiled in cache.glob(target.stem + ".*.pyc"):
+            compiled.unlink()
+    for stale in (target.with_suffix(".pyc"), target.with_suffix(".pyo")):
+        if stale.exists():
+            stale.unlink()
+    target.write_text(after, encoding="utf-8")
+
+
 def passed(source, name, after, item, wall_seconds):
     deadline = time.monotonic() + wall_seconds
     trace = os.environ.get("SHRAPNEL_TRACE_PYTEST") == "1"
@@ -35,8 +58,7 @@ def passed(source, name, after, item, wall_seconds):
     try:
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder) / "source"
-            shutil.copytree(source, root, ignore=shutil.ignore_patterns(".git", ".pytest_cache", "__pycache__", "*.pyc"))
-            (root / name).write_text(after, encoding="utf-8")
+            stage(source, root, name, after)
             report = Path(folder) / "result.xml"
             env = dict(os.environ, PYTHONPATH=str(root), PYTHONDONTWRITEBYTECODE="1", SKIP_INTEGRATION="0",
                        PATH=str(Path(sys.executable).parent) + os.pathsep + os.defpath)

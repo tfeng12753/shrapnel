@@ -148,6 +148,34 @@ def split(tests: list[dict]) -> list[list[int]]:
     return best
 
 
+def schedule_seconds(tests: list[dict]) -> float:
+    """Cost of the schedule split() chooses for these tests: slowest worker plus 2 s per worker."""
+    workers = split(tests)
+    durations = {t["number"]: round(t["seconds"] * 1000) for t in tests}
+    return (2000 * len(workers) + max((sum(durations[n] for n in w) for w in workers), default=0)) / 1000
+
+
+def schedule_saving(tests: list[dict], dropped: int) -> float:
+    """Seconds saved by dropping the tests whose bits are in `dropped` from a final selection."""
+    return schedule_seconds(tests) - schedule_seconds([t for t in tests if not dropped >> t["number"] & 1])
+
+
+# A probe must save at least 1.5 times its expected CPU plus half a second.
+ADMISSION_FACTOR, ADMISSION_MARGIN = 1.5, 0.5
+# Expected CPU per probe kind, measured on the pinned checkout. A run replaces
+# these with its own measurements per probe key once it has any.
+PRIOR_CPU = {"setup": 2.0, "fixture": 0.05, "lazy": 1.35, "plan": 4.0}
+
+
+def pays_for_itself(saving: float, cpu: float) -> bool:
+    return math.isfinite(saving) and math.isfinite(cpu) and saving >= ADMISSION_FACTOR * cpu + ADMISSION_MARGIN
+
+
+def break_even_cpu(saving: float) -> float:
+    """Largest CPU a probe with this saving may spend and still pay for itself."""
+    return (saving - ADMISSION_MARGIN) / ADMISSION_FACTOR
+
+
 def plain_text_change(patch):
     metadata = ("old mode ", "new mode ", "rename ", "copy ", "Binary files ", "GIT binary patch")
     return not any(line.startswith(metadata) for line in patch.splitlines())
@@ -448,8 +476,12 @@ class Selector:
     def __init__(self, tests: list[dict], source: Path, map_path: Path, *, conservative_python=False,
                  relations=None, child_work=False, import_closure=None, import_check_budget=0.0,
                  setup_check_budget=0.0, executor_fixtures=False, executor_plans=None, executor_plan_budget=0.0,
-                 lazy_test_budget=0.0):
+                 lazy_test_budget=0.0, schedule_admission=False):
         self.tests, self.source = tests, source
+        # Admit every narrowing probe only after a patch's selection is final,
+        # and only if dropping its tests saves enough schedule time for its CPU.
+        self.schedule_admission = schedule_admission
+        self.measured_cpu = {}
         self.executor_fixtures = executor_fixtures
         self.executor_plans = executor_plans.resolve() if executor_plans and executor_plan_budget > 0 else None
         self.executor_plan_budget = executor_plan_budget
@@ -597,6 +629,8 @@ class Selector:
         try:
             changes = parse_patch(patch)
             result = 0
+            # Narrowing probes deferred until every file of the patch is processed.
+            pending = []
             for c in changes:
                 name = c["old"]
                 if name != c["new"]:
@@ -652,7 +686,12 @@ class Selector:
                             and name.startswith("tests/fixtures/") and name.endswith(".sql")
                             and plain_text_change(patch)):
                         from executor_fixtures import CLASS, fixture_effect
-                        if CLASS in setup:
+                        if CLASS in setup and self.schedule_admission:
+                            checked_class = CLASS
+                            # The class's tests stay until the deferred loader check runs.
+                            pending.append(self.fixture_candidate(name, new, readers & setup[CLASS], setup[CLASS]))
+                            readers &= ~setup[CLASS]
+                        elif CLASS in setup:
                             effect = fixture_effect(self.source, name, new)
                             if effect is not None:
                                 # Both pinned setup paths only materialize this loader. A
@@ -663,9 +702,13 @@ class Selector:
                                     readers &= ~self.test_bits.get(item, 0)
                     result |= include(readers, "file reader", name)
                     for class_id, members in sorted(setup.items()):
-                        if class_id != checked_class:
-                            result |= include(self.setup_fallback(class_id, members, entry["readers"], changes),
-                                              "class setup reader", name, class_id)
+                        if class_id == checked_class:
+                            continue
+                        if self.schedule_admission:
+                            pending.append(self.setup_candidate(class_id, members, entry["readers"], changes))
+                            continue
+                        result |= include(self.setup_fallback(class_id, members, entry["readers"], changes),
+                                          "class setup reader", name, class_id)
                     # Unknown readers are uncertainty, not proof of irrelevance.
                     if not entry["readers"] and not setup:
                         return include(self.all, "unknown file readers", name)
@@ -699,16 +742,21 @@ class Selector:
                         result |= include(mask, "definition dependency", name, (a, b))
                 if not removed and not inserted:
                     return include(self.all, "no changed positions", name)
+            if pending:
+                result = self.resolve(result, pending, include)
             if (self.lazy_test_budget >= 0.7 and result and result == self.closure_external
                     and result.bit_count() == 1 and len(changes) == 1 and not self.conservative_python
                     and name.startswith("sqlglot/") and name.endswith(".py") and plain_text_change(patch)):
                 from isolated_pytest import cpu_seconds, passed
                 item, = self.chosen(result)
+                if self.schedule_admission and not self.admit("lazy", "lazy", schedule_seconds([item])):
+                    return result
                 start = cpu_seconds()
                 # A single scheduled worker costs two seconds plus the test. Limit
                 # wall time per launch and charge actual CPU even when verification fails.
                 deadline = min(2 * self.lazy_test_budget, 2 + item["seconds"])
                 verified = passed(self.source, name, new, item["id"], deadline)
+                self.record("lazy", "lazy", cpu_seconds() - start)
                 self.lazy_test_budget -= cpu_seconds() - start
                 if verified:
                     return 0
@@ -736,11 +784,20 @@ class Selector:
 
             without = [t for t in chosen if t["id"] != ITEM]
             benefit = (schedule_cost(chosen) - schedule_cost(without)) / 1000
-            # The audit may spend at most half the benefit on an individual edit.
-            allowance = min(self.executor_plan_budget, benefit / 2) - (cpu_seconds() - start)
-            if allowance >= 1 and matched(self.source.resolve(), name, before, after, line,
-                                          self.executor_plans, allowance):
-                return mask & ~target
+            if self.schedule_admission:
+                if not self.admit("plan", "plan", benefit):
+                    return mask
+                # Never spend more than the CPU at which the replay still pays.
+                allowance = min(self.executor_plan_budget, break_even_cpu(benefit)) - (cpu_seconds() - start)
+            else:
+                # The audit may spend at most half the benefit on an individual edit.
+                allowance = min(self.executor_plan_budget, benefit / 2) - (cpu_seconds() - start)
+            if allowance >= 1:
+                replay = cpu_seconds()
+                ok = matched(self.source.resolve(), name, before, after, line, self.executor_plans, allowance)
+                self.record("plan", "plan", cpu_seconds() - replay)
+                if ok:
+                    return mask & ~target
             return mask
         finally:
             self.executor_plan_budget -= cpu_seconds() - start
@@ -750,12 +807,63 @@ class Selector:
             return self.external
         return self.external & ~self.closure_external
 
-    def setup_fallback(self, class_id, members, readers, changes):
+    def expected_cpu(self, kind, key):
+        measured = self.measured_cpu.get((kind, key)) or self.measured_cpu.get(kind)
+        return sum(measured) / len(measured) if measured else PRIOR_CPU[kind]
+
+    def record(self, kind, key, cpu):
+        self.measured_cpu.setdefault((kind, key), []).append(cpu)
+        if key != kind:
+            self.measured_cpu.setdefault(kind, []).append(cpu)
+
+    def admit(self, kind, key, saving):
+        return pays_for_itself(saving, self.expected_cpu(kind, key))
+
+    def resolve(self, result, pending, include):
+        """Run deferred probes that pay for themselves against the patch's final selection.
+
+        Each candidate is (kind, key, keep, run): `keep` is kept unless run() is
+        admitted, and run() returns the subset of `keep` that must stay.
+        """
+        kept = result
+        for index, (kind, key, keep, run) in enumerate(pending):
+            rest = kept
+            for _, _, other, _ in pending[index + 1:]:
+                rest |= other
+            droppable = keep & ~rest
+            if droppable and self.admit(kind, key, schedule_saving(self.chosen(rest | keep), droppable)):
+                kept |= include(run() & keep, f"{kind} probe kept", None, key)
+            else:
+                kept |= include(keep, f"{kind} probe not admitted", None, key)
+        return kept
+
+    def setup_candidate(self, class_id, members, readers, changes):
+        def run():
+            return self.setup_fallback(class_id, members, readers, changes, admitted=True)
+        return "setup", class_id, members, run
+
+    def fixture_candidate(self, name, new, readers, members):
+        def run():
+            from executor_fixtures import fixture_effect
+            from isolated_pytest import cpu_seconds
+            start = cpu_seconds()
+            effect = fixture_effect(self.source, name, new)
+            self.record("fixture", "fixture", cpu_seconds() - start)
+            if effect is None:
+                # The pinned setup's loader did not succeed: keep the whole class.
+                return members
+            item, identical = effect
+            return readers & ~self.test_bits.get(item, 0) if identical else readers
+        return "fixture", "fixture", members, run
+
+    def setup_fallback(self, class_id, members, readers, changes, *, admitted=False):
         """Tests of a class to keep beyond attributed readers: none if its setUpClass verifiably succeeds."""
         dropped = members & ~readers
         if not dropped:
             return 0
-        if sum(t["seconds"] for t in self.chosen(dropped)) < 3.0 or self.setup_check_budget < 1.0:
+        if self.setup_check_budget < 1.0:
+            return members
+        if not admitted and sum(t["seconds"] for t in self.chosen(dropped)) < 3.0:
             return members
         module_path, class_name = class_id.split("::")[0], class_id.split("::")[-1]
         if not module_path.endswith(".py"):
@@ -768,6 +876,7 @@ class Selector:
         from native_probes import verify_setup
         ok, cpu = verify_setup(self.source, overlays, module_path[:-3].replace("/", "."), class_name,
                                wall_seconds=12.0, cpu_seconds=min(6.0, self.setup_check_budget))
+        self.record("setup", class_id, cpu)
         self.setup_check_budget -= cpu
         return 0 if ok else members
 
@@ -838,13 +947,17 @@ class Selector:
             # Only an all-pass batch saves a worker. Discount the upper
             # bound for each additional test and require a margin over CPU.
             expected_saving = saving * .8 ** len(tests)
-            if expected_saving <= 1.25 * expected_cpu:
+            if (not pays_for_itself(expected_saving, expected_cpu) if self.schedule_admission
+                    else expected_saving <= 1.25 * expected_cpu):
                 return mask, 0.0
             wall_seconds = 3 * cpu_seconds
         else:
             if any(t["seconds"] > .15 for t in tests) or sum(t["seconds"] for t in tests) > .8:
                 return mask, 0.0
             wall_seconds, cpu_seconds = min(1.5, budget + .1), min(1.0, budget)
+            # Even if every test passes, the drop must pay for the CPU limit.
+            if self.schedule_admission and not pays_for_itself(schedule_saving(tests, mask), cpu_seconds):
+                return mask, 0.0
         changes = parse_patch(patch)
         if any(not c["old"].endswith(".py") or c["old"].startswith("tests/") or c["old"] != c["new"] for c in changes):
             return mask, 0.0
@@ -895,6 +1008,8 @@ def parse_args(argv=None):
     parser.add_argument("--executor-plans", type=Path, default=Path("/app/executor-plans"))
     parser.add_argument("--executor-plan-budget", type=float)
     parser.add_argument("--lazy-test-budget", type=float)
+    parser.add_argument("--schedule-admission", action=argparse.BooleanOptionalAction, default=None,
+                        help="Admit narrowing probes only when their schedule saving pays for their CPU")
     parser.add_argument("--config", type=Path, default=Path(__file__).with_name("selector-config.json"))
     args = parser.parse_args(argv)
     try:
@@ -927,10 +1042,13 @@ def parse_args(argv=None):
         args.executor_plan_budget = float(config.get("executor_plan_budget", 0.0))
     if args.lazy_test_budget is None:
         args.lazy_test_budget = float(config.get("lazy_test_budget", 0.0))
+    if args.schedule_admission is None:
+        args.schedule_admission = config.get("schedule_admission", False)
     args.settings = {"lazy_test_budget": args.lazy_test_budget, "executor_fixtures": bool(args.executor_fixtures), "executor_plan_budget": args.executor_plan_budget,"conservative_python": bool(conservative), "child_work": bool(child_work),
                      "relations": bool(args.relations), "probe_budget": float(args.probe_budget),
                      "import_check_budget": float(args.import_check_budget),
                      "setup_check_budget": float(args.setup_check_budget)}
+    args.settings["schedule_admission"] = bool(args.schedule_admission)
     if args.cost_aware_probes:
         args.settings["probe_budget"] = {"seconds": args.probe_budget, "cost_aware": True}
     return args
@@ -956,7 +1074,8 @@ def main():
                         setup_check_budget=max(0.0, settings["setup_check_budget"]),
                         executor_fixtures=settings["executor_fixtures"], executor_plans=args.executor_plans,
                         executor_plan_budget=max(0.0, settings["executor_plan_budget"]),
-                        lazy_test_budget=max(0.0, settings["lazy_test_budget"]))
+                        lazy_test_budget=max(0.0, settings["lazy_test_budget"]),
+                        schedule_admission=settings["schedule_admission"])
     schedules = {}
     remaining = max(0.0, args.probe_budget)
     for patch in sorted((args.data / "commits").glob("*.patch")):
