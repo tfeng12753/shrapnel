@@ -24,6 +24,9 @@ from selector import apply_change, parse_patch  # noqa: E402
 # itself counts as passed, so subtest lines must be attributed to their parent.
 OUTCOME = re.compile(r"^(?:FAILED|ERROR|SUBFAILED|SUBERROR)\b")
 TEST_ID = re.compile(r"(?:^|\s)(tests/\S+?)(?=\s|$)")
+# Last row of a multi-line subtest title: "...] tests/x.py::C::t - msg".
+TITLE_END = re.compile(r"\]\s+(tests/\S+?)(?=\s|$)")
+PYTEST_FINAL = re.compile(r"^\d+ (passed|failed|errors?|skipped|deselected)\b|^no tests ran\b")
 # Section header of a collection error: "____ ERROR collecting tests/x.py ____".
 COLLECTING = re.compile(r"^_+ ERROR collecting (tests/\S+?) _+$")
 # pytest stops before running anything when collection fails without
@@ -43,7 +46,11 @@ def owned_tests(test_id, number):
 def failing_tests(stdout, number):
     """Map pytest -rfE short-summary lines to catalog numbers; return (failing, unknown, lines)."""
     failing, unknown, lines = set(), set(), []
-    for line in stdout.splitlines():
+    rows = stdout.splitlines()
+    index = 0
+    while index < len(rows):
+        line = rows[index]
+        index += 1
         section = COLLECTING.match(line)
         if section:
             # Also covers output whose short summary is missing or cut off.
@@ -57,6 +64,14 @@ def failing_tests(stdout, number):
         lines.append(line[:300])
         m = TEST_ID.search(line)
         if not m:
+            # A subtest title can span lines (e.g. multi-line SQL fixtures):
+            # "SUBFAILED[7, select" ... "        l_year] tests/x.py::C::t - msg".
+            end = continued_title_end(rows, index)
+            if end is not None:
+                index = end + 1
+                lines[-1] = (line + " ... " + rows[end].strip())[:300]
+                m = TITLE_END.search(rows[end])
+        if not m:
             unknown.add(line[:120])
             continue
         test_id = re.sub(r"\[.*$", "", m[1])
@@ -69,6 +84,17 @@ def failing_tests(stdout, number):
         if not matched:
             unknown.add(test_id)
     return failing, unknown, lines
+
+
+def continued_title_end(rows, start):
+    """Index of the row closing a multi-line subtest title, or None."""
+    for index in range(start, min(len(rows), start + 2000)):
+        row = rows[index]
+        if OUTCOME.match(row) or row.startswith("=") or PYTEST_FINAL.match(row):
+            return None
+        if TITLE_END.search(row):
+            return index
+    return None
 
 
 def interrupted(stdout):
