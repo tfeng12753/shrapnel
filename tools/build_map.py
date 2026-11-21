@@ -122,6 +122,60 @@ class SourceModel:
                         yield (target, n.lineno) if with_lines else target
 
 
+def alias_names(model, names):
+    """Parameter names of instrumented functions, and every name a tracked mapping can reach.
+
+    A mapping moves to a new name only through a single-target assignment or a
+    keyword argument matching a parameter of an instrumented function. Every
+    load of a resulting name is instrumented and checked by identity, so reads
+    through it are observed; any other use counts as a read of every key.
+    """
+    parameters = defaultdict(set)
+    trees = getattr(model, "trees", {})
+    def accepts(function):
+        arguments = function.args
+        return {argument.arg for argument in (*arguments.args, *arguments.kwonlyargs)}
+    for name, tree in trees.items():
+        if not name.startswith("sqlglot/"):
+            continue
+        for node in ast.walk(tree):
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                parameters[node.name] |= accepts(node)
+            elif isinstance(node, ast.ClassDef):
+                for member in node.body:
+                    if isinstance(member, ast.FunctionDef) and member.name == "__init__":
+                        parameters[node.name] |= accepts(member)
+    parameters = {callee: frozenset(names) for callee, names in parameters.items()}
+    def identifier(node):
+        if isinstance(node, ast.Name):
+            return node.id
+        if isinstance(node, ast.Attribute):
+            return node.attr
+        return None
+    flows = []
+    for tree in trees.values():
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Assign) and len(node.targets) == 1:
+                target = identifier(node.targets[0])
+                if target and isinstance(node.targets[0], (ast.Name, ast.Attribute)):
+                    flows.append((identifier(node.value), target))
+            elif isinstance(node, ast.AnnAssign) and node.value is not None:
+                flows.append((identifier(node.value), identifier(node.target)))
+            elif isinstance(node, ast.Call):
+                for keyword in node.keywords:
+                    if keyword.arg in parameters.get(identifier(node.func), ()):
+                        flows.append((identifier(keyword.value), keyword.arg))
+    names = set(names)
+    changed = True
+    while changed:
+        changed = False
+        for source, target in flows:
+            if source in names and target and target not in names:
+                names.add(target)
+                changed = True
+    return parameters, names
+
+
 class Recorder:
     def __init__(self, root, model, coverage):
         self.root, self.model, self.coverage = root, model, coverage
@@ -155,6 +209,12 @@ class Recorder:
             previous = self.dict_declarations[path].get(location, ())
             self.dict_declarations[path][location] = (*previous, (path, symbol))
         self.dictionary_reads = defaultdict(lambda: defaultdict(set))
+        # Membership reads depend only on the key set; transfers move a
+        # tracked mapping to another alias name without reading it.
+        self.dictionary_presence = defaultdict(lambda: defaultdict(set))
+        self.dictionary_transfers = defaultdict(set)
+        self.importing = 0
+        self.parameter_names, self.dictionary_names = alias_names(model, self.dictionary_names)
         self.reads = defaultdict(set)
         self.cache = {}
         self.tests = []
@@ -191,16 +251,63 @@ class Recorder:
             return
         self.record_attr(obj if isinstance(obj, type) else type(obj), name)
 
+    def read_context(self):
+        """The test (or setup scope) a read belongs to; None means every test."""
+        if (self.current is None or self.importing > 0
+                or threading.current_thread() is not threading.main_thread()):
+            return None
+        frame = sys._getframe(2)
+        depth = 0
+        while frame is not None and depth < 6:
+            code = frame.f_code
+            # Class creation hooks derive values that outlive the current test.
+            if code.co_name == "__init_subclass__" or (code.co_name == "__new__" and "bases" in code.co_varnames):
+                return None
+            frame, depth = frame.f_back, depth + 1
+        if self.phase == "call":
+            return self.current
+        if self.phase not in ("setup", "teardown"):
+            return None
+        frame = sys._getframe(2)
+        while frame is not None:
+            function = frame.f_code.co_name
+            if function in ("setUpClass", "tearDownClass", "setup_class", "teardown_class"):
+                return ("class", self.current.rsplit("::", 1)[0])
+            if function in ("setUpModule", "tearDownModule", "setup_module", "teardown_module"):
+                return ("file", self.current.split("::")[0])
+            if function in ("setUp", "tearDown", "setup_method", "teardown_method"):
+                return self.current
+            frame = frame.f_back
+        # Fixtures with a wider scope run once for many tests.
+        return None
+
     def record_dictionary(self, mapping, key):
         binding = self.bound_dictionaries.get(id(mapping))
         if binding is None:
             return
         key = key if type(key) is str else None
-        context = self.current if self.phase == "call" and threading.current_thread() is threading.main_thread() else None
+        context = self.read_context()
         for symbol in binding[1]:
             # Avoid storing arbitrary SQL, runtime inputs and unseen keys.
             recorded = key if key in self.literal_keys[symbol] else None
             self.dictionary_reads[symbol][recorded].add(context)
+
+    def record_presence(self, mapping, key):
+        binding = self.bound_dictionaries.get(id(mapping))
+        if binding is None:
+            return
+        key = key if type(key) is str else None
+        context = self.read_context()
+        for symbol in binding[1]:
+            recorded = key if key in self.literal_keys[symbol] else None
+            self.dictionary_presence[symbol][recorded].add(context)
+
+    def record_transfer(self, mapping):
+        binding = self.bound_dictionaries.get(id(mapping))
+        if binding is None or self.current is None:
+            return
+        for symbol in binding[1]:
+            self.dictionary_transfers[symbol].add(self.current)
 
     def record_attr(self, cls, name):
         if self.current is None or name not in self.model.attr_names:
@@ -501,6 +608,8 @@ def write_map(root, model, rec, data, destination):
             if value:
                 files[name]["lines"][line] = value
                 files[name]["executed"] |= value
+    # Raw per-line test coverage, before symbol users are merged into lines.
+    covered = {name: dict(entry["lines"]) for name, entry in files.items()}
     external_mask = mask(rec.external)
     refined = {}
     for name, scopes in rec.reads.items():
@@ -616,19 +725,32 @@ def write_map(root, model, rec, data, destination):
             "unknown": format(unknown, "x")}
         if observation["op"] in ("Eq", "NotEq"):
             files[name]["comparisons"][site]["unknown_before_dispatch"] = True
+    def readers(contexts):
+        if None in contexts:
+            return all_tests
+        value = 0
+        for context in contexts:
+            value |= shared_masks.get(context, 0) if type(context) is tuple else bit.get(context, 0)
+        return value
     for (name, symbol), info in rec.dictionaries.items():
         observations = rec.dictionary_reads.get((name, symbol), {})
-        def readers(contexts):
-            return all_tests if None in contexts else mask(contexts)
+        presence = getattr(rec, "dictionary_presence", {}).get((name, symbol), {})
         keys = {k: format(readers(contexts), "x") for k, contexts in observations.items()
                 if k is not None}
-        observed = readers(observations.get(None, ()))
-        for contexts in observations.values():
-            observed |= readers(contexts)
+        observed = 0
+        for group in (observations, presence):
+            for contexts in group.values():
+                observed |= readers(contexts)
+        transferred = mask(getattr(rec, "dictionary_transfers", {}).get((name, symbol), ()))
+        # Coverage of the literal's own lines, without users merged in.
+        lines = {str(line): format(covered.get(name, {}).get(line, 0), "x")
+                 for line in range(info["start"], info["end"] + 1) if covered.get(name, {}).get(line, 0)}
         files[name].setdefault("dictionary_reads", {})[symbol] = {
             "start": info["start"], "end": info["end"],
             "whole": format(readers(observations.get(None, ())), "x"), "keys": keys,
-            "unobserved": format(users[(name, symbol)] & ~observed, "x")}
+            "presence": {("" if k is None else k): format(readers(contexts), "x") for k, contexts in presence.items()},
+            "lines": lines, "transferred": format(transferred, "x"),
+            "unobserved": format(users[(name, symbol)] & ~(observed | transferred), "x")}
     for name, entry in files.items():
         entry["lines"] = {str(line): format(value, "x") for line, value in sorted(entry["lines"].items()) if value}
         entry["regions"] = [[a, b, k, format(v, "x")] for a, b, k, v in entry["regions"]]

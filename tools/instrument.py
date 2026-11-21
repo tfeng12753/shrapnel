@@ -2,6 +2,7 @@
 from __future__ import annotations
 import ast
 import builtins
+import copy
 from enum import Enum
 import importlib.machinery
 import operator
@@ -83,10 +84,25 @@ class DictionaryReads(ast.NodeTransformer):
     Key expressions and receiver expressions are each evaluated exactly once.
     Names shared by different classes are conservatively treated as aliases.
     """
-    def __init__(self, names, declarations):
+    def __init__(self, names, declarations, parameters=()):
         self.names = names
         self.declarations = declarations
+        # {callable name: keyword names its instrumented definition accepts}.
+        # Passing a tracked mapping as such a keyword hands it to instrumented
+        # code, whose reads through the parameter (an alias name) are observed.
+        self.parameters = parameters or {}
         self.direct = set()
+        self.passed = set()
+
+    def transfer(self, value):
+        """Mark a plain reference whose value moves to another alias name."""
+        if isinstance(value, (ast.Name, ast.Attribute)) and self.field(value):
+            self.passed.add(value)
+
+    def visit_Assign(self, node):
+        if len(node.targets) == 1 and isinstance(node.targets[0], (ast.Name, ast.Attribute)) and self.field(node.targets[0]):
+            self.transfer(node.value)
+        return self.generic_visit(node)
 
     def field(self, node):
         name = node.id if isinstance(node, ast.Name) else getattr(node, "attr", None)
@@ -111,6 +127,10 @@ class DictionaryReads(ast.NodeTransformer):
         return self.generic_visit(node)
 
     def visit_Call(self, node):
+        callee = node.func.id if isinstance(node.func, ast.Name) else getattr(node.func, "attr", None)
+        for keyword in node.keywords:
+            if keyword.arg in self.parameters.get(callee, ()) and keyword.arg in self.names:
+                self.transfer(keyword.value)
         func = node.func
         if (not isinstance(func, ast.Attribute) or func.attr not in ("get", "__getitem__", "__contains__")
                 or node.keywords or any(isinstance(arg, ast.Starred) for arg in node.args)):
@@ -140,6 +160,8 @@ class DictionaryReads(ast.NodeTransformer):
         name = self.field(node)
         self.generic_visit(node)
         if name and node not in self.direct and isinstance(node.ctx, ast.Load):
+            if node in self.passed:
+                return self.call("_shrapnel_dict_pass", [node], node)
             return self.call("_shrapnel_dict_whole", [node], node)
         return node
 
@@ -155,6 +177,8 @@ class DictionaryReads(ast.NodeTransformer):
 
     # Use the existing transformer's rules for deferred annotations.
     def visit_AnnAssign(self, node):
+        if isinstance(node.target, (ast.Name, ast.Attribute)) and self.field(node.target) and node.value is not None:
+            self.transfer(node.value)
         return Transformer.visit_AnnAssign(self, node)
 
     def visit_FunctionDef(self, node):
@@ -245,6 +269,27 @@ class Transformer(ast.NodeTransformer):
         return node
 
 
+def mark_import(tree):
+    """Count module execution so reads made while importing reach every test.
+
+    Values derived at import time persist for all later tests, so a read made
+    then is not attributable to whichever test triggered the import.
+    """
+    body = tree.body
+    start = 0
+    if body and isinstance(body[0], ast.Expr) and isinstance(body[0].value, ast.Constant) and isinstance(body[0].value.value, str):
+        start = 1
+    while start < len(body) and isinstance(body[start], ast.ImportFrom) and body[start].module == "__future__":
+        start += 1
+    rest = body[start:] or [ast.Pass()]
+    location = rest[0]
+    enter = ast.copy_location(ast.Expr(ast.Call(ast.Name("_shrapnel_import_enter", ast.Load()), [], [])), location)
+    leave = ast.copy_location(ast.Expr(ast.Call(ast.Name("_shrapnel_import_exit", ast.Load()), [], [])), location)
+    guarded = ast.copy_location(ast.Try(body=rest, handlers=[], orelse=[], finalbody=[leave]), location)
+    tree.body = body[:start] + [enter, guarded]
+    return tree
+
+
 class Instrumentation:
     def __init__(self, root, recorder):
         self.root, self.recorder = root.resolve(), recorder
@@ -310,13 +355,33 @@ class Instrumentation:
             return method(mapping, key, *args)
 
         def contains(key, mapping):
+            # Membership depends only on the key set, never on a value.
             if type(mapping) is dict:
-                recorder.record_dictionary(mapping, key)
+                presence = getattr(recorder, "record_presence", None)
+                if presence is None:
+                    recorder.record_dictionary(mapping, key)
+                else:
+                    presence(mapping, key)
             return key in mapping
+
+        def passed(mapping):
+            if type(mapping) is dict:
+                transfer = getattr(recorder, "record_transfer", None)
+                if transfer is not None:
+                    transfer(mapping)
+            return mapping
+
+        def import_enter():
+            recorder.importing = getattr(recorder, "importing", 0) + 1
+
+        def import_exit():
+            recorder.importing = getattr(recorder, "importing", 1) - 1
 
         for name, value in (("_shrapnel_dict_whole", whole), ("_shrapnel_bind_dict", bind),
                             ("_shrapnel_dict_item", item), ("_shrapnel_dict_get", get),
                             ("_shrapnel_dict_contains", contains), ("_shrapnel_dict_descriptor", descriptor),
+                            ("_shrapnel_dict_pass", passed), ("_shrapnel_import_enter", import_enter),
+                            ("_shrapnel_import_exit", import_exit),
                             ("_shrapnel_attribute", attribute), ("_shrapnel_dynamic_attribute", dynamic_attribute),
                             ("_shrapnel_comparison", comparison)):
             self.saved[name] = getattr(builtins, name, None)
@@ -330,14 +395,34 @@ class Instrumentation:
             name = path.relative_to(root).as_posix()
             tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
             declarations = getattr(recorder, "dict_declarations", {}).get(name, {})
-            tree = DictionaryReads(getattr(recorder, "dictionary_names", ()), declarations).visit(tree)
+            tree = DictionaryReads(getattr(recorder, "dictionary_names", ()), declarations,
+                                   getattr(recorder, "parameter_names", {})).visit(tree)
             if path.is_relative_to(root / "sqlglot"):
                 tree = Transformer(name, fields).visit(tree)
+                mark_import(tree)
             ast.fix_missing_locations(tree)
             return compile(tree, str(path), "exec", dont_inherit=True)
         importlib.machinery.SourceFileLoader.get_code = get_code
+        # Copies made by the copy module read every value of a tracked mapping.
+        self.copy_hooks = (copy._copy_dispatch.get(dict), copy._deepcopy_dispatch.get(dict))
+        shallow, deep = self.copy_hooks
+        def copied(mapping):
+            whole(mapping)
+            return shallow(mapping)
+        def deep_copied(mapping, memo, deepcopy=copy.deepcopy):
+            whole(mapping)
+            return deep(mapping, memo, deepcopy)
+        if shallow is not None:
+            copy._copy_dispatch[dict] = copied
+        if deep is not None:
+            copy._deepcopy_dispatch[dict] = deep_copied
 
     def restore(self):
+        shallow, deep = getattr(self, "copy_hooks", (None, None))
+        if shallow is not None:
+            copy._copy_dispatch[dict] = shallow
+        if deep is not None:
+            copy._deepcopy_dispatch[dict] = deep
         importlib.machinery.SourceFileLoader.get_code = self.original
         for name, value in self.saved.items():
             if value is None:

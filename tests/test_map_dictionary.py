@@ -51,7 +51,9 @@ def broad():
             recorder.current, recorder.phase = "first", "call"
             keys = iter(["x", "known", "y"])
             self.assertEqual(namespace["run"](keys.__next__, namespace["Config"]), (1, None, True))
-            self.assertEqual(recorder.dictionary_reads["sqlglot/sample.py", "TABLE"], {"x": {"first"}, "y": {"first"}})
+            self.assertEqual(recorder.dictionary_reads["sqlglot/sample.py", "TABLE"], {"x": {"first"}})
+            # Membership depends only on the key set.
+            self.assertEqual(recorder.dictionary_presence["sqlglot/sample.py", "TABLE"], {"y": {"first"}})
             self.assertEqual(recorder.dictionary_reads["sqlglot/sample.py", "Config.DATA"]["known"], {"first"})
             self.assertEqual(namespace["descriptors"](), (1, 2, 2))
             self.assertNotIn(None, recorder.dictionary_reads["sqlglot/sample.py", "TABLE"])
