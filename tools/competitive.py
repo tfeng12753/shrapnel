@@ -50,7 +50,7 @@ def selector_options(config):
             "--setup-check-budget", repr(float(config["setup_check_budget"]))]
 
 
-def run_container(image, data, options, tests, answers):
+def run_container(image, data, options, tests, answers, *, trace_pytest=False):
     name = "blast-radius-bench-" + uuid.uuid4().hex[:12]
     command = ["docker", "run", "--rm", "--name", name, "--platform", "linux/amd64", "--network", "none",
         "--cpus", "2", "--memory", "4096m", "--memory-swap", "4096m", "--pids-limit", "256", "--read-only",
@@ -58,13 +58,16 @@ def run_container(image, data, options, tests, answers):
         "--user", "65534:65534", "--env", "HOME=/tmp", "--volume", str(data / "commits") + ":/data/commits:ro",
         "--volume", str(data / "tests.json") + ":/data/tests.json:ro", image,
         "python", "/app/tools/timed_run.py", *options]
+    if trace_pytest:
+        command[2:2] = ["--env", "SHRAPNEL_TRACE_PYTEST=1"]
     started = time.monotonic()
     try:
         process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=190)
     finally:
         subprocess.run(["docker", "rm", "-f", name], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    if process.returncode:
+    if trace_pytest or process.returncode:
         sys.stderr.buffer.write(process.stderr)
+    if process.returncode:
         raise SystemExit(f"container failed ({process.returncode})")
     if len(process.stdout) > 2_000_000:
         raise SystemExit("stdout exceeds 2 MB")
@@ -116,7 +119,7 @@ def main():
         options = selector_options(config)
         runs = []
         for i in range(args.runs):
-            run, stdout = run_container(args.image, data, options, tests, answers)
+            run, stdout = run_container(args.image, data, options, tests, answers, trace_pytest=args.executor_ab)
             runs.append(run)
             outputs[f"{variant}-{i+1}.jsonl"] = stdout
             print(f"{variant} run {i+1}: total={run['total_seconds']:.3f}s simulated={run['simulated_seconds']:.3f}s CPU={run['cpu_seconds']:.3f}s misses={run['misses']}", flush=True)

@@ -707,7 +707,7 @@ class Selector:
                 start = cpu_seconds()
                 # A single scheduled worker costs two seconds plus the test. Limit
                 # wall time per launch and charge actual CPU even when verification fails.
-                deadline = min(self.lazy_test_budget, (2 + item["seconds"]) / 2)
+                deadline = min(2 * self.lazy_test_budget, 2 + item["seconds"])
                 verified = passed(self.source, name, new, item["id"], deadline)
                 self.lazy_test_budget -= cpu_seconds() - start
                 if verified:

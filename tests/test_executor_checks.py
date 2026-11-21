@@ -126,7 +126,7 @@ class IsolatedImportTests(TestCase):
                         verify.assert_not_called()
                     else:
                         self.assertLess(selector.lazy_test_budget, 3)
-                        self.assertLessEqual(verify.call_args.args[-1], 1.184)
+                        self.assertLessEqual(verify.call_args.args[-1], 2.368)
 
     def test_junit_case_identity_skip_and_result_and_staged_source(self):
         import isolated_pytest
