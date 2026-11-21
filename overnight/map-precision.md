@@ -2,6 +2,39 @@
 
 Base 2c4b6a8. Map construction uses the unmodified pinned checkout and its baseline suite. Generated patches are used for evaluation.
 
+## Fixed-cost analysis and two fresh mixed development batches after 77e4997
+
+The offline equality replay can precompute the child-process protection mask once at image build. It binds the mask to the selector source, Python major/minor, catalog, map, and the hashes of every mapped Python source. The index was 24,960 bytes on the host. A missing, incomplete or stale index triggers the original scan. The verification is deferred until a row has a potentially removable test. No change to the production selector or Docker settings.
+
+```sh
+python -m tools.map_equality_replay --source "$SOURCE" --data "$DATA" --map "$MAP" --prepare-child-work /tmp/child-index.json
+python -m tools.map_equality_replay --source "$SOURCE" --data "$DATA" --map "$MAP" --schedule "$SCHEDULE" --child-work-index /tmp/child-index.json > /tmp/equality.jsonl
+```
+
+Five alternating pairs per workload, in fresh interpreters with identical base schedules:
+
+| Development workload | Before equality replay, simulated s | After equality replay, simulated s | Original replay CPU s | Prepared replay CPU s |
+| --- | ---: | ---: | ---: | ---: |
+| 41 length edits | 333.557 | 318.790 | 1.4634 | 0.5959 |
+| 17 string edits | 72.347 | 71.523 | 1.1240 | 0.2347 |
+| Public 30, merged defaults | 118.443 | 118.443 | 0.1480 | 0.1464 |
+| Mixed 128, seed 111 | 666.306 | 666.306 | 0.1664 | 0.1654 |
+| Mixed 128, seed 913 | 789.042 | 789.042 | 0.1552 | 0.1532 |
+
+Outputs were byte-identical between prepared and ordinary replays on every pair. Net savings relative to leaving the base schedule alone were 14.171 seconds for length edits and 0.589 seconds for string edits after charging the entire prepared replay. The new mixed batches used the even indices of 256 generated edits per seed, selected before verification. Both mixed batches incurred the replay overhead without schedule savings. Repacking identical test selections has at most 0.085 seconds of potential savings in these 256 patches, using the maximum of the longest job and mean worker load as a lower bound for each worker count.
+
+**Fixture field audit.** The optional diagnostic observes how tests unpack tuple rows from a supplied generator, including whether the local named `_` is read. Dynamic indexing or an unfamiliar unpack is charged to the whole row. Setup loads are reported separately. Run from the project root in the locked environment with the pinned checkout and the locked interpreter first on PATH:
+
+```sh
+SKIP_INTEGRATION=0 python -m tools.map_fixture_fields --source "$SOURCE" --output /tmp/fields.json --loader tests.helpers:load_sql_fixture_pairs tests/test_executor.py::TestExecutor::test_execute_tpcds tests/test_executor.py::TestExecutor::test_execute_tpch tests/test_executor.py::TestExecutor::test_optimized_tpch
+```
+
+Three tests and 79 subtests passed with observations enabled. Both files loaded in shared setup. The executor methods unpacked metadata and input SQL (156 and 22 observed tuples respectively); the optimized-query test unpacked input and expected SQL (22 tuples). Original, uninstrumented pytest then verified all 17 proposed test/patch pairs across nine independent fixture edits on separate patched checkouts. A retained input-edit control failed. Pairs were nominated either because only discarded fields changed or because the instrumented test unpacked rows of the other fixture. Missing observations alone are insufficient proof: native tuple access, cached aliases, reflection and child processes can bypass the observer.
+
+Only the first mixed batch had a schedule benefit from dropping those verified items: 52.055 simulated seconds over three patches if selection could establish their independence cheaply. Checking all candidates for that batch actually consumed 72.241 child and parent CPU seconds even excluding checkout preparation. The other batch had no schedule benefit and its checks cost 17.878 CPU seconds. The conservative tier requiring a positive same-file unpack saved zero scheduled seconds in both batches. No fixture skip rule was enabled.
+
+The 21.454-second TPC-DS executor was scheduled on 32 of 256 mixed patches. It was the longest item on the slowest worker in 30. Only 10 of the 32 selections were attributed solely to a file read. The other 22 involved executable code or import/setup changes. A scope-limited follow-up should trace which optimizer decisions reach executor inputs, with real failures as controls. Project checks passed 138/139; the pre-existing locked-map fingerprint requires a Docker rebuild.
+
 ## Equality observations and mixed-workload fixture costs after b5b6741
 
 The strict selector cannot trust a completed equality when the same test could have caught an exception from an earlier custom comparison. The map builder now records the test as unknown **before** dispatching any monitored equality or inequality with operands other than matching exact builtin integers or strings. The custom operator still runs once and returns or raises normally. A site with shared or out-of-test observations is omitted. The resulting map marks 204 qualifying sites. Removing just the new markers reproduced every field of the previous decoded host map. Full build passed 1,621 tests and 25,454 subtests, with 0.54 s modeling, 314.26 s tests and 3.25 s aggregation. No host map was committed.
