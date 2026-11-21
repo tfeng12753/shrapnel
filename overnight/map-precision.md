@@ -2,6 +2,53 @@
 
 Base 2c4b6a8. Map construction uses the unmodified pinned checkout and its baseline suite. Generated patches are used for evaluation.
 
+## Executor fixture checks and early optimizer rejection at 18b16c1
+
+The comparison starts from the selector and committed map at `27e905abf950`, the submitted revision that scored 182.3 s with 177.923 simulated seconds and zero misses. The local trials reuse that revision's actual output. The experiments live in offline tools. The scored entry still runs the existing selector.
+
+The new fixture check handles a single SQL fixture edit for either TPC-DS or TPC-H. It resolves the file from the audited executor's class setup and runs the pinned fixture loader on the original and patched data. The executor submits the metadata and input SQL in order. A change limited to expected SQL can therefore keep the same executor inputs while changing an optimizer test's assertion. Both the loader and executor test module must match the reviewed source digests. An unfamiliar consumer, malformed fixture, changed input, changed metadata, row count or row order keeps the test. All other selected items remain scheduled. The trial skips comparisons with no marginal worker savings.
+
+On a schedule from another revision, run the fixture check independently with the locked interpreter:
+
+```sh
+python -m tools.map_executor_trial --source "$SOURCE" --data "$DATA" \
+  --schedule "$SCHEDULE" --checks fixture --verify --output ../fixture-review
+```
+
+`--schedule` validates the saved schedule against the catalog and all patch IDs. Fixture-only replay needs no executor snapshots. `--checks optimizer` selects the two-seed TPC-DS comparison. The default `--checks all` runs both checks. Each decision names the commit and test. Use a new output directory each time.
+
+For optimizer changes, the baseline builder traces which executable fixture queries reach each optimizer line. At runtime the check tries up to the three shortest covering queries first. A differing optimized expression, error or timeout keeps the test. A passing screen or an uncovered line still requires both complete reference snapshots. In paired optimizer-only measurements across the first five batches, the same eight candidates qualified with and without the screen. Audit CPU fell from 69.229 to 59.942 s. Seed 913 fell from 8.879 to 2.968 s with zero removals. On seed 613 it rose from 5.805 to 5.888 s. The index occupied 166,864 bytes.
+
+### Winning-baseline comparison
+
+Each development row contains the 128 even-indexed patches from 256 mixed generated patches. Seeds 1301 and 1613 are separate follow-up batches. Each saving is the difference in slowest-worker duration plus worker charges after rescheduling. The last column also charges incremental in-process audit CPU, including unsuccessful attempts. The validator runs the original pytest item with its process pools on a freshly patched checkout and is timed separately. The official holdout and hidden cases were excluded.
+
+| Development seed | Baseline schedule s | Fixture-only saving s | Combined schedule s | Combined audit CPU s | Combined net saving s |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 613 | 624.453 | 6.000 | 600.703 | 5.904 | 17.846 |
+| 829 | 763.410 | 0 | 679.796 | 30.705 | 52.909 |
+| 241 | 726.024 | 46.444 | 661.215 | 8.390 | 56.419 |
+| 739 | 690.479 | 63.666 | 608.403 | 8.055 | 74.021 |
+| 913 | 771.885 | 0 | 771.885 | 3.007 | -3.007 |
+| 1301 | 633.980 | 2.000 | 576.916 | 18.824 | 38.240 |
+| 1613 | 701.528 | 27.222 | 674.306 | 0.442 | 26.780 |
+| **896 patches** | **4,911.759** | **145.332** | **4,573.224** | **75.327** | **263.208** |
+
+The fixture check found six TPC-DS cases at 21.222 s each and nine TPC-H cases at 2.000 s each. Its audit CPU totaled 0.280 s across these batches. Charging the full standalone fixture command against saved schedules instead, the sum of seven per-batch medians over three fresh interpreter runs was 0.608 s. All 15 original executor items passed separately, including 57 subtests on each TPC-DS case. A disabled-execution fixture row with a malformed input SQL still failed the original executor during parsing. The check retained it.
+
+Concrete decisions on the additional batches included an expected-SQL edit in development patch `m1613150` that removed only `test_execute_tpcds`, a TPC-H expected-SQL edit in `m1613074` that kept both `test_optimized_tpch` and `test_tpch`, and a join-optimizer edit in `m1301006` that matched the two full executor snapshots. The failing-input control was `m613174`. Patch IDs are reported for reproduction only.
+
+The combined trial added 11 optimizer cases. All 26 proposed omissions across these batches have an original-item pass. Both follow-up batches ran end to end with `--verify`: eight proposed omissions passed. Together those two batches saved 84.286 scheduled seconds with 19.266 s audit CPU. Enabling independent pytest validation cost another 89.530 s, which would erase the gain if charged during scoring. On the public 30, baseline and combined schedules were byte-identical at 118.443 s with zero misses. The combined audit cost 0.193 s. The fixture-only command used 0.044 s median whole-process CPU on public. Current measurements support evaluating the fixture-only path first on scorer hardware. Hidden patch composition and hidden gains remain unknown.
+
+### Other checks investigated
+
+- Three separate `TypedDict` edits changed only `total=False` to `total=True`. Each triggered all 1,620 catalog items at 36.817 simulated seconds. All three patched checkouts passed the full original suite, 1,621 items and 25,454 subtests each. A synthetic reflection test observed the changed required and optional keys on a subclass. On the unchanged checkout, a metaclass observer recorded reads of totality, required keys, optional keys and class dictionaries across 37 interpreter startups. The suite passed all 1,621 items and 25,454 subtests. All 15 distinct class/attribute/call-site combinations came from subclass construction in Python’s typing module. A positive control captured two external reflection reads. Direct type-level access and native reads can bypass this observer. Production selection for these edits still needs evidence that covers reflection, descendants, source readers and subprocesses.
+- The existing cold-import verifier yielded no removals when replayed on the winning schedule for the first five batches. A scan for byte-for-byte identical compiled Python on scheduled patches also produced zero candidates there.
+- Three apparent fixture matches on the first five batches came from applying the SQL-pairs loader to a file read by the single-query loader. Those edits changed input consumed by real tests. Candidate discovery must resolve the actual reader.
+- The TPC-H fixture has 22 rows and no rows enabled for database execution in this revision. The parent still parses and transports each input. An empty plan capture cannot establish an omission. Comparing exact ordered fixture inputs works for this consumer and keeps changed SQL scheduled.
+
+Integration checkpoint 452c79a relocates independent recorder initialization and mask construction to avoid conflicts with the teammate's class-setup attribution on main. A temporary merge preview against `27e905abf950` had no conflicts. On this branch, 148 of 149 project checks passed. On the combined preview, 166 of 167 passed. The sole failure in both was the existing committed-map fingerprint. Docker is unavailable on this host. The full map PR still requires its normal Docker rebuild. The fixture-only experiment can be tested against the winning committed map and a saved schedule.
+
 ## Run the executor trial
 
 From the Shrapnel repository root, use the locked Python 3.13 environment from `requirements.lock` and a clean SQLGlot checkout at revision `eb11aec4be8cb2122afe713a4816662c3f0fb2fa`. With the scorer checkout already at `/opt/sqlglot`, the public trial is one command:
