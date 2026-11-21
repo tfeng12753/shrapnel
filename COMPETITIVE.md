@@ -77,3 +77,27 @@ Alternatively, publish the source repository and manually run its **Benchmark
 pinned sqlglot** GitHub Actions workflow. Download the `blast-radius-research`
 artifact and use its research bundle. The workflow does not push commits or
 submit an entry to the competition.
+
+## Find expensive selections
+
+Each strategy in `competitive-results.json` includes a `schedule_profile` for
+the run closest to its median total. `profile_output` names the corresponding
+JSONL in the research bundle. Patches are ranked by actual schedule cost minus
+the cost of scheduling only the labeled failures with the same scheduler.
+Penalties and missing test numbers are reported separately. Check misses first.
+The reference is a feasible schedule, not necessarily optimal on other batches.
+
+For each patch, the top three extra tests are ranked by how much removing just
+that test saves with the other assignments fixed, breaking ties by duration.
+These individual savings cannot be added together. To trace why those tests
+entered static selection, replay the output against the source and map from
+the same run (use `--no-relations` for the coverage strategy):
+
+```sh
+python3 tools/profile_schedule.py outputs/relations-1.jsonl \
+    --source /path/to/pinned/sqlglot --map dependencies.json.gz > profile.json
+```
+
+Omit both paths to analyze a schedule without replay. Replay explains static
+selection before runtime verification. The profiler reads sample answers on the
+benchmark host, outside the timed selector.

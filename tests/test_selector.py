@@ -94,6 +94,13 @@ class SelectionTests(unittest.TestCase):
         patch = diff("m.py", "def f():\n    return 1\n", "def f():\n    return 2\n")
         self.assertEqual(self.selector().select(patch), 1)
 
+    def test_trace_uses_remapped_test_numbers_and_baseline_lines(self):
+        patch = diff("m.py", "def f():\n    return 1\n", "def f():\n    return 2\n")
+        events = []
+        selected = self.selector().select(patch, lambda *event: events.append(event))
+        self.assertEqual(selected, 1)
+        self.assertEqual(events, [(1, "affected line or anchor", "m.py", 2)])
+
     def test_comment_is_semantically_unchanged(self):
         patch = diff("m.py", "def f():\n    return 1\n", "# comment\ndef f():\n    return 1\n")
         self.assertEqual(self.selector().select(patch), 0)

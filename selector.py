@@ -248,17 +248,23 @@ class Selector:
             self.sources[name] = path.read_text(encoding="utf-8")
         return self.sources[name]
 
-    def select(self, patch: str) -> int:
+    def select(self, patch: str, trace=None) -> int:
+        # The offline profiler supplies trace(mask, reason, path, location).
+        def include(mask, reason, path=None, location=None):
+            if trace is not None and mask:
+                trace(mask, reason, path, location)
+            return mask
+
         # An incomplete map must never silently omit a test absent from map generation.
         if not self.complete:
-            return self.all
+            return include(self.all, "dependency map unavailable or incomplete")
         try:
             changes = parse_patch(patch)
             result = 0
             for c in changes:
                 name = c["old"]
                 if name != c["new"]:
-                    return self.all
+                    return include(self.all, "path changed", name)
                 old = self.read_source(name)
                 new, removed, inserted = apply_change(old, c)
                 entry = self.files.get(name)
@@ -267,27 +273,29 @@ class Selector:
                     if semantic_tree(old) == semantic_tree(new):
                         # Tests may inspect comments or exact source text.
                         if entry is None:
-                            return self.all
-                        result |= entry["readers"]
+                            return include(self.all, "unmapped source", name)
+                        result |= include(entry["readers"], "file reader", name)
                         continue
                     refined = self.refine_comparisons(old, new, entry)
                     if refined is not None:
-                        result |= refined | entry["readers"] | self.external
+                        result |= include(refined, "comparison boundary or unknown", name)
+                        result |= include(entry["readers"], "file reader", name)
+                        result |= include(self.external, "external dependency", name)
                         continue
                     if import_hazard(old, new):
-                        return self.all
-                result |= self.external
+                        return include(self.all, "import-time change", name)
+                result |= include(self.external, "external dependency", name)
                 if entry is None:
-                    return self.all
+                    return include(self.all, "unmapped file", name)
                 if not name.endswith(".py"):
-                    result |= entry["readers"]
+                    result |= include(entry["readers"], "file reader", name)
                     # Unknown readers are uncertainty, not proof of irrelevance.
                     if not entry["readers"]:
-                        return self.all
+                        return include(self.all, "unknown file readers", name)
                     continue
-                result |= entry["readers"]
+                result |= include(entry["readers"], "file reader", name)
                 for line in removed:
-                    result |= entry["lines"].get(line, entry["anchors"].get(line, 0))
+                    result |= include(entry["lines"].get(line, entry["anchors"].get(line, 0)), "affected line or anchor", name, line)
                 for anchor in inserted:
                     # An insertion can create a new branch or override, so select users
                     # of the containing symbol, including presently unexecuted paths.
@@ -296,20 +304,20 @@ class Selector:
                         size = min(b - a for a, b, _, _ in regions)
                         for a, b, _, mask in regions:
                             if b - a == size:
-                                result |= mask
+                                result |= include(mask, "insertion region", name, (a, b))
                     else:
-                        result |= entry["executed"]
+                        result |= include(entry["executed"], "file execution for unscoped insertion", name, anchor)
                 # Constants, defaults, decorators, and class-body edits execute at
                 # import time. Regions include their runtime attribute/symbol users.
                 for a, b, kind, mask in entry["regions"]:
                     if kind not in ("function", "class") and any(a <= line <= b for line in removed):
-                        result |= mask
+                        result |= include(mask, "definition dependency", name, (a, b))
                 if not removed and not inserted:
-                    return self.all
+                    return include(self.all, "no changed positions", name)
             return result
-        except (ValueError, SyntaxError, OSError, UnicodeError, RecursionError):
+        except (ValueError, SyntaxError, OSError, UnicodeError, RecursionError) as error:
             # Syntax/import-shape uncertainty can break every test's collection.
-            return self.all
+            return include(self.all, "analysis failed: " + type(error).__name__)
 
     def refine_comparisons(self, old, new, entry):
         if not entry or not entry["comparisons"]:

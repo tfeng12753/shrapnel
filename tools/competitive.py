@@ -15,6 +15,7 @@ import zipfile
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from score import evaluate_run
+from tools.profile_schedule import schedule_profile
 
 
 def main():
@@ -68,7 +69,15 @@ def main():
             runs.append(run)
             outputs[f"{variant}-{i+1}.jsonl"] = process.stdout
             print(f"{variant} run {i+1}: total={run['total_seconds']:.3f}s simulated={run['simulated_seconds']:.3f}s CPU={cpu:.3f}s misses={run['misses']}", flush=True)
-        report[variant] = {"runs": runs, "median_total_seconds": statistics.median(run["total_seconds"] for run in runs)}
+        median = statistics.median(run["total_seconds"] for run in runs)
+        index = min(range(len(runs)), key=lambda j: abs(runs[j]["total_seconds"] - median))
+        output_name = f"{variant}-{index + 1}.jsonl"
+        profile = schedule_profile(outputs[output_name], tests, answers)
+        report[variant] = {"runs": runs, "median_total_seconds": median,
+                           "profile_output": output_name, "schedule_profile": profile}
+        for patch in profile["patches"][:3]:
+            print(f"  {patch['commit']}: {patch['excess_schedule_ms'] / 1000:+.3f}s vs failing-only schedule"
+                  f" ({patch['extra_count']} extra tests, {len(patch['missing'])} missing)")
     # A missed commit is never hidden by a favorable average over other commits.
     valid = {key: value for key, value in report.items() if all(run["misses"] == 0 for run in value["runs"])}
     report["best_zero_miss_variant"] = min(valid, key=lambda key: valid[key]["median_total_seconds"]) if valid else None
