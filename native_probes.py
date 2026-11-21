@@ -56,6 +56,26 @@ def _import_child(source, overlays, module):
     return True
 
 
+def _setup_child(source, overlays, module, class_name):
+    """Run one test class's setUpClass (and class teardown) on the patched files."""
+    _install_overlays(source, overlays)
+    # A same-named package imported from elsewhere (for example this project's
+    # own tests/) must not shadow the pinned checkout's test package.
+    top = module.split(".")[0]
+    for name in [n for n in sys.modules if n == top or n.startswith(top + ".")]:
+        mod = sys.modules[name]
+        locations = list(getattr(mod, "__path__", None) or []) or [getattr(mod, "__file__", None)]
+        if not all(loc and Path(loc).resolve().is_relative_to(source) for loc in locations):
+            del sys.modules[name]
+    cls = getattr(importlib.import_module(module), class_name)
+    cls.setUpClass()
+    try:
+        cls.tearDownClass()
+    finally:
+        cls.doClassCleanups()
+    return True
+
+
 def _child(source, overlays, tests, *, in_process=False):
     """The caller forks first; no source module is imported in the parent."""
     _install_overlays(source, overlays)
@@ -139,6 +159,13 @@ def verify(source, overlays, tests, wall_seconds=1.5, cpu_seconds=1.0, *, strict
 def verify_import(source, overlays, module, wall_seconds=4.0, cpu_seconds=2.0):
     """Return (True if the patched module imports cleanly, consumed child CPU)."""
     ok, cpu = _forked(lambda: _import_child(source.resolve(), overlays, module), False, wall_seconds, cpu_seconds)
+    return ok is True, cpu
+
+
+def verify_setup(source, overlays, module, class_name, wall_seconds=12.0, cpu_seconds=6.0):
+    """Return (True if the class's setUpClass succeeds on the patched files, consumed child CPU)."""
+    ok, cpu = _forked(lambda: _setup_child(source.resolve(), overlays, module, class_name), False,
+                      wall_seconds, cpu_seconds)
     return ok is True, cpu
 
 

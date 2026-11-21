@@ -14,7 +14,8 @@ from pathlib import Path
 import sys
 
 REVISION = "eb11aec4be8cb2122afe713a4816662c3f0fb2fa"
-BUILDER_FILES = ["tools/build_map.py", "tools/instrument.py", "tools/fetch_source.py", "requirements.lock"]
+BUILDER_FILES = ["tools/build_map.py", "tools/instrument.py", "tools/setup_flow.py", "tools/fetch_source.py",
+                 "requirements.lock"]
 
 
 def builder_digest(root):

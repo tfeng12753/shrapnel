@@ -8,7 +8,7 @@ COPY requirements.lock /app/requirements.lock
 RUN if [ "$BUILD_MAP" = "1" ]; then pip install --no-cache-dir -r /app/requirements.lock coverage==7.10.7; fi
 COPY tools/fetch_source.py /app/tools/fetch_source.py
 RUN if [ "$BUILD_MAP" = "1" ]; then python /app/tools/fetch_source.py; fi
-COPY tools/build_map.py tools/instrument.py tools/map_fingerprint.py /app/tools/
+COPY tools/build_map.py tools/instrument.py tools/setup_flow.py tools/map_fingerprint.py /app/tools/
 COPY maps /app/maps
 # Per-test pytest timeout while instrumenting; raise it for a one-off `make map`.
 ARG MAP_TIMEOUT=180

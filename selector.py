@@ -441,8 +441,13 @@ def short_circuit_edits(before, after, affected_lines):
 
 class Selector:
     def __init__(self, tests: list[dict], source: Path, map_path: Path, *, conservative_python=False,
-                 relations=None, child_work=False, import_closure=None, import_check_budget=0.0):
+                 relations=None, child_work=False, import_closure=None, import_check_budget=0.0,
+                 setup_check_budget=0.0):
         self.tests, self.source = tests, source
+        # Fixture reads in setUpClass may be attributed to the tests that use the
+        # loaded attributes. Relying on that requires setUpClass to still succeed on
+        # the patched files, which a forked run checks (CPU charged to this budget).
+        self.setup_check_budget = setup_check_budget
         # Changes confined to assignment values evaluated at import time can only
         # break collection by raising. A forked import of the patched module checks that.
         self.import_check_budget = import_check_budget
@@ -501,6 +506,12 @@ class Selector:
             self.native = set(data.get("native", ()))
             for name, entry in data["files"].items():
                 readers = decode(entry.get("readers", "0"))
+                setup = {cid: decode(m) for cid, m in entry.get("setup_classes", {}).items()}
+                if conservative_python or name.endswith(".py"):
+                    # Only fixture edits use the per-test class-setup attribution.
+                    for members in setup.values():
+                        readers |= members
+                    setup = {}
                 if conservative_python:
                     self.files[name] = {"readers": readers}
                     continue
@@ -514,6 +525,7 @@ class Selector:
                         for site, info in comparison_sites.items()},
                     "readers": readers,
                     "executed": decode(entry.get("executed", "0")),
+                    "setup": setup,
                 }
             mapped_ids = set(data["tests"])
             missing = [t["id"] for t in tests if t["id"] not in mapped_ids]
@@ -624,9 +636,13 @@ class Selector:
                 if entry is None:
                     return include(self.all, "unmapped file", name)
                 if not name.endswith(".py"):
+                    setup = entry.get("setup") or {}
                     result |= include(entry["readers"], "file reader", name)
+                    for class_id, members in sorted(setup.items()):
+                        result |= include(self.setup_fallback(class_id, members, entry["readers"], changes),
+                                          "class setup reader", name, class_id)
                     # Unknown readers are uncertainty, not proof of irrelevance.
-                    if not entry["readers"]:
+                    if not entry["readers"] and not setup:
                         return include(self.all, "unknown file readers", name)
                     continue
                 result |= include(entry["readers"], "file reader", name)
@@ -667,6 +683,27 @@ class Selector:
         if self.import_closure is None or name in self.import_closure:
             return self.external
         return self.external & ~self.closure_external
+
+    def setup_fallback(self, class_id, members, readers, changes):
+        """Tests of a class to keep beyond attributed readers: none if its setUpClass verifiably succeeds."""
+        dropped = members & ~readers
+        if not dropped:
+            return 0
+        if sum(t["seconds"] for t in self.chosen(dropped)) < 3.0 or self.setup_check_budget < 1.0:
+            return members
+        module_path, class_name = class_id.split("::")[0], class_id.split("::")[-1]
+        if not module_path.endswith(".py"):
+            return members
+        overlays = {}
+        for c in changes:
+            if c["old"] != c["new"]:
+                return members
+            overlays[c["old"]] = apply_change(self.read_source(c["old"]), c)[0]
+        from native_probes import verify_setup
+        ok, cpu = verify_setup(self.source, overlays, module_path[:-3].replace("/", "."), class_name,
+                               wall_seconds=12.0, cpu_seconds=min(6.0, self.setup_check_budget))
+        self.setup_check_budget -= cpu
+        return 0 if ok else members
 
     def import_succeeds(self, name, changes):
         module = module_for(name)
@@ -787,6 +824,7 @@ def parse_args(argv=None):
     parser.set_defaults(relations=None)
     parser.add_argument("--import-closure", type=Path, default=Path("/app/import-closure.json"))
     parser.add_argument("--import-check-budget", type=float)
+    parser.add_argument("--setup-check-budget", type=float)
     parser.add_argument("--config", type=Path, default=Path(__file__).with_name("selector-config.json"))
     args = parser.parse_args(argv)
     try:
@@ -811,9 +849,12 @@ def parse_args(argv=None):
         child_work = args.conservative_python is None and not conservative and config.get("child_work", False)
     if args.import_check_budget is None:
         args.import_check_budget = float(config.get("import_check_budget", 0.0))
+    if args.setup_check_budget is None:
+        args.setup_check_budget = float(config.get("setup_check_budget", 0.0))
     args.settings = {"conservative_python": bool(conservative), "child_work": bool(child_work),
                      "relations": bool(args.relations), "probe_budget": float(args.probe_budget),
-                     "import_check_budget": float(args.import_check_budget)}
+                     "import_check_budget": float(args.import_check_budget),
+                     "setup_check_budget": float(args.setup_check_budget)}
     if args.cost_aware_probes:
         args.settings["probe_budget"] = {"seconds": args.probe_budget, "cost_aware": True}
     return args
@@ -835,7 +876,8 @@ def main():
         closure = None
     selector = Selector(tests, args.source, args.map, conservative_python=settings["conservative_python"],
                         relations=settings["relations"], child_work=settings["child_work"], import_closure=closure,
-                        import_check_budget=max(0.0, settings["import_check_budget"]))
+                        import_check_budget=max(0.0, settings["import_check_budget"]),
+                        setup_check_budget=max(0.0, settings["setup_check_budget"]))
     schedules = {}
     remaining = max(0.0, args.probe_budget)
     for patch in sorted((args.data / "commits").glob("*.patch")):
