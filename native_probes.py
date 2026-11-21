@@ -56,9 +56,19 @@ def _import_child(source, overlays, module):
     return True
 
 
-def _child(source, overlays, tests):
+def _child(source, overlays, tests, *, in_process=False):
     """The caller forks first; no source module is imported in the parent."""
     _install_overlays(source, overlays)
+    attempted_child = False
+    if in_process:
+        def reject_child(event, args):
+            nonlocal attempted_child
+            if event in ("os.fork", "os.forkpty", "os.posix_spawn", "os.exec", "os.system", "subprocess.Popen"):
+                attempted_child = True
+                # A separate process may bypass the overlays and the CPU timer.
+                raise RuntimeError("native verification requires in-process tests")
+
+        sys.addaudithook(reject_child)
     expected = {}
     suite = unittest.TestSuite()
     loader = unittest.TestLoader()
@@ -102,14 +112,17 @@ def _child(source, overlays, tests):
             self.failed.add(test.id())
     result = Result()
     suite.run(result)
-    if result.unknown or loader.errors:
+    if result.unknown or loader.errors or attempted_child:
         return []
     return sorted(expected[name] for name in result.passed - result.failed)
 
 
-def verify(source, overlays, tests, wall_seconds=1.5, cpu_seconds=1.0):
+def verify(source, overlays, tests, wall_seconds=1.5, cpu_seconds=1.0, *, strict_cpu=False):
     """Return (confirmed passing IDs, consumed child CPU); timeouts remove nothing."""
-    passed, cpu = _forked(lambda: _child(source.resolve(), overlays, tests), [], wall_seconds, cpu_seconds)
+    def work():
+        return _child(source.resolve(), overlays, tests, in_process=strict_cpu)
+
+    passed, cpu = _forked(work, [], wall_seconds, cpu_seconds, strict_cpu=strict_cpu)
     allowed = {test["id"] for test in tests}
     if not isinstance(passed, list) or any(item not in allowed for item in passed):
         return [], cpu
@@ -122,7 +135,7 @@ def verify_import(source, overlays, module, wall_seconds=4.0, cpu_seconds=2.0):
     return ok is True, cpu
 
 
-def _forked(work, failure, wall_seconds, cpu_seconds):
+def _forked(work, failure, wall_seconds, cpu_seconds, *, strict_cpu=False):
     """Run work() in a limited forked child; return (its JSON result or failure, child CPU)."""
     read_fd, write_fd = os.pipe()
     sys.stdout.flush()
@@ -139,6 +152,11 @@ def _forked(work, failure, wall_seconds, cpu_seconds):
             resource.setrlimit(resource.RLIMIT_CPU, (cap, cap + 1))
             signal.signal(signal.SIGALRM, signal.SIG_DFL)
             signal.setitimer(signal.ITIMER_REAL, wall_seconds)
+            if strict_cpu:
+                # RLIMIT_CPU is rounded to seconds. ITIMER_PROF tracks user
+                # and system CPU even when other processes delay scheduling.
+                signal.signal(signal.SIGPROF, signal.SIG_DFL)
+                signal.setitimer(signal.ITIMER_PROF, max(.001, cpu_seconds - time.process_time()))
             try:
                 result = work()
             except BaseException:

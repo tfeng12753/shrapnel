@@ -32,7 +32,9 @@ class CostAwareProbeTests(unittest.TestCase):
             mask, charge = self.selector.probe(self.diff, 3, 2, cost_aware=True)
             self.assertEqual(mask, 0)
             self.assertAlmostEqual(charge, 1.34)
-            self.assertAlmostEqual(run.call_args.kwargs["wall_seconds"], charge)
+            self.assertAlmostEqual(run.call_args.kwargs["cpu_seconds"], charge)
+            self.assertGreater(run.call_args.kwargs["wall_seconds"], charge)
+            self.assertTrue(run.call_args.kwargs["strict_cpu"])
 
     def test_partial_pass_or_timeout_keeps_whole_selection_and_charges_reservation(self):
         for passed, cpu in [([], 1.0), ([self.tests[0]["id"]], .2)]:
@@ -72,13 +74,48 @@ class CostAwareProbeTests(unittest.TestCase):
             {"seconds": 2, "cost_aware": True},
         )
 
-    def test_skipped_test_cannot_confirm_a_pass(self):
+    def run_native(self, source, **limits):
         (self.root / "tests").mkdir()
         (self.root / "tests/__init__.py").touch()
-        (self.root / "tests/test_subject.py").write_text(
+        (self.root / "tests/test_subject.py").write_text(source)
+        return verify(self.root, {}, self.tests[:1], **limits)
+
+    def test_skipped_test_cannot_confirm_a_pass(self):
+        passed, _ = self.run_native(
             "import unittest\n"
             "class Case(unittest.TestCase):\n"
             "    @unittest.skip('requires scorer environment')\n"
             "    def test_slow(self): pass\n"
         )
-        self.assertEqual(verify(self.root, {}, self.tests[:1])[0], [])
+        self.assertEqual(passed, [])
+
+    def test_cpu_deadline_ignores_blocked_time(self):
+        passed, _ = self.run_native(
+            "import time, unittest\n"
+            "class Case(unittest.TestCase):\n"
+            "    def test_slow(self): time.sleep(.25)\n",
+            strict_cpu=True, wall_seconds=2.0, cpu_seconds=.15,
+        )
+        self.assertEqual(passed, [self.tests[0]["id"]])
+
+    def test_cpu_deadline_keeps_busy_test(self):
+        passed, cpu = self.run_native(
+            "import unittest\n"
+            "class Case(unittest.TestCase):\n"
+            "    def test_slow(self):\n"
+            "        while True: pass\n",
+            strict_cpu=True, wall_seconds=2.0, cpu_seconds=.15,
+        )
+        self.assertEqual(passed, [])
+        self.assertLess(cpu, .3)
+
+    def test_attempted_subprocess_invalidates_a_successful_batch(self):
+        passed, _ = self.run_native(
+            "import subprocess, unittest\n"
+            "class Case(unittest.TestCase):\n"
+            "    def test_slow(self):\n"
+            "        try: subprocess.run(['/bin/true'], check=True)\n"
+            "        except RuntimeError: pass\n",
+            strict_cpu=True,
+        )
+        self.assertEqual(passed, [])

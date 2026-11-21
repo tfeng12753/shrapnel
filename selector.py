@@ -447,8 +447,8 @@ class Selector:
         # Historical direct callers omit this option. An explicit opt-in
         # (including the CLI) requires evidence for every invocation of the
         # old operator. Map v1 records only completed comparisons.
-        self.relations = relations is not False
-        self.strict_relations = relations is True
+        self.relations = relations is None or bool(relations)
+        self.strict_relations = relations is not None and self.relations
         self.all = (1 << len(tests)) - 1
         self.files, self.complete = {}, False
         self.external = 0
@@ -715,14 +715,14 @@ class Selector:
         if any(t["id"] not in self.native for t in tests):
             return mask, 0.0
         if cost_aware:
-            if any(not math.isfinite(t["seconds"]) or t["seconds"] < 0 for t in tests):
+            if not math.isfinite(budget) or any(not math.isfinite(t["seconds"]) or t["seconds"] < 0 for t in tests):
                 return mask, 0.0
             durations = {t["number"]: round(t["seconds"] * 1000) for t in tests}
             total = sum(durations.values()) / 1000
             # Reserve the full deadline, even after a quick pass. Admission then
             # depends on catalog durations and patch order, not on measured CPU.
-            wall_seconds = .5 + 2 * total
-            if wall_seconds > min(1.5, budget):
+            cpu_seconds = .5 + 2 * total
+            if cpu_seconds > min(1.5, budget):
                 return mask, 0.0
             workers = split(tests)
             saving = 2 * len(workers) + max(sum(durations[n] for n in w) for w in workers) / 1000
@@ -730,7 +730,7 @@ class Selector:
             # Require headroom for import overhead, timing error and failed probes.
             if saving <= 3 * expected_cpu:
                 return mask, 0.0
-            cpu_seconds = wall_seconds
+            wall_seconds = max(2.0, 3 * cpu_seconds)
         else:
             if any(t["seconds"] > .15 for t in tests) or sum(t["seconds"] for t in tests) > .8:
                 return mask, 0.0
@@ -743,10 +743,11 @@ class Selector:
             return mask, 0.0
         overlays = {c["old"]: apply_change(self.read_source(c["old"]), c)[0] for c in changes}
         from native_probes import verify
-        passed, cpu = verify(self.source, overlays, tests, wall_seconds=wall_seconds, cpu_seconds=cpu_seconds)
+        passed, cpu = verify(self.source, overlays, tests, wall_seconds=wall_seconds, cpu_seconds=cpu_seconds,
+                             strict_cpu=cost_aware)
         if cost_aware:
             all_passed = set(passed) == {t["id"] for t in tests}
-            return (0 if all_passed else mask), wall_seconds
+            return (0 if all_passed else mask), cpu_seconds
         for test in tests:
             if test["id"] in passed:
                 mask &= ~(1 << test["number"])
@@ -782,7 +783,7 @@ def parse_args(argv=None):
     except (OSError, ValueError):
         config = {}
     probe_settings = config.get("probe_budget", 8.0)
-    probe_seconds = probe_settings["seconds"] if isinstance(probe_settings, dict) else probe_settings
+    probe_seconds = probe_settings.get("seconds", 0.0) if isinstance(probe_settings, dict) else probe_settings
     if args.cost_aware_probes is None:
         # An explicit numeric flag reproduces existing benchmark configurations.
         args.cost_aware_probes = (args.probe_budget is None and isinstance(probe_settings, dict)
