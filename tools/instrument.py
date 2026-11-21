@@ -62,6 +62,77 @@ def outcome(state, op):
     return None
 
 
+class DictionaryReads(ast.NodeTransformer):
+    """Observe direct dictionary uses without wrapping or replacing the mapping.
+
+    Key expressions and receiver expressions are each evaluated exactly once.
+    Names shared by different classes are conservatively treated as aliases.
+    """
+    def __init__(self, names):
+        self.names = names
+        self.direct = set()
+
+    def field(self, node):
+        name = node.id if isinstance(node, ast.Name) else getattr(node, "attr", None)
+        return name if name in self.names else None
+
+    def observe(self, expr, name, keyed):
+        return ast.copy_location(ast.Call(ast.Name("_blast_radius_dictionary", ast.Load()),
+                                          [expr, ast.Constant(name), ast.Constant(keyed)], []), expr)
+
+    def lookup(self, receiver, key):
+        name = self.field(receiver)
+        if name:
+            self.direct.add(receiver)
+            return self.observe(key, name, True)
+        return key
+
+    def visit_Subscript(self, node):
+        if isinstance(node.ctx, ast.Load) and not isinstance(node.slice, (ast.Slice, ast.Tuple)):
+            node.slice = self.lookup(node.value, node.slice)
+        return self.generic_visit(node)
+
+    def visit_Call(self, node):
+        if (isinstance(node.func, ast.Attribute) and node.func.attr == "get"
+                and len(node.args) in (1, 2) and not node.keywords
+                and not any(isinstance(arg, ast.Starred) for arg in node.args)):
+            node.args[0] = self.lookup(node.func.value, node.args[0])
+        return self.generic_visit(node)
+
+    def visit_Compare(self, node):
+        if len(node.ops) == 1 and isinstance(node.ops[0], (ast.In, ast.NotIn)):
+            node.left = self.lookup(node.comparators[0], node.left)
+        return self.generic_visit(node)
+
+    def reference(self, node):
+        name = self.field(node)
+        self.generic_visit(node)
+        if name and node not in self.direct and isinstance(node.ctx, ast.Load):
+            return self.observe(node, name, False)
+        return node
+
+    visit_Name = reference
+    visit_Attribute = reference
+
+    def visit_match_case(self, node):
+        # Pattern grammar only permits specific AST forms.
+        if node.guard:
+            node.guard = self.visit(node.guard)
+        node.body = [self.visit(stmt) for stmt in node.body]
+        return node
+
+    # Use the existing transformer's rules for deferred annotations.
+    def visit_AnnAssign(self, node):
+        return Transformer.visit_AnnAssign(self, node)
+
+    def visit_FunctionDef(self, node):
+        return Transformer.visit_FunctionDef(self, node)
+
+    visit_AsyncFunctionDef = visit_FunctionDef
+    def visit_TypeAlias(self, node):
+        return node
+
+
 class Transformer(ast.NodeTransformer):
     def __init__(self, path, fields):
         self.path, self.fields = path, fields
@@ -141,18 +212,23 @@ class Instrumentation:
             value = OPS[op](left, right)
             recorder.record_comparison(path, site, op, relation(left, right))
             return value
-        for name, value in (("_blast_radius_attribute", attribute), ("_blast_radius_dynamic_attribute", dynamic_attribute), ("_blast_radius_comparison", comparison)):
+        def dictionary(value, name, keyed):
+            recorder.record_dictionary(name, value, keyed)
+            return value
+        for name, value in (("_blast_radius_dictionary", dictionary), ("_blast_radius_attribute", attribute), ("_blast_radius_dynamic_attribute", dynamic_attribute), ("_blast_radius_comparison", comparison)):
             self.saved[name] = getattr(builtins, name, None)
             setattr(builtins, name, value)
         self.original = importlib.machinery.SourceFileLoader.get_code
         original, root, fields = self.original, self.root, recorder.model.attr_names
         def get_code(loader, fullname):
             path = Path(loader.get_filename(fullname)).resolve()
-            if not path.is_relative_to(root / "sqlglot") or path.suffix != ".py":
+            if not any(path.is_relative_to(root / folder) for folder in ("sqlglot", "tests")) or path.suffix != ".py":
                 return original(loader, fullname)
             name = path.relative_to(root).as_posix()
             tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
-            tree = Transformer(name, fields).visit(tree)
+            tree = DictionaryReads(getattr(recorder, "dictionary_names", ())).visit(tree)
+            if path.is_relative_to(root / "sqlglot"):
+                tree = Transformer(name, fields).visit(tree)
             ast.fix_missing_locations(tree)
             return compile(tree, str(path), "exec", dont_inherit=True)
         importlib.machinery.SourceFileLoader.get_code = get_code

@@ -15,6 +15,7 @@ import json
 import os
 from pathlib import Path
 import sys
+import time
 import unittest
 import types
 from collections import defaultdict
@@ -133,6 +134,16 @@ class Recorder:
         self.external = set()
         self.native = set()
         self.comparisons = {}
+        self.dictionaries = {symbol: info for symbol, info in getattr(model, "symbols", {}).items()
+                             if info["kind"] == "value" and isinstance(info["node"].value, ast.Dict)}
+        self.dictionary_names = {symbol.rsplit(".", 1)[-1] for _, symbol in self.dictionaries}
+        self.dictionary_reads = defaultdict(lambda: defaultdict(set))
+
+    def record_dictionary(self, name, value, keyed):
+        # Only exact string keys have an unambiguous JSON representation.
+        key = value if keyed and type(value) is str else None
+        context = self.current if self.phase == "call" else None
+        self.dictionary_reads[name][key].add(context)
 
     def audit(self, event, args):
         if event == "open":
@@ -290,7 +301,9 @@ def build(root, destination):
     os.chdir(root)
     sys.path.insert(0, str(root))
     os.environ["SKIP_INTEGRATION"] = "0"
+    started = time.monotonic()
     model = SourceModel(root)
+    modeled = time.monotonic()
     cov = coverage.Coverage(data_file=None, source=[str(root / "sqlglot"), str(root / "tests")], config_file=False)
     rec = Recorder(root, model, cov)
     class Plugin:
@@ -344,7 +357,10 @@ def build(root, destination):
         raise RuntimeError(f"pinned suite did not pass during map generation (pytest exit {status}); refusing incomplete map")
     if len(rec.tests) < 1000:
         raise RuntimeError("unexpectedly small test collection")
+    collected = time.monotonic()
     write_map(root, model, rec, cov.get_data(), destination)
+    print(f"map seconds: model={modeled-started:.2f} suite={collected-modeled:.2f} "
+          f"serialization and aggregation={time.monotonic()-collected:.2f}", file=sys.stderr)
 
 
 def write_map(root, model, rec, data, destination):
@@ -462,6 +478,16 @@ def write_map(root, model, rec, data, destination):
         files[name].setdefault("comparisons", {})[site] = {
             "op": observation["op"], "states": {state: format(value, "x") for state, value in states.items()},
             "unknown": format(unknown, "x")}
+    for (name, symbol), info in rec.dictionaries.items():
+        field = symbol.rsplit(".", 1)[-1]
+        observations = rec.dictionary_reads.get(field, {})
+        def readers(contexts):
+            return all_tests if None in contexts else mask(contexts)
+        keys = {k: format(readers(contexts), "x") for k, contexts in observations.items()
+                if k is not None}
+        files[name].setdefault("dictionary_reads", {})[symbol] = {
+            "start": info["start"], "end": info["end"],
+            "whole": format(readers(observations.get(None, ())), "x"), "keys": keys}
     for name, entry in files.items():
         entry["lines"] = {str(line): format(value, "x") for line, value in sorted(entry["lines"].items()) if value}
         entry["regions"] = [[a, b, k, format(v, "x")] for a, b, k, v in entry["regions"]]
