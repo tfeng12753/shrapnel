@@ -592,7 +592,11 @@ class Selector:
     def select(self, patch: str, trace=None) -> int:
         result = self._select_base(patch, trace)
         if result != self.all and self.import_effects is not None and self.complete and not self.conservative_python:
-            extra = self.downstream_imports(patch, result)
+            try:
+                extra = self.downstream_imports(patch, result)
+            except Exception as error:  # Never let an added safety check crash the run.
+                print(f"downstream import check skipped ({type(error).__name__})", file=sys.stderr)
+                extra = 0
             if extra and trace is not None:
                 trace(extra, "downstream import failure", None, None)
             result |= extra
@@ -610,7 +614,7 @@ class Selector:
                 new, removed, inserted = apply_change(old, c)
                 overlays[c["old"]] = new
                 if c["old"].endswith(".py"):
-                    edits.append((c["old"], old, removed | inserted))
+                    edits.append((c["old"], old, removed | inserted, lambda old=old: baseline_tree(old)))
         except (ValueError, OSError, UnicodeError):
             return self.all
         owners = self.import_effects.owners(edits)

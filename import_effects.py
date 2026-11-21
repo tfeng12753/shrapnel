@@ -26,11 +26,11 @@ def _tree(source):
     return ast.parse(source)
 
 
-def assigned_names(source, lines):
+def assigned_names(source, lines, tree=None):
     """Uppercase names assigned by statements that contain any of the given lines."""
     names = set()
     try:
-        tree = _tree(source)
+        tree = tree if tree is not None else _tree(source)
     except SyntaxError:
         return names
     for node in ast.walk(tree):
@@ -71,19 +71,35 @@ class ImportEffects:
     def owners(self, edits):
         """Owners whose import uses a changed line or a changed uppercase name.
 
-        ``edits`` is a list of (path, old_source, changed_old_lines).
+        ``edits`` is a list of (path, old_source, changed_old_lines) or
+        (path, old_source, changed_old_lines, parsed_old_tree).
         """
-        changed = {}
-        names = set()
-        for path, source, lines in edits:
+        changed, sources = {}, {}
+        for edit in edits:
+            path, source, lines = edit[:3]
             changed.setdefault(path, set()).update(lines)
-            names |= assigned_names(source, frozenset(lines))
-        found = []
+            sources[path] = (source, edit[3] if len(edit) > 3 else None)
+        names = {}
+
+        def names_of(path):
+            # Parsed only when some import actually runs code from this file.
+            if path not in names:
+                source, tree = sources[path]
+                tree = tree() if callable(tree) else tree
+                names[path] = assigned_names(source, frozenset(changed[path]), tree)
+            return names[path]
+
+        found = set()
         for owner, (owner_lines, owner_names) in self.import_time.items():
-            if names & owner_names or any(changed[p] & owner_lines.get(p, ()) for p in changed):
-                found.append(owner)
-        # A changed module that is itself imported by tests is an owner of its own import.
-        return sorted(set(found))
+            for path in changed:
+                ran = owner_lines.get(path)
+                if not ran:
+                    continue  # The owner's import never runs code from this file.
+                # A changed line ran during the import, or a changed setting of this
+                # file is referenced by code the import ran.
+                if changed[path] & ran or names_of(path) & owner_names:
+                    found.add(owner)
+        return sorted(found)
 
     def dependents(self, owners):
         """Test files whose import closure includes any owner (or that are an owner)."""

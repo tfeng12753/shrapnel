@@ -66,7 +66,9 @@ def importer(frame):
 
 def tracer(frame, event, arg):
     code = frame.f_code
-    if event != "call" or code.co_name == "<module>":
+    # Only real functions (not module or class bodies): class-body lines run at
+    # every import, and their values reach import-time code through names.
+    if event != "call" or not code.co_flags & 0x02:  # CO_NEWLOCALS
         return None
     path = os.path.realpath(code.co_filename)
     if not path.startswith(root):
