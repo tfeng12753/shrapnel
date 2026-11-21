@@ -553,7 +553,7 @@ def write_map(root, model, rec, data, destination):
         # keys and values, including zero masks where presence is meaningful.
         for field in ("lines", "anchors"):
             entry[field] = dict(sorted(entry.get(field, {}).items(), key=lambda pair: pair[1]))
-    result = {"version": 1, "revision": REVISION, "complete": True, "tests": rec.tests, "external": format(external_mask, "x"), "native": sorted(rec.native), "files": dict(files)}
+    result = {"version": 1, "revision": REVISION, "complete": True, "tests": rec.tests, "external": format(external_mask, "x"), "native": sorted(rec.native), "files": dict(sorted(files.items()))}
     opener = gzip.open if destination.suffix == ".gz" else open
     with opener(destination, "wt", encoding="utf-8") as f:
         json.dump(result, f, separators=(",", ":"))
