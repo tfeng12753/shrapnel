@@ -57,3 +57,29 @@ The first scorer-image build could not reach the Python package index from Build
 The cost-aware verifier now uses the one-worker scheduler order and stops at the first failure. It also retains source-reading tests whose I/O might bypass the overlay. Comparison coverage now checks shared setup and mixed edits at collection-sensitive spans. 96 unit tests pass. The scorer image can build with the sandbox host CA mounted during dependency and pinned-source fetches. The CA is not part of the run image.
 
 Local ground-truth recovery: the subprocess entry point must guard `pytest.main` with `if __name__ == "__main__":` so sqlglot's spawn-based process pools do not rerun the suite in workers. The unguarded attempt was stopped and isolated. The guarded producer is running for seed 42, IDs `m42000` through `m42030` at stride 2 and the unmodified baseline. Only its audited result directory is used for tune scoring.
+
+## Final local public replay
+
+Code revision `b690300532da5491159a0eb550b37db17dad407f`. CPython 3.13.5 and the pinned requirements. Each row ran the full 30-patch sample five times, with PYTHONHASHSEED 1 through 5. The schedule SHA-256 was identical across the five runs in each row. The CPU measure is user plus system time via `getrusage(RUSAGE_CHILDREN)` around the selector, including reaped native children. The published map hashes and common config above apply. The probe settings remain `0.0`, `8.0`, or `{"seconds":8.0,"cost_aware":true}`.
+
+| Relations | Probes | Simulated s | Misses | Median CPU s | Added CPU vs off | Simulated + median CPU s | Workers |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Off | off | 166.316 | 0 | 0.912231 | +0.000000 | 167.228231 | 30 |
+| Off | legacy | 164.286 | 0 | 1.137597 | +0.225366 | 165.423597 | 29 |
+| Off | cost-aware | 162.129 | 0 | 4.001300 | +3.089069 | 166.130300 | 28 |
+| On | off | 118.443 | 0 | 0.781266 | +0.000000 | 119.224266 | 28 |
+| On | legacy | 116.413 | 0 | 1.271257 | +0.489991 | 117.684257 | 27 |
+| On | cost-aware | 114.256 | 0 | 4.067166 | +3.285900 | 118.323166 | 26 |
+
+Per-run CPU seconds (seeds 1–5) and the five-run schedule digests
+
+- `relations_false__probes_off`: 0.979664, 0.912231, 0.998284, 0.763636, 0.735082. SHA-256 `7189decd1832209759637263631ccef60dd42cde664cbf4544b6fa6a53379e1e`.
+- `relations_false__probes_legacy`: 1.239918, 1.120134, 1.190995, 1.083052, 1.137597. SHA-256 `baf8b7a5b67d3cd13354cdf90ac243924bfa123abd4b89e3fc5fa776a213a239`.
+- `relations_false__probes_cost_aware`: 3.955911, 3.990255, 4.001300, 4.152525, 4.230904. SHA-256 `9d0ab0898af499c32329c151099d5ce247f1bdff38fa06f36ad8d9cf2d68e6b7`.
+- `relations_true__probes_off`: 0.848707, 0.729859, 0.792442, 0.685483, 0.781266. SHA-256 `6bbcfeac36700189676d9cb458ed67a1dbfd2f4d10d3e941deb5975f4c2cf89a`.
+- `relations_true__probes_legacy`: 1.191072, 1.314190, 1.271257, 1.298325, 1.181652. SHA-256 `7e6042b43dfc30773220846110b10e858d981aa5560dd8ad8f2c1ed396fd4d53`.
+- `relations_true__probes_cost_aware`: 4.208106, 3.959116, 4.000618, 4.131078, 4.067166. SHA-256 `2060dbee521cc16173e5b5583224dbfd5e3269a97878aed6671dfb0c712a200e`.
+
+The final code removed the observed local timing variance in this replay. A future workload can still exceed the CPU or backup wall deadline. Any such timeout retains the entire selection. The cost-aware policy removes two workers and improves the measured total versus probes off by 1.098 s with relations off and 0.901 s with relations on. The legacy policy has a slightly lower measured total than cost-aware verification in both local comparisons. Profiling and `score.py` independently confirmed 114.256 simulated seconds and zero misses for guarded relations plus cost-aware probes.
+
+The scorer-format image built successfully using a temporary test Dockerfile to mount the sandbox's trust bundle during dependency fetches. The first container replay exhausted the shared VFS layer storage and was retried after removing this task's intermediate image and build cache. The local evidence above is retained independently.
