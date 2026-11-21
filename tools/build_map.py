@@ -128,14 +128,6 @@ class Recorder:
         self.current, self.phase = None, "collection"
         self.attrs = defaultdict(set)
         self.shared_attrs = defaultdict(set)
-        self.reads = defaultdict(set)
-        self.cache = {}
-        self.tests = []
-        self.items = {}
-        self.audit_state = threading.local()
-        self.external = set()
-        self.native = set()
-        self.comparisons = {}
         self.dictionaries = {}
         for symbol, info in getattr(model, "symbols", {}).items():
             node = info["node"]
@@ -163,17 +155,14 @@ class Recorder:
             previous = self.dict_declarations[path].get(location, ())
             self.dict_declarations[path][location] = (*previous, (path, symbol))
         self.dictionary_reads = defaultdict(lambda: defaultdict(set))
-
-    def record_dictionary(self, mapping, key):
-        binding = self.bound_dictionaries.get(id(mapping))
-        if binding is None:
-            return
-        key = key if type(key) is str else None
-        context = self.current if self.phase == "call" and threading.current_thread() is threading.main_thread() else None
-        for symbol in binding[1]:
-            # Avoid storing arbitrary SQL, runtime inputs and unseen keys.
-            recorded = key if key in self.literal_keys[symbol] else None
-            self.dictionary_reads[symbol][recorded].add(context)
+        self.reads = defaultdict(set)
+        self.cache = {}
+        self.tests = []
+        self.items = {}
+        self.audit_state = threading.local()
+        self.external = set()
+        self.native = set()
+        self.comparisons = {}
 
     def audit(self, event, args):
         if event == "open":
@@ -195,6 +184,17 @@ class Recorder:
                 self.attribute_user((path, name))
             return
         self.record_attr(obj if isinstance(obj, type) else type(obj), name)
+
+    def record_dictionary(self, mapping, key):
+        binding = self.bound_dictionaries.get(id(mapping))
+        if binding is None:
+            return
+        key = key if type(key) is str else None
+        context = self.current if self.phase == "call" and threading.current_thread() is threading.main_thread() else None
+        for symbol in binding[1]:
+            # Avoid storing arbitrary SQL, runtime inputs and unseen keys.
+            recorded = key if key in self.literal_keys[symbol] else None
+            self.dictionary_reads[symbol][recorded].add(context)
 
     def record_attr(self, cls, name):
         if self.current is None or name not in self.model.attr_names:
@@ -422,6 +422,10 @@ def build(root, destination):
 def write_map(root, model, rec, data, destination):
     """Combine observations with source dependencies; independently testable."""
     bit = {name: 1 << i for i, name in enumerate(rec.tests)}
+    shared_masks = {}
+    for test, test_bit in bit.items():
+        for scope in (("file", test.split("::")[0]), ("class", test.rsplit("::", 1)[0])):
+            shared_masks[scope] = shared_masks.get(scope, 0) | test_bit
     def mask(contexts):
         result = 0
         for context in contexts:
@@ -450,10 +454,6 @@ def write_map(root, model, rec, data, destination):
                 files[name]["readers"] |= mask(t for t in rec.tests if t.split("::")[0] == value)
             elif kind == "class":
                 files[name]["readers"] |= mask(t for t in rec.tests if t.startswith(value + "::"))
-    shared_masks = {}
-    for test, test_bit in bit.items():
-        for scope in (("file", test.split("::")[0]), ("class", test.rsplit("::", 1)[0])):
-            shared_masks[scope] = shared_masks.get(scope, 0) | test_bit
     users = {}
     for key, symbol in model.symbols.items():
         entry = files[key[0]]
