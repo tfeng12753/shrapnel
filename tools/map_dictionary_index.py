@@ -1,4 +1,4 @@
-"""Export scalar dictionary value sites from a complete map for a cheap offline replay."""
+"""Index baseline dictionary values and optional comparison sites for offline replay."""
 import argparse
 import ast
 import gzip
@@ -6,6 +6,7 @@ import hashlib
 import json
 from pathlib import Path
 
+from selector import relation_outcome
 from tools.import_closure import REVISION
 
 
@@ -30,7 +31,15 @@ def scalar_sites(source_text, spans):
     return sites
 
 
-def build_index(map_path, source):
+def one_sided(record):
+    if int(record.get("unknown", "0"), 16):
+        return False
+    outcomes = {relation_outcome(state, record["op"]) for state, mask in record["states"].items()
+                if int(mask, 16)}
+    return outcomes == {True} or outcomes == {False}
+
+
+def build_index(map_path, source, include_comparisons=False):
     source = source.resolve()
     opener = gzip.open if map_path.suffix == ".gz" else open
     with opener(map_path, "rt") as stream:
@@ -39,17 +48,21 @@ def build_index(map_path, source):
         raise ValueError("requires a complete dependency map for the pinned revision")
     files = {}
     for name, entry in data["files"].items():
-        records = entry.get("dictionary_reads")
-        if not records or not name.startswith("sqlglot/") or not name.endswith(".py"):
+        records = entry.get("dictionary_reads", {})
+        comparisons = {site: record["op"] for site, record in entry.get("comparisons", {}).items()
+                       if include_comparisons and one_sided(record)}
+        if not (records or comparisons) or not name.startswith("sqlglot/") or not name.endswith(".py"):
             continue
         path = (source / name).resolve()
         if not path.is_relative_to(source):
             raise ValueError("dictionary path outside source tree")
         raw = path.read_bytes()
         spans = {(v["start"], v["end"]) for v in records.values()}
-        sites = scalar_sites(raw.decode("utf-8"), spans)
-        if sites:
+        sites = scalar_sites(raw.decode("utf-8"), spans) if spans else {}
+        if sites or comparisons:
             files[name] = {"sha256": hashlib.sha256(raw).hexdigest(), "values": sites}
+            if comparisons:
+                files[name]["comparisons"] = comparisons
     return {"revision": REVISION, "format": "dictionary-values-v1", "files": files}
 
 
@@ -57,5 +70,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     for option in ("source", "map", "output"):
         parser.add_argument(f"--{option}", required=True, type=Path)
+    parser.add_argument("--include-comparisons", action="store_true", help="Include comparison sites with one known baseline outcome")
     args = parser.parse_args()
-    args.output.write_text(json.dumps(build_index(args.map, args.source), separators=(",", ":")))
+    args.output.write_text(json.dumps(build_index(args.map, args.source, args.include_comparisons), separators=(",", ":")))

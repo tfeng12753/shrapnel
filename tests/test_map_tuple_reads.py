@@ -37,3 +37,22 @@ def read(m, key, default):
         self.assertIs(seen[0][1], mapping)
         self.assertIs(seen[1][0], mapping)
         self.assertIs(result, mapping["u"])
+
+    def test_subscripts_and_bulk_calls_preserve_results_and_evaluation_order(self):
+        source = "def use(m, k): return m()[k()], m().copy(), list(m().items()), list(m().values())"
+        tree = ast.fix_missing_locations(Trace({}).visit(ast.parse(source)))
+        calls = []
+        def item(mapping, key):
+            calls.append("subscript")
+            return mapping[key]
+        def bulk(method):
+            calls.append(method.__name__)
+            return method()
+        ns = {"_shrapnel_tuple_item": item, "_shrapnel_tuple_bulk": bulk}
+        exec(compile(tree, "<test>", "exec"), ns)
+        data = {"a": (7,)}
+        result = ns["use"](lambda: calls.append("m") or data, lambda: calls.append("k") or "a")
+        self.assertEqual(calls, ["m", "k", "subscript", "m", "copy", "m", "items", "m", "values"])
+        self.assertIs(result[0], data["a"])
+        self.assertIsNot(result[1], data)
+        self.assertEqual(result[2:], ([("a", (7,))], [(7,)]))

@@ -6,7 +6,7 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 from tools.import_closure import REVISION
-from tools.map_dictionary_index import build_index, scalar_sites
+from tools.map_dictionary_index import build_index, one_sided, scalar_sites
 from tools.map_dictionary_replay import combined_replay, dictionary_update, mapped_literal_change
 from tools.mutants import diff
 
@@ -97,3 +97,55 @@ class DictionaryReplayTests(unittest.TestCase):
                   patch("tools.map_dictionary_replay.check_items", side_effect=check)):
                 self.assertEqual(combined_replay(args), {"attempted": ["cheap"], "verified_passes": ["cheap"],
                                                         "removable_simulated_ms": 2010})
+
+    def test_opt_in_comparison_requires_the_observed_site_and_operator(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder).resolve()
+            name = "sqlglot/cmp.py"
+            path = root / name
+            path.parent.mkdir()
+            before = "def f(x):\n    return x == 3\n"
+            after = before.replace("==", "!=")
+            path.write_text(before)
+            meta = root / "map.json"
+            entry = {"comparisons": {"2:11": {"op": "Eq", "states": {"p:1": "1"}}}}
+            meta.write_text(json.dumps({"revision": REVISION, "version": 1, "complete": True, "files": {name: entry}}))
+            change = diff(name, before, after)
+            self.assertFalse(dictionary_update(root, change, build_index(meta, root)["files"]))
+            files = build_index(meta, root, include_comparisons=True)["files"]
+            self.assertEqual(dictionary_update(root, change, files, comparisons=True), {name: after})
+            self.assertFalse(dictionary_update(root, diff(name, before, after.replace("3", "4")), files, comparisons=True))
+            files[name]["comparisons"]["2:11"] = "Lt"
+            self.assertFalse(dictionary_update(root, change, files, comparisons=True))
+
+    def test_comparison_priority_requires_complete_single_outcome(self):
+        base = {"op": "Eq", "states": {"p:1": "2", "p:9": "2"}}
+        self.assertTrue(one_sided(base))
+        self.assertFalse(one_sided(dict(base, unknown="1")))
+        self.assertFalse(one_sided(dict(base, states={"p:1": "1", "p:2": "2"})))
+        self.assertFalse(one_sided(dict(base, states={})))
+
+    def test_failed_comparison_leaves_later_comparison_groups_scheduled(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            commits = root / "commits"
+            commits.mkdir()
+            schedule = root / "schedule"
+            schedule.write_text('{"commit":"a","workers":[[0]]}\n{"commit":"b","workers":[[0]]}\n')
+            for name in ("a", "b"):
+                (commits / f"{name}.patch").write_text(name)
+            (root / "tests.json").write_text('{"tests":[{"number":0,"id":"unit","seconds":0.01}]}')
+            index = root / "index"
+            index.write_text(json.dumps({"revision": REVISION, "format": "dictionary-values-v1",
+                                         "files": {"f.py": {"comparisons": {"2:1": "Eq"}}}}))
+            args = SimpleNamespace(source=root, data=root, schedule=schedule, index=index,
+                                   import_closure=None, cpu_budget=4)
+
+            def classify(source, patch_text, files, *, comparisons=False):
+                return {"f.py": patch_text} if comparisons else {}
+
+            with (patch("tools.map_dictionary_replay.dictionary_update", side_effect=classify),
+                  patch("tools.map_dictionary_replay.check_items", return_value=False)):
+                result = combined_replay(args)
+            self.assertEqual(result["attempted"], ["a"])
+            self.assertEqual(result["verified_passes"], [])

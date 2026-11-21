@@ -1,8 +1,8 @@
-"""Audit positive dict.get observations on literal tuples across Python aliases.
+"""Audit dictionary value reads on literal tuples across Python aliases.
 
 Only executed Python call sites in the production tree are instrumented. An
-unobserved key is not proof of independence (native calls, direct subscripts,
-reflection, copies and child processes can also consume values). Run this CLI
+unobserved key is not proof of independence (native calls, reflection, uninstrumented copies
+and child processes can also consume values). Run this CLI
 in its own interpreter; it installs a loader for the duration of the test run.
 """
 import argparse
@@ -48,12 +48,42 @@ class Trace(ast.NodeTransformer):
                                               [node, ast.Constant(symbol)], []), node)
         return node
 
+    # Preserve deferred annotations, including the strings produced by
+    # modules using "from __future__ import annotations".
+    def visit_AnnAssign(self, node):
+        if node.value is not None:
+            node.value = self.visit(node.value)
+        return node
+
+    def visit_FunctionDef(self, node):
+        node.decorator_list = [self.visit(expr) for expr in node.decorator_list]
+        node.args.defaults = [self.visit(expr) for expr in node.args.defaults]
+        node.args.kw_defaults = [self.visit(expr) if expr is not None else None for expr in node.args.kw_defaults]
+        node.body = [self.visit(stmt) for stmt in node.body]
+        return node
+
+    visit_AsyncFunctionDef = visit_FunctionDef
+
+    def visit_TypeAlias(self, node):
+        return node
+
+    def visit_Subscript(self, node):
+        self.generic_visit(node)
+        if isinstance(node.ctx, ast.Load) and not isinstance(node.slice, (ast.Slice, ast.Tuple, ast.Starred)):
+            return ast.copy_location(ast.Call(ast.Name("_shrapnel_tuple_item", ast.Load()),
+                                              [node.value, node.slice], []), node)
+        return node
+
     def visit_Call(self, node):
         self.generic_visit(node)
         if (isinstance(node.func, ast.Attribute) and node.func.attr == "get" and not node.keywords
                 and len(node.args) in (1, 2) and not any(isinstance(a, ast.Starred) for a in node.args)):
             return ast.copy_location(ast.Call(ast.Name("_shrapnel_tuple_get", ast.Load()),
                                               [node.func, *node.args], []), node)
+        if (isinstance(node.func, ast.Attribute) and node.func.attr in ("items", "values", "copy")
+                and not node.args and not node.keywords):
+            return ast.copy_location(ast.Call(ast.Name("_shrapnel_tuple_bulk", ast.Load()),
+                                              [node.func], []), node)
         return node
 
 
@@ -69,13 +99,31 @@ def observe(source, output):
         bindings[id(mapping)] = mapping, symbol, frozenset(mapping)
         return mapping
 
+    def record(mapping, key=None):
+        binding = bindings.get(id(mapping))
+        if binding is None:
+            return
+        context = current if threading.current_thread() is threading.main_thread() else None
+        keys = binding[2] if key is None or type(key) is not str else (key,)
+        for candidate in keys:
+            if candidate in binding[2]:
+                reads[binding[1]][candidate].add(context or "<shared>")
+
     def get(method, key, *default):
         if type(method) is types.BuiltinMethodType and type(method.__self__) is dict and method.__name__ == "get":
-            binding = bindings.get(id(method.__self__))
-            if binding and type(key) is str and key in binding[2]:
-                context = current if threading.current_thread() is threading.main_thread() else None
-                reads[binding[1]][key].add(context or "<shared>")
+            record(method.__self__, key)
         return method(key, *default)
+
+    def item(mapping, key):
+        if type(mapping) is dict:
+            record(mapping, key)
+        return mapping[key]
+
+    def bulk(method):
+        if (type(method) is types.BuiltinMethodType and type(method.__self__) is dict
+                and method.__name__ in ("items", "values", "copy")):
+            record(method.__self__)
+        return method()
 
     def code(loader, fullname):
         path = Path(loader.get_filename(fullname)).resolve()
@@ -99,12 +147,14 @@ def observe(source, output):
     os.chdir(source)
     sys.path.insert(0, str(source))
     builtins._shrapnel_tuple_bind, builtins._shrapnel_tuple_get = bind, get
+    builtins._shrapnel_tuple_item, builtins._shrapnel_tuple_bulk = item, bulk
     importlib.machinery.SourceFileLoader.get_code = code
     try:
         status = pytest.main(["tests", "-q", "-p", "no:cacheprovider", "--timeout=180"], plugins=[Plugin()])
     finally:
         importlib.machinery.SourceFileLoader.get_code = original
         del builtins._shrapnel_tuple_bind, builtins._shrapnel_tuple_get
+        del builtins._shrapnel_tuple_item, builtins._shrapnel_tuple_bulk
     if status:
         raise RuntimeError(f"baseline suite exited with {status}")
     output.write_text(json.dumps({s: {k: sorted(v) for k, v in d.items()} for s, d in reads.items()},

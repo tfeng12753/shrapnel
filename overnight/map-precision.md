@@ -2,6 +2,20 @@
 
 Base 2c4b6a8. Map construction uses the unmodified pinned checkout and its baseline suite. Generated patches are used for evaluation.
 
+## Optional comparison verification after 1732345
+
+The offline dictionary index accepts `--include-comparisons`. This adds 134 baseline sites with known operands and a single observed boolean outcome to the index (72,598 bytes total). A single operator substitution at a matching source fingerprint can nominate an existing one-worker group for real patched pytest verification. Only a complete pass removes the group. A failed or timed-out comparison check closes admission for further comparisons that batch. Import verification runs first and its accepted groups are excluded from the second check.
+
+Generate the index with `python -m tools.map_dictionary_index --source "$SOURCE" --map "$MAP" --output /tmp/comparison-index.json --include-comparisons`. Use it as the index for the combined offline replay below. Paired runs used a prepared source checkout, the cold-operator import index, selector flags `--relations --probe-budget 2` and a combined replay CPU budget argument of 4.
+
+Five alternating-order public pairs reduced median simulated time from **109.063 to 106.906 seconds** and median simulated-plus-process-tree CPU from **113.741 to 113.121 seconds**, with zero public misses. Four of five enabled runs reached 106.906. One retained another group and scored 109.352. All three tests in the newly removed group actually passed. A separate full patched suite passed all 1,621 tests and 25,454 subtests. These offline numbers exclude one-time index and map construction.
+
+The tuple-table diagnostic now observes direct subscript reads and charges every original key for builtin items(), values(), and copy() on the tracked dictionary. This found readers of two further tables. An independent BigQuery SAFE_OFFSET value edit broke two catalog items in a full patched suite. Both were among the three observed readers. The 273-test group remains scheduled because missing observations cannot establish independence.
+
+Across three paired runs on 17 independently generated edits, both variants scheduled 71.067 seconds at the median. CPU-inclusive time rose from 74.010 to 75.223 seconds. On 41 other development edits the medians were 124.588 and 118.241 including CPU, but both modes verified exactly the same groups on every run. The base selector's timed probes varied, so the latter difference cannot be attributed to the comparison index. Available development ground truth showed no dropped failures. Keep the feature opt-in. Next measure on a quiet Linux host with matched base schedules and the locked Docker map before considering selector integration. No holdout was used.
+
+The extended baseline diagnostic passed all 1,621 tests and 25,454 subtests, and reproduced its reader report on a repeat run. Project checks passed 105/106. The outstanding check is the known committed-map fingerprint mismatch, which requires a locked Docker rebuild with `make map`.
+
 ## Aliased reads in the largest remaining schedule
 
 The 273-test tuple-valued dictionary case costs 9.078 simulated seconds. Executing its entire schedule on an isolated patched checkout passed but cost 52.205 host CPU seconds. A full patched suite also passed. Paying for this verification during selection would increase the total.

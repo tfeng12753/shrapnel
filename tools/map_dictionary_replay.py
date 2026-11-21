@@ -1,4 +1,4 @@
-"""Audit small schedules for value edits to mapped literal dictionaries (offline)."""
+"""Verify small scheduled groups for indexed dictionary or comparison edits offline."""
 import argparse
 import ast
 import hashlib
@@ -10,7 +10,7 @@ from pathlib import Path
 import xml.etree.ElementTree as ET
 
 from score import WORKER_COST_MILLISECONDS
-from selector import REVISION, apply_change, parse_patch
+from selector import REVISION, apply_change, comparison_changes, parse_patch
 from tools.map_import_replay import check_items, replay as replay_import
 
 
@@ -40,7 +40,7 @@ def mapped_literal_change(before, after, sites, line):
     return False
 
 
-def dictionary_update(source, patch, files):
+def dictionary_update(source, patch, files, *, comparisons=False):
     changes = parse_patch(patch)
     if len(changes) != 1:
         return {}
@@ -58,7 +58,14 @@ def dictionary_update(source, patch, files):
     if len(removed) != 1 or inserted:
         return {}
     line, = removed
-    if not mapped_literal_change(before, after, record["values"], line):
+    if comparisons:
+        operators = record.get("comparisons", {})
+        if not any(site.startswith(f"{line}:") for site in operators):
+            return {}
+        edits = comparison_changes(before, after)
+        if not edits or len(edits) != 1 or operators.get(edits[0][0]) != edits[0][1]:
+            return {}
+    elif not mapped_literal_change(before, after, record["values"], line):
         return {}
     return {name: after}
 
@@ -68,7 +75,7 @@ def cpu_seconds():
     return time.process_time() + children.ru_utime + children.ru_stime
 
 
-def replay(args):
+def replay(args, verified_imports=()):
     cpu_deadline = cpu_seconds() + args.cpu_budget
     wall_deadline = time.monotonic() + 2 * args.cpu_budget
     source = args.source.resolve()
@@ -80,6 +87,8 @@ def replay(args):
     candidates = []
     for line in args.schedule.read_text().splitlines():
         row = json.loads(line)
+        if row["commit"] in verified_imports:
+            continue
         workers = [group for group in row["workers"] if group]
         tests = [catalog[n] for group in workers for n in group]
         duration = sum(round(t["seconds"] * 1000) for t in tests)
@@ -88,21 +97,30 @@ def replay(args):
         candidates.append((duration, row["commit"], sorted(t["id"] for t in tests)))
     attempted, verified, saved = [], [], 0
     last_cpu = last_wall = 0.0
+    # Stop spending on comparison probes after one fails to verify its group.
+    # Dictionary verification keeps its existing admission rules and budget.
+    try_comparisons = any(f.get("comparisons") for f in data["files"].values())
     for duration, commit, items in sorted(candidates):
-        # Later groups have at least as much catalog work. Avoid paying for
-        # another checkout and pytest startup if the last one would not fit.
         if cpu_deadline - cpu_seconds() <= last_cpu or wall_deadline - time.monotonic() <= last_wall:
             break
         try:
-            updates = dictionary_update(source, commits[commit].read_text(), data["files"])
+            patch = commits[commit].read_text()
+            updates = dictionary_update(source, patch, data["files"])
+            comparison_probe = not updates and try_comparisons
+            if comparison_probe:
+                updates = dictionary_update(source, patch, data["files"], comparisons=True)
             remaining = min(2 * (cpu_deadline - cpu_seconds()), wall_deadline - time.monotonic())
             if not updates or remaining <= 0:
                 continue
             attempted.append(commit)
+            if comparison_probe:
+                try_comparisons = False
             started_cpu, started_wall = cpu_seconds(), time.monotonic()
             if check_items(source, updates, items, wall_seconds=remaining):
                 verified.append(commit)
                 saved += WORKER_COST_MILLISECONDS + duration
+                if comparison_probe:
+                    try_comparisons = True
             last_cpu = cpu_seconds() - started_cpu
             last_wall = time.monotonic() - started_wall
         except (OSError, ValueError, KeyError, TypeError, SyntaxError, ET.ParseError, RecursionError):
@@ -124,7 +142,7 @@ def combined_replay(args):
     if passes and elapsed / passes >= args.cpu_budget:
         dictionaries = {"attempted": [], "verified_passes": [], "removable_simulated_ms": 0}
     else:
-        dictionaries = replay(args)
+        dictionaries = replay(args, imports["verified_passes"])
     return {"imports": imports, "dictionaries": dictionaries}
 
 
