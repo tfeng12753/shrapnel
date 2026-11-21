@@ -96,6 +96,15 @@ class RelationSafetyTests(unittest.TestCase):
         site, _, _ = comparison_changes(old, new)[0]
         selector = self.selector(old, {"1": "1"}, site=site, states={"e:0": "1"})
         self.assertEqual(selector.select(diff("m.py", old, new)), 7)
+        mixed = new.replace("pass", "return 1")
+        self.assertEqual(selector.select(diff("m.py", old, mixed)), 7)
+
+    def test_comparison_in_shared_setup_keeps_all_tests(self):
+        old = "class Case:\n    def setUpClass(cls):\n        flag = value is None\n"
+        new = old.replace("is None", "== None")
+        site, _, _ = comparison_changes(old, new)[0]
+        selector = self.selector(old, {"3": "1"}, site=site, states={"e:0": "1"})
+        self.assertEqual(selector.select(diff("m.py", old, new)), 7)
 
     def test_multiline_operands_preserve_unattributed_users(self):
         old = "def f(x):\n    return (\n        x\n        is\n        None\n    )\n"

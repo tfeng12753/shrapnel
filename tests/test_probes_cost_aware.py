@@ -57,6 +57,9 @@ class CostAwareProbeTests(unittest.TestCase):
             self.selector.external = 1
             self.assertEqual(self.selector.probe(self.diff, 3, 2, cost_aware=True), (3, 0))
             self.selector.external = 0
+            self.selector.files["sqlglot/subject.py"] = {"readers": 1}
+            self.assertEqual(self.selector.probe(self.diff, 3, 2, cost_aware=True), (3, 0))
+            self.selector.files.clear()
             self.selector.native.remove(self.tests[0]["id"])
             self.assertEqual(self.selector.probe(self.diff, 3, 2, cost_aware=True), (3, 0))
             run.assert_not_called()
@@ -74,11 +77,11 @@ class CostAwareProbeTests(unittest.TestCase):
             {"seconds": 2, "cost_aware": True},
         )
 
-    def run_native(self, source, **limits):
+    def run_native(self, source, tests=None, **limits):
         (self.root / "tests").mkdir()
         (self.root / "tests/__init__.py").touch()
         (self.root / "tests/test_subject.py").write_text(source)
-        return verify(self.root, {}, self.tests[:1], **limits)
+        return verify(self.root, {}, self.tests[:1] if tests is None else tests, **limits)
 
     def test_skipped_test_cannot_confirm_a_pass(self):
         passed, _ = self.run_native(
@@ -119,3 +122,14 @@ class CostAwareProbeTests(unittest.TestCase):
             strict_cpu=True,
         )
         self.assertEqual(passed, [])
+
+    def test_whole_batch_runs_in_worker_order_and_stops_on_failure(self):
+        passed, _ = self.run_native(
+            "import pathlib, unittest\n"
+            "class Case(unittest.TestCase):\n"
+            "    def test_slow(self): self.fail('stop the batch')\n"
+            "    def test_fast(self): pathlib.Path('continued').touch()\n",
+            tests=self.tests, strict_cpu=True,
+        )
+        self.assertEqual(passed, [])
+        self.assertFalse((self.root / "continued").exists())

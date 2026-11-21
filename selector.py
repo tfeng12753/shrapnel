@@ -350,18 +350,18 @@ def comparison_changes(old, new):
     return classify_python_edit(baseline_tree(old), ast.parse(new, type_comments=True)) or None
 
 
-def comparison_contexts(tree, sites):
-    """Find edited comparison spans and whether they are inside function bodies."""
+@lru_cache(maxsize=8)
+def comparison_contexts(tree):
+    """Index comparison spans and whether they are inside function bodies."""
     found = {}
 
     def visit(node, deferred=False):
         if isinstance(node, ast.Compare):
             site = f"{node.lineno}:{node.col_offset}"
-            if site in sites:
-                found[site] = (node.lineno, node.end_lineno, deferred)
+            found[site] = (node.lineno, node.end_lineno, deferred)
         if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
             for child in ast.iter_child_nodes(node):
-                visit(child, child in node.body)
+                visit(child, child in node.body and node.name not in SHARED_HOOKS)
         else:
             # A module-level lambda can be called during import. Inside a
             # function, lambdas, comprehensions and their defaults stay local.
@@ -591,12 +591,19 @@ class Selector:
                     if self.conservative_python:
                         return include(self.all, "conservative executable Python selection", name)
                     result |= include(self.child_work, "potential untraced child work", name)
+                    affected_comparisons = []
                     refined = None
-                    if self.relations and changes_at_sites:
-                        contexts = comparison_contexts(before, {site for site, _, _ in changes_at_sites})
-                        if any(not deferred for _, _, deferred in contexts.values()):
-                            return include(self.all, "comparison outside function body", name)
-                        if len(changes) == 1 and len(changes_at_sites) == 1:
+                    if self.relations:
+                        contexts = comparison_contexts(before)
+                        affected = sorted(removed | inserted)
+                        for start, end, deferred in contexts.values():
+                            index = bisect_left(affected, start)
+                            if index < len(affected) and affected[index] <= end:
+                                if not deferred:
+                                    return include(self.all, "comparison in import or shared setup", name)
+                                if start < end:
+                                    affected_comparisons.append((start, end))
+                        if changes_at_sites and len(changes) == 1 and len(changes_at_sites) == 1:
                             refined = self.refine_comparisons(changes_at_sites, entry, contexts)
                     if refined is not None:
                         result |= include(refined, "comparison boundary or unknown", name)
@@ -618,18 +625,11 @@ class Selector:
                         return include(self.all, "unknown file readers", name)
                     continue
                 result |= include(entry["readers"], "file reader", name)
-                if self.relations:
-                    # Operator-only lines in multiline comparisons may not get
-                    # coverage of their own. This also covers chains and mixed
-                    # edits that cannot be refined with comparison evidence.
-                    affected = sorted(removed | inserted)
-                    for node in ast.walk(before):
-                        if isinstance(node, ast.Compare) and node.lineno < node.end_lineno:
-                            index = bisect_left(affected, node.lineno)
-                            if index < len(affected) and affected[index] <= node.end_lineno:
-                                result |= include(self.span_users(entry, node.lineno, node.end_lineno),
-                                                  "comparison operand coverage", name,
-                                                  (node.lineno, node.end_lineno))
+                # Operator-only lines may lack their own coverage, including
+                # in chains and mixed edits without usable comparison evidence.
+                for start, end in affected_comparisons:
+                    result |= include(self.span_users(entry, start, end), "comparison operand coverage", name,
+                                      (start, end))
                 for start, end in sorted(set(short_circuit_edits(before, after, removed | inserted))):
                     result |= include(self.span_users(entry, start, end),
                                       "short-circuit evaluation change", name, (start, end))
@@ -691,7 +691,7 @@ class Selector:
         result = 0
         for site, before, after in changes:
             info = entry["comparisons"].get(site)
-            if info is None or info["op"] != before or site not in contexts:
+            if info is None or info["op"] != before or site not in contexts or not contexts[site][2]:
                 return None
             # Unlike identity, ordering can call user code and raise before
             # the map observer records anything. An apparently safe hit does
@@ -740,6 +740,10 @@ class Selector:
             return mask, 0.0
         if cost_aware and (any(module_for(c["old"]) is None for c in changes)
                            or len({c["old"] for c in changes}) != len(changes)):
+            return mask, 0.0
+        if cost_aware and any(mask & self.files.get(c["old"], {}).get("readers", 0) for c in changes):
+            # Code loaded by Python sees the overlay. Tests that read source
+            # directly can use I/O paths the import overlay does not wrap.
             return mask, 0.0
         overlays = {c["old"]: apply_change(self.read_source(c["old"]), c)[0] for c in changes}
         from native_probes import verify

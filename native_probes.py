@@ -72,7 +72,13 @@ def _child(source, overlays, tests, *, in_process=False):
     expected = {}
     suite = unittest.TestSuite()
     loader = unittest.TestLoader()
-    for test in sorted(tests, key=lambda t: t["id"]):
+    if in_process:
+        # Whole-selection probes fit one worker. Use the scheduler's order
+        # so a test sees the same preceding test state as in that worker.
+        ordered = sorted(tests, key=lambda t: (round(t["seconds"] * 1000), t["number"]), reverse=True)
+    else:
+        ordered = sorted(tests, key=lambda t: t["id"])
+    for test in ordered:
         file, *names = test["id"].split("::")
         dotted = ".".join([file.removesuffix(".py").replace("/", "."), *names])
         expected[dotted] = test["id"]
@@ -89,6 +95,7 @@ def _child(source, overlays, tests, *, in_process=False):
     class Result(unittest.TestResult):
         def __init__(self):
             super().__init__()
+            self.failfast = in_process  # One non-pass already rules out the batch.
             self.passed, self.failed, self.unknown = set(), set(), False
         def addSuccess(self, test):
             super().addSuccess(test)
