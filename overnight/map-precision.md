@@ -2,6 +2,20 @@
 
 Base 2c4b6a8. Map construction uses the unmodified pinned checkout and its baseline suite. Generated patches are used for evaluation.
 
+## Aliased reads in the largest remaining schedule
+
+The 273-test tuple-valued dictionary case costs 9.078 simulated seconds. Executing its entire schedule on an isolated patched checkout passed but cost 52.205 host CPU seconds. A full patched suite also passed. Paying for this verification during selection would increase the total.
+
+The optional baseline diagnostic `tools/map_tuple_reads.py` records positive reads through bound builtin dict.get calls, including a dictionary stored on a differently named object. It attaches observations to the actual dictionary identity and the current test call. It leaves the pinned source and the production selector untouched. Run in a fresh locked interpreter with the pinned checkout in `SOURCE`, the locked Python first on PATH and `SKIP_INTEGRATION=0`:
+
+```sh
+python tools/map_tuple_reads.py --source "$SOURCE" --output /tmp/tuple-reads.json
+```
+
+The full instrumented suite passed 1,621 tests and 25,454 subtests. The Snowflake table had no observed get calls for the changed key. Two additional full-suite controls changed the base to 1 for its x and u entries separately; both passed. On a different table in BigQuery, the observer identified four x readers. A full-suite mutation of that entry produced failures in two catalog tests, both among those four readers.
+
+As a sensitivity calculation, 23 catalog tests executed one of the two tokenizer lookup lines across any dialect. Ten intersect the 273 selected tests, costing 6.051 simulated seconds. Selecting these ten alone would project 106.036 for the combined replay. Eliminating the entire schedule would project 99.985. Neither projection is a validated selection rule. Direct subscripts, iteration or copying, reflective reads, native consumers and child processes can see values without calling the traced method. The audit does not change the schedule. Next investigate whether these paths can be bounded for a given binding and fail back to existing selection for each unresolved consumer. Project units passed 101/102 with the existing stale cache fingerprint.
+
 ## Indexing comparisons for the verified import replay
 
 Pass `--index-cold-operators` to `tools/import_closure.py` to generate an optional index for the offline import or combined replay. It records UTF-8 byte offsets for 657 comparison operators inside ordinary functions never entered during the baseline import. A source digest and an exact check of the surrounding bytes allow a single operator replacement to bypass two full-module parses. Other edits continue through the existing analysis. The original pytest item must still pass on the complete patched checkout before a schedule is removed. The ordinary production selector does not require the new index.
