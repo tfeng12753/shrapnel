@@ -1,0 +1,131 @@
+name: Held-out mutant ground truth
+# Evaluation only: generates seeded mutants of the pinned sqlglot checkout, runs the
+# real unchanged suite on each (real process pools) to record which tests fail, then
+# scores every selector variant against them. Mutants and results are never selector
+# input and never enter the submission image.
+#
+# Each shard uses its own seed (seed_base + shard index), so shards never overlap.
+# A shard stops starting new mutants after budget_minutes and uploads what it has.
+# Public repositories get free standard runners (4 vCPU, 16 GB), up to 20 at once.
+on:
+  workflow_dispatch:
+    inputs:
+      shards:
+        description: Parallel jobs (max 20 run at once on free runners)
+        default: '20'
+      mutants_per_shard:
+        description: Mutants generated per shard (only as many as fit in the budget get run)
+        default: '120'
+      budget_minutes:
+        description: Stop starting new mutants after this many minutes (job limit is 360)
+        default: '320'
+      parallel:
+        description: Suite runs at once per runner (2 CPUs and 3 GB each)
+        default: '2'
+      seed_base:
+        description: First seed; use a new range for every launch to get fresh mutants
+        default: '100'
+permissions:
+  contents: read
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      shards: ${{ steps.matrix.outputs.shards }}
+    steps:
+      - id: matrix
+        run: echo "shards=$(python3 -c 'import json,sys; print(json.dumps(list(range(int(sys.argv[1])))))' '${{ inputs.shards }}')" >> "$GITHUB_OUTPUT"
+
+  shard:
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: ${{ fromJSON(needs.plan.outputs.shards) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Start the clock
+        run: echo "DEADLINE=$(( $(date +%s) + ${{ inputs.budget_minutes }} * 60 ))" >> "$GITHUB_ENV"
+      - name: Build the submission image (cached map, no network at run time)
+        run: docker build --platform linux/amd64 -t blast-radius-entry .
+      - name: Generate mutants
+        run: |
+          seed=$(( ${{ inputs.seed_base }} + ${{ matrix.shard }} ))
+          echo "SEED=$seed" >> "$GITHUB_ENV"
+          mkdir -p "$RUNNER_TEMP/mutants"
+          docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/repo:ro" -v "$RUNNER_TEMP/mutants:/m" blast-radius-entry \
+            python /repo/tools/mutants.py --source /opt/sqlglot --sample /repo/sample --out /m \
+              --count ${{ inputs.mutants_per_shard }} --seed "$seed"
+      - name: Run the real suite on each mutant
+        run: bash tools/run_ground_truth.sh "$RUNNER_TEMP/mutants" ${{ inputs.parallel }} "$DEADLINE"
+      - name: Upload shard results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mutants-seed-${{ env.SEED }}
+          path: ${{ runner.temp }}/mutants
+          if-no-files-found: warn
+          retention-days: 30
+
+  evaluate:
+    needs: shard
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: mutants-seed-*
+          path: ${{ runner.temp }}/shards
+      - name: Merge shards
+        run: |
+          python3 - "$RUNNER_TEMP/shards" "$RUNNER_TEMP/all" <<'EOF'
+          import json, shutil, sys
+          from pathlib import Path
+          shards, out = Path(sys.argv[1]), Path(sys.argv[2])
+          (out / "commits").mkdir(parents=True); (out / "results").mkdir()
+          manifest, baselines = {}, []
+          for shard in sorted(p for p in shards.iterdir() if p.is_dir()):
+              manifest.update(json.loads((shard / "manifest.json").read_text()) if (shard / "manifest.json").exists() else {})
+              for f in (shard / "commits").glob("*.patch"):
+                  shutil.copy(f, out / "commits" / f.name)
+              for f in (shard / "results").glob("*.json"):
+                  if f.name == "baseline.json":
+                      baselines.append(json.loads(f.read_text()))
+                  else:
+                      shutil.copy(f, out / "results" / f.name)
+          # Every shard ran the unmodified baseline; any test failing there is environmental.
+          failing = sorted({n for b in baselines for n in b.get("failing", [])})
+          (out / "results" / "baseline.json").write_text(json.dumps({"failing": failing, "unknown": [], "exit": 0,
+              "summary": f"merged from {len(baselines)} shard baselines", "seconds": 0}))
+          (out / "manifest.json").write_text(json.dumps(manifest))
+          print(f"{len(manifest)} mutants generated, {len(list((out / 'results').glob('*.json'))) - 1} with results, "
+                f"{len(baselines)} baselines, baseline failures {failing}")
+          EOF
+      - name: Build the submission image
+        run: docker build --platform linux/amd64 -t blast-radius-entry .
+      - name: Score every selector variant
+        run: |
+          for split in holdout tune all; do
+            docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/repo:ro" -v "$RUNNER_TEMP/all:/m" blast-radius-entry \
+              python /repo/tools/mutant_eval.py --mutants /m --source /opt/sqlglot --map /app/dependencies.json.gz \
+                --import-closure /app/import-closure.json --catalog /repo/sample/tests.json \
+                --split "$split" --out "/m/eval-$split.json" | tee "$RUNNER_TEMP/eval-$split.txt"
+          done
+          {
+            echo "## Held-out mutant evaluation"
+            for split in holdout tune all; do echo "### $split"; echo '```'; cat "$RUNNER_TEMP/eval-$split.txt"; echo '```'; done
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mutant-evaluation
+          path: |
+            ${{ runner.temp }}/all/manifest.json
+            ${{ runner.temp }}/all/results
+            ${{ runner.temp }}/all/commits
+            ${{ runner.temp }}/all/eval-*.json
+          retention-days: 30
