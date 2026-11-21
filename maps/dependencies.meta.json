@@ -1,0 +1,11 @@
+{
+ "revision": "eb11aec4be8cb2122afe713a4816662c3f0fb2fa",
+ "builder_sha256": "cc729b2e5ee84c1fb3fb7d656fbc8f03c9f6a362a6f6801d6407e9a9d48ad7d3",
+ "map_sha256": "02198f60b3809b26d3f5f3fcfd55e9882880b1483c38e6d94d6c56021418b372",
+ "tests": 1621,
+ "environment": {
+  "python": "3.13.18",
+  "coverage": "7.10.7",
+  "platform": "x86_64"
+ }
+}

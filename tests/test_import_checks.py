@@ -101,8 +101,8 @@ class SelectorImportTests(unittest.TestCase):
         self.assertEqual(self.selector(import_closure=self.closure).select(patch), 2 | 4)
 
 
-class StatementSpanTests(unittest.TestCase):
-    """An operator edit on a short-circuited line affects every test that evaluates the statement."""
+class ShortCircuitEditTests(unittest.TestCase):
+    """An and/or edit on a short-circuited line affects every test that evaluates the condition (PR #6)."""
 
     SOURCE = "def f(e):\n    if (\n        e.a\n        and e.b\n        and e.c\n    ):\n        return 1\n    return 2\n"
 

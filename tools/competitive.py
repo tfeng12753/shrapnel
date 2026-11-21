@@ -17,6 +17,63 @@ sys.path.insert(0, str(ROOT))
 from score import evaluate_run
 from tools.profile_schedule import schedule_profile
 
+# Every variant is a complete selector configuration. The winner is written to
+# selector-config.json verbatim, so the shipped image runs exactly what was measured.
+BASE = {"conservative_python": False, "child_work": False, "relations": False,
+        "probe_budget": 0.0, "import_check_budget": 6.0}
+VARIANTS = {
+    "conservative_python": {**BASE, "conservative_python": True, "import_check_budget": 0.0},
+    "coverage": BASE,
+    "child_work": {**BASE, "child_work": True},
+    "relations": {**BASE, "relations": True},
+    "relations_and_probes": {**BASE, "relations": True, "probe_budget": 8.0},
+}
+
+
+def selector_options(config):
+    """Command-line flags that reproduce a complete configuration, independent of the shipped file."""
+    if set(config) != set(BASE):
+        raise ValueError(f"incomplete or unknown selector configuration: {sorted(config)}")
+    if config["conservative_python"] and config["child_work"]:
+        raise ValueError("conservative_python and child_work are exclusive")
+    mode = ("--conservative-python" if config["conservative_python"]
+            else "--child-work" if config["child_work"] else "--no-conservative-python")
+    return [mode, "--relations" if config["relations"] else "--no-relations",
+            "--probe-budget", repr(float(config["probe_budget"])),
+            "--import-check-budget", repr(float(config["import_check_budget"]))]
+
+
+def run_container(image, data, options, tests, answers):
+    name = "blast-radius-bench-" + uuid.uuid4().hex[:12]
+    command = ["docker", "run", "--rm", "--name", name, "--platform", "linux/amd64", "--network", "none",
+        "--cpus", "2", "--memory", "4096m", "--memory-swap", "4096m", "--pids-limit", "256", "--read-only",
+        "--tmpfs", "/tmp:rw,size=64m,mode=1777", "--cap-drop", "ALL", "--security-opt", "no-new-privileges",
+        "--user", "65534:65534", "--env", "HOME=/tmp", "--volume", str(data / "commits") + ":/data/commits:ro",
+        "--volume", str(data / "tests.json") + ":/data/tests.json:ro", image,
+        "python", "/app/tools/timed_run.py", *options]
+    started = time.monotonic()
+    try:
+        process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=190)
+    finally:
+        subprocess.run(["docker", "rm", "-f", name], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    if process.returncode:
+        sys.stderr.buffer.write(process.stderr)
+        raise SystemExit(f"container failed ({process.returncode})")
+    if len(process.stdout) > 2_000_000:
+        raise SystemExit("stdout exceeds 2 MB")
+    evaluation = evaluate_run(process.stdout, tests, answers)
+    if not evaluation["ok"]:
+        raise SystemExit(str(evaluation))
+    timings = [json.loads(line.removeprefix("BR_TIMING ")) for line in process.stderr.decode().splitlines() if line.startswith("BR_TIMING ")]
+    if not timings:
+        raise SystemExit("missing container CPU measurement")
+    cpu = timings[-1]["cpu_seconds"]
+    run = {"simulated_seconds": evaluation["simulated_milliseconds"] / 1000, "cpu_seconds": cpu,
+        "misses": len(evaluation["missed_commits"]), "missed_commits": evaluation["missed_commits"],
+        "wall_seconds": time.monotonic() - started}
+    run["total_seconds"] = run["simulated_seconds"] + cpu
+    return run, process.stdout
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -24,61 +81,33 @@ def main():
     parser.add_argument("--skip-build", action="store_true")
     parser.add_argument("--runs", type=int, default=3)
     parser.add_argument("--no-export", action="store_true")
+    parser.add_argument("--no-validate", action="store_true", help="skip rebuilding and re-running the saved winner")
     args = parser.parse_args()
-    if not args.skip_build:
+
+    def build():
         started = time.monotonic()
         subprocess.run(["docker", "build", "--platform", "linux/amd64", "-t", args.image, str(ROOT)], check=True, timeout=600)
         print(f"Build completed in {time.monotonic() - started:.1f} seconds (600-second limit).", flush=True)
+
+    if not args.skip_build:
+        build()
     data = ROOT / "sample"
     tests = json.loads((data / "tests.json").read_text())["tests"]
     answers = json.loads((data / "answers.json").read_text())["commits"]
-    variants = {
-        "conservative_python": ["--conservative-python", "--no-relations", "--probe-budget", "0"],
-        "coverage": ["--no-conservative-python", "--no-relations", "--probe-budget", "0"],
-        "child_work": ["--child-work", "--no-relations", "--probe-budget", "0"],
-        "relations": ["--no-conservative-python", "--relations", "--probe-budget", "0"],
-        "relations_and_probes": ["--no-conservative-python", "--relations", "--probe-budget", "8"],
-    }
     report, outputs = {}, {}
-    for variant, options in variants.items():
+    for variant, config in VARIANTS.items():
+        options = selector_options(config)
         runs = []
         for i in range(args.runs):
-            name = "blast-radius-bench-" + uuid.uuid4().hex[:12]
-            command = ["docker", "run", "--rm", "--name", name, "--platform", "linux/amd64", "--network", "none",
-                "--cpus", "2", "--memory", "4096m", "--memory-swap", "4096m", "--pids-limit", "256", "--read-only",
-                "--tmpfs", "/tmp:rw,size=64m,mode=1777", "--cap-drop", "ALL", "--security-opt", "no-new-privileges",
-                "--user", "65534:65534", "--env", "HOME=/tmp", "--volume", str(data / "commits") + ":/data/commits:ro",
-                "--volume", str(data / "tests.json") + ":/data/tests.json:ro", args.image,
-                "python", "/app/tools/timed_run.py", *options]
-            started = time.monotonic()
-            try:
-                process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=190)
-            finally:
-                subprocess.run(["docker", "rm", "-f", name], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            if process.returncode:
-                sys.stderr.buffer.write(process.stderr)
-                raise SystemExit(f"{variant}: container failed ({process.returncode})")
-            if len(process.stdout) > 2_000_000:
-                raise SystemExit("stdout exceeds 2 MB")
-            evaluation = evaluate_run(process.stdout, tests, answers)
-            if not evaluation["ok"]:
-                raise SystemExit(str(evaluation))
-            timings = [json.loads(line.removeprefix("BR_TIMING ")) for line in process.stderr.decode().splitlines() if line.startswith("BR_TIMING ")]
-            if not timings:
-                raise SystemExit("missing container CPU measurement")
-            cpu = timings[-1]["cpu_seconds"]
-            run = {"simulated_seconds": evaluation["simulated_milliseconds"] / 1000, "cpu_seconds": cpu,
-                "misses": len(evaluation["missed_commits"]), "missed_commits": evaluation["missed_commits"],
-                "wall_seconds": time.monotonic() - started}
-            run["total_seconds"] = run["simulated_seconds"] + cpu
+            run, stdout = run_container(args.image, data, options, tests, answers)
             runs.append(run)
-            outputs[f"{variant}-{i+1}.jsonl"] = process.stdout
+            outputs[f"{variant}-{i+1}.jsonl"] = stdout
             print(f"{variant} run {i+1}: total={run['total_seconds']:.3f}s simulated={run['simulated_seconds']:.3f}s CPU={cpu:.3f}s misses={run['misses']}", flush=True)
         median = statistics.median(run["total_seconds"] for run in runs)
         index = min(range(len(runs)), key=lambda j: abs(runs[j]["total_seconds"] - median))
         output_name = f"{variant}-{index + 1}.jsonl"
         profile = schedule_profile(outputs[output_name], tests, answers)
-        report[variant] = {"runs": runs, "median_total_seconds": median, "selector_options": options,
+        report[variant] = {"runs": runs, "median_total_seconds": median, "config": config, "selector_options": options,
                            "profile_output": output_name, "schedule_profile": profile}
         for patch in profile["patches"][:3]:
             print(f"  {patch['commit']}: {patch['excess_schedule_ms'] / 1000:+.3f}s vs failing-only schedule"
@@ -92,12 +121,19 @@ def main():
     print("Best zero-miss variant:", report["best_zero_miss_variant"])
     best = report["best_zero_miss_variant"]
     if best is not None:
-        config = {"conservative_python": best == "conservative_python",
-                  "child_work": best == "child_work",
-                  "relations": best in ("relations", "relations_and_probes"),
-                  "probe_budget": 8.0 if best == "relations_and_probes" else 0.0}
+        config = VARIANTS[best]
         (ROOT / "selector-config.json").write_text(json.dumps(config, separators=(",", ":")) + "\n")
-        print("Updated global selector configuration; rebuild before submission.")
+        print("Wrote the measured configuration to selector-config.json:", config)
+        if not args.no_validate:
+            # The shipped default (no flags) must reproduce the measured selections.
+            build()
+            run, _ = run_container(args.image, data, [], tests, answers)
+            measured = {r["simulated_seconds"] for r in report[best]["runs"]}
+            if run["misses"] or run["simulated_seconds"] not in measured:
+                raise SystemExit(f"rebuilt default does not reproduce {best}: {run} vs {sorted(measured)}")
+            report["validated_default"] = run
+            (ROOT / "competitive-results.json").write_text(json.dumps(report, indent=2) + "\n")
+            print(f"Validated rebuilt default: simulated={run['simulated_seconds']:.3f}s misses=0")
     else:
         print("No variant had zero misses. The exported evidence is needed to debug dependencies.")
     if args.no_export:
@@ -107,10 +143,6 @@ def main():
         with tempfile.TemporaryDirectory() as directory:
             map_path = Path(directory) / "dependencies.json.gz"
             subprocess.run(["docker", "cp", container + ":/app/dependencies.json.gz", str(map_path)], check=True)
-            raw_map = gzip.decompress(map_path.read_bytes())
-            if len(raw_map) <= 18_000_000:
-                (ROOT / "maps/dependencies.json").write_bytes(raw_map)
-                print("Cached plain baseline dependency map for subsequent builds.")
             source_tar = subprocess.check_output(["docker", "cp", container + ":/opt/sqlglot/.", "-"])
             destination = ROOT / "research-bundle.zip"
             with zipfile.ZipFile(destination, "w", zipfile.ZIP_DEFLATED) as archive:

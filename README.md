@@ -1,24 +1,49 @@
 # Blast Radius selector
 
-A submission project for the sqlglot test-selection challenge. The target is below 100 seconds. The
-default selector scored **471.2 seconds with zero missed commits** on the 30
-public patches in a local macOS arm64 run. The scorer includes the simulated
-schedules and selector CPU. The Linux container score remains unmeasured.
+A submission project for the sqlglot test-selection challenge. The target is below 100 seconds.
+The current configuration scored **166.316 simulated seconds with zero missed
+commits** on the 30 public patches, measured in the scoring container
+configuration (`linux/amd64`, the scorer's `docker run` flags), three runs, with
+about 1.4 s of selector CPU per run. The scorer includes the simulated
+schedules and selector CPU.
 
 | Mode | Simulated seconds including penalties | Missed commits |
 | --- | ---: | ---: |
 | Full suite on every patch | 1104.510 | 0 |
-| Conservative Python selection with the local baseline map | 651.870 | 0 |
-| Targeted selection with child-process callers retained (default) | 470.062 | 0 |
-| Targeted Python selection before the short-circuit fix, with comparison refinement and probes | 1639.455 | 5 |
+| Conservative Python selection | 651.870 | 0 |
+| Targeted selection with the child-process guard (earlier map) | 470.062 | 0 |
+| Targeted selection with the inline-pool map (current config) | 166.316 | 0 |
+| Targeted selection plus comparison relations (local, not default) | 115.907 | 0 |
+| Relations plus probe budget 8 (local, not default) | 113.877 | 0 |
 
-For executable Python changes, the default keeps tests selected by the map
-and tests observed on lines that can dispatch work to a child process.
-The parent can reach a pool submission without recording which lines its child
-executes. Keeping those callers recovered the five misses seen with ordinary
-targeted selection on the public samples. Use `--conservative-python` to run
-the full suite for executable Python changes. See [VALIDATION.md](VALIDATION.md)
-for measurements and limitations.
+The cached dependency map attributes process-pool work to the calling test
+(pool work runs inline) and round-trips submissions and results through pickle.
+That captured the dependencies the child-process guard had been retaining
+tests for, so the guard (`child_work`) is off. The first four rows were
+container-verified; the last two were measured locally on the public patches and
+have not been run in the container. They are not the default.
+
+The default configuration is chosen by a held-out mutant evaluation, described in
+[VALIDATION.md](VALIDATION.md). Final result, to be filled in:
+
+| Item | Value |
+| --- | --- |
+| Final configuration | `{"conservative_python":false,"child_work":false,"relations":false,"probe_budget":0.0,"import_check_budget":6.0}` (unchanged; relations stays off until held-out evaluation) |
+| Public sample score | 166.316 s simulated, 0 misses, median total 168.0 s with CPU (container, 3 runs, commit 4c6b976, CPU 1.86/1.65/1.64 s) |
+| Held-out mutant misses and score | Not yet run (scheduled after this submission) |
+| Project commit | The commit that adds this table (see `git log`) |
+| Map fingerprint | `builder_sha256` `cc729b2e5ee84c1fb3fb7d656fbc8f03c9f6a362a6f6801d6407e9a9d48ad7d3`, `map_sha256` `02198f60b3809b26d3f5f3fcfd55e9882880b1483c38e6d94d6c56021418b372` (verified by `tools/map_fingerprint.py --check`) |
+
+Use `--conservative-python` to run the full suite for executable Python changes.
+See [VALIDATION.md](VALIDATION.md) for measurements and limitations.
+
+### Evidence convention
+
+Every published result names the exact `selector-config.json` contents, the map
+fingerprint (`builder_sha256` and `map_sha256` from `maps/dependencies.meta.json`),
+and the project commit. A number without those three items cannot be reproduced
+and is not reported as a result. The config currently in the working tree is
+`{"conservative_python":false,"child_work":false,"relations":false,"probe_budget":0.0,"import_check_budget":6.0}`.
 
 ## Run
 
@@ -26,25 +51,36 @@ Docker must support `linux/amd64`. From this directory:
 
 ```sh
 make unit                 # standard library only
-make sample               # build dependency map, run with official limits, score
+make build                # docker build (uses the cached map)
+make sample               # build, run with official limits, score
 make check                # validate output format under the same Docker limits
+make safe-sample          # scheduling-only backup (BUILD_MAP=0)
+make local-benchmark      # no Docker; full-suite fallback without a map
+make export-map           # export the map from an already-built image
+make map                  # regenerate the map ignoring the cache, then export it
+make competitive          # benchmark complete configurations (needs Docker)
 ```
 
-The first dependency-map build installs the supplied locked test environment,
-downloads only sqlglot at commit
-`eb11aec4be8cb2122afe713a4816662c3f0fb2fa`, and runs its unchanged tests. This may
-take several minutes. Build failure or the 10-minute budget must be resolved
-before submitting this mode; build time has not been measured here.
+The build uses the cached map `maps/dependencies.json.gz` only if
+`tools/map_fingerprint.py --check` passes. The check hashes the builder files
+(`tools/build_map.py`, `tools/instrument.py`, `tools/fetch_source.py`,
+`requirements.lock`, with line endings normalized) and the map's own digest
+against `maps/dependencies.meta.json`. If they do not match, the image build
+fails rather than shipping a stale map. Building the map from scratch takes
+about 13-14 minutes, which exceeds the 10-minute build budget; this is why the
+map is cached in the repository (1.1 MB gzipped, 33 MB raw). To rebuild it after
+changing a builder file, run `make map`: it builds with `FORCE_MAP=1` (ignore the
+cache) and `MAP_TIMEOUT=3600`, then `tools/export_map.py` writes
+`maps/dependencies.json.gz` and `maps/dependencies.meta.json` (the builder digest
+of the files inside the image, and the environment: Python 3.13.18, coverage
+7.10.7, x86_64). Commit both files.
 
-To validate just the scheduling-only backup:
+When regenerating, the build installs the supplied locked test environment,
+downloads only sqlglot at commit `eb11aec4be8cb2122afe713a4816662c3f0fb2fa`, and
+runs its unchanged tests.
 
-```sh
-make safe-sample
-```
-
-This builds the same top-level Dockerfile with `BUILD_MAP=0`. The competition
-uses default build arguments. To submit the backup instead of the dependency
-selector, replace the top-level Dockerfile and commit that change:
+To submit the scheduling-only backup instead of the dependency selector, replace
+the top-level Dockerfile and commit that change:
 
 ```sh
 cp Dockerfile.safe Dockerfile
@@ -56,8 +92,7 @@ make sample
 Local scoring without Docker is also available:
 
 ```sh
-make local-benchmark
-python3 tools/benchmark.py --source /absolute/pinned/sqlglot --map maps/dependencies.json
+python3 tools/benchmark.py --source /absolute/pinned/sqlglot --map maps/dependencies.json.gz
 ```
 
 The local benchmark does not reproduce container isolation, the scorer's Python
@@ -65,7 +100,7 @@ version, or cgroup CPU accounting.
 
 ## How selection works
 
-The image's build generates a map from the unchanged pinned source:
+The map is generated from the unchanged pinned source (cached in the repository, see above):
 
 1. Coverage records executed source lines in a separate context for each test.
 2. Targeted AST observers record instance, classmethod, module, and dynamic
@@ -75,17 +110,27 @@ The image's build generates a map from the unchanged pinned source:
    are shared with that class rather than the entire test suite.
 4. Static references use the exact executed use line, rather than all callers
    of a containing function. Initializer copies and inheritance still propagate.
-5. Comparison observers record baseline operand relations. A change confined to
-   comparison operators can retain only boundary-reaching or unknown tests.
-   Unsupported user-defined comparisons remain conservative.
-6. Eligible plain unittest tests can be verified in isolated forked processes.
+5. Comparison observers record baseline operand relations. When `relations` is
+   enabled, a change confined to comparison operators can retain only
+   boundary-reaching or unknown tests. Unsupported user-defined comparisons
+   remain conservative. This is off in the current default.
+6. Process-pool work is run inline in the calling test during map generation,
+   and submissions and results are round-tripped through pickle, so the map
+   attributes that work to the test that requested it.
+7. Eligible plain unittest tests can be verified in isolated forked processes
+   (only when `probe_budget` is above zero).
    Only confirmed passes are removed; subtest failures, import errors, class
    teardown errors, and timeouts retain selections. The batch has an 8-second
    child CPU budget, with a 1.5-second wall limit per probe.
 
 At runtime the selector verifies each patch against the pinned files in memory.
 It unions affected lines, constant users, function-header users, insertion
-regions, and fixture readers. It checks all files in a patch. Python changes with
+regions, and fixture readers. It checks all files in a patch. A change to short-circuit evaluation also selects
+users of the earlier operands. Initializer-only import-time edits are checked by
+a forked import of the patched module, with CPU charged to `import_check_budget`.
+`test_lazy_load` is the only external test; it is narrowed to the files that
+`import sqlglot` executes or reads (`tools/import_closure.py`, generated at image
+build). Python changes with
 the same AST retain tests observed reading that source; SQL/fixture comments are
 never assumed harmless. Unknown files, malformed patches, syntax errors,
 unsupported import-time changes, and incomplete maps select the entire suite.
@@ -98,11 +143,8 @@ first for all worker counts from 1 through 8; the selector chooses the smallest
 `max(load) + 2 * worker_count` using integer milliseconds. For the entire sample
 suite the optimal count is 4, because the slowest individual test is 28.817 s.
 
-Run `make competitive` to compare conservative Python selection, coverage with and without child-process callers, comparison refinement, and
-comparison refinement with verification, three times each. It selects the best
-global configuration among zero-miss sample variants and exports
-`research-bundle.zip` with the pinned source, maps, outputs, and CPU measurements.
-The project has 56 passing local checks, including real forked native probes.
+Run `make competitive` to benchmark complete configurations (see below).
+Unit tests run with `make unit` and in CI.
 
 Baseline coverage is an approximation of dependencies. Reflection, state shared
 between tests, indirect class-level access, and behavior in uninstrumented child
@@ -110,40 +152,31 @@ processes can require dependencies the map does not observe. Static propagation
 and fallbacks reduce this risk; they are not a proof against missed failures.
 Full sample measurement is required before judging the tradeoff.
 
-## Cache a map for faster rebuilds
-
-After a successful `make sample`:
-
-```sh
-make export-map
-git add maps/dependencies.json
-git commit -m 'Cache dependencies from pinned baseline'
-make sample
-```
-
-The export contains baseline observations and symbols only. It is a plain JSON
-file, has a revision check, and is limited to 18 MB to leave room under the
-20 MB repository allowance. Larger maps can stay generated at build time.
-
 ## Competitive measurement
 
 ```sh
 make competitive
 ```
 
-This requires Docker and network access during build. It enforces a 600-second
-build deadline, applies the scoring container limits to every run, measures CPU,
-and compares five globally configured strategies. It writes
-`selector-config.json` for the best zero-miss sample variant, caches the plain
-baseline map when it fits the repository allowance, and exports
-`research-bundle.zip`. Commit the chosen config/map and rebuild before submission.
-The timing wrapper adds a small amount of CPU, so the official score may differ.
+This requires Docker and network access during build. It applies the scoring
+container limits to every run, measures CPU, and benchmarks five complete
+configurations (`VARIANTS` in `tools/competitive.py`), passing every setting
+explicitly as a flag. The winning zero-miss configuration is written to
+`selector-config.json` verbatim, including `import_check_budget`. The tool then
+rebuilds the image and re-runs the shipped default to confirm it reproduces the
+measurement (skip with `--no-validate`). It no longer writes a raw
+`maps/dependencies.json`; the map is managed by `make map`. It exports
+`research-bundle.zip`. The timing wrapper adds a small amount of CPU, so the
+official score may differ.
 
-If Docker is inconvenient locally, the repository includes a manual GitHub
-Actions workflow, **Benchmark pinned sqlglot**. Run it after publishing the
-repository and download its `blast-radius-research` artifact.
+See `COMPETITIVE.md` for the evidence needed to continue tuning, and
+[VALIDATION.md](VALIDATION.md) for the held-out mutant evaluation.
 
-See `COMPETITIVE.md` for the evidence needed to continue tuning without Docker.
+## CI
+
+`.github/workflows/checks.yml` runs the unit tests and the cached-map
+fingerprint check on every pull request and push to main. The Docker benchmark
+workflow, **Benchmark pinned sqlglot**, stays manual.
 
 ## Publish
 

@@ -54,9 +54,10 @@ safe-sample:
 competitive:
 	python3 tools/competitive.py --image $(IMAGE)
 
-# One-off: build the map with a long per-test timeout (instrumented
-# test_max_nodes exceeds 180 s), then export it to maps/dependencies.json.gz.
-# Commit that file so normal builds skip map generation.
+# One-off: regenerate the map (ignoring any cached copy) with a long per-test
+# timeout (instrumented test_max_nodes exceeds 180 s), then export it to
+# maps/dependencies.json.gz with maps/dependencies.meta.json. Commit both so
+# normal builds skip map generation; a builder change without `make map` fails the build.
 map:
-	docker build --platform linux/amd64 --build-arg MAP_TIMEOUT=3600 --tag $(IMAGE) .
+	docker build --platform linux/amd64 --build-arg FORCE_MAP=1 --build-arg MAP_TIMEOUT=3600 --tag $(IMAGE) .
 	python3 tools/export_map.py --image $(IMAGE)

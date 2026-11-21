@@ -314,35 +314,6 @@ def baseline_tree(source):
     return ast.parse(source, type_comments=True)
 
 
-COMPOUND = (ast.If, ast.While, ast.For, ast.AsyncFor, ast.With, ast.AsyncWith)
-
-
-@lru_cache(maxsize=8)
-def statement_spans(source):
-    """Map each line to the innermost multi-line statement (or compound header) containing it.
-
-    A short-circuit or conditional expression can stop before a later line, so
-    coverage ties that line to fewer tests than evaluate the statement. Editing
-    an operator there (`and` -> `or`) changes the outcome for all of them.
-    """
-    spans = {}
-    for node in ast.walk(baseline_tree(source)):
-        if not isinstance(node, ast.stmt) or isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
-            continue
-        if isinstance(node, COMPOUND):
-            first, last = node.lineno, node.body[0].lineno - 1
-        elif hasattr(node, "body") or hasattr(node, "cases"):
-            continue
-        else:
-            first, last = node.lineno, node.end_lineno
-        if last <= first:
-            continue
-        for line in range(first, last + 1):
-            if line not in spans or spans[line][1] - spans[line][0] > last - first:
-                spans[line] = (first, last)
-    return spans
-
-
 def classify_python_edit(before, after):
     """Return [] for identical ASTs, operator changes for refinable edits, else None."""
     changes = []
@@ -616,10 +587,6 @@ class Selector:
                     result |= include(users, "short-circuit evaluation change", name, (start, end))
                 for line in removed:
                     result |= include(entry["lines"].get(line, entry["anchors"].get(line, 0)), "affected line or anchor", name, line)
-                spans = statement_spans(old)
-                for first, last in {spans[line] for line in removed if line in spans}:
-                    for line in range(first, last + 1):
-                        result |= include(entry["lines"].get(line, 0), "multi-line statement", name, (first, last))
                 for anchor in inserted:
                     # An insertion can create a new branch or override, so select users
                     # of the containing symbol, including presently unexecuted paths.
@@ -701,7 +668,8 @@ class Selector:
         return [t for t in self.tests if mask & (1 << t["number"])]
 
 
-def main():
+def parse_args(argv=None):
+    """Parse flags and fill unset settings from the config file; args.settings holds the result."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--data", type=Path, default=Path("/data"))
     parser.add_argument("--source", type=Path, default=Path("/opt/sqlglot"))
@@ -718,7 +686,7 @@ def main():
     parser.add_argument("--import-closure", type=Path, default=Path("/app/import-closure.json"))
     parser.add_argument("--import-check-budget", type=float)
     parser.add_argument("--config", type=Path, default=Path(__file__).with_name("selector-config.json"))
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     try:
         config = json.loads(args.config.read_text())
     except (OSError, ValueError):
@@ -727,7 +695,6 @@ def main():
         args.probe_budget = float(config.get("probe_budget", 8.0))
     if args.relations is None:
         args.relations = bool(config.get("relations", True))
-    tests = json.loads((args.data / "tests.json").read_text())["tests"]
     conservative = args.conservative_python
     child_work = args.child_work
     if conservative is None:
@@ -736,15 +703,29 @@ def main():
         child_work = args.conservative_python is None and not conservative and config.get("child_work", False)
     if args.import_check_budget is None:
         args.import_check_budget = float(config.get("import_check_budget", 0.0))
+    args.settings = {"conservative_python": bool(conservative), "child_work": bool(child_work),
+                     "relations": bool(args.relations), "probe_budget": float(args.probe_budget),
+                     "import_check_budget": float(args.import_check_budget)}
+    return args
+
+
+def resolve_settings(argv=None):
+    return parse_args(argv).settings
+
+
+def main():
+    args = parse_args()
+    settings = args.settings
+    tests = json.loads((args.data / "tests.json").read_text())["tests"]
     try:
         closure = json.loads(args.import_closure.read_text())
         if closure.get("revision") != REVISION:
             closure = None
     except (OSError, ValueError, AttributeError):
         closure = None
-    selector = Selector(tests, args.source, args.map, conservative_python=conservative, relations=args.relations,
-                        child_work=child_work, import_closure=closure,
-                        import_check_budget=max(0.0, args.import_check_budget))
+    selector = Selector(tests, args.source, args.map, conservative_python=settings["conservative_python"],
+                        relations=settings["relations"], child_work=settings["child_work"], import_closure=closure,
+                        import_check_budget=max(0.0, settings["import_check_budget"]))
     schedules = {}
     remaining = max(0.0, args.probe_budget)
     for patch in sorted((args.data / "commits").glob("*.patch")):
