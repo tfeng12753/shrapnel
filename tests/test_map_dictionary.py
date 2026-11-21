@@ -18,6 +18,10 @@ class Config:
     DATA = {"x": 1, "known": None}
 class Other:
     DATA = {"x": 2}
+class Holder:
+    pass
+holder = Holder()
+holder.extra = {"x": 3}
 def run(key, config):
     return TABLE[key()], config.DATA.get(key()), key() in TABLE
 def get_default(key, default):
@@ -36,6 +40,7 @@ def broad():
             (root / "sqlglot").mkdir()
             (root / "sqlglot/sample.py").write_text(source)
             recorder = Recorder(root, SourceModel(root), None)
+            self.assertNotIn(("sqlglot/sample.py", "holder"), recorder.dictionaries)
             observer = Instrumentation(root, recorder)
             observer.install()
             self.addCleanup(observer.restore)

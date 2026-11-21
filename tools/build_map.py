@@ -136,8 +136,15 @@ class Recorder:
         self.external = set()
         self.native = set()
         self.comparisons = {}
-        self.dictionaries = {symbol: info for symbol, info in getattr(model, "symbols", {}).items()
-                             if info["kind"] == "value" and isinstance(info["node"].value, ast.Dict)}
+        self.dictionaries = {}
+        for symbol, info in getattr(model, "symbols", {}).items():
+            node = info["node"]
+            if info["kind"] != "value" or not isinstance(node.value, ast.Dict):
+                continue
+            targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+            field = symbol[1].rsplit(".", 1)[-1]
+            if any(isinstance(target, ast.Name) and target.id == field for target in targets):
+                self.dictionaries[symbol] = info
         self.dictionary_names = {symbol.rsplit(".", 1)[-1] for _, symbol in self.dictionaries}
         for path, aliases in getattr(model, "imports", {}).items():
             for local_name in aliases:
