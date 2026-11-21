@@ -85,8 +85,10 @@ def main():
     parser.add_argument("--data", type=Path, default=ROOT / "sample")
     parser.add_argument("--source", type=Path, help="Pinned checkout from the same run")
     parser.add_argument("--map", type=Path, help="Map from the same run; omit both paths to skip replay")
-    parser.add_argument("--no-relations", action="store_true")
-    parser.add_argument("--conservative-python", action="store_true")
+    parser.add_argument("--relations", action=argparse.BooleanOptionalAction, default=True)
+    python_mode = parser.add_mutually_exclusive_group()
+    python_mode.add_argument("--conservative-python", action="store_true")
+    python_mode.add_argument("--child-work", action=argparse.BooleanOptionalAction, default=False)
     args = parser.parse_args()
     if bool(args.source) != bool(args.map):
         parser.error("supply both --source and --map to trace static selection")
@@ -97,7 +99,7 @@ def main():
         if not args.map.is_file() or not args.source.is_dir():
             parser.error("replay requires the original dependency map and pinned source directory")
         selector = Selector(tests, args.source, args.map, conservative_python=args.conservative_python,
-                            relations=not args.no_relations)
+                            relations=args.relations, child_work=args.child_work)
         explain_profile(profile, selector, args.data / "commits")
     print(json.dumps(profile, indent=2))
 

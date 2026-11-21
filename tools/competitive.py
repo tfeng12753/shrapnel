@@ -35,6 +35,7 @@ def main():
     variants = {
         "conservative_python": ["--conservative-python", "--no-relations", "--probe-budget", "0"],
         "coverage": ["--no-conservative-python", "--no-relations", "--probe-budget", "0"],
+        "child_work": ["--child-work", "--no-relations", "--probe-budget", "0"],
         "relations": ["--no-conservative-python", "--relations", "--probe-budget", "0"],
         "relations_and_probes": ["--no-conservative-python", "--relations", "--probe-budget", "8"],
     }
@@ -77,7 +78,7 @@ def main():
         index = min(range(len(runs)), key=lambda j: abs(runs[j]["total_seconds"] - median))
         output_name = f"{variant}-{index + 1}.jsonl"
         profile = schedule_profile(outputs[output_name], tests, answers)
-        report[variant] = {"runs": runs, "median_total_seconds": median,
+        report[variant] = {"runs": runs, "median_total_seconds": median, "selector_options": options,
                            "profile_output": output_name, "schedule_profile": profile}
         for patch in profile["patches"][:3]:
             print(f"  {patch['commit']}: {patch['excess_schedule_ms'] / 1000:+.3f}s vs failing-only schedule"
@@ -92,6 +93,7 @@ def main():
     best = report["best_zero_miss_variant"]
     if best is not None:
         config = {"conservative_python": best == "conservative_python",
+                  "child_work": best == "child_work",
                   "relations": best in ("relations", "relations_and_probes"),
                   "probe_budget": 8.0 if best == "relations_and_probes" else 0.0}
         (ROOT / "selector-config.json").write_text(json.dumps(config, separators=(",", ":")) + "\n")

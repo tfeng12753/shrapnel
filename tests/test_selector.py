@@ -7,6 +7,7 @@ import sys
 import tempfile
 import types
 import unittest
+from unittest.mock import patch as mock_patch
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
@@ -83,6 +84,9 @@ class SelectionTests(unittest.TestCase):
         self.root = Path(self.tmp.name)
         self.tests = [{"number": i, "id": name, "file": "tests/test_m.py", "seconds": .1} for i, name in enumerate(["A", "B", "C"])]
         self.mapping = {"version": 1, "revision": REVISION, "complete": True, "tests": ["B", "A", "C"], "files": {}}
+        (self.root / "tests").mkdir()
+        self.source("tests/test_m.py", "def test_m():\n    pass\n")
+        self.entry("tests/test_m.py")
         self.source("m.py", "def f():\n    return 1\n")
         self.entry("m.py", {"2": "2"}, [[1, 2, "function", "3"], [1, 1, "header", "3"]])
         self.source("fixture.sql", "SELECT 1;\n")
@@ -97,10 +101,10 @@ class SelectionTests(unittest.TestCase):
     def entry(self, name, lines=None, regions=None, readers="0"):
         self.mapping["files"][name] = {"lines": lines or {}, "regions": regions or [], "executed": "3", "readers": readers}
 
-    def selector(self):
+    def selector(self, **options):
         path = self.root / "map.json"
         path.write_text(json.dumps(self.mapping))
-        return Selector(self.tests, self.root, path)
+        return Selector(self.tests, self.root, path, **options)
 
     def test_uses_test_ids_instead_of_assuming_number_order(self):
         patch = diff("m.py", "def f():\n    return 1\n", "def f():\n    return 2\n")
@@ -181,6 +185,55 @@ class SelectionTests(unittest.TestCase):
         self.mapping["external"] = "4"
         patch = diff("m.py", "def f():\n    return 1\n", "def f():\n    return 2\n")
         self.assertEqual(self.selector().select(patch), 5)
+
+    def test_child_work_in_helper_uses_observed_callers(self):
+        self.source("helper.py", "def execute(pool, work):\n    launch = pool.submit\n    return launch(work)\n")
+        self.entry("helper.py", {"2": "1", "3": "1"})
+        self.mapping["native"] = ["A", "B"]
+        old = self.root.joinpath("m.py").read_text()
+        patch = diff("m.py", old, old.replace("1", "2"))
+        self.assertEqual(self.selector().select(patch), 1)
+        selector = self.selector(child_work=True)
+        events = []
+        self.assertEqual(selector.select(patch, lambda *event: events.append(event)), 3)
+        self.assertIn((2, "potential untraced child work", "m.py", None), events)
+        with mock_patch("native_probes.verify") as verify:
+            self.assertEqual(selector.probe(patch, 3, 1), (3, 0.0))
+            verify.assert_not_called()
+        self.assertEqual(selector.select(diff("m.py", old, "# note\n" + old)), 0)
+
+    def test_child_work_keeps_shared_hook_users(self):
+        test_file = "test_example.py"
+        for test in self.tests[1:]:
+            test["file"] = test_file
+        self.source(test_file, "from subprocess import run as spawn\n"
+                    "def load():\n    spawn(['python'])\n"
+                    "def setUpModule():\n    load()\n")
+        self.entry(test_file, {"3": "1"})
+        old = self.root.joinpath("m.py").read_text()
+        # Record the shared subprocess only for the first test in the module.
+        selector = self.selector(child_work=True)
+        self.assertEqual(selector.child_work, 6)
+        self.assertEqual(selector.select(diff("m.py", old, old.replace("1", "2"))), 7)
+
+    def test_child_work_finds_pool_from_aliased_context(self):
+        self.source("helper.py", "from multiprocessing import get_context as context\n"
+                    "def start_pool():\n    ctx = context('spawn')\n    return ctx.Pool(2)\n")
+        self.entry("helper.py", {"4": "1"})
+        self.assertEqual(self.selector(child_work=True).child_work, 2)
+
+    def test_child_work_preserves_missing_evidence(self):
+        self.source("helper.py", "def execute(pool, work):\n    return pool.map(work, [])\n")
+        self.entry("helper.py")
+        old = self.root.joinpath("m.py").read_text()
+        selector = self.selector(child_work=True)
+        self.assertEqual(selector.select(diff("m.py", old, old.replace("1", "2"))), 7)
+        self.assertEqual(selector.select(diff("m.py", old, "# note\n" + old)), 0)
+
+    def test_child_work_preserves_missing_source(self):
+        self.entry("helper.py", {"2": "1"})
+        old = self.root.joinpath("m.py").read_text()
+        self.assertEqual(self.selector(child_work=True).select(diff("m.py", old, old.replace("1", "2"))), 7)
 
 
 class MapModelTests(unittest.TestCase):
