@@ -2,6 +2,23 @@
 
 Base 2c4b6a8. This branch owns build-time observations only. No mutant data used.
 
+## Current handoff
+
+Code revision 86b3cd6 on overnight/map-precision, draft PR #9. The allowed source changes are complete. The final host diagnostic map passed all 1,621 pinned tests / 25,454 subtests. The default public replay is byte-identical to the cached Linux map at 166.316 simulated seconds with zero misses. With the existing comparison refinement enabled both maps also produced identical output at 115.907 s and zero misses. This branch implements map-side observations only. No hidden or mutant outcomes were used.
+
+| Final builder stage | macOS arm64 wall seconds |
+| --- | ---: |
+| Source model | 0.49 |
+| Instrumented pinned suite including setup | 304.14 |
+| Aggregation and serialization | 3.34 |
+| Total of stages | 307.97 |
+
+The unchanged builder from 2c4b6a8 took 293.400 s end-to-end on the same host. With the same coverage, pool substitution, pytest and file auditing, disabling its AST observers cut the control to 129.203 s. These single-run measurements identify build instrumentation as the main optimization target. Preserve the cache for the competition's 600 s build budget. The existing 14-minute Docker figure comes from the brief; this host has no Docker executable.
+
+The final diagnostic map occupies 1,114,908 bytes. It includes 1,274 dictionary bindings. For 30, at least one test had keyed evidence outside the whole and unobserved masks. This measures possible analysis opportunities, not guaranteed test removals. The Snowflake example retains all 273 candidates; costing it as a 9.078 s win would be incorrect. The new file ordering and repeated-mask grouping reduce the existing map by 72,230 bytes when compared with identical content.
+
+Local and Linux CI unit runs passed 86 of 87 checks. The sole failure is the required cache fingerprint mismatch after changing the builder. Before merging, run make map on Linux/amd64 Docker and repeat the checks below. No generated map or metadata is part of this PR. A clean-source repeat with a different Python hash seed is in progress.
+
 ## Import trace
 
 The import child records baseline line events per repository file and explicit file reads. Original files list preserved. Synthetic test passed. Host pinned import observed 36 files. Only use lines for a verified same-location operator-only edit with unchanged operands, syntax, and enclosing structure. Keep file-level behavior on missing lines, explicit reads, changed control-flow entry, insertions, decorators, shared/multiple-line expressions without a verified execution anchor, or an incomplete observation. Union across files. A raw line-number intersection alone is insufficient.
