@@ -731,7 +731,10 @@ class Selector:
                 for start, end in affected_comparisons:
                     result |= include(self.span_users(entry, start, end), "comparison operand coverage", name,
                                       (start, end))
-                for start, end in sorted(set(short_circuit_edits(before, after, removed | inserted))):
+                # An operator-only edit (classify_python_edit returned a list) leaves
+                # every and/or expression's shape unchanged, so it has no such spans.
+                short_circuit = short_circuit_edits(before, after, removed | inserted) if changes_at_sites is None else ()
+                for start, end in sorted(set(short_circuit)):
                     result |= include(self.span_users(entry, start, end),
                                       "short-circuit evaluation change", name, (start, end))
                 for line in removed:

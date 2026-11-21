@@ -1,4 +1,5 @@
 """Run one selected pytest item with its real child interpreters on a patched checkout."""
+import glob
 import os
 from pathlib import Path
 import resource
@@ -31,7 +32,7 @@ def stage(source, root, name, after, trees=None):
     target = root / name
     cache = target.parent / "__pycache__"
     if cache.is_dir():
-        for compiled in cache.glob(target.stem + ".*.pyc"):
+        for compiled in cache.glob(glob.escape(target.stem) + ".*.pyc"):
             compiled.unlink()
     for stale in (target.with_suffix(".pyc"), target.with_suffix(".pyo")):
         if stale.exists():

@@ -236,3 +236,17 @@ class StagingTests(TestCase):
             self.assertEqual(output.strip(), "2")
             isolated_pytest.stage(source, Path(directory) / "trees", "sqlglot/value.py", "VALUE = 3\n", trees=("sqlglot",))
             self.assertEqual((Path(directory) / "trees/sqlglot/value.py").read_text(), "VALUE = 3\n")
+
+
+class ShortCircuitSkipTests(TestCase):
+    def test_operator_only_edits_have_no_short_circuit_spans(self):
+        import ast
+        old = "def f(a, b, c):\n    return (a < b and c) or (a == 1 and not b)\n"
+        for new in (old.replace("a < b", "a <= b"), old.replace("a == 1", "a != 1")):
+            before, after = ast.parse(old), ast.parse(new)
+            self.assertTrue(S.classify_python_edit(before, after))
+            self.assertEqual(list(S.short_circuit_edits(before, after, {2})), [])
+        # A boolean operator edit is not operator-only and still yields its span.
+        before, after = ast.parse(old), ast.parse(old.replace(" or ", " and "))
+        self.assertIsNone(S.classify_python_edit(before, after))
+        self.assertTrue(list(S.short_circuit_edits(before, after, {2})))
