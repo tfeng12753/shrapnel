@@ -133,6 +133,12 @@ class Recorder:
         self.external = set()
         self.native = set()
         self.comparisons = {}
+        # Class-setup refinement: files opened in setUpClass with the setUpClass
+        # frame's current line, that function's code location, and the attribute
+        # names each test reads through its instance.
+        self.setup_opens = defaultdict(lambda: defaultdict(set))
+        self.setup_code = {}
+        self.instance_reads = defaultdict(set)
 
     def audit(self, event, args):
         if event == "open":
@@ -212,6 +218,9 @@ class Recorder:
                     function = frame.f_code.co_name
                     if function in ("setUpClass", "setup_class", "tearDownClass", "teardown_class"):
                         scope = ("class", self.current.rsplit("::", 1)[0])
+                        if function in ("setUpClass", "setup_class"):
+                            self.setup_opens[scope[1]][name].add(frame.f_lineno)
+                            self.setup_code[scope[1]] = (frame.f_code.co_filename, frame.f_code.co_firstlineno, function)
                         break
                     if function in ("setUp", "tearDown", "asyncSetUp", "asyncTearDown"):
                         scope = ("test", self.current)
@@ -282,6 +291,53 @@ class InlineProcessPool:
         return False
 
 
+def observe_instance_reads(item, rec):
+    """Record attribute names a unittest test reads through self; return an undo function."""
+    cls = getattr(item, "cls", None)
+    if cls is None or not issubclass(cls, unittest.TestCase):
+        return lambda: None
+    own = cls.__dict__.get("__getattribute__")
+    inherited = cls.__getattribute__
+    reads = rec.instance_reads[item.nodeid]
+
+    def observed(self, name):
+        reads.add(name)
+        return inherited(self, name)
+
+    cls.__getattribute__ = observed
+
+    def restore():
+        if own is None:
+            del cls.__getattribute__
+        else:
+            cls.__getattribute__ = own
+    return restore
+
+
+def refine_class_readers(rec, class_id):
+    """{file: set(test ids)} for class-setup reads this class can attribute per test, else None."""
+    import ast
+    from setup_flow import class_level_access, find_function, setup_flow
+    if class_id not in rec.setup_code:
+        return None
+    filename, firstlineno, function = rec.setup_code[class_id]
+    try:
+        tree = ast.parse(Path(filename).read_text(encoding="utf-8"))
+        func = find_function(tree, firstlineno, function)
+        module_path, class_name = class_id.split("::")[0], class_id.split("::")[-1]
+        module_tree = ast.parse((rec.root / module_path).read_text(encoding="utf-8"))
+    except (OSError, SyntaxError, ValueError):
+        return None
+    if func is None or class_level_access(module_tree, class_name) or class_level_access(tree, class_name):
+        return None
+    flow, problems = setup_flow(func, rec.setup_opens[class_id])
+    if problems:
+        return None
+    members = [t for t in rec.tests if t.startswith(class_id + "::")]
+    return {name: {t for t in members if rec.instance_reads.get(t, set()) & set(attrs)}
+            for name, attrs in flow.items()}
+
+
 def build(root, destination):
     import coverage
     import pytest
@@ -312,9 +368,11 @@ def build(root, destination):
         def pytest_runtest_protocol(self, item, nextitem):
             rec.current, rec.phase = item.nodeid, "setup"
             cov.switch_context(item.nodeid)
+            restore = observe_instance_reads(item, rec)
             try:
                 yield
             finally:
+                restore()
                 cov.switch_context("")
                 rec.current, rec.phase = None, "collection"
 
@@ -368,6 +426,7 @@ def write_map(root, model, rec, data, destination):
                 files[name]["lines"][line] = value
                 files[name]["executed"] |= value
     external_mask = mask(rec.external)
+    refined = {}
     for name, scopes in rec.reads.items():
         for kind, value in scopes:
             if kind == "all":
@@ -377,7 +436,17 @@ def write_map(root, model, rec, data, destination):
             elif kind == "file":
                 files[name]["readers"] |= mask(t for t in rec.tests if t.split("::")[0] == value)
             elif kind == "class":
-                files[name]["readers"] |= mask(t for t in rec.tests if t.startswith(value + "::"))
+                if value not in refined:
+                    refined[value] = refine_class_readers(rec, value) if hasattr(rec, "setup_code") else None
+                by_file = refined[value]
+                if by_file is not None and name in by_file:
+                    # Only tests reading an attribute this file can reach. The
+                    # selector must verify setUpClass still succeeds before relying on it.
+                    files[name]["readers"] |= mask(by_file[name])
+                    setup = files[name].setdefault("setup_classes", {})
+                    setup[value] = format(mask(t for t in rec.tests if t.startswith(value + "::")), "x")
+                else:
+                    files[name]["readers"] |= mask(t for t in rec.tests if t.startswith(value + "::"))
     users = {}
     for key, symbol in model.symbols.items():
         entry = files[key[0]]

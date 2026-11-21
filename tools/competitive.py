@@ -20,9 +20,9 @@ from tools.profile_schedule import schedule_profile
 # Every variant is a complete selector configuration. The winner is written to
 # selector-config.json verbatim, so the shipped image runs exactly what was measured.
 BASE = {"conservative_python": False, "child_work": False, "relations": False,
-        "probe_budget": 0.0, "import_check_budget": 6.0}
+        "probe_budget": 0.0, "import_check_budget": 6.0, "setup_check_budget": 8.0}
 VARIANTS = {
-    "conservative_python": {**BASE, "conservative_python": True, "import_check_budget": 0.0},
+    "conservative_python": {**BASE, "conservative_python": True, "import_check_budget": 0.0, "setup_check_budget": 0.0},
     "coverage": BASE,
     "child_work": {**BASE, "child_work": True},
     "relations": {**BASE, "relations": True},
@@ -40,7 +40,8 @@ def selector_options(config):
             else "--child-work" if config["child_work"] else "--no-conservative-python")
     return [mode, "--relations" if config["relations"] else "--no-relations",
             "--probe-budget", repr(float(config["probe_budget"])),
-            "--import-check-budget", repr(float(config["import_check_budget"]))]
+            "--import-check-budget", repr(float(config["import_check_budget"])),
+            "--setup-check-budget", repr(float(config["setup_check_budget"]))]
 
 
 def run_container(image, data, options, tests, answers):
