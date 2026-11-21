@@ -13,6 +13,7 @@ import time
 import tokenize
 
 from selector import apply_change, parse_patch
+from tools.map_executor_fixture import fixture_check
 from tools.map_executor_plan import checkout_digest, digest
 from tools.map_import_replay import staging_exclusions
 
@@ -47,20 +48,35 @@ def operator_edit(before, after, line):
     return change and in_body(before) and in_body(after)
 
 
-def audit(source, patch, prepared, fixture, schema, wall_seconds):
+def audit(source, patch, prepared, fixture, schema, wall_seconds, checks):
     deadline = time.monotonic() + wall_seconds
     changes = parse_patch(patch)
     if len(changes) != 1:
         return "retain: mixed patch"
     change, = changes
     name = change["old"]
+    if (checks != "optimizer" and (fixture, schema) in (("tpcds", "TPCDS_SCHEMA"), ("tpch", "TPCH_SCHEMA"))
+            and name.startswith("tests/fixtures/") and name.endswith(".sql")):
+        if any(line.startswith(("old mode ", "new mode ", "rename ", "copy ", "Binary files ", "GIT binary patch"))
+               for line in patch.splitlines()):
+            return "retain: unsupported fixture diff"
+        result = fixture_check(source, change, fixture)
+        return result if time.monotonic() <= deadline else "retain: timeout"
+    if checks == "fixture" or fixture == "tpch":
+        return "retain: outside fixture check"
     if (name != change["new"] or not name.startswith("sqlglot/optimizer/") or not name.endswith(".py")
             or ".." in Path(name).parts or not (source / name).resolve().is_relative_to(source)):
         return "retain: outside optimizer"
     before = (source / name).read_text()
     after, removed, inserted = apply_change(before, change)
-    if inserted or len(removed) != 1 or not operator_edit(before, after, next(iter(removed))):
+    if inserted or len(removed) != 1:
         return "retain: unsupported edit"
+    line, = removed
+    if not operator_edit(before, after, line):
+        return "retain: unsupported edit"
+    if prepared is None:
+        return "retain: missing executor snapshots"
+    prepared = prepared.resolve()
     checkout = checkout_digest(source)
     for seed in (1, 2):
         evidence = json.loads((prepared / f"plan-deps-{seed}.json").read_text())
@@ -75,6 +91,19 @@ def audit(source, patch, prepared, fixture, schema, wall_seconds):
         root = Path(td) / "src"
         shutil.copytree(source, root, ignore=staging_exclusions(source, [name]))
         (root / name).write_text(after)
+        screen = prepared / "plan-screen.json"
+        if screen.is_file():
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                return "retain: timeout"
+            probe = subprocess.run(
+                [sys.executable, "-B", str(Path(__file__).with_name("map_executor_screen.py").resolve()),
+                 "--source", str(root), "--schema", schema, "--reference", str(screen),
+                 "--module", name, "--line", str(line)],
+                cwd=root, env=dict(os.environ, PYTHONHASHSEED="1"), stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL, timeout=remaining)
+            if probe.returncode:
+                return "retain: query screen differed or failed"
         for seed in (1, 2):
             output = Path(td) / f"check-{seed}.json"
             remaining = deadline - time.monotonic()
@@ -94,10 +123,10 @@ def audit(source, patch, prepared, fixture, schema, wall_seconds):
     return "candidate: both snapshots matched"
 
 
-def check(source, patch, prepared, fixture, schema, wall_seconds=20):
+def check(source, patch, prepared, fixture, schema, wall_seconds=20, *, checks="all"):
     try:
-        return audit(source.resolve(), patch, prepared.resolve(), fixture, schema, wall_seconds)
-    except (OSError, ValueError, KeyError, TypeError, SyntaxError, tokenize.TokenError,
+        return audit(source.resolve(), patch, prepared, fixture, schema, wall_seconds, checks)
+    except (OSError, ValueError, KeyError, IndexError, TypeError, SyntaxError, tokenize.TokenError,
             RecursionError, subprocess.TimeoutExpired) as exc:
         return f"retain: {type(exc).__name__}"
 
