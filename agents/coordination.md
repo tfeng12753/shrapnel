@@ -9,15 +9,15 @@ branches:
 
 ```sh
 git fetch origin
-git show origin/agent3/cpu-governance:agents/progress/agent-3.md
+git show origin/agent3/selector-cpu:agents/progress/agent-3.md
 ```
 
 | Agent | Branch | Progress file |
 | --- | --- | --- |
 | 1 | `agent1/import-safety` | `agents/progress/agent-1.md` |
-| 2 | `agent2/map-precision` | `agents/progress/agent-2.md` |
-| 3 | `agent3/cpu-governance` | `agents/progress/agent-3.md` |
-| 4 | `agent4/evaluation` | `agents/progress/agent-4.md` |
+| 2 | `agent2/map-data` | `agents/progress/agent-2.md` |
+| 3 | `agent3/selector-cpu` | `agents/progress/agent-3.md` |
+| 4 | `agent4/fixtures-eval` | `agents/progress/agent-4.md` |
 
 ## Progress file layout (same sections for everyone)
 
