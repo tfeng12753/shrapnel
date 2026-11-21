@@ -22,7 +22,8 @@ from tools.profile_schedule import schedule_profile
 BASE = {"conservative_python": False, "child_work": False, "relations": False,
         "executor_fixtures": False, "executor_plan_budget": 0.0, "lazy_test_budget": 0.0,
         "probe_budget": 0.0, "import_check_budget": 6.0, "setup_check_budget": 8.0,
-        "schedule_admission": False}
+        "schedule_admission": False,
+        "exact_comparisons": False}
 VARIANTS = {
     "conservative_python": {**BASE, "conservative_python": True, "import_check_budget": 0.0, "setup_check_budget": 0.0},
     "coverage": BASE,
@@ -49,7 +50,8 @@ def selector_options(config):
             "--probe-budget", repr(float(config["probe_budget"])),
             "--import-check-budget", repr(float(config["import_check_budget"])),
             "--setup-check-budget", repr(float(config["setup_check_budget"])),
-            "--schedule-admission" if config["schedule_admission"] else "--no-schedule-admission"]
+            "--schedule-admission" if config["schedule_admission"] else "--no-schedule-admission",
+            "--exact-comparisons" if config["exact_comparisons"] else "--no-exact-comparisons"]
 
 
 def run_container(image, data, options, tests, answers, *, trace_pytest=False):

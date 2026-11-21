@@ -347,6 +347,12 @@ def relation_outcome(state, op):
     return None
 
 
+# Value operators whose outcome on built-in int/str/None operands the map's
+# relation states determine. Identity depends on object caching, so a swap to
+# or from `is` never uses exact evidence.
+EXACT_OPERATORS = ("Eq", "NotEq", "Lt", "LtE", "Gt", "GtE")
+
+
 @lru_cache(maxsize=8)
 def baseline_tree(source):
     return ast.parse(source, type_comments=True)
@@ -476,12 +482,15 @@ class Selector:
     def __init__(self, tests: list[dict], source: Path, map_path: Path, *, conservative_python=False,
                  relations=None, child_work=False, import_closure=None, import_check_budget=0.0,
                  setup_check_budget=0.0, executor_fixtures=False, executor_plans=None, executor_plan_budget=0.0,
-                 lazy_test_budget=0.0, schedule_admission=False):
+                 lazy_test_budget=0.0, schedule_admission=False, exact_comparisons=False):
         self.tests, self.source = tests, source
         # Admit every narrowing probe only after a patch's selection is final,
         # and only if dropping its tests saves enough schedule time for its CPU.
         self.schedule_admission = schedule_admission
         self.measured_cpu = {}
+        # Narrow value comparisons only with map evidence that every evaluation
+        # completed on built-in int/str/None operands (see refine_comparisons).
+        self.exact_comparisons = exact_comparisons
         self.executor_fixtures = executor_fixtures
         self.executor_plans = executor_plans.resolve() if executor_plans and executor_plan_budget > 0 else None
         self.executor_plan_budget = executor_plan_budget
@@ -562,7 +571,10 @@ class Selector:
                     "regions": [(a, b, kind, decode(v)) for a, b, kind, v in entry.get("regions", [])],
                     "anchors": {int(k): decode(v) for k, v in entry.get("anchors", {}).items()},
                     "comparisons": {site: {"op": info["op"], "unknown": decode(info["unknown"]),
-                        "states": {state: decode(v) for state, v in info["states"].items()}}
+                        "states": {state: decode(v) for state, v in info["states"].items()},
+                        "exact": {"complete": decode(info["exact"]["complete"]),
+                                  "states": {state: decode(v) for state, v in info["exact"]["states"].items()}}
+                                 if "exact" in info else None}
                         for site, info in comparison_sites.items()},
                     "readers": readers,
                     "executed": decode(entry.get("executed", "0")),
@@ -914,7 +926,11 @@ class Selector:
             # the map observer records anything. An apparently safe hit does
             # not rule out an earlier unrecorded failure in the same test.
             if self.strict_relations and before not in ("Is", "IsNot"):
-                return None
+                exact = self.exact_comparison(info, before, after, contexts[site], entry)
+                if exact is None:
+                    return None
+                result |= exact
+                continue
             observed = unknown = info["unknown"]
             for state, users in info["states"].items():
                 observed |= users
@@ -924,6 +940,33 @@ class Selector:
             start, end, _ = contexts[site]
             result |= unknown | (self.span_users(entry, start, end) & ~observed)
         return result
+
+    def exact_comparison(self, info, before, after, context, entry):
+        """Tests to keep for a value-operator swap, or None without exact evidence.
+
+        A test may be dropped only if the map proves, for every evaluation of
+        the site by that test, that both operands completed, were built-in
+        int, str or None, the original operator completed, and the original
+        and replacement operators give the same outcome.
+        """
+        exact = info.get("exact")
+        if not self.exact_comparisons or exact is None:
+            return None
+        if before not in EXACT_OPERATORS or after not in EXACT_OPERATORS:
+            return None
+        start, end, _ = context
+        touched = self.span_users(entry, start, end) | info["unknown"] | exact["complete"]
+        for users in info["states"].values():
+            touched |= users
+        evidenced = changed = 0
+        for state, users in exact["states"].items():
+            touched |= users
+            evidenced |= users
+            a, b = relation_outcome(state, before), relation_outcome(state, after)
+            if a is None or b is None or a != b:
+                changed |= users
+        safe = exact["complete"] & evidenced & ~changed & ~info["unknown"]
+        return touched & ~safe
 
     def probe(self, patch, mask, budget, *, cost_aware=False):
         tests = self.chosen(mask)
@@ -1010,6 +1053,8 @@ def parse_args(argv=None):
     parser.add_argument("--lazy-test-budget", type=float)
     parser.add_argument("--schedule-admission", action=argparse.BooleanOptionalAction, default=None,
                         help="Admit narrowing probes only when their schedule saving pays for their CPU")
+    parser.add_argument("--exact-comparisons", action=argparse.BooleanOptionalAction, default=None,
+                        help="Narrow value-operator swaps with exact comparison evidence from the map")
     parser.add_argument("--config", type=Path, default=Path(__file__).with_name("selector-config.json"))
     args = parser.parse_args(argv)
     try:
@@ -1044,11 +1089,14 @@ def parse_args(argv=None):
         args.lazy_test_budget = float(config.get("lazy_test_budget", 0.0))
     if args.schedule_admission is None:
         args.schedule_admission = config.get("schedule_admission", False)
+    if args.exact_comparisons is None:
+        args.exact_comparisons = config.get("exact_comparisons", False)
     args.settings = {"lazy_test_budget": args.lazy_test_budget, "executor_fixtures": bool(args.executor_fixtures), "executor_plan_budget": args.executor_plan_budget,"conservative_python": bool(conservative), "child_work": bool(child_work),
                      "relations": bool(args.relations), "probe_budget": float(args.probe_budget),
                      "import_check_budget": float(args.import_check_budget),
                      "setup_check_budget": float(args.setup_check_budget)}
     args.settings["schedule_admission"] = bool(args.schedule_admission)
+    args.settings["exact_comparisons"] = bool(args.exact_comparisons)
     if args.cost_aware_probes:
         args.settings["probe_budget"] = {"seconds": args.probe_budget, "cost_aware": True}
     return args
@@ -1075,7 +1123,8 @@ def main():
                         executor_fixtures=settings["executor_fixtures"], executor_plans=args.executor_plans,
                         executor_plan_budget=max(0.0, settings["executor_plan_budget"]),
                         lazy_test_budget=max(0.0, settings["lazy_test_budget"]),
-                        schedule_admission=settings["schedule_admission"])
+                        schedule_admission=settings["schedule_admission"],
+                        exact_comparisons=settings["exact_comparisons"])
     schedules = {}
     remaining = max(0.0, args.probe_budget)
     for patch in sorted((args.data / "commits").glob("*.patch")):
