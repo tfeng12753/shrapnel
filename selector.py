@@ -296,8 +296,12 @@ def module_for(path):
 
 
 def relation_outcome(state, op):
-    kind, value = state.split(":")
-    value = int(value)
+    # Reject states outside the comparison observer's format rather than
+    # interpreting unsupported bits as evidence for a false result.
+    if state not in ("e:0", "e:1", "e:8", "e:9", "p:0", "p:1", "p:2", "p:4", "p:8", "p:9"):
+        return None
+    kind, _, bits = state.partition(":")
+    value = int(bits)
     if op == "Eq": return bool(value & 1)
     if op == "NotEq": return not value & 1
     if op == "Is": return bool(value & 8)
@@ -344,6 +348,28 @@ def classify_python_edit(before, after):
 def comparison_changes(old, new):
     """Return operator-only differences using baseline source positions."""
     return classify_python_edit(baseline_tree(old), ast.parse(new, type_comments=True)) or None
+
+
+def comparison_contexts(tree, sites):
+    """Find edited comparison spans and whether they are inside function bodies."""
+    found = {}
+
+    def visit(node, deferred=False):
+        if isinstance(node, ast.Compare):
+            site = f"{node.lineno}:{node.col_offset}"
+            if site in sites:
+                found[site] = (node.lineno, node.end_lineno, deferred)
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            for child in ast.iter_child_nodes(node):
+                visit(child, child in node.body)
+        else:
+            # A module-level lambda can be called during import. Inside a
+            # function, lambdas, comprehensions and their defaults stay local.
+            for child in ast.iter_child_nodes(node):
+                visit(child, deferred)
+
+    visit(tree)
+    return found
 
 
 def short_circuit_edits(before, after, affected_lines):
@@ -410,7 +436,7 @@ def short_circuit_edits(before, after, affected_lines):
 
 class Selector:
     def __init__(self, tests: list[dict], source: Path, map_path: Path, *, conservative_python=False,
-                 relations=True, child_work=False, import_closure=None, import_check_budget=0.0):
+                 relations=None, child_work=False, import_closure=None, import_check_budget=0.0):
         self.tests, self.source = tests, source
         # Changes confined to assignment values evaluated at import time can only
         # break collection by raising. A forked import of the patched module checks that.
@@ -418,6 +444,11 @@ class Selector:
         self.import_closure = None
         self.closure_external = 0
         self.conservative_python = conservative_python
+        # Historical direct callers omit this option. An explicit opt-in
+        # (including the CLI) requires evidence for every invocation of the
+        # old operator. Map v1 records only completed comparisons.
+        self.relations = relations is not False
+        self.strict_relations = relations is True
         self.all = (1 << len(tests)) - 1
         self.files, self.complete = {}, False
         self.external = 0
@@ -468,7 +499,7 @@ class Selector:
                 if conservative_python:
                     self.files[name] = {"readers": readers}
                     continue
-                comparison_sites = entry.get("comparisons", {}) if relations else {}
+                comparison_sites = entry.get("comparisons", {}) if self.relations else {}
                 self.files[name] = {
                     "lines": {int(k): decode(v) for k, v in entry.get("lines", {}).items()},
                     "regions": [(a, b, kind, decode(v)) for a, b, kind, v in entry.get("regions", [])],
@@ -560,7 +591,13 @@ class Selector:
                     if self.conservative_python:
                         return include(self.all, "conservative executable Python selection", name)
                     result |= include(self.child_work, "potential untraced child work", name)
-                    refined = self.refine_comparisons(changes_at_sites, entry)
+                    refined = None
+                    if self.relations and changes_at_sites:
+                        contexts = comparison_contexts(before, {site for site, _, _ in changes_at_sites})
+                        if any(not deferred for _, _, deferred in contexts.values()):
+                            return include(self.all, "comparison outside function body", name)
+                        if len(changes) == 1 and len(changes_at_sites) == 1:
+                            refined = self.refine_comparisons(changes_at_sites, entry, contexts)
                     if refined is not None:
                         result |= include(refined, "comparison boundary or unknown", name)
                         result |= include(entry["readers"], "file reader", name)
@@ -581,11 +618,21 @@ class Selector:
                         return include(self.all, "unknown file readers", name)
                     continue
                 result |= include(entry["readers"], "file reader", name)
+                if self.relations:
+                    # Operator-only lines in multiline comparisons may not get
+                    # coverage of their own. This also covers chains and mixed
+                    # edits that cannot be refined with comparison evidence.
+                    affected = sorted(removed | inserted)
+                    for node in ast.walk(before):
+                        if isinstance(node, ast.Compare) and node.lineno < node.end_lineno:
+                            index = bisect_left(affected, node.lineno)
+                            if index < len(affected) and affected[index] <= node.end_lineno:
+                                result |= include(self.span_users(entry, node.lineno, node.end_lineno),
+                                                  "comparison operand coverage", name,
+                                                  (node.lineno, node.end_lineno))
                 for start, end in sorted(set(short_circuit_edits(before, after, removed | inserted))):
-                    users = 0
-                    for line in range(start, end + 1):
-                        users |= entry["lines"].get(line, entry["anchors"].get(line, 0))
-                    result |= include(users, "short-circuit evaluation change", name, (start, end))
+                    result |= include(self.span_users(entry, start, end),
+                                      "short-circuit evaluation change", name, (start, end))
                 for line in removed:
                     result |= include(entry["lines"].get(line, entry["anchors"].get(line, 0)), "affected line or anchor", name, line)
                 for anchor in inserted:
@@ -631,19 +678,34 @@ class Selector:
         self.import_check_budget -= cpu
         return ok
 
-    def refine_comparisons(self, changes, entry):
+    @staticmethod
+    def span_users(entry, start, end):
+        users = 0
+        for line in range(start, end + 1):
+            users |= entry["lines"].get(line, entry["anchors"].get(line, 0))
+        return users
+
+    def refine_comparisons(self, changes, entry, contexts):
         if not changes or not entry or not entry["comparisons"]:
             return None
         result = 0
         for site, before, after in changes:
             info = entry["comparisons"].get(site)
-            if info is None or info["op"] != before:
+            if info is None or info["op"] != before or site not in contexts:
                 return None
-            result |= info["unknown"]
+            # Unlike identity, ordering can call user code and raise before
+            # the map observer records anything. An apparently safe hit does
+            # not rule out an earlier unrecorded failure in the same test.
+            if self.strict_relations and before not in ("Is", "IsNot"):
+                return None
+            observed = unknown = info["unknown"]
             for state, users in info["states"].items():
+                observed |= users
                 a, b = relation_outcome(state, before), relation_outcome(state, after)
                 if a is None or b is None or a != b:
-                    result |= users
+                    unknown |= users
+            start, end, _ = contexts[site]
+            result |= unknown | (self.span_users(entry, start, end) & ~observed)
         return result
 
     def probe(self, patch, mask, budget, *, cost_aware=False):
