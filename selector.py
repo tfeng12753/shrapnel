@@ -230,6 +230,11 @@ def apply_change(original: str, change: dict) -> tuple[str, set[int], set[int]]:
 
 def import_hazard(old: str, new: str) -> bool:
     """Unknown collection-time behavior costs less to cover than a single miss."""
+    return import_hazard_kind(old, new) is not None
+
+
+def import_hazard_kind(old: str, new: str):
+    """None, "initializer" (only assignment values evaluated at import changed), or "structural"."""
     def scaffold(source):
         tree = ast.parse(source, type_comments=True)
         imports, other = [], []
@@ -238,7 +243,7 @@ def import_hazard(old: str, new: str) -> bool:
                 if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
                     continue
                 if isinstance(node, ast.ClassDef):
-                    other.append((node.name, tuple(ast.dump(x, include_attributes=False) for x in [*node.bases, *node.decorator_list, *(k.value for k in node.keywords)])))
+                    other.append(("class", node.name, tuple(ast.dump(x, include_attributes=False) for x in [*node.bases, *node.decorator_list, *(k.value for k in node.keywords)])))
                     walk(node.body)
                 elif isinstance(node, (ast.Import, ast.ImportFrom)):
                     imports.append(ast.dump(node, include_attributes=False))
@@ -257,16 +262,34 @@ def import_hazard(old: str, new: str) -> bool:
                                     return node
                             signature = ast.dump(Deferred().visit(value), include_attributes=False)
                         targets = node.targets if isinstance(node, ast.Assign) else [node.target]
-                        other.append((tuple(ast.dump(t, include_attributes=False) for t in targets), signature))
+                        other.append(("assign", tuple(ast.dump(t, include_attributes=False) for t in targets), signature))
                 elif isinstance(node, ast.Pass):
                     continue
                 elif isinstance(node, ast.Expr) and isinstance(node.value, ast.Constant):
                     continue
                 else:
-                    other.append(ast.dump(node, include_attributes=False))
+                    other.append(("other", ast.dump(node, include_attributes=False)))
         walk(tree.body)
         return imports, other
-    return scaffold(old) != scaffold(new)
+    (old_imports, old_other), (new_imports, new_other) = scaffold(old), scaffold(new)
+    if (old_imports, old_other) == (new_imports, new_other):
+        return None
+    if old_imports != new_imports or len(old_other) != len(new_other):
+        return "structural"
+    for a, b in zip(old_other, new_other):
+        if a != b and not (a[0] == b[0] == "assign" and a[1] == b[1]):
+            return "structural"
+    return "initializer"
+
+
+def module_for(path):
+    """Dotted module for a pinned sqlglot source path, or None."""
+    if not path.startswith("sqlglot/") or not path.endswith(".py"):
+        return None
+    parts = path[:-3].split("/")
+    if parts[-1] == "__init__":
+        parts.pop()
+    return ".".join(parts) if all(part.isidentifier() for part in parts) else None
 
 
 def relation_outcome(state, op):
@@ -322,8 +345,13 @@ def comparison_changes(old, new):
 
 class Selector:
     def __init__(self, tests: list[dict], source: Path, map_path: Path, *, conservative_python=False,
-                 relations=True, child_work=False):
+                 relations=True, child_work=False, import_closure=None, import_check_budget=0.0):
         self.tests, self.source = tests, source
+        # Changes confined to assignment values evaluated at import time can only
+        # break collection by raising. A forked import of the patched module checks that.
+        self.import_check_budget = import_check_budget
+        self.import_closure = None
+        self.closure_external = 0
         self.conservative_python = conservative_python
         self.all = (1 << len(tests)) - 1
         self.files, self.complete = {}, False
@@ -361,6 +389,14 @@ class Selector:
                     cache[value] = result
                 return cache[value]
             self.external = decode(data.get("external", "0"))
+            if import_closure is not None:
+                # External tests whose child process only runs `import sqlglot` can
+                # only be affected by files that import executes or reads.
+                ids = {t["id"]: 1 << t["number"] for t in tests}
+                for test_id in import_closure.get("tests", ()):
+                    self.closure_external |= ids.get(test_id, 0)
+                self.closure_external &= self.external
+                self.import_closure = set(import_closure.get("files", ()))
             self.native = set(data.get("native", ()))
             for name, entry in data["files"].items():
                 readers = decode(entry.get("readers", "0"))
@@ -462,11 +498,14 @@ class Selector:
                     if refined is not None:
                         result |= include(refined, "comparison boundary or unknown", name)
                         result |= include(entry["readers"], "file reader", name)
-                        result |= include(self.external, "external dependency", name)
+                        result |= include(self.external_for(name), "external dependency", name)
                         continue
-                    if import_hazard(old, new):
+                    hazard = import_hazard_kind(old, new)
+                    if hazard == "initializer" and self.import_succeeds(name, changes):
+                        hazard = None
+                    if hazard:
                         return include(self.all, "import-time change", name)
-                result |= include(self.external, "external dependency", name)
+                result |= include(self.external_for(name), "external dependency", name)
                 if entry is None:
                     return include(self.all, "unmapped file", name)
                 if not name.endswith(".py"):
@@ -500,6 +539,26 @@ class Selector:
         except (ValueError, SyntaxError, OSError, UnicodeError, RecursionError) as error:
             # Syntax/import-shape uncertainty can break every test's collection.
             return include(self.all, "analysis failed: " + type(error).__name__)
+
+    def external_for(self, name):
+        if self.import_closure is None or name in self.import_closure:
+            return self.external
+        return self.external & ~self.closure_external
+
+    def import_succeeds(self, name, changes):
+        module = module_for(name)
+        if module is None or self.import_check_budget < .1:
+            return False
+        overlays = {}
+        for c in changes:
+            if c["old"] != c["new"]:
+                return False
+            overlays[c["old"]] = apply_change(self.read_source(c["old"]), c)[0]
+        from native_probes import verify_import
+        ok, cpu = verify_import(self.source, overlays, module,
+                                wall_seconds=4.0, cpu_seconds=min(2.0, self.import_check_budget))
+        self.import_check_budget -= cpu
+        return ok
 
     def refine_comparisons(self, changes, entry):
         if not changes or not entry or not entry["comparisons"]:
@@ -553,6 +612,8 @@ def main():
     group.add_argument("--relations", dest="relations", action="store_true")
     group.add_argument("--no-relations", dest="relations", action="store_false")
     parser.set_defaults(relations=None)
+    parser.add_argument("--import-closure", type=Path, default=Path("/app/import-closure.json"))
+    parser.add_argument("--import-check-budget", type=float)
     parser.add_argument("--config", type=Path, default=Path(__file__).with_name("selector-config.json"))
     args = parser.parse_args()
     try:
@@ -570,8 +631,17 @@ def main():
         conservative = not child_work and config.get("conservative_python", False)
     if child_work is None:
         child_work = args.conservative_python is None and not conservative and config.get("child_work", False)
+    if args.import_check_budget is None:
+        args.import_check_budget = float(config.get("import_check_budget", 0.0))
+    try:
+        closure = json.loads(args.import_closure.read_text())
+        if closure.get("revision") != REVISION:
+            closure = None
+    except (OSError, ValueError, AttributeError):
+        closure = None
     selector = Selector(tests, args.source, args.map, conservative_python=conservative, relations=args.relations,
-                        child_work=child_work)
+                        child_work=child_work, import_closure=closure,
+                        import_check_budget=max(0.0, args.import_check_budget))
     schedules = {}
     remaining = max(0.0, args.probe_budget)
     for patch in sorted((args.data / "commits").glob("*.patch")):
