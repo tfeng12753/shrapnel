@@ -234,7 +234,8 @@ class Recorder:
         if entry is None:
             entry = {"op": op, "states": defaultdict(set), "unknown": set(), "collection": False}
             self.comparisons[key] = entry
-        if self.current is None:
+        if self.current is None or (op in ("Eq", "NotEq") and
+                                    (self.phase != "call" or threading.current_thread() is not threading.main_thread())):
             entry["collection"] = True
         elif state is None:
             entry["unknown"].add(self.current)
@@ -459,9 +460,10 @@ def write_map(root, model, rec, data, destination):
         value = mask(rec.attrs.get(key, ()))
         for scope in rec.shared_attrs.get(key, ()):
             value |= shared_masks[scope]
-        for line, line_mask in entry["lines"].items():
-            if symbol["start"] <= line <= symbol["end"]:
-                value |= line_mask
+        lines = entry["lines"]
+        if lines:
+            for line in range(symbol["start"], symbol["end"] + 1):
+                value |= lines.get(line, 0)
         users[key] = value
     # Runtime references use the exact executed line. Only initializer copies
     # and class inheritance need transitive source-symbol propagation.

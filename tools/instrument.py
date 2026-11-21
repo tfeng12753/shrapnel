@@ -17,6 +17,12 @@ NONE_SAFE = SCALARS | {tuple, list, dict, set, frozenset, range, object}
 def relation(left, right):
     """An abstract relation; never invoke user-defined comparisons to observe it."""
     a, b = type(left), type(right)
+    # None has no ordering. With exact builtin operands, equality here is
+    # identity, so no ordering operation or exception is needed.
+    if left is None and type(b) is type and b in NONE_SAFE:
+        return "e:9" if right is None else "e:0"
+    if right is None and type(a) is type and a in NONE_SAFE:
+        return "e:0"
     pure = a in SCALARS and b in SCALARS
     # String/int Enum subclasses may use builtin equality rather than identity.
     # Their operators are still pure; retain the actual observed relation.
@@ -61,6 +67,14 @@ def outcome(state, op):
     if op == "Gt": return bool(value & 4)
     if op == "GtE": return bool(value & 5)
     return None
+
+
+def visit_definition_arguments(visitor, node):
+    # Decorators and defaults execute outside the function. Leave annotations
+    # untouched because instrumentation must preserve deferred annotations.
+    node.decorator_list = [visitor.visit(n) for n in node.decorator_list]
+    node.args.defaults = [visitor.visit(n) for n in node.args.defaults]
+    node.args.kw_defaults = [visitor.visit(n) if n is not None else None for n in node.args.kw_defaults]
 
 
 class DictionaryReads(ast.NodeTransformer):
@@ -144,7 +158,9 @@ class DictionaryReads(ast.NodeTransformer):
         return Transformer.visit_AnnAssign(self, node)
 
     def visit_FunctionDef(self, node):
-        return Transformer.visit_FunctionDef(self, node)
+        node.body = [self.visit(n) for n in node.body]
+        visit_definition_arguments(self, node)
+        return node
 
     visit_AsyncFunctionDef = visit_FunctionDef
     def visit_TypeAlias(self, node):
@@ -154,6 +170,7 @@ class DictionaryReads(ast.NodeTransformer):
 class Transformer(ast.NodeTransformer):
     def __init__(self, path, fields):
         self.path, self.fields = path, fields
+        self.function_body = False
 
     def visit_Attribute(self, node):
         node = self.generic_visit(node)
@@ -183,6 +200,9 @@ class Transformer(ast.NodeTransformer):
             except (ValueError, TypeError):
                 return False
         observe = op in ("Is", "IsNot") or (op in ("Lt", "LtE", "Gt", "GtE") and (literal(node.left) or literal(node.comparators[0])))
+        if op in ("Eq", "NotEq"):
+            observe = self.function_body and node.lineno == node.end_lineno and any(isinstance(expr, ast.Constant) and type(expr.value) in (int, str, bytes, bool)
+                          for expr in (node.left, node.comparators[0]))
         if not observe:
             return node
         call = ast.Call(func=ast.Name(id="_blast_radius_comparison", ctx=ast.Load()),
@@ -196,11 +216,20 @@ class Transformer(ast.NodeTransformer):
             node.value = self.visit(node.value)
         return node
 
+    def visit_ClassDef(self, node):
+        enclosing = self.function_body
+        self.function_body = False
+        self.generic_visit(node)
+        self.function_body = enclosing
+        return node
+
     def visit_FunctionDef(self, node):
+        enclosing = self.function_body
+        self.function_body = not node.decorator_list and not node.name.startswith("__")
         node.body = [self.visit(n) for n in node.body]
-        node.decorator_list = [self.visit(n) for n in node.decorator_list]
-        node.args.defaults = [self.visit(n) for n in node.args.defaults]
-        node.args.kw_defaults = [self.visit(n) if n is not None else None for n in node.args.kw_defaults]
+        self.function_body = False
+        visit_definition_arguments(self, node)
+        self.function_body = enclosing
         return node
     visit_AsyncFunctionDef = visit_FunctionDef
 
@@ -230,7 +259,19 @@ class Instrumentation:
             return value
         def comparison(left, right, op, path, site):
             value = OPS[op](left, right)
-            recorder.record_comparison(path, site, op, relation(left, right))
+            if op in ("Eq", "NotEq"):
+                # Mixed or user-defined types may run application code for a
+                # replacement operator. Equal values can also have unstable
+                # identity across runs. Retain these observations as unknown.
+                state = None
+                kind = type(left)
+                if kind is type(right) and type(kind) is type and kind in (int, str, bytes, bool):
+                    unequal = value if op == "NotEq" else not value
+                    if unequal:
+                        state = "p:2" if left < right else "p:4"
+            else:
+                state = relation(left, right)
+            recorder.record_comparison(path, site, op, state)
             return value
         def whole(mapping):
             if type(mapping) is dict:
