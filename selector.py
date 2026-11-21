@@ -255,7 +255,9 @@ def import_hazard_kind(old: str, new: str, old_tree=None, new_tree=None):
                 if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
                     continue
                 if isinstance(node, ast.ClassDef):
-                    other.append(("class", node.name, tuple(ast.dump(x, include_attributes=False) for x in [*node.bases, *node.decorator_list, *(k.value for k in node.keywords)])))
+                    other.append(("class", node.name,
+                                  tuple(ast.dump(x, include_attributes=False) for x in [*node.bases, *node.decorator_list]),
+                                  tuple((k.arg, ast.dump(k.value, include_attributes=False)) for k in node.keywords)))
                     walk(node.body)
                 elif isinstance(node, (ast.Import, ast.ImportFrom)):
                     imports.append(ast.dump(node, include_attributes=False))
@@ -289,10 +291,33 @@ def import_hazard_kind(old: str, new: str, old_tree=None, new_tree=None):
         return None
     if old_imports != new_imports or len(old_other) != len(new_other):
         return "structural"
+    kinds = set()
     for a, b in zip(old_other, new_other):
-        if a != b and not (a[0] == b[0] == "assign" and a[1] == b[1]):
+        if a == b:
+            continue
+        if a[0] == b[0] == "assign" and a[1] == b[1]:
+            kinds.add("initializer")
+        elif typeddict_total_flip(a, b):
+            kinds.add("typeddict_total")
+        else:
             return "structural"
-    return "initializer"
+    return kinds.pop() if len(kinds) == 1 else "structural"
+
+
+def typeddict_total_flip(a, b):
+    """True when two class scaffold entries differ only in a boolean total= keyword of a TypedDict."""
+    if not (a[0] == b[0] == "class" and a[1] == b[1] and a[2] == b[2] and len(a[3]) == len(b[3])):
+        return False
+    if not any("TypedDict" in base for base in a[2]):
+        return False
+    changed = [(x, y) for x, y in zip(a[3], b[3]) if x != y]
+    booleans = {ast.dump(ast.Constant(value=True)), ast.dump(ast.Constant(value=False))}
+    return (len(changed) == 1 and changed[0][0][0] == changed[0][1][0] == "total"
+            and changed[0][0][1] in booleans and changed[0][1][1] in booleans)
+
+
+TYPEDDICT_METADATA = re.compile(r"__required_keys__|__optional_keys__|__total__|get_type_hints|is_typeddict"
+                                r"|__annotations__|get_annotations")
 
 
 def module_for(path):
@@ -453,8 +478,10 @@ class Selector:
     def __init__(self, tests: list[dict], source: Path, map_path: Path, *, conservative_python=False,
                  relations=None, child_work=False, import_closure=None, import_check_budget=0.0,
                  setup_check_budget=0.0, executor_fixtures=False, executor_plans=None, executor_plan_budget=0.0,
-                 lazy_test_budget=0.0, import_effects=None, downstream_import_budget=0.0):
+                 lazy_test_budget=0.0, import_effects=None, downstream_import_budget=0.0, typeddict_state_check=False):
         self.tests, self.source = tests, source
+        self.typeddict_state_check = typeddict_state_check
+        self._typeddict_readers = None
         # Patches that change code or settings used while some module is being
         # imported can break collection of every test file importing it. A forked
         # import of the affected modules decides (CPU charged to this budget).
@@ -720,6 +747,16 @@ class Selector:
                     hazard = import_hazard_kind(old, new, before, after)
                     if hazard == "initializer" and self.import_succeeds(name, changes):
                         hazard = None
+                    elif (hazard == "typeddict_total" and self.typeddict_state_check and entry is not None
+                          and not self.typeddict_metadata_readers() and self.import_succeeds(name, changes)):
+                        # Only TypedDict metadata (__total__, required/optional keys) changes,
+                        # nothing in the checkout reads that metadata, and the module still
+                        # imports, so every user of the class behaves identically. Keep source
+                        # readers and external tests; import-time breakage elsewhere is covered
+                        # by the downstream import check.
+                        result |= include(entry["readers"], "file reader", name)
+                        result |= include(self.external_for(name), "external dependency", name)
+                        continue
                     if hazard:
                         return include(self.all, "import-time change", name)
                 result |= include(self.external_for(name), "external dependency", name)
@@ -852,6 +889,23 @@ class Selector:
         self.setup_check_budget -= cpu
         return 0 if ok else members
 
+    def typeddict_metadata_readers(self):
+        """Whether any source or test file in the checkout can read TypedDict metadata (cached)."""
+        if self._typeddict_readers is None:
+            found = False
+            try:
+                for top in ("sqlglot", "tests"):
+                    for path in (self.source / top).rglob("*.py"):
+                        if TYPEDDICT_METADATA.search(path.read_text(encoding="utf-8", errors="replace")):
+                            found = True
+                            break
+                    if found:
+                        break
+            except OSError:
+                found = True
+            self._typeddict_readers = found
+        return self._typeddict_readers
+
     def import_succeeds(self, name, changes):
         module = module_for(name)
         if module is None or self.import_check_budget < .1:
@@ -978,6 +1032,7 @@ def parse_args(argv=None):
     parser.add_argument("--lazy-test-budget", type=float)
     parser.add_argument("--import-time", type=Path, default=Path("/app/import-time.json"))
     parser.add_argument("--downstream-import-budget", type=float)
+    parser.add_argument("--typeddict-state-check", action=argparse.BooleanOptionalAction, default=None)
     parser.add_argument("--config", type=Path, default=Path(__file__).with_name("selector-config.json"))
     args = parser.parse_args(argv)
     try:
@@ -1012,11 +1067,14 @@ def parse_args(argv=None):
         args.lazy_test_budget = float(config.get("lazy_test_budget", 0.0))
     if args.downstream_import_budget is None:
         args.downstream_import_budget = float(config.get("downstream_import_budget", 0.0))
+    if args.typeddict_state_check is None:
+        args.typeddict_state_check = bool(config.get("typeddict_state_check", False))
     args.settings = {"lazy_test_budget": args.lazy_test_budget, "executor_fixtures": bool(args.executor_fixtures), "executor_plan_budget": args.executor_plan_budget,"conservative_python": bool(conservative), "child_work": bool(child_work),
                      "relations": bool(args.relations), "probe_budget": float(args.probe_budget),
                      "import_check_budget": float(args.import_check_budget),
                      "setup_check_budget": float(args.setup_check_budget),
-                     "downstream_import_budget": float(args.downstream_import_budget)}
+                     "downstream_import_budget": float(args.downstream_import_budget),
+                     "typeddict_state_check": bool(args.typeddict_state_check)}
     if args.cost_aware_probes:
         args.settings["probe_budget"] = {"seconds": args.probe_budget, "cost_aware": True}
     return args
@@ -1056,7 +1114,8 @@ def main():
                         executor_plan_budget=max(0.0, settings["executor_plan_budget"]),
                         lazy_test_budget=max(0.0, settings["lazy_test_budget"]),
                         import_effects=load_import_effects(args.import_time, tests),
-                        downstream_import_budget=max(0.0, settings["downstream_import_budget"]))
+                        downstream_import_budget=max(0.0, settings["downstream_import_budget"]),
+                        typeddict_state_check=settings["typeddict_state_check"])
     schedules = {}
     remaining = max(0.0, args.probe_budget)
     for patch in sorted((args.data / "commits").glob("*.patch")):
