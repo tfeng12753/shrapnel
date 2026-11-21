@@ -265,12 +265,13 @@ class Instrumentation:
             value = OPS[op](left, right)
             if op in ("Eq", "NotEq"):
                 # Mixed or user-defined types may run application code for a
-                # replacement operator. Equal values can also have unstable
-                # identity across runs. Retain these observations as unknown.
+                # replacement operator. The writer represents both possible
+                # identities for equal builtin integers.
                 state = None
                 kind = type(left)
                 if kind is int and type(right) is int:
                     unequal = value if op == "NotEq" else not value
+                    state = "p:1"
                     if unequal:
                         state = "p:2" if left < right else "p:4"
             else:

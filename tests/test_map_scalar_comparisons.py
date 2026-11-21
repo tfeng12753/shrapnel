@@ -60,8 +60,10 @@ class ScalarComparisonTests(unittest.TestCase):
                                 changed = op(value, literal) != replacements[old](value, literal)
                             except TypeError:
                                 changed = True
-                            if changed or type(value) is not type(literal) or value == literal:
+                            if changed or type(value) is not type(literal) or (value == literal and new in ("Is", "IsNot")):
                                 self.assertTrue(mask & (1 << i), (value, old, new))
+                        if old == "Eq" and new == "LtE":
+                            self.assertFalse(mask & (1 << 1))  # Equality implies <= for exact integers.
                         if literal == 1 and old == "Eq" and new == "Lt":
                             self.assertFalse(mask & (1 << 2))  # A larger value is neither equal nor less.
 
