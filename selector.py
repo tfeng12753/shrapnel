@@ -19,8 +19,14 @@ def split(tests: list[dict]) -> list[list[int]]:
     if not tests:
         return []
     ordered = sorted(((round(t["seconds"] * 1000), t["number"]) for t in tests), reverse=True)
+    total = sum(duration for duration, _ in ordered)
+    longest = ordered[0][0]
     best, best_cost = [], None
     for count in range(1, min(8, len(tests)) + 1):
+        # Even perfect packing cannot beat either the longest test or the mean.
+        lower_bound = max(longest, (total + count - 1) // count) + 2000 * count
+        if best_cost is not None and lower_bound >= best_cost:
+            continue
         loads = [0] * count
         workers = [[] for _ in loads]
         for duration, number in ordered:
@@ -209,7 +215,7 @@ def comparison_changes(old, new):
 
 
 class Selector:
-    def __init__(self, tests: list[dict], source: Path, map_path: Path, *, conservative_python=False):
+    def __init__(self, tests: list[dict], source: Path, map_path: Path, *, conservative_python=False, relations=True):
         self.tests, self.source = tests, source
         self.conservative_python = conservative_python
         self.all = (1 << len(tests)) - 1
@@ -249,14 +255,19 @@ class Selector:
             self.external = decode(data.get("external", "0"))
             self.native = set(data.get("native", ()))
             for name, entry in data["files"].items():
+                readers = decode(entry.get("readers", "0"))
+                if conservative_python:
+                    self.files[name] = {"readers": readers}
+                    continue
+                comparison_sites = entry.get("comparisons", {}) if relations else {}
                 self.files[name] = {
                     "lines": {int(k): decode(v) for k, v in entry.get("lines", {}).items()},
                     "regions": [(a, b, kind, decode(v)) for a, b, kind, v in entry.get("regions", [])],
                     "anchors": {int(k): decode(v) for k, v in entry.get("anchors", {}).items()},
                     "comparisons": {site: {"op": info["op"], "unknown": decode(info["unknown"]),
                         "states": {state: decode(v) for state, v in info["states"].items()}}
-                        for site, info in entry.get("comparisons", {}).items()},
-                    "readers": decode(entry.get("readers", "0")),
+                        for site, info in comparison_sites.items()},
+                    "readers": readers,
                     "executed": decode(entry.get("executed", "0")),
                 }
             mapped_ids = set(data["tests"])
@@ -410,10 +421,7 @@ def main():
         args.relations = bool(config.get("relations", True))
     tests = json.loads((args.data / "tests.json").read_text())["tests"]
     conservative = args.conservative_python if args.conservative_python is not None else config.get("conservative_python", False)
-    selector = Selector(tests, args.source, args.map, conservative_python=conservative)
-    if not args.relations:
-        for entry in selector.files.values():
-            entry["comparisons"].clear()
+    selector = Selector(tests, args.source, args.map, conservative_python=conservative, relations=args.relations)
     schedules = {}
     remaining = max(0.0, args.probe_budget)
     for patch in sorted((args.data / "commits").glob("*.patch")):

@@ -96,10 +96,8 @@ def main():
     if args.map:
         if not args.map.is_file() or not args.source.is_dir():
             parser.error("replay requires the original dependency map and pinned source directory")
-        selector = Selector(tests, args.source, args.map, conservative_python=args.conservative_python)
-        if args.no_relations:
-            for entry in selector.files.values():
-                entry["comparisons"].clear()
+        selector = Selector(tests, args.source, args.map, conservative_python=args.conservative_python,
+                            relations=not args.no_relations)
         explain_profile(profile, selector, args.data / "commits")
     print(json.dumps(profile, indent=2))
 
