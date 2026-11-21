@@ -17,8 +17,8 @@ import time
 import unittest
 
 
-def _child(source, overlays, tests):
-    """The caller forks first; no source module is imported in the parent."""
+def _install_overlays(source, overlays):
+    """Make imports and explicit reads in this (forked) process see patched source."""
     os.chdir(source)
     sys.path.insert(0, str(source))
     sys.dont_write_bytecode = True
@@ -46,6 +46,19 @@ def _child(source, overlays, tests):
                     return stream
             return _original(file, mode, *args, **kwargs)
         module.open = opened
+
+
+def _import_child(source, overlays, module):
+    """Import sqlglot and the patched module; any exception means failure."""
+    _install_overlays(source, overlays)
+    importlib.import_module("sqlglot")
+    importlib.import_module(module)
+    return True
+
+
+def _child(source, overlays, tests):
+    """The caller forks first; no source module is imported in the parent."""
+    _install_overlays(source, overlays)
     expected = {}
     suite = unittest.TestSuite()
     loader = unittest.TestLoader()
@@ -100,6 +113,21 @@ def _child(source, overlays, tests):
 
 def verify(source, overlays, tests, wall_seconds=1.5, cpu_seconds=1.0):
     """Return (confirmed passing IDs, consumed child CPU); timeouts remove nothing."""
+    passed, cpu = _forked(lambda: _child(source.resolve(), overlays, tests), [], wall_seconds, cpu_seconds)
+    allowed = {test["id"] for test in tests}
+    if not isinstance(passed, list) or any(item not in allowed for item in passed):
+        return [], cpu
+    return passed, cpu
+
+
+def verify_import(source, overlays, module, wall_seconds=4.0, cpu_seconds=2.0):
+    """Return (True if the patched module imports cleanly, consumed child CPU)."""
+    ok, cpu = _forked(lambda: _import_child(source.resolve(), overlays, module), False, wall_seconds, cpu_seconds)
+    return ok is True, cpu
+
+
+def _forked(work, failure, wall_seconds, cpu_seconds):
+    """Run work() in a limited forked child; return (its JSON result or failure, child CPU)."""
     read_fd, write_fd = os.pipe()
     sys.stdout.flush()
     pid = os.fork()
@@ -116,10 +144,10 @@ def verify(source, overlays, tests, wall_seconds=1.5, cpu_seconds=1.0):
             signal.signal(signal.SIGALRM, signal.SIG_DFL)
             signal.setitimer(signal.ITIMER_REAL, wall_seconds)
             try:
-                passed = _child(source.resolve(), overlays, tests)
+                result = work()
             except BaseException:
-                passed = []
-            payload = json.dumps(passed).encode("utf-8")
+                result = failure
+            payload = json.dumps(result).encode("utf-8")
             while payload:
                 count = os.write(write_fd, payload)
                 payload = payload[count:]
@@ -158,12 +186,8 @@ def verify(source, overlays, tests, wall_seconds=1.5, cpu_seconds=1.0):
             pass
     cpu = usage.ru_utime + usage.ru_stime
     if expired or status:
-        return [], cpu
+        return failure, cpu
     try:
-        passed = json.loads(b"".join(chunks))
-        allowed = {test["id"] for test in tests}
-        if not isinstance(passed, list) or any(item not in allowed for item in passed):
-            return [], cpu
-        return passed, cpu
+        return json.loads(b"".join(chunks)), cpu
     except (ValueError, TypeError):
-        return [], cpu
+        return failure, cpu

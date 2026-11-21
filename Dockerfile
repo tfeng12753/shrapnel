@@ -21,6 +21,9 @@ RUN if [ "$BUILD_MAP" != "1" ]; then :; \
     else \
       MAP_TIMEOUT=$MAP_TIMEOUT PYTHONPATH=/opt/sqlglot python /app/tools/build_map.py; \
     fi
+# Files `import sqlglot` executes or reads; narrows the lazy-load test.
+COPY tools/import_closure.py /app/tools/import_closure.py
+RUN if [ "$BUILD_MAP" = "1" ]; then python /app/tools/import_closure.py; fi
 COPY selector.py native_probes.py selector-config.json /app/
 COPY tools/timed_run.py /app/tools/timed_run.py
 ENV HOME=/tmp
