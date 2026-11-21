@@ -31,9 +31,9 @@ def audit(event, args):
         return
     path, mode, flags = args
     if mode is None:
-        if flags & (os.O_WRONLY | os.O_RDWR):
+        if flags & os.O_ACCMODE == os.O_WRONLY:
             return
-    elif any(c in mode for c in "wax+"):
+    elif "+" not in mode and any(c in mode for c in "wax"):
         return
     opened.add(path)
     frame = sys._getframe(1)

@@ -1,9 +1,12 @@
 import importlib.util
+import json
+import threading
+from unittest.mock import Mock
 from pathlib import Path
 import tempfile
 import unittest
 
-from tools.build_map import Recorder, SourceModel
+from tools.build_map import Recorder, SourceModel, write_map
 from tools.instrument import Instrumentation
 
 
@@ -46,3 +49,33 @@ def broad():
             recorder.phase = "setup"
             recorder.record_dictionary(namespace["TABLE"], ("compound",))
             self.assertIn(None, recorder.dictionary_reads["sqlglot/sample.py", "TABLE"][None])
+
+
+    def test_serialized_masks_include_unknown_users(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            pkg = root / "sqlglot"
+            pkg.mkdir()
+            path = pkg / "constants.py"
+            path.write_text("DATA = {'x': 'old'}")
+            model = SourceModel(root)
+            rec = Recorder(root, model, None)
+            rec.tests = ["direct", "opaque", "other"]
+            symbol = ("sqlglot/constants.py", "DATA")
+            table = {"x": "old"}
+            rec.bound_dictionaries[id(table)] = (table, (symbol,))
+            rec.current, rec.phase = "direct", "call"
+            rec.record_dictionary(table, "x")
+            rec.current = "opaque"
+            rec.record_dictionary(table, None)
+            data = Mock()
+            data.measured_files.return_value = [str(path)]
+            data.contexts_by_lineno.return_value = {1: rec.tests}
+            dest = root / "map.json"
+            write_map(root, model, rec, data, dest)
+            info = json.loads(dest.read_text())["files"][symbol[0]]["dictionary_reads"]["DATA"]
+            self.assertEqual((info["keys"], info["whole"], info["unobserved"]), ({"x": "1"}, "2", "4"))
+            thread = threading.Thread(target=rec.record_dictionary, args=(table, "x"))
+            thread.start()
+            thread.join()
+            self.assertIn(None, rec.dictionary_reads[symbol]["x"])

@@ -161,7 +161,7 @@ class Recorder:
         if binding is None:
             return
         key = key if type(key) is str else None
-        context = self.current if self.phase == "call" else None
+        context = self.current if self.phase == "call" and threading.current_thread() is threading.main_thread() else None
         for symbol in binding[1]:
             # Avoid storing arbitrary SQL, runtime inputs and unseen keys.
             recorded = key if key in self.literal_keys[symbol] else None
@@ -171,7 +171,7 @@ class Recorder:
         if event == "open":
             file, mode, flags = args
             if mode is None:
-                if flags & (os.O_WRONLY | os.O_RDWR):
+                if flags & os.O_ACCMODE == os.O_WRONLY:
                     return
                 mode = "r"
             self.opened(file, mode)
@@ -215,7 +215,7 @@ class Recorder:
             entry["states"][state].add(self.current)
 
     def opened(self, file, mode="r"):
-        if getattr(self.audit_state, "busy", False) or isinstance(file, int) or not isinstance(mode, str) or any(c in mode for c in "wax+"):
+        if getattr(self.audit_state, "busy", False) or isinstance(file, int) or not isinstance(mode, str) or ("+" not in mode and any(c in mode for c in "wax")):
             return
         self.audit_state.busy = True
         try:
