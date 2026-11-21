@@ -40,7 +40,7 @@
 ## Branch status
 Ready for review. Every new behavior is behind a key that defaults to off, so
 merging changes nothing until a key is flipped. Admission-off output is
-identical to `main` on the sample and on 300 local mutants. Unit tests: 156
+identical to `main` on the sample and on 300 local mutants. Unit tests: 155
 pass.
 
 Recommended `main` config, with evidence in Evaluations:
