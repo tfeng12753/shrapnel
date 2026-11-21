@@ -222,7 +222,11 @@ class Recorder:
             frame = frame.f_back
 
     def record_comparison(self, path, site, op, state):
-        entry = self.comparisons.setdefault((path, site), {"op": op, "states": defaultdict(set), "unknown": set(), "collection": False})
+        key = (path, site)
+        entry = self.comparisons.get(key)
+        if entry is None:
+            entry = {"op": op, "states": defaultdict(set), "unknown": set(), "collection": False}
+            self.comparisons[key] = entry
         if self.current is None:
             entry["collection"] = True
         elif state is None:

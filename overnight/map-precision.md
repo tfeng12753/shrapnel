@@ -53,3 +53,5 @@ Profiling tool checkpoint be296fb. Added precise observation for explicit dict._
 ## Shared setup attribute propagation
 
 Explicit method checkpoint 2659c22. A scan of the pinned tests found four setUpClass definitions and one tearDownClass. When a mapped class/module attribute is read under a recognized class/module setup or teardown frame, the builder now propagates the dependency to all tests in that exact class/module. A synthetic serialized-map test verifies both class members and excludes a similarly named neighboring class. Arbitrary shared objects created in ordinary call phases still need separate provenance. Full replay is queued to measure schedule impact.
+
+Shared fixture checkpoint 498110f. Repeated comparison observations previously allocated a new candidate record on every call even if the site had already been seen. Allocating it once per site produced identical states in a synthetic 500,000-observation loop. Median process CPU over seven alternating trials fell from 0.0888 s to 0.0487 s; this is a recorder microbenchmark, not a projected full-build improvement. Final host build includes this change.
