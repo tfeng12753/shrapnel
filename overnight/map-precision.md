@@ -2,6 +2,16 @@
 
 Base 2c4b6a8. Map construction uses the unmodified pinned checkout and its baseline suite. Generated patches are used for evaluation.
 
+## Test-module bytecode for native verification
+
+The same build-time preparation now includes the pinned test tree. Native unittest verification imports these ordinary modules repeatedly. The host adds 66 checked-hash cache files totaling 3,044,852 bytes. Pytest replay staging continues to exclude test caches so the original pytest assertion rewriting runs normally.
+
+Using `--relations --probe-budget 2`, seven alternating pairs per batch produced byte-identical selector outputs within all 21 pairs. Median seconds including CPU were 115.596 → 115.561 on the public 30, 34.773 → 34.791 on the first independent eight and 37.374 → 37.373 on the second eight. Public misses were zero. These are existing-selector measurements. The earlier 109.063 simulated result is for the additional offline checks.
+
+For a direct verifier comparison, order native-eligible test files by SHA-256 of their path and take the first 12. Pick the minimum SHA-256 node ID in each file among items at or below the normal 0.15 s per-item cutoff. Run the original native verifier separately on each unchanged case three times per configuration, alternating order. All 72 checks confirmed the same passing IDs. Summing per-item median child CPU gave 3.376 s with production bytecode alone and 2.860 s with test caches as well (15.3% lower). The verifier retained every one of 14 known failing items when run against two independent real overlays with prepared test modules.
+
+The cached checkout passed all 1,621 original tests and 25,454 subtests. Project units passed 99 of 100 checks, with the previously documented cache fingerprint failure. Linux/amd64 validation remains pending.
+
 ## Hash-checked bytecode for the existing selector
 
 Checkpoint `8b215b2`. The final build-time closure step precompiles the unchanged production package after observing the import. This prepares 184 CPython cache files (4,467,466 bytes on the host). Python checks a hash of each source file before loading cached code. The selector's import overlay still compiles modified modules from their patched source. The staged pytest audit only copies checked-hash production caches for unchanged modules. A regression test edits a module while preserving its size and timestamp and confirms a new Python child observes the changed value.

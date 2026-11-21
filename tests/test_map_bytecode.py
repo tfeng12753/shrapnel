@@ -20,7 +20,13 @@ class PreparedBytecodeTests(unittest.TestCase):
             pkg = source / "sqlglot"
             pkg.mkdir(parents=True)
             (pkg / "__init__.py").write_text("value = 1\n")
+            tests = source / "tests"
+            tests.mkdir()
+            helper = tests / "test_example.py"
+            helper.write_text("def test_value(): assert 1 == 1\n")
             prepare_bytecode(source)
+            test_cache = Path(importlib.util.cache_from_source(str(helper)))
+            self.assertEqual(int.from_bytes(test_cache.read_bytes()[4:8], "little"), 3)
             cached = Path(importlib.util.cache_from_source(str(pkg / "__init__.py")))
             self.assertEqual(int.from_bytes(cached.read_bytes()[4:8], "little"), 3)
             before = pkg / "old.py"
@@ -30,6 +36,7 @@ class PreparedBytecodeTests(unittest.TestCase):
             shutil.copytree(source, stage, ignore=staging_exclusions(source))
             self.assertFalse((stage / timestamp_cache.relative_to(source)).exists())
             self.assertTrue((stage / cached.relative_to(source)).exists())
+            self.assertFalse((stage / test_cache.relative_to(source)).exists())
             ignore_changed = staging_exclusions(source, ["sqlglot/__init__.py"])
             self.assertIn(cached.name, ignore_changed(str(cached.parent), [cached.name]))
             path = stage / "sqlglot" / "__init__.py"

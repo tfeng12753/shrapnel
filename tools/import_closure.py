@@ -132,20 +132,23 @@ def closure(root):
 
 
 def prepare_bytecode(root):
-    """Compile unchanged production modules for the read-only scorer image."""
+    """Compile pinned production and test modules used by native verification."""
     import compileall
     import py_compile
 
-    if not compileall.compile_dir(root / "sqlglot", quiet=1, force=True, optimize=0,
-                                  invalidation_mode=py_compile.PycInvalidationMode.CHECKED_HASH):
-        raise RuntimeError("could not prepare hash-checked SQLGlot bytecode")
+    for folder in (root / "sqlglot", root / "tests"):
+        if folder == root / "tests" and not folder.is_dir():
+            continue
+        if not compileall.compile_dir(folder, quiet=1, force=True, optimize=0,
+                                      invalidation_mode=py_compile.PycInvalidationMode.CHECKED_HASH):
+            raise RuntimeError(f"could not prepare hash-checked bytecode in {folder}")
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--source", type=Path, help="Pinned checkout (defaults to the dedicated image checkout)")
     parser.add_argument("--prepare-bytecode", action=argparse.BooleanOptionalAction, default=None,
-                        help="Precompile production modules (on for the image checkout, opt in for explicit paths)")
+                        help="Precompile production and test modules (on for the image checkout, opt in for explicit paths)")
     parser.add_argument("--output", type=Path, default=Path("/app/import-closure.json"))
     args = parser.parse_args()
     source = args.source if args.source is not None else Path("/opt/sqlglot")
