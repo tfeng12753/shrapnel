@@ -15,14 +15,10 @@ import time
 import tokenize
 
 from tools.map_executor_plan import checkout_digest, digest
+from isolated_pytest import cpu_seconds
 
 TOOLS = Path(__file__).resolve().parent / "tools"
 ITEM = "tests/test_executor.py::TestExecutor::test_execute_tpcds"
-
-
-def cpu_seconds():
-    children = resource.getrusage(resource.RUSAGE_CHILDREN)
-    return time.process_time() + children.ru_utime + children.ru_stime
 
 
 def operator_edit(before, after, line):

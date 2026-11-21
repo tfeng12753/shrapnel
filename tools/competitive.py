@@ -20,7 +20,7 @@ from tools.profile_schedule import schedule_profile
 # Every variant is a complete selector configuration. The winner is written to
 # selector-config.json verbatim, so the shipped image runs exactly what was measured.
 BASE = {"conservative_python": False, "child_work": False, "relations": False,
-        "executor_fixtures": False, "executor_plan_budget": 0.0,
+        "executor_fixtures": False, "executor_plan_budget": 0.0, "lazy_test_budget": 0.0,
         "probe_budget": 0.0, "import_check_budget": 6.0, "setup_check_budget": 8.0}
 VARIANTS = {
     "conservative_python": {**BASE, "conservative_python": True, "import_check_budget": 0.0, "setup_check_budget": 0.0},
@@ -28,6 +28,7 @@ VARIANTS = {
     "child_work": {**BASE, "child_work": True},
     "relations": {**BASE, "relations": True},
     "relations_and_fixtures": {**BASE, "relations": True, "executor_fixtures": True},
+    "relations_fixtures_and_lazy_test": {**BASE, "relations": True, "executor_fixtures": True, "lazy_test_budget": 3.0},
     "relations_and_probes": {**BASE, "relations": True, "probe_budget": 8.0},
 }
 
@@ -42,6 +43,7 @@ def selector_options(config):
             else "--child-work" if config["child_work"] else "--no-conservative-python")
     return [mode, "--relations" if config["relations"] else "--no-relations",
             "--executor-fixtures" if config["executor_fixtures"] else "--no-executor-fixtures",
+            "--lazy-test-budget", repr(float(config["lazy_test_budget"])),
             "--executor-plan-budget", repr(float(config["executor_plan_budget"])),
             "--probe-budget", repr(float(config["probe_budget"])),
             "--import-check-budget", repr(float(config["import_check_budget"])),
@@ -107,8 +109,9 @@ def main():
     variants = VARIANTS
     if args.executor_ab:
         fixture_config = VARIANTS["relations_and_fixtures"]
+        shipping = VARIANTS["relations_fixtures_and_lazy_test"]
         variants = {"main_settings": VARIANTS["relations"], "fixtures": fixture_config,
-                    "fixtures_and_plans": {**fixture_config, "executor_plan_budget": 12.0}}
+                    "shared_default": shipping, "shared_with_plans": {**shipping, "executor_plan_budget": 12.0}}
     for variant, config in variants.items():
         options = selector_options(config)
         runs = []

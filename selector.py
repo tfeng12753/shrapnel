@@ -148,6 +148,11 @@ def split(tests: list[dict]) -> list[list[int]]:
     return best
 
 
+def plain_text_change(patch):
+    metadata = ("old mode ", "new mode ", "rename ", "copy ", "Binary files ", "GIT binary patch")
+    return not any(line.startswith(metadata) for line in patch.splitlines())
+
+
 def parse_patch(text: str) -> list[dict]:
     """Read unified diffs without executing git or writing to the checkout."""
     changes, current, hunk = [], None, None
@@ -442,11 +447,13 @@ def short_circuit_edits(before, after, affected_lines):
 class Selector:
     def __init__(self, tests: list[dict], source: Path, map_path: Path, *, conservative_python=False,
                  relations=None, child_work=False, import_closure=None, import_check_budget=0.0,
-                 setup_check_budget=0.0, executor_fixtures=False, executor_plans=None, executor_plan_budget=0.0):
+                 setup_check_budget=0.0, executor_fixtures=False, executor_plans=None, executor_plan_budget=0.0,
+                 lazy_test_budget=0.0):
         self.tests, self.source = tests, source
         self.executor_fixtures = executor_fixtures
         self.executor_plans = executor_plans.resolve() if executor_plans and executor_plan_budget > 0 else None
         self.executor_plan_budget = executor_plan_budget
+        self.lazy_test_budget = lazy_test_budget
         self.test_bits = {test["id"]: 1 << test["number"] for test in tests}
         # Fixture reads in setUpClass may be attributed to the tests that use the
         # loaded attributes. Relying on that requires setUpClass to still succeed on
@@ -501,9 +508,8 @@ class Selector:
             if import_closure is not None:
                 # External tests whose child process only runs `import sqlglot` can
                 # only be affected by files that import executes or reads.
-                ids = {t["id"]: 1 << t["number"] for t in tests}
                 for test_id in import_closure.get("tests", ()):
-                    self.closure_external |= ids.get(test_id, 0)
+                    self.closure_external |= self.test_bits.get(test_id, 0)
                 self.closure_external &= self.external
                 self.import_closure = set(import_closure.get("files", ()))
             self.native = set(data.get("native", ()))
@@ -644,9 +650,7 @@ class Selector:
                     checked_class = None
                     if (self.executor_fixtures and len(changes) == 1 and setup
                             and name.startswith("tests/fixtures/") and name.endswith(".sql")
-                            and not any(line.startswith(("old mode ", "new mode ", "rename ", "copy ",
-                                                         "Binary files ", "GIT binary patch"))
-                                        for line in patch.splitlines())):
+                            and plain_text_change(patch)):
                         from executor_fixtures import CLASS, fixture_effect
                         if CLASS in setup:
                             effect = fixture_effect(self.source, name, new)
@@ -695,9 +699,22 @@ class Selector:
                         result |= include(mask, "definition dependency", name, (a, b))
                 if not removed and not inserted:
                     return include(self.all, "no changed positions", name)
+            if (self.lazy_test_budget >= 0.7 and result and result == self.closure_external
+                    and result.bit_count() == 1 and len(changes) == 1 and not self.conservative_python
+                    and name.startswith("sqlglot/") and name.endswith(".py") and plain_text_change(patch)):
+                from isolated_pytest import cpu_seconds, passed
+                item, = self.chosen(result)
+                start = cpu_seconds()
+                # A single scheduled worker costs two seconds plus the test. Limit
+                # wall time per launch and charge actual CPU even when verification fails.
+                deadline = min(self.lazy_test_budget, (2 + item["seconds"]) / 2)
+                verified = passed(self.source, name, new, item["id"], deadline)
+                self.lazy_test_budget -= cpu_seconds() - start
+                if verified:
+                    return 0
             if (self.executor_plans and self.executor_plan_budget >= 1 and len(changes) == 1
                     and name.startswith("sqlglot/optimizer/") and name.endswith(".py")
-                    and not self.conservative_python and not inserted and len(removed) == 1):
+                    and not self.conservative_python and not inserted and len(removed) == 1 and plain_text_change(patch)):
                 result = self.check_executor_plan(result, name, old, new, next(iter(removed)))
             return result
         except (ValueError, SyntaxError, OSError, UnicodeError, RecursionError) as error:
@@ -877,6 +894,7 @@ def parse_args(argv=None):
     parser.add_argument("--executor-fixtures", action=argparse.BooleanOptionalAction, default=None)
     parser.add_argument("--executor-plans", type=Path, default=Path("/app/executor-plans"))
     parser.add_argument("--executor-plan-budget", type=float)
+    parser.add_argument("--lazy-test-budget", type=float)
     parser.add_argument("--config", type=Path, default=Path(__file__).with_name("selector-config.json"))
     args = parser.parse_args(argv)
     try:
@@ -907,7 +925,9 @@ def parse_args(argv=None):
         args.executor_fixtures = config.get("executor_fixtures", False)
     if args.executor_plan_budget is None:
         args.executor_plan_budget = float(config.get("executor_plan_budget", 0.0))
-    args.settings = {"executor_fixtures": bool(args.executor_fixtures), "executor_plan_budget": args.executor_plan_budget,"conservative_python": bool(conservative), "child_work": bool(child_work),
+    if args.lazy_test_budget is None:
+        args.lazy_test_budget = float(config.get("lazy_test_budget", 0.0))
+    args.settings = {"lazy_test_budget": args.lazy_test_budget, "executor_fixtures": bool(args.executor_fixtures), "executor_plan_budget": args.executor_plan_budget,"conservative_python": bool(conservative), "child_work": bool(child_work),
                      "relations": bool(args.relations), "probe_budget": float(args.probe_budget),
                      "import_check_budget": float(args.import_check_budget),
                      "setup_check_budget": float(args.setup_check_budget)}
@@ -935,7 +955,8 @@ def main():
                         import_check_budget=max(0.0, settings["import_check_budget"]),
                         setup_check_budget=max(0.0, settings["setup_check_budget"]),
                         executor_fixtures=settings["executor_fixtures"], executor_plans=args.executor_plans,
-                        executor_plan_budget=max(0.0, settings["executor_plan_budget"]))
+                        executor_plan_budget=max(0.0, settings["executor_plan_budget"]),
+                        lazy_test_budget=max(0.0, settings["lazy_test_budget"]))
     schedules = {}
     remaining = max(0.0, args.probe_budget)
     for patch in sorted((args.data / "commits").glob("*.patch")):

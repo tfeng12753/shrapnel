@@ -32,7 +32,7 @@ RUN if [ "$BUILD_MAP" = "1" ]; then python /app/tools/import_closure.py; fi
 COPY tools/map_executor_plan.py tools/map_executor_screen.py tools/prepare_executor_plans.py /app/tools/
 ARG BUILD_EXECUTOR_PLANS=0
 RUN if [ "$BUILD_MAP" = "1" ] && [ "$BUILD_EXECUTOR_PLANS" = "1" ]; then python /app/tools/prepare_executor_plans.py; fi
-COPY selector.py native_probes.py executor_fixtures.py executor_plans.py selector-config.json /app/
+COPY selector.py native_probes.py executor_fixtures.py executor_plans.py isolated_pytest.py selector-config.json /app/
 COPY tools/timed_run.py /app/tools/timed_run.py
 ENV HOME=/tmp
 USER 65534:65534

@@ -100,3 +100,53 @@ class PlanSelectionTests(TestCase):
             root = Path(directory)
             self.assertFalse(plans.matched(root, "example.py", before, before.replace("<", "<="), 2, root, 5))
         self.assertFalse(plans.operator_edit("def opt(x=a or b):\n    pass\n", "def opt(x=a and b):\n    pass\n", 1))
+
+
+class IsolatedImportTests(TestCase):
+    def test_requires_only_one_external_item_on_one_package_edit_and_charges_failures(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            name = "sqlglot/sample.py"
+            before = "def f(x):\n    return x < 1\n"
+            (root / name).parent.mkdir()
+            (root / name).write_text(before)
+            lazy = "tests/dialects/test_dialect.py::TestDialect::test_lazy_load"
+            tests = [{"id": lazy, "number": 0, "seconds": 0.368},
+                     {"id": "other::test", "number": 1, "seconds": 1.0}]
+            depmap = root / "map.json"
+            mutation = diff(name, before, before.replace("<", "<="))
+            for readers, passed, expected in (("0", True, 0), ("0", False, 1), ("2", True, 3)):
+                depmap.write_text(json.dumps({"version": 1, "revision": REVISION, "complete": True,
+                    "tests": [t["id"] for t in tests], "external": "1", "files": {name: {"readers": readers}}}))
+                selector = Selector(tests, root, depmap, lazy_test_budget=3,
+                                    import_closure={"tests": [lazy], "files": [name]})
+                with patch("isolated_pytest.passed", return_value=passed) as verify:
+                    self.assertEqual(selector.select(mutation), expected)
+                    if readers == "2":
+                        verify.assert_not_called()
+                    else:
+                        self.assertLess(selector.lazy_test_budget, 3)
+                        self.assertLessEqual(verify.call_args.args[-1], 1.184)
+
+    def test_junit_case_identity_skip_and_result_and_staged_source(self):
+        import isolated_pytest
+        from unittest.mock import MagicMock
+        with TemporaryDirectory() as directory:
+            source = Path(directory)
+            name = "sqlglot/a.py"
+            (source / "sqlglot").mkdir()
+            (source / name).write_text("x = 1\n")
+            for case, skip, expected in (("test_a", 0, True), ("test_b", 0, False), ("test_a", 1, False)):
+                def launch(cmd, *, cwd, **kwargs):
+                    self.assertEqual((cwd / name).read_text(), "x = 2\n")
+                    out = next(arg[11:] for arg in cmd if arg.startswith("--junitxml="))
+                    Path(out).write_text(f'<testsuite skipped="{skip}"><testcase classname="tests.test_a.A" '
+                                         f'name="{case}"/></testsuite>')
+                    child = MagicMock()
+                    child.wait.return_value = 0
+                    child.__enter__.return_value = child
+                    return child
+                with patch.object(isolated_pytest.subprocess, "Popen", side_effect=launch), patch("os.killpg"):
+                    self.assertIs(isolated_pytest.passed(source, name, "x = 2\n",
+                                  "tests/test_a.py::A::test_a", 5), expected)
+            self.assertEqual((source / name).read_text(), "x = 1\n")
