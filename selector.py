@@ -959,7 +959,8 @@ class Selector:
         A test may be dropped only if the map proves, for every evaluation of
         the site by that test, that both operands completed, were built-in
         int, str or None, the original operator completed, and the original
-        and replacement operators give the same outcome.
+        and replacement operators give the same outcome, and the test runs
+        before every test touching the site without that proof.
         """
         exact = info.get("exact")
         if not self.exact_comparisons or exact is None:
@@ -978,6 +979,13 @@ class Selector:
             if a is None or b is None or a != b:
                 changed |= users
         safe = exact["complete"] & evidenced & ~changed & ~info["unknown"]
+        unsafe = touched & ~safe
+        if unsafe:
+            # A test that does change (or is unproven) may leave different
+            # state behind for every test that runs after it in the same
+            # process. Catalog numbers follow the suite's collection order, so
+            # only safe tests that run before the first unsafe one are dropped.
+            safe &= (unsafe & -unsafe) - 1
         return touched & ~safe
 
     def probe(self, patch, mask, budget, *, cost_aware=False):

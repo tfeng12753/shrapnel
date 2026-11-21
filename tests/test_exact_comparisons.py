@@ -42,12 +42,28 @@ class ExactComparisonTests(unittest.TestCase):
     def test_eq_to_lt_drops_only_tests_with_the_same_outcome_everywhere(self):
         # 0 stays False under both operators; 3 saw an equal pair once.
         self.assertEqual(self.select(OLD.replace("==", "<"), exact=self.EXACT), 0xfe)
-        # Under >, test 0 changes (2 > 1) and test 2 keeps False (0 > 1): 2 is dropped.
-        self.assertEqual(self.select(OLD.replace("==", ">"), exact=self.EXACT), 0xfb)
+        # Under >, test 2 keeps False (0 > 1) but runs after test 0, which changes.
+        self.assertEqual(self.select(OLD.replace("==", ">"), exact=self.EXACT), 0xff)
         # Under !=, every outcome flips.
         self.assertEqual(self.select(OLD.replace("==", "!="), exact=self.EXACT), 0xff)
-        # Under >=, 1 >= 1 and 0 >= 1 keep their outcomes; 2 >= 1 flips.
-        self.assertEqual(self.select(OLD.replace("==", ">="), exact=self.EXACT), 0xf9)
+        # Under >=, 1 >= 1 and 0 >= 1 keep their outcomes; 2 >= 1 flips. With the
+        # flipping test running last, the two safe tests before it are dropped.
+        first = {"complete": "7", "states": {"p:9": "1", "p:2": "2", "p:4": "4"}}
+        self.assertEqual(self.select(OLD.replace("==", ">="), exact=first), 0xfc)
+        # Under >, test 0 (1 > 1) flips first, so nothing after it is dropped.
+        self.assertEqual(self.select(OLD.replace("==", ">"), exact=first), 0xff)
+
+    def test_safe_tests_after_a_changing_test_are_kept(self):
+        # A counter guarded by the comparison: test 0 changes its outcome and
+        # leaves a different count for test 1, whose own evaluation is safe.
+        old = "count = 0\ndef bump(limit):\n    if count < limit:\n        return 1\n"
+        exact = {"complete": "3", "states": {"p:9": "1", "p:2": "2"}}
+        self.assertEqual(self.select(old.replace("<", "<="), exact=exact, old=old, op="Lt", site="3:7",
+                                     lines={"3": "3"}), 3)
+        # The same safe test running first may be dropped.
+        exact = {"complete": "3", "states": {"p:2": "1", "p:9": "2"}}
+        self.assertEqual(self.select(old.replace("<", "<="), exact=exact, old=old, op="Lt", site="3:7",
+                                     lines={"3": "3"}), 2)
 
     def test_disabled_missing_or_non_strict_evidence_does_not_narrow(self):
         new = OLD.replace("==", "<")
@@ -72,8 +88,9 @@ class ExactComparisonTests(unittest.TestCase):
         for state in ("p:6", "p:3", "x:4", "p:"):
             with self.subTest(state=state):
                 exact = {"complete": "f", "states": {"p:4": "9", state: "1", "p:9": "2", "p:2": "4"}}
-                # Test 0 also has a valid unchanged state; test 3 has only that one.
-                self.assertEqual(self.select(OLD.replace("==", "<"), exact=exact), 0xf7)
+                # Test 0 also has a valid unchanged state but must be kept, and
+                # test 3, safe on its own, runs after it.
+                self.assertEqual(self.select(OLD.replace("==", "<"), exact=exact), 0xff)
 
     def test_unorderable_operands_keep_tests_for_ordering_swaps(self):
         # None == 1 (e:0): ordering would raise TypeError instead of returning.
