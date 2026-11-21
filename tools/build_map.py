@@ -245,6 +245,8 @@ class InlineProcessPool:
     was attributed to no test, and targeted selection missed those tests. Running
     each submission inline in the calling test keeps every dependency observable.
     Futures complete before submit returns, so wait/as_completed behave normally.
+    Arguments and results still round-trip through pickle, as with a real pool,
+    so serialization code (Expr.__reduce__ -> sqlglot.serde) is attributed too.
     """
 
     def __init__(self, max_workers=None, mp_context=None, initializer=None, initargs=(), **kwargs):
@@ -252,13 +254,16 @@ class InlineProcessPool:
 
     def submit(self, fn, /, *args, **kwargs):
         from concurrent.futures import Future
+        import pickle
         future = Future()
         try:
             if not self._ready:
                 self._ready = True
                 if self._initializer is not None:
-                    self._initializer(*self._initargs)
-            future.set_result(fn(*args, **kwargs))
+                    initializer, initargs = pickle.loads(pickle.dumps((self._initializer, self._initargs)))
+                    initializer(*initargs)
+            fn, args, kwargs = pickle.loads(pickle.dumps((fn, args, kwargs)))
+            future.set_result(pickle.loads(pickle.dumps(fn(*args, **kwargs))))
         except BaseException as error:
             future.set_exception(error)
         return future
