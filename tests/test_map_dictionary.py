@@ -1,10 +1,10 @@
-import ast
+import importlib.util
 from pathlib import Path
 import tempfile
 import unittest
 
 from tools.build_map import Recorder, SourceModel
-from tools.instrument import DictionaryReads
+from tools.instrument import Instrumentation
 
 
 class DictionaryReadsTest(unittest.TestCase):
@@ -12,7 +12,9 @@ class DictionaryReadsTest(unittest.TestCase):
         source = """
 TABLE = {"x": 1, "y": 2}
 class Config:
-    DATA = {"x": 1}
+    DATA = {"x": 1, "known": None}
+class Other:
+    DATA = {"x": 2}
 def run(key, config):
     return TABLE[key()], config.DATA.get(key()), key() in TABLE
 def broad():
@@ -23,20 +25,24 @@ def broad():
             (root / "sqlglot").mkdir()
             (root / "sqlglot/sample.py").write_text(source)
             recorder = Recorder(root, SourceModel(root), None)
-            def observe(value, name, keyed):
-                recorder.record_dictionary(name, value, keyed)
-                return value
-            tree = DictionaryReads(recorder.dictionary_names).visit(ast.parse(source))
-            namespace = {"_blast_radius_dictionary": observe}
-            exec(compile(ast.fix_missing_locations(tree), "sample", "exec"), namespace)
+            observer = Instrumentation(root, recorder)
+            observer.install()
+            self.addCleanup(observer.restore)
+            spec = importlib.util.spec_from_file_location("sqlglot.sample", root / "sqlglot/sample.py")
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            namespace = vars(module)
             recorder.current, recorder.phase = "first", "call"
-            keys = iter(["x", "missing", "y"])
+            keys = iter(["x", "known", "y"])
             self.assertEqual(namespace["run"](keys.__next__, namespace["Config"]), (1, None, True))
-            self.assertEqual(recorder.dictionary_reads["TABLE"], {"x": {"first"}, "y": {"first"}})
-            self.assertEqual(recorder.dictionary_reads["DATA"]["missing"], {"first"})
+            self.assertEqual(recorder.dictionary_reads["sqlglot/sample.py", "TABLE"], {"x": {"first"}, "y": {"first"}})
+            self.assertEqual(recorder.dictionary_reads["sqlglot/sample.py", "Config.DATA"]["known"], {"first"})
+            self.assertNotIn(("sqlglot/sample.py", "Other.DATA"), recorder.dictionary_reads)
+            recorder.record_dictionary(namespace["TABLE"], "unbounded-input")
+            self.assertIn("first", recorder.dictionary_reads["sqlglot/sample.py", "TABLE"][None])
             recorder.current = "second"
             self.assertEqual(namespace["broad"]()[-1], id(namespace["TABLE"]))
-            self.assertEqual(recorder.dictionary_reads["TABLE"][None], {"second"})
+            self.assertEqual(recorder.dictionary_reads["sqlglot/sample.py", "TABLE"][None], {"first", "second"})
             recorder.phase = "setup"
-            recorder.record_dictionary("TABLE", ("compound",), True)
-            self.assertIn(None, recorder.dictionary_reads["TABLE"][None])
+            recorder.record_dictionary(namespace["TABLE"], ("compound",))
+            self.assertIn(None, recorder.dictionary_reads["sqlglot/sample.py", "TABLE"][None])

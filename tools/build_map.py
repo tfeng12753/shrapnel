@@ -138,13 +138,34 @@ class Recorder:
         self.dictionaries = {symbol: info for symbol, info in getattr(model, "symbols", {}).items()
                              if info["kind"] == "value" and isinstance(info["node"].value, ast.Dict)}
         self.dictionary_names = {symbol.rsplit(".", 1)[-1] for _, symbol in self.dictionaries}
+        for path, aliases in getattr(model, "imports", {}).items():
+            for local_name in aliases:
+                if model.resolve(path, local_name) in self.dictionaries:
+                    self.dictionary_names.add(local_name)
+        self.literal_keys = {
+            symbol: {k.value for k in info["node"].value.keys
+                     if isinstance(k, ast.Constant) and type(k.value) is str}
+            for symbol, info in self.dictionaries.items()
+        }
+        self.bound_dictionaries = {}
+        self.dict_declarations = defaultdict(dict)
+        for (path, symbol), info in self.dictionaries.items():
+            literal = info["node"].value
+            location = literal.lineno, literal.col_offset
+            previous = self.dict_declarations[path].get(location, ())
+            self.dict_declarations[path][location] = (*previous, (path, symbol))
         self.dictionary_reads = defaultdict(lambda: defaultdict(set))
 
-    def record_dictionary(self, name, value, keyed):
-        # Only exact string keys have an unambiguous JSON representation.
-        key = value if keyed and type(value) is str else None
+    def record_dictionary(self, mapping, key):
+        binding = self.bound_dictionaries.get(id(mapping))
+        if binding is None:
+            return
+        key = key if type(key) is str else None
         context = self.current if self.phase == "call" else None
-        self.dictionary_reads[name][key].add(context)
+        for symbol in binding[1]:
+            # Avoid storing arbitrary SQL, runtime inputs and unseen keys.
+            recorded = key if key in self.literal_keys[symbol] else None
+            self.dictionary_reads[symbol][recorded].add(context)
 
     def audit(self, event, args):
         if event == "open":
@@ -486,15 +507,18 @@ def write_map(root, model, rec, data, destination):
             "op": observation["op"], "states": {state: format(value, "x") for state, value in states.items()},
             "unknown": format(unknown, "x")}
     for (name, symbol), info in rec.dictionaries.items():
-        field = symbol.rsplit(".", 1)[-1]
-        observations = rec.dictionary_reads.get(field, {})
+        observations = rec.dictionary_reads.get((name, symbol), {})
         def readers(contexts):
             return all_tests if None in contexts else mask(contexts)
         keys = {k: format(readers(contexts), "x") for k, contexts in observations.items()
                 if k is not None}
+        observed = readers(observations.get(None, ()))
+        for contexts in observations.values():
+            observed |= readers(contexts)
         files[name].setdefault("dictionary_reads", {})[symbol] = {
             "start": info["start"], "end": info["end"],
-            "whole": format(readers(observations.get(None, ())), "x"), "keys": keys}
+            "whole": format(readers(observations.get(None, ())), "x"), "keys": keys,
+            "unobserved": format(users[(name, symbol)] & ~observed, "x")}
     for name, entry in files.items():
         entry["lines"] = {str(line): format(value, "x") for line, value in sorted(entry["lines"].items()) if value}
         entry["regions"] = [[a, b, k, format(v, "x")] for a, b, k, v in entry["regions"]]

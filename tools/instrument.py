@@ -5,6 +5,7 @@ import builtins
 from enum import Enum
 import importlib.machinery
 import operator
+import types
 from pathlib import Path
 
 OPS = {"Eq": operator.eq, "NotEq": operator.ne, "Lt": operator.lt, "LtE": operator.le,
@@ -68,47 +69,56 @@ class DictionaryReads(ast.NodeTransformer):
     Key expressions and receiver expressions are each evaluated exactly once.
     Names shared by different classes are conservatively treated as aliases.
     """
-    def __init__(self, names):
+    def __init__(self, names, declarations):
         self.names = names
+        self.declarations = declarations
         self.direct = set()
 
     def field(self, node):
         name = node.id if isinstance(node, ast.Name) else getattr(node, "attr", None)
         return name if name in self.names else None
 
-    def observe(self, expr, name, keyed):
-        return ast.copy_location(ast.Call(ast.Name("_blast_radius_dictionary", ast.Load()),
-                                          [expr, ast.Constant(name), ast.Constant(keyed)], []), expr)
+    def call(self, helper, args, location):
+        return ast.copy_location(ast.Call(ast.Name(helper, ast.Load()), args, []), location)
 
-    def lookup(self, receiver, key):
-        name = self.field(receiver)
-        if name:
-            self.direct.add(receiver)
-            return self.observe(key, name, True)
-        return key
+    def visit_Dict(self, node):
+        self.generic_visit(node)
+        symbol = self.declarations.get((node.lineno, node.col_offset))
+        if symbol is None:
+            return node
+        return self.call("_blast_radius_bind_dict", [node, ast.Constant(symbol)], node)
 
     def visit_Subscript(self, node):
-        if isinstance(node.ctx, ast.Load) and not isinstance(node.slice, (ast.Slice, ast.Tuple)):
-            node.slice = self.lookup(node.value, node.slice)
+        if (isinstance(node.ctx, ast.Load) and self.field(node.value)
+                and not isinstance(node.slice, (ast.Slice, ast.Tuple))):
+            self.direct.add(node.value)
+            self.generic_visit(node)
+            return self.call("_blast_radius_dict_item", [node.value, node.slice], node)
         return self.generic_visit(node)
 
     def visit_Call(self, node):
         if (isinstance(node.func, ast.Attribute) and node.func.attr == "get"
-                and len(node.args) in (1, 2) and not node.keywords
-                and not any(isinstance(arg, ast.Starred) for arg in node.args)):
-            node.args[0] = self.lookup(node.func.value, node.args[0])
+                and self.field(node.func.value) and len(node.args) in (1, 2)
+                and not node.keywords and not any(isinstance(a, ast.Starred) for a in node.args)):
+            self.direct.add(node.func.value)
+            self.generic_visit(node)
+            return self.call("_blast_radius_dict_get", [node.func, *node.args], node)
         return self.generic_visit(node)
 
     def visit_Compare(self, node):
-        if len(node.ops) == 1 and isinstance(node.ops[0], (ast.In, ast.NotIn)):
-            node.left = self.lookup(node.comparators[0], node.left)
+        if (len(node.ops) == 1 and isinstance(node.ops[0], (ast.In, ast.NotIn))
+                and self.field(node.comparators[0])):
+            self.direct.add(node.comparators[0])
+            self.generic_visit(node)
+            call = self.call("_blast_radius_dict_contains", [node.left, node.comparators[0]], node)
+            return ast.copy_location(ast.UnaryOp(ast.Not(), call), node) if isinstance(node.ops[0], ast.NotIn) else call
         return self.generic_visit(node)
 
     def reference(self, node):
         name = self.field(node)
         self.generic_visit(node)
         if name and node not in self.direct and isinstance(node.ctx, ast.Load):
-            return self.observe(node, name, False)
+            return self.call("_blast_radius_dict_whole", [node], node)
         return node
 
     visit_Name = reference
@@ -207,15 +217,42 @@ class Instrumentation:
             value = target(*args, **kwargs)
             if target is original_getattr and recorder.current is not None and len(args) >= 2:
                 recorder.record_object_attr(args[0], args[1])
+            if target is original_getattr and type(value) is dict:
+                whole(value)
             return value
         def comparison(left, right, op, path, site):
             value = OPS[op](left, right)
             recorder.record_comparison(path, site, op, relation(left, right))
             return value
-        def dictionary(value, name, keyed):
-            recorder.record_dictionary(name, value, keyed)
-            return value
-        for name, value in (("_blast_radius_dictionary", dictionary), ("_blast_radius_attribute", attribute), ("_blast_radius_dynamic_attribute", dynamic_attribute), ("_blast_radius_comparison", comparison)):
+        def whole(mapping):
+            if type(mapping) is dict:
+                recorder.record_dictionary(mapping, None)
+            return mapping
+
+        def bind(mapping, symbols):
+            recorder.bound_dictionaries[id(mapping)] = (mapping, symbols)
+            return mapping
+
+        def item(mapping, key):
+            if type(mapping) is dict:
+                recorder.record_dictionary(mapping, key)
+            return mapping[key]
+
+        def get(method, key, *default):
+            if type(method) is types.BuiltinMethodType and type(method.__self__) is dict:
+                recorder.record_dictionary(method.__self__, key)
+            return method(key, *default)
+
+        def contains(key, mapping):
+            if type(mapping) is dict:
+                recorder.record_dictionary(mapping, key)
+            return key in mapping
+
+        for name, value in (("_blast_radius_dict_whole", whole), ("_blast_radius_bind_dict", bind),
+                            ("_blast_radius_dict_item", item), ("_blast_radius_dict_get", get),
+                            ("_blast_radius_dict_contains", contains),
+                            ("_blast_radius_attribute", attribute), ("_blast_radius_dynamic_attribute", dynamic_attribute),
+                            ("_blast_radius_comparison", comparison)):
             self.saved[name] = getattr(builtins, name, None)
             setattr(builtins, name, value)
         self.original = importlib.machinery.SourceFileLoader.get_code
@@ -226,7 +263,8 @@ class Instrumentation:
                 return original(loader, fullname)
             name = path.relative_to(root).as_posix()
             tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
-            tree = DictionaryReads(getattr(recorder, "dictionary_names", ())).visit(tree)
+            declarations = getattr(recorder, "dict_declarations", {}).get(name, {})
+            tree = DictionaryReads(getattr(recorder, "dictionary_names", ()), declarations).visit(tree)
             if path.is_relative_to(root / "sqlglot"):
                 tree = Transformer(name, fields).visit(tree)
             ast.fix_missing_locations(tree)
