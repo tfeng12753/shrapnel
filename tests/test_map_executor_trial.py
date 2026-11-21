@@ -1,0 +1,60 @@
+import json
+from pathlib import Path
+from tempfile import TemporaryDirectory
+from types import SimpleNamespace
+import unittest
+from unittest.mock import patch
+
+from tools import map_executor_trial as trial
+from tools.mutants import diff
+
+
+class ExecutorTrialTests(unittest.TestCase):
+    def test_failed_validation_retains_item_and_reports_failure(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "commits").mkdir()
+            (root / "tests.json").write_text(json.dumps({"tests": [
+                {"number": 0, "id": "tests/test_executor.py::TestExecutor::test_execute_tpcds", "seconds": 21.454}]}))
+            (root / "m.py").write_text("x = 1\n")
+            (root / "commits/a.patch").write_text(diff("m.py", "x = 1\n", "x = 2\n"))
+            args = SimpleNamespace(source=root, data=root, cache=root, map=root / "map",
+                                   verify=True, checks="all", schedule=None)
+            original = {"commit": "a", "workers": [[0]]}
+
+            def selector(*unused, stdout, **kwargs):
+                stdout.write(json.dumps(original) + "\n")
+
+            with (patch.object(trial, "prepare", return_value=root),
+                  patch.object(trial.subprocess, "run", side_effect=selector),
+                  patch.object(trial, "check", return_value="candidate: both snapshots matched"),
+                  patch.object(trial, "check_items", return_value=False)):
+                self.assertTrue(trial.run(args, root))
+            self.assertEqual(json.loads((root / "trial.jsonl").read_text()), original)
+            report = json.loads((root / "report.json").read_text())
+            self.assertFalse(report["decisions"][0]["verified"])
+            self.assertEqual(report["baseline_schedule_seconds"], report["trial_schedule_seconds"])
+
+    def test_supplied_schedule_keeps_other_tests_and_needs_no_snapshot_preparation(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "commits").mkdir()
+            (root / "commits/a.patch").write_text("fixture patch")
+            items = [
+                "tests/test_executor.py::TestExecutor::test_execute_tpcds",
+                "tests/test_executor.py::TestExecutor::test_execute_tpch",
+                "another_test",
+            ]
+            (root / "tests.json").write_text(json.dumps({"tests": [
+                {"number": n, "id": item, "seconds": 5} for n, item in enumerate(items)]}))
+            schedule = root / "original.jsonl"
+            schedule.write_text(json.dumps({"commit": "a", "workers": [[0, 1, 2]]}) + "\n")
+            args = SimpleNamespace(source=root, data=root, schedule=schedule, checks="fixture", verify=False)
+            with (patch.object(trial, "prepare", side_effect=AssertionError("unexpected snapshot build")),
+                  patch.object(trial, "check", return_value="candidate: matching inputs") as check):
+                self.assertFalse(trial.run(args, root))
+            self.assertEqual(check.call_count, 2)
+            self.assertEqual(json.loads((root / "trial.jsonl").read_text())["workers"], [[2]])
+            schedule.write_text('{"commit":"unknown","workers":[]}\n')
+            with self.assertRaisesRegex(ValueError, "unknown_commit"):
+                trial.run(args, root)

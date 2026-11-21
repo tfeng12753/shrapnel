@@ -15,6 +15,8 @@ import json
 import os
 from pathlib import Path
 import sys
+import time
+import threading
 import unittest
 import types
 from collections import defaultdict
@@ -125,11 +127,39 @@ class Recorder:
         self.root, self.model, self.coverage = root, model, coverage
         self.current, self.phase = None, "collection"
         self.attrs = defaultdict(set)
+        self.shared_attrs = defaultdict(set)
+        self.dictionaries = {}
+        for symbol, info in getattr(model, "symbols", {}).items():
+            node = info["node"]
+            if info["kind"] != "value" or not isinstance(node.value, ast.Dict):
+                continue
+            targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+            field = symbol[1].rsplit(".", 1)[-1]
+            if any(isinstance(target, ast.Name) and target.id == field for target in targets):
+                self.dictionaries[symbol] = info
+        self.dictionary_names = {symbol.rsplit(".", 1)[-1] for _, symbol in self.dictionaries}
+        for path, aliases in getattr(model, "imports", {}).items():
+            for local_name in aliases:
+                if model.resolve(path, local_name) in self.dictionaries:
+                    self.dictionary_names.add(local_name)
+        self.literal_keys = {
+            symbol: {k.value for k in info["node"].value.keys
+                     if isinstance(k, ast.Constant) and type(k.value) is str}
+            for symbol, info in self.dictionaries.items()
+        }
+        self.bound_dictionaries = {}
+        self.dict_declarations = defaultdict(dict)
+        for (path, symbol), info in self.dictionaries.items():
+            literal = info["node"].value
+            location = literal.lineno, literal.col_offset
+            previous = self.dict_declarations[path].get(location, ())
+            self.dict_declarations[path][location] = (*previous, (path, symbol))
+        self.dictionary_reads = defaultdict(lambda: defaultdict(set))
         self.reads = defaultdict(set)
         self.cache = {}
         self.tests = []
         self.items = {}
-        self.busy = False
+        self.audit_state = threading.local()
         self.external = set()
         self.native = set()
         self.comparisons = {}
@@ -144,7 +174,7 @@ class Recorder:
         if event == "open":
             file, mode, flags = args
             if mode is None:
-                if flags & (os.O_WRONLY | os.O_RDWR):
+                if flags & os.O_ACCMODE == os.O_WRONLY:
                     return
                 mode = "r"
             self.opened(file, mode)
@@ -157,9 +187,20 @@ class Recorder:
         if type(obj) is types.ModuleType:
             path = self.model.modules.get(obj.__name__)
             if path and (path, name) in self.model.symbols:
-                self.attrs[(path, name)].add(self.current)
+                self.attribute_user((path, name))
             return
         self.record_attr(obj if isinstance(obj, type) else type(obj), name)
+
+    def record_dictionary(self, mapping, key):
+        binding = self.bound_dictionaries.get(id(mapping))
+        if binding is None:
+            return
+        key = key if type(key) is str else None
+        context = self.current if self.phase == "call" and threading.current_thread() is threading.main_thread() else None
+        for symbol in binding[1]:
+            # Avoid storing arbitrary SQL, runtime inputs and unseen keys.
+            recorded = key if key in self.literal_keys[symbol] else None
+            self.dictionary_reads[symbol][recorded].add(context)
 
     def record_attr(self, cls, name):
         if self.current is None or name not in self.model.attr_names:
@@ -176,11 +217,31 @@ class Recorder:
             self.cache[key] = result
         symbol = self.cache[key]
         if symbol:
-            self.attrs[symbol].add(self.current)
+            self.attribute_user(symbol)
+
+    def attribute_user(self, symbol):
+        self.attrs[symbol].add(self.current)
+        if self.phase not in ("setup", "teardown"):
+            return
+        frame = sys._getframe(1)
+        while frame:
+            function = frame.f_code.co_name
+            if function in ("setUpClass", "tearDownClass", "setup_class", "teardown_class"):
+                self.shared_attrs[symbol].add(("class", self.current.rsplit("::", 1)[0]))
+                return
+            if function in ("setUpModule", "tearDownModule", "setup_module", "teardown_module"):
+                self.shared_attrs[symbol].add(("file", self.current.split("::")[0]))
+                return
+            frame = frame.f_back
 
     def record_comparison(self, path, site, op, state):
-        entry = self.comparisons.setdefault((path, site), {"op": op, "states": defaultdict(set), "unknown": set(), "collection": False})
-        if self.current is None:
+        key = (path, site)
+        entry = self.comparisons.get(key)
+        if entry is None:
+            entry = {"op": op, "states": defaultdict(set), "unknown": set(), "collection": False}
+            self.comparisons[key] = entry
+        if self.current is None or (op in ("Eq", "NotEq") and
+                                    (self.phase != "call" or threading.current_thread() is not threading.main_thread())):
             entry["collection"] = True
         elif state is None:
             entry["unknown"].add(self.current)
@@ -188,9 +249,9 @@ class Recorder:
             entry["states"][state].add(self.current)
 
     def opened(self, file, mode="r"):
-        if self.busy or isinstance(file, int) or not isinstance(mode, str) or any(c in mode for c in "wax+"):
+        if getattr(self.audit_state, "busy", False) or isinstance(file, int) or not isinstance(mode, str) or ("+" not in mode and any(c in mode for c in "wax")):
             return
-        self.busy = True
+        self.audit_state.busy = True
         try:
             path = Path(os.fsdecode(file)).resolve()
             if not path.is_relative_to(self.root) or not path.is_file():
@@ -209,7 +270,10 @@ class Recorder:
                     if any(part in filename for part in ("inspect.py", "linecache.py", "tokenize.py")):
                         break
                     frame = frame.f_back
-            if self.current and self.phase == "call":
+            if threading.current_thread() is not threading.main_thread():
+                # A worker can outlive its submitting test.
+                scope = ("all", "")
+            elif self.current and self.phase == "call":
                 scope = ("test", self.current)
             elif self.current:
                 scope = ("all", "")
@@ -239,12 +303,15 @@ class Recorder:
                         break
                     frame = frame.f_back
                 if scope is None:
-                    return
+                    if path.suffix in (".py", ".pyc"):
+                        return
+                    # Collection-time resource data may initialize shared state.
+                    scope = ("all", "")
             self.reads[name].add(scope)
         except (OSError, TypeError, ValueError):
             pass
         finally:
-            self.busy = False
+            self.audit_state.busy = False
 
 class InlineProcessPool:
     """Stand-in for ProcessPoolExecutor during map generation.
@@ -346,7 +413,9 @@ def build(root, destination):
     os.chdir(root)
     sys.path.insert(0, str(root))
     os.environ["SKIP_INTEGRATION"] = "0"
+    started = time.monotonic()
     model = SourceModel(root)
+    modeled = time.monotonic()
     cov = coverage.Coverage(data_file=None, source=[str(root / "sqlglot"), str(root / "tests")], config_file=False)
     rec = Recorder(root, model, cov)
     class Plugin:
@@ -402,12 +471,19 @@ def build(root, destination):
         raise RuntimeError(f"pinned suite did not pass during map generation (pytest exit {status}); refusing incomplete map")
     if len(rec.tests) < 1000:
         raise RuntimeError("unexpectedly small test collection")
+    collected = time.monotonic()
     write_map(root, model, rec, cov.get_data(), destination)
+    print(f"map seconds: model={modeled-started:.2f} suite={collected-modeled:.2f} "
+          f"serialization and aggregation={time.monotonic()-collected:.2f}", file=sys.stderr)
 
 
 def write_map(root, model, rec, data, destination):
     """Combine observations with source dependencies; independently testable."""
     bit = {name: 1 << i for i, name in enumerate(rec.tests)}
+    shared_masks = {}
+    for test, test_bit in bit.items():
+        for scope in (("file", test.split("::")[0]), ("class", test.rsplit("::", 1)[0])):
+            shared_masks[scope] = shared_masks.get(scope, 0) | test_bit
     def mask(contexts):
         result = 0
         for context in contexts:
@@ -451,9 +527,12 @@ def write_map(root, model, rec, data, destination):
     for key, symbol in model.symbols.items():
         entry = files[key[0]]
         value = mask(rec.attrs.get(key, ()))
-        for line, line_mask in entry["lines"].items():
-            if symbol["start"] <= line <= symbol["end"]:
-                value |= line_mask
+        for scope in rec.shared_attrs.get(key, ()):
+            value |= shared_masks[scope]
+        lines = entry["lines"]
+        if lines:
+            for line in range(symbol["start"], symbol["end"] + 1):
+                value |= lines.get(line, 0)
         users[key] = value
     # Runtime references use the exact executed line. Only initializer copies
     # and class inheritance need transitive source-symbol propagation.
@@ -524,6 +603,10 @@ def write_map(root, model, rec, data, destination):
             continue
         line = int(site.split(":")[0])
         states = {state: mask(contexts) for state, contexts in observation["states"].items()}
+        if observation["op"] in ("Eq", "NotEq") and "p:1" in states:
+            # Equal builtin operands have fixed ordering but their identity can differ
+            # across runs. The selector retains a test if either state changes.
+            states["p:9"] = states["p:1"]
         observed = mask(observation["unknown"])
         for value in states.values():
             observed |= value
@@ -531,11 +614,30 @@ def write_map(root, model, rec, data, destination):
         files[name].setdefault("comparisons", {})[site] = {
             "op": observation["op"], "states": {state: format(value, "x") for state, value in states.items()},
             "unknown": format(unknown, "x")}
+        if observation["op"] in ("Eq", "NotEq"):
+            files[name]["comparisons"][site]["unknown_before_dispatch"] = True
+    for (name, symbol), info in rec.dictionaries.items():
+        observations = rec.dictionary_reads.get((name, symbol), {})
+        def readers(contexts):
+            return all_tests if None in contexts else mask(contexts)
+        keys = {k: format(readers(contexts), "x") for k, contexts in observations.items()
+                if k is not None}
+        observed = readers(observations.get(None, ()))
+        for contexts in observations.values():
+            observed |= readers(contexts)
+        files[name].setdefault("dictionary_reads", {})[symbol] = {
+            "start": info["start"], "end": info["end"],
+            "whole": format(readers(observations.get(None, ())), "x"), "keys": keys,
+            "unobserved": format(users[(name, symbol)] & ~observed, "x")}
     for name, entry in files.items():
         entry["lines"] = {str(line): format(value, "x") for line, value in sorted(entry["lines"].items()) if value}
         entry["regions"] = [[a, b, k, format(v, "x")] for a, b, k, v in entry["regions"]]
         entry["readers"], entry["executed"] = format(entry["readers"], "x"), format(entry["executed"], "x")
-    result = {"version": 1, "revision": REVISION, "complete": True, "tests": rec.tests, "external": format(external_mask, "x"), "native": sorted(rec.native), "files": dict(files)}
+        # Adjacent equal hex masks compress well. JSON objects retain the same
+        # keys and values, including zero masks where presence is meaningful.
+        for field in ("lines", "anchors"):
+            entry[field] = dict(sorted(entry.get(field, {}).items(), key=lambda pair: pair[1]))
+    result = {"version": 1, "revision": REVISION, "complete": True, "tests": rec.tests, "external": format(external_mask, "x"), "native": sorted(rec.native), "files": dict(sorted(files.items()))}
     opener = gzip.open if destination.suffix == ".gz" else open
     with opener(destination, "wt", encoding="utf-8") as f:
         json.dump(result, f, separators=(",", ":"))
