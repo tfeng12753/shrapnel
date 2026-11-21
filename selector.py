@@ -448,8 +448,11 @@ class Selector:
     def __init__(self, tests: list[dict], source: Path, map_path: Path, *, conservative_python=False,
                  relations=None, child_work=False, import_closure=None, import_check_budget=0.0,
                  setup_check_budget=0.0, executor_fixtures=False, executor_plans=None, executor_plan_budget=0.0,
-                 lazy_test_budget=0.0):
+                 lazy_test_budget=0.0, fixture_entries=None, fixture_replay_budget=0.0):
         self.tests, self.source = tests, source
+        # Recorded per-entry execution of heavy fixture-driven tests (fixture_replay.py).
+        self.fixture_entries = fixture_entries if fixture_replay_budget > 0 else None
+        self.fixture_replay_budget = fixture_replay_budget
         self.executor_fixtures = executor_fixtures
         self.executor_plans = executor_plans.resolve() if executor_plans and executor_plan_budget > 0 else None
         self.executor_plan_budget = executor_plan_budget
@@ -716,6 +719,12 @@ class Selector:
                     and name.startswith("sqlglot/optimizer/") and name.endswith(".py")
                     and not self.conservative_python and not inserted and len(removed) == 1 and plain_text_change(patch)):
                 result = self.check_executor_plan(result, name, old, new, next(iter(removed)))
+            if (self.fixture_entries and self.fixture_replay_budget >= .5 and result and len(changes) == 1
+                    and not self.conservative_python and plain_text_change(patch)):
+                from fixture_replay import refine
+                result, cpu = refine(self, self.fixture_entries, result, name, changes[0], old, new,
+                                     self.fixture_replay_budget)
+                self.fixture_replay_budget -= cpu
             return result
         except (ValueError, SyntaxError, OSError, UnicodeError, RecursionError) as error:
             # Syntax/import-shape uncertainty can break every test's collection.
@@ -895,6 +904,8 @@ def parse_args(argv=None):
     parser.add_argument("--executor-plans", type=Path, default=Path("/app/executor-plans"))
     parser.add_argument("--executor-plan-budget", type=float)
     parser.add_argument("--lazy-test-budget", type=float)
+    parser.add_argument("--fixture-replay-budget", type=float)
+    parser.add_argument("--fixture-entries", type=Path, default=Path("/app/fixture-entries.json.gz"))
     parser.add_argument("--config", type=Path, default=Path(__file__).with_name("selector-config.json"))
     args = parser.parse_args(argv)
     try:
@@ -927,13 +938,30 @@ def parse_args(argv=None):
         args.executor_plan_budget = float(config.get("executor_plan_budget", 0.0))
     if args.lazy_test_budget is None:
         args.lazy_test_budget = float(config.get("lazy_test_budget", 0.0))
+    if args.fixture_replay_budget is None:
+        args.fixture_replay_budget = float(config.get("fixture_replay_budget", 0.0))
     args.settings = {"lazy_test_budget": args.lazy_test_budget, "executor_fixtures": bool(args.executor_fixtures), "executor_plan_budget": args.executor_plan_budget,"conservative_python": bool(conservative), "child_work": bool(child_work),
                      "relations": bool(args.relations), "probe_budget": float(args.probe_budget),
                      "import_check_budget": float(args.import_check_budget),
                      "setup_check_budget": float(args.setup_check_budget)}
+    args.settings["fixture_replay_budget"] = float(args.fixture_replay_budget)
     if args.cost_aware_probes:
         args.settings["probe_budget"] = {"seconds": args.probe_budget, "cost_aware": True}
     return args
+
+
+def load_fixture_entries(path, source):
+    """Recorded fixture-entry data, only if it matches this revision and the pinned test files."""
+    try:
+        from fixture_replay import load, sha256_file
+        data = load(path)
+        if not data or data.get("revision") != REVISION:
+            return None
+        if any(sha256_file(source / name) != digest for name, digest in data["files"].items()):
+            return None
+        return data
+    except (OSError, ValueError, KeyError, TypeError, ImportError):
+        return None
 
 
 def resolve_settings(argv=None):
@@ -956,7 +984,10 @@ def main():
                         setup_check_budget=max(0.0, settings["setup_check_budget"]),
                         executor_fixtures=settings["executor_fixtures"], executor_plans=args.executor_plans,
                         executor_plan_budget=max(0.0, settings["executor_plan_budget"]),
-                        lazy_test_budget=max(0.0, settings["lazy_test_budget"]))
+                        lazy_test_budget=max(0.0, settings["lazy_test_budget"]),
+                        fixture_entries=load_fixture_entries(args.fixture_entries, args.source)
+                        if settings["fixture_replay_budget"] > 0 else None,
+                        fixture_replay_budget=max(0.0, settings["fixture_replay_budget"]))
     schedules = {}
     remaining = max(0.0, args.probe_budget)
     for patch in sorted((args.data / "commits").glob("*.patch")):

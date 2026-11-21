@@ -21,7 +21,8 @@ from tools.profile_schedule import schedule_profile
 # selector-config.json verbatim, so the shipped image runs exactly what was measured.
 BASE = {"conservative_python": False, "child_work": False, "relations": False,
         "executor_fixtures": False, "executor_plan_budget": 0.0, "lazy_test_budget": 0.0,
-        "probe_budget": 0.0, "import_check_budget": 6.0, "setup_check_budget": 8.0}
+        "probe_budget": 0.0, "import_check_budget": 6.0, "setup_check_budget": 8.0,
+        "fixture_replay_budget": 0.0}
 VARIANTS = {
     "conservative_python": {**BASE, "conservative_python": True, "import_check_budget": 0.0, "setup_check_budget": 0.0},
     "coverage": BASE,
@@ -30,6 +31,8 @@ VARIANTS = {
     "relations_and_fixtures": {**BASE, "relations": True, "executor_fixtures": True},
     "relations_fixtures_and_lazy_test": {**BASE, "relations": True, "executor_fixtures": True, "lazy_test_budget": 3.0},
     "relations_and_probes": {**BASE, "relations": True, "probe_budget": 8.0},
+    "relations_fixtures_lazy_and_fixture_replay": {**BASE, "relations": True, "executor_fixtures": True,
+                                                   "lazy_test_budget": 3.0, "fixture_replay_budget": 8.0},
 }
 
 
@@ -47,7 +50,8 @@ def selector_options(config):
             "--executor-plan-budget", repr(float(config["executor_plan_budget"])),
             "--probe-budget", repr(float(config["probe_budget"])),
             "--import-check-budget", repr(float(config["import_check_budget"])),
-            "--setup-check-budget", repr(float(config["setup_check_budget"]))]
+            "--setup-check-budget", repr(float(config["setup_check_budget"])),
+            "--fixture-replay-budget", repr(float(config["fixture_replay_budget"]))]
 
 
 def run_container(image, data, options, tests, answers, *, trace_pytest=False):
