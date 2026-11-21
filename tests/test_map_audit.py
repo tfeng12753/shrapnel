@@ -1,12 +1,14 @@
 """Small unchanged-baseline experiments for dependency attribution."""
 import importlib
+import json
 from pathlib import Path
 import sys
 import tempfile
 import threading
 import unittest
+from unittest.mock import Mock
 
-from tools.build_map import Recorder, SourceModel
+from tools.build_map import Recorder, SourceModel, write_map
 from tools.instrument import Instrumentation
 
 
@@ -87,6 +89,23 @@ def make_class():
         type("ViaHook", (self.mod.Base,), {})
         self.assertEqual(self.users, {"first", "second"})
 
+    def test_shared_setup_attributes_expand_to_class(self):
+        self.rec.current, self.rec.phase = "tests/test_x.py::Case::test_one", "setup"
+        def setUpClass():
+            self.mod.read()
+        setUpClass()
+        self.assertEqual(self.rec.shared_attrs["sqlglot/audit_example.py", "Config.FLAG"],
+                         {("class", "tests/test_x.py::Case")})
+        self.rec.tests = [self.rec.current, "tests/test_x.py::Case::test_two",
+                          "tests/test_x.py::CaseSuffix::test_two"]
+        data = Mock()
+        data.measured_files.return_value = []
+        dest = self.root / "map.json"
+        write_map(self.root, self.rec.model, self.rec, data, dest)
+        entry = json.loads(dest.read_text())["files"]["sqlglot/audit_example.py"]
+        line = self.rec.model.symbols["sqlglot/audit_example.py", "Config.FLAG"]["start"]
+        self.assertEqual(entry["lines"][str(line)], "3")
+
     def test_shared_class_state_loses_future_readers(self):
         child = self.mod.make_class()
         self.rec.current = "second"
@@ -98,7 +117,7 @@ def make_class():
         import subprocess
         script = """
 from pathlib import Path
-from tools.build_map import Recorder, SourceModel
+from tools.build_map import Recorder, SourceModel, write_map
 import sys, importlib.resources
 root = Path(sys.argv[1])
 sys.path.insert(0, str(root))

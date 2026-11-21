@@ -127,6 +127,7 @@ class Recorder:
         self.root, self.model, self.coverage = root, model, coverage
         self.current, self.phase = None, "collection"
         self.attrs = defaultdict(set)
+        self.shared_attrs = defaultdict(set)
         self.reads = defaultdict(set)
         self.cache = {}
         self.tests = []
@@ -184,7 +185,7 @@ class Recorder:
         if type(obj) is types.ModuleType:
             path = self.model.modules.get(obj.__name__)
             if path and (path, name) in self.model.symbols:
-                self.attrs[(path, name)].add(self.current)
+                self.attribute_user((path, name))
             return
         self.record_attr(obj if isinstance(obj, type) else type(obj), name)
 
@@ -203,7 +204,22 @@ class Recorder:
             self.cache[key] = result
         symbol = self.cache[key]
         if symbol:
-            self.attrs[symbol].add(self.current)
+            self.attribute_user(symbol)
+
+    def attribute_user(self, symbol):
+        self.attrs[symbol].add(self.current)
+        if self.phase not in ("setup", "teardown"):
+            return
+        frame = sys._getframe(1)
+        while frame:
+            function = frame.f_code.co_name
+            if function in ("setUpClass", "tearDownClass", "setup_class", "teardown_class"):
+                self.shared_attrs[symbol].add(("class", self.current.rsplit("::", 1)[0]))
+                return
+            if function in ("setUpModule", "tearDownModule", "setup_module", "teardown_module"):
+                self.shared_attrs[symbol].add(("file", self.current.split("::")[0]))
+                return
+            frame = frame.f_back
 
     def record_comparison(self, path, site, op, state):
         entry = self.comparisons.setdefault((path, site), {"op": op, "states": defaultdict(set), "unknown": set(), "collection": False})
@@ -422,10 +438,16 @@ def write_map(root, model, rec, data, destination):
                 files[name]["readers"] |= mask(t for t in rec.tests if t.split("::")[0] == value)
             elif kind == "class":
                 files[name]["readers"] |= mask(t for t in rec.tests if t.startswith(value + "::"))
+    shared_masks = {}
+    for test, test_bit in bit.items():
+        for scope in (("file", test.split("::")[0]), ("class", test.rsplit("::", 1)[0])):
+            shared_masks[scope] = shared_masks.get(scope, 0) | test_bit
     users = {}
     for key, symbol in model.symbols.items():
         entry = files[key[0]]
         value = mask(rec.attrs.get(key, ()))
+        for scope in rec.shared_attrs.get(key, ()):
+            value |= shared_masks[scope]
         for line, line_mask in entry["lines"].items():
             if symbol["start"] <= line <= symbol["end"]:
                 value |= line_mask
