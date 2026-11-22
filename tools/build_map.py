@@ -408,32 +408,45 @@ class Recorder:
         else:
             entry["states"][state].add(self.current)
 
-    def equality_entry(self, path, site):
-        equality = self.__dict__.setdefault("equality", {})
-        entry = equality.get((path, site))
+    def exact_entry(self, path, site, op):
+        exact = self.__dict__.setdefault("exact", {})
+        entry = exact.get((path, site))
         if entry is None:
-            entry = {"op": None, "reached": set(), "states": defaultdict(set), "unknown": set(), "shared": False}
-            equality[(path, site)] = entry
+            entry = {"op": op, "attempts": defaultdict(int), "completed": defaultdict(int),
+                     "states": defaultdict(set), "incomplete": set(), "shared": False}
+            exact[(path, site)] = entry
         return entry
 
-    def record_reach(self, path, site, op):
-        entry = self.equality_entry(path, site)
-        entry["op"] = op
-        if self.current is None or self.phase != "call" or threading.current_thread() is not threading.main_thread():
-            # Evaluations outside one test's call phase may feed later tests.
-            entry["shared"] = True
-        else:
-            entry["reached"].add(self.current)
+    def exact_context(self):
+        """The test an attempt belongs to, False if it disqualifies only that test, None if shared."""
+        if self.current is None or self.importing > 0 or threading.current_thread() is not threading.main_thread():
+            return None
+        if self.phase != "call" or InlineProcessPool.active:
+            return False
+        return self.current
 
-    def record_equality(self, path, site, op, state):
-        entry = self.equality_entry(path, site)
-        entry["op"] = op
-        if self.current is None or self.phase != "call" or threading.current_thread() is not threading.main_thread():
+    def record_reach(self, path, site, op):
+        entry = self.exact_entry(path, site, op)
+        context = self.exact_context()
+        if context is None:
             entry["shared"] = True
-        elif state is None:
-            entry["unknown"].add(self.current)
+        elif context is False:
+            entry["incomplete"].add(self.current)
         else:
-            entry["states"][state].add(self.current)
+            entry["attempts"][context] += 1
+
+    def record_exact(self, path, site, op, state):
+        entry = self.exact_entry(path, site, op)
+        context = self.exact_context()
+        if context is None:
+            entry["shared"] = True
+        elif context is False:
+            entry["incomplete"].add(self.current)
+        elif state is None:
+            entry["incomplete"].add(context)
+        else:
+            entry["completed"][context] += 1
+            entry["states"][state].add(context)
 
     def opened(self, file, mode="r"):
         if getattr(self.audit_state, "busy", False) or isinstance(file, int) or not isinstance(mode, str) or ("+" not in mode and any(c in mode for c in "wax")):
@@ -512,6 +525,8 @@ class InlineProcessPool:
     so serialization code (Expr.__reduce__ -> sqlglot.serde) is attributed too.
     """
 
+    active = 0  # depth of submitted work running inline
+
     def __init__(self, max_workers=None, mp_context=None, initializer=None, initargs=(), **kwargs):
         self._initializer, self._initargs, self._ready = initializer, tuple(initargs), False
 
@@ -519,6 +534,7 @@ class InlineProcessPool:
         from concurrent.futures import Future
         import pickle
         future = Future()
+        InlineProcessPool.active += 1
         try:
             if not self._ready:
                 self._ready = True
@@ -529,6 +545,8 @@ class InlineProcessPool:
             future.set_result(pickle.loads(pickle.dumps(fn(*args, **kwargs))))
         except BaseException as error:
             future.set_exception(error)
+        finally:
+            InlineProcessPool.active -= 1
         return future
 
     def map(self, fn, *iterables, timeout=None, chunksize=1):
@@ -816,24 +834,21 @@ def write_map(root, model, rec, data, destination):
             "unknown": format(unknown, "x")}
         if observation["op"] in ("Eq", "NotEq"):
             files[name]["comparisons"][site]["unknown_before_dispatch"] = True
-    for (name, site), observation in getattr(rec, "equality", {}).items():
+    for (name, site), observation in getattr(rec, "exact", {}).items():
         if observation["shared"]:
-            # No per-test record: an evaluation outside a test's call phase.
+            # An attempt outside any test (import time, other threads): no record.
             continue
         line = int(site.split(":")[0])
+        complete = {test for test, count in observation["attempts"].items()
+                    if observation["completed"].get(test, 0) == count} - observation["incomplete"]
+        attempted = mask(observation["attempts"]) | mask(observation["incomplete"])
+        complete_mask = mask(complete)
         states = {state: mask(contexts) for state, contexts in observation["states"].items()}
-        completed = mask(observation["unknown"])
-        for value in states.values():
-            completed |= value
-        reached = mask(observation["reached"])
-        # Reached without completing (an operand raised), unsupported operand
-        # types, or executed lines with no observation are all unknown.
-        unknown = (mask(observation["unknown"]) | (reached & ~completed)
-                   | (covered.get(name, {}).get(line, 0) & ~(reached | completed)))
-        files[name].setdefault("equality", {})[site] = {
-            "op": observation["op"], "reached": format(reached, "x"),
-            "states": {state: format(value, "x") for state, value in states.items()},
-            "unknown": format(unknown, "x")}
+        files[name].setdefault("exact_comparisons", {})[site] = {
+            "op": observation["op"], "complete": format(complete_mask, "x"),
+            "states": {state: format(value, "x") for state, value in states.items() if value},
+            # Attempted or covering the line without a complete exact record.
+            "unknown": format((attempted | covered.get(name, {}).get(line, 0)) & ~complete_mask, "x")}
     def readers(contexts):
         if None in contexts:
             return all_tests

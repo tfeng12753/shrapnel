@@ -55,6 +55,20 @@ def relation(left, right):
     return "e:" + str(state)
 
 
+EXACT_OPS = frozenset({"Eq", "NotEq", "Lt", "LtE", "Gt", "GtE"})
+EXACT_TYPES = (int, str, type(None))
+
+
+def exact_state(left, right):
+    """The relation of operands whose types are exactly int, str or None, else None.
+
+    No subclasses (including bool) and no operand-defined methods are involved.
+    """
+    if type(left) not in EXACT_TYPES or type(right) not in EXACT_TYPES:
+        return None
+    return relation(left, right)
+
+
 EQUALITY_TYPES = (int, str, bool)
 
 
@@ -272,12 +286,12 @@ class Transformer(ast.NodeTransformer):
                 return True
             except (ValueError, TypeError):
                 return False
-        observe = op in ("Is", "IsNot") or (op in ("Lt", "LtE", "Gt", "GtE") and (literal(node.left) or literal(node.comparators[0])))
-        legacy = True
+        literal_operand = literal(node.left) or literal(node.comparators[0])
+        legacy = op in ("Is", "IsNot") or (op in ("Lt", "LtE", "Gt", "GtE") and literal_operand)
         if op in ("Eq", "NotEq"):
             left, right = node.left, node.comparators[0]
             call, bound = (right, left) if isinstance(left, ast.Constant) else (left, right)
-            observe = legacy = False
+            legacy = False
             if (self.function_body and node.lineno == node.end_lineno and isinstance(call, ast.Call)
                     and not call.keywords and isinstance(bound, ast.Constant)):
                 if type(bound.value) is int:
@@ -285,17 +299,17 @@ class Transformer(ast.NodeTransformer):
                 elif type(bound.value) is str:
                     legacy = (isinstance(call.func, ast.Attribute) and not call.args
                               and call.func.attr in ("upper", "lower", "casefold"))
-            # Every single-line equality in an ordinary function body is
-            # observed for the separate equality record; only the sites above
-            # also enter the established comparison record.
-            observe = self.function_body and node.lineno == node.end_lineno
-        if not observe:
+        # Every equality or ordering comparison in an ordinary function body
+        # also enters the exact record; only the sites above enter the
+        # established comparison record.
+        exact = self.function_body and op in EXACT_OPS
+        if not legacy and not exact:
             return node
         path, site = ast.Constant(self.path), ast.Constant(f"{node.lineno}:{node.col_offset}")
         left = node.left
-        if op in ("Eq", "NotEq"):
-            # Mark the site as reached before either operand is evaluated, so
-            # an operand that raises leaves an incomplete (unknown) record.
+        if exact:
+            # Mark the attempt before either operand is evaluated, so an
+            # operand that raises leaves the attempt incomplete.
             reach = ast.Call(func=ast.Name(id="_shrapnel_reach", ctx=ast.Load()), args=[path, site, ast.Constant(op)], keywords=[])
             left = ast.Subscript(ast.Tuple([reach, left], ast.Load()), ast.Constant(1), ast.Load())
         args = [left, node.comparators[0], ast.Constant(op), path, site]
@@ -373,22 +387,19 @@ class Instrumentation:
                 whole(value)
             return value
         def comparison(left, right, op, path, site, legacy=True):
-            if op not in ("Eq", "NotEq"):
-                value = OPS[op](left, right)
-                recorder.record_comparison(path, site, op, relation(left, right))
-                return value
-            # A custom comparison can raise and the test may catch it, so the
-            # state (or its absence) is recorded before dispatch, even if an
-            # earlier call at this site already produced a known state.
-            state = equality_state(left, right)
+            # A custom comparison can raise and the test may catch it, so every
+            # record is made before the original operator runs.
             if legacy:
-                # The established record keeps exact same-type int/str relations only.
-                kind = type(left)
-                same = kind in (int, str) and type(right) is kind
-                recorder.record_comparison(path, site, op, state if same else None)
-            equality = getattr(recorder, "record_equality", None)
-            if equality is not None:
-                equality(path, site, op, state)
+                if op in ("Eq", "NotEq"):
+                    # The established record keeps exact same-type int/str relations only.
+                    kind = type(left)
+                    same = kind in (int, str) and type(right) is kind
+                    recorder.record_comparison(path, site, op, equality_state(left, right) if same else None)
+                else:
+                    recorder.record_comparison(path, site, op, relation(left, right))
+            exact = getattr(recorder, "record_exact", None)
+            if exact is not None and op in EXACT_OPS:
+                exact(path, site, op, exact_state(left, right))
             return OPS[op](left, right)
 
         def reach(path, site, op):
