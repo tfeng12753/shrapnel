@@ -521,7 +521,8 @@ class Selector:
                  relations=None, child_work=False, import_closure=None, import_check_budget=0.0,
                  setup_check_budget=0.0, executor_fixtures=False, executor_plans=None, executor_plan_budget=0.0,
                  lazy_test_budget=0.0, import_effects=None, downstream_import_budget=0.0, typeddict_state_check=False,
-                 schedule_admission=False, exact_comparisons=False):
+                 schedule_admission=False, exact_comparisons=False,
+                 fixture_entries=None, fixture_replay_budget=0.0):
         self.tests, self.source = tests, source
         # Patches that change code or settings used while some module is being
         # imported can break collection of every test file importing it. A forked
@@ -545,6 +546,9 @@ class Selector:
         # import of the affected modules decides (CPU charged to this budget).
         self.import_effects = import_effects
         self.downstream_import_budget = downstream_import_budget
+        # Recorded per-entry execution of heavy fixture-driven tests (fixture_replay.py).
+        self.fixture_entries = fixture_entries if fixture_replay_budget > 0 else None
+        self.fixture_replay_budget = fixture_replay_budget
         self.executor_fixtures = executor_fixtures
         self.executor_plans = executor_plans.resolve() if executor_plans and executor_plan_budget > 0 else None
         self.executor_plan_budget = executor_plan_budget
@@ -938,6 +942,12 @@ class Selector:
                     and name.startswith("sqlglot/optimizer/") and name.endswith(".py")
                     and not self.conservative_python and not inserted and len(removed) == 1 and plain_text_change(patch)):
                 result = self.check_executor_plan(result, name, old, new, next(iter(removed)))
+            if (self.fixture_entries and self.fixture_replay_budget >= .5 and result and len(changes) == 1
+                    and not self.conservative_python and plain_text_change(patch)):
+                from fixture_replay import refine
+                result, cpu = refine(self, self.fixture_entries, result, name, changes[0], old, new,
+                                     self.fixture_replay_budget)
+                self.fixture_replay_budget -= cpu
             return result
         except (ValueError, SyntaxError, OSError, UnicodeError, RecursionError) as error:
             # Syntax/import-shape uncertainty can break every test's collection.
@@ -1253,6 +1263,8 @@ def parse_args(argv=None):
                         help="Admit narrowing probes only when their schedule saving pays for their CPU")
     parser.add_argument("--exact-comparisons", action=argparse.BooleanOptionalAction, default=None,
                         help="Narrow value-operator swaps with exact comparison evidence from the map")
+    parser.add_argument("--fixture-replay-budget", type=float)
+    parser.add_argument("--fixture-entries", type=Path, default=Path("/app/fixture-entries.json.gz"))
     parser.add_argument("--config", type=Path, default=Path(__file__).with_name("selector-config.json"))
     args = parser.parse_args(argv)
     try:
@@ -1301,6 +1313,9 @@ def parse_args(argv=None):
         args.exact_comparisons = config.get("exact_comparisons", False)
     args.settings["schedule_admission"] = bool(args.schedule_admission)
     args.settings["exact_comparisons"] = bool(args.exact_comparisons)
+    if args.fixture_replay_budget is None:
+        args.fixture_replay_budget = float(config.get("fixture_replay_budget", 0.0))
+    args.settings["fixture_replay_budget"] = float(args.fixture_replay_budget)
     if args.cost_aware_probes:
         args.settings["probe_budget"] = {"seconds": args.probe_budget, "cost_aware": True}
     return args
@@ -1315,6 +1330,20 @@ def load_import_effects(path, tests):
         from import_effects import ImportEffects
         return ImportEffects(index, tests)
     except (OSError, ValueError, KeyError, TypeError, AttributeError):
+        return None
+
+
+def load_fixture_entries(path, source):
+    """Recorded fixture-entry data, only if it matches this revision and the pinned test files."""
+    try:
+        from fixture_replay import load, sha256_file
+        data = load(path)
+        if not data or data.get("revision") != REVISION:
+            return None
+        if any(sha256_file(source / name) != digest for name, digest in data["files"].items()):
+            return None
+        return data
+    except (OSError, ValueError, KeyError, TypeError, ImportError):
         return None
 
 
@@ -1343,7 +1372,11 @@ def main():
                         downstream_import_budget=max(0.0, settings["downstream_import_budget"]),
                         typeddict_state_check=settings["typeddict_state_check"],
                         schedule_admission=settings["schedule_admission"],
-                        exact_comparisons=settings["exact_comparisons"])
+                        exact_comparisons=settings["exact_comparisons"],
+                        fixture_entries=load_fixture_entries(args.fixture_entries, args.source)
+                        if settings["fixture_replay_budget"] > 0 else None,
+                        fixture_replay_budget=max(0.0, settings["fixture_replay_budget"]))
+
 
     schedules = {}
     remaining = max(0.0, args.probe_budget)
