@@ -522,8 +522,13 @@ class Selector:
                  setup_check_budget=0.0, executor_fixtures=False, executor_plans=None, executor_plan_budget=0.0,
                  lazy_test_budget=0.0, import_effects=None, downstream_import_budget=0.0, typeddict_state_check=False,
                  schedule_admission=False, exact_comparisons=False,
-                 fixture_entries=None, fixture_replay_budget=0.0):
+                 fixture_entries=None, fixture_replay_budget=0.0, generation_record=None,
+                 generation_check_budget=0.0):
         self.tests, self.source = tests, source
+        # Recorded executor code generation (generation_check.py): edits that can only
+        # act through generator calls drop executor tests whose generated code is unchanged.
+        self.generation_record = generation_record if generation_check_budget > 0 else None
+        self.generation_check_budget = generation_check_budget
         # Patches that change code or settings used while some module is being
         # imported can break collection of every test file importing it. A forked
         # import of the affected modules decides (CPU charged to this budget).
@@ -942,6 +947,13 @@ class Selector:
                     and name.startswith("sqlglot/optimizer/") and name.endswith(".py")
                     and not self.conservative_python and not inserted and len(removed) == 1 and plain_text_change(patch)):
                 result = self.check_executor_plan(result, name, old, new, next(iter(removed)))
+            if (self.generation_record and self.generation_check_budget >= .25 and result and len(changes) == 1
+                    and not self.conservative_python and name.endswith(".py") and plain_text_change(patch)):
+                from generation_check import refine as refine_generation
+                result, cpu = refine_generation(
+                    self, self.generation_record, result, name, changes[0], old, new, self.generation_check_budget,
+                    lambda mask, drop: schedule_saving(self.chosen(mask), drop))
+                self.generation_check_budget -= cpu
             if (self.fixture_entries and self.fixture_replay_budget >= .5 and result and len(changes) == 1
                     and not self.conservative_python and plain_text_change(patch)):
                 from fixture_replay import refine
@@ -1265,6 +1277,8 @@ def parse_args(argv=None):
                         help="Narrow value-operator swaps with exact comparison evidence from the map")
     parser.add_argument("--fixture-replay-budget", type=float)
     parser.add_argument("--fixture-entries", type=Path, default=Path("/app/fixture-entries.json.gz"))
+    parser.add_argument("--generation-check-budget", type=float)
+    parser.add_argument("--generation-record", type=Path, default=Path("/app/generation-record.json.gz"))
     parser.add_argument("--config", type=Path, default=Path(__file__).with_name("selector-config.json"))
     args = parser.parse_args(argv)
     try:
@@ -1316,6 +1330,9 @@ def parse_args(argv=None):
     if args.fixture_replay_budget is None:
         args.fixture_replay_budget = float(config.get("fixture_replay_budget", 0.0))
     args.settings["fixture_replay_budget"] = float(args.fixture_replay_budget)
+    if args.generation_check_budget is None:
+        args.generation_check_budget = float(config.get("generation_check_budget", 0.0))
+    args.settings["generation_check_budget"] = float(args.generation_check_budget)
     if args.cost_aware_probes:
         args.settings["probe_budget"] = {"seconds": args.probe_budget, "cost_aware": True}
     return args
@@ -1347,6 +1364,15 @@ def load_fixture_entries(path, source):
         return None
 
 
+def load_generation_record(path):
+    """The build-time generation record (generation_check.py), or None when missing or invalid."""
+    try:
+        from generation_check import load
+        return load(path)
+    except (OSError, ValueError, ImportError):
+        return None
+
+
 def resolve_settings(argv=None):
     return parse_args(argv).settings
 
@@ -1375,7 +1401,10 @@ def main():
                         exact_comparisons=settings["exact_comparisons"],
                         fixture_entries=load_fixture_entries(args.fixture_entries, args.source)
                         if settings["fixture_replay_budget"] > 0 else None,
-                        fixture_replay_budget=max(0.0, settings["fixture_replay_budget"]))
+                        fixture_replay_budget=max(0.0, settings["fixture_replay_budget"]),
+                        generation_record=load_generation_record(args.generation_record)
+                        if settings["generation_check_budget"] > 0 else None,
+                        generation_check_budget=max(0.0, settings["generation_check_budget"]))
 
 
     schedules = {}
