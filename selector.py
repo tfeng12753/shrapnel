@@ -522,8 +522,9 @@ class Selector:
                  setup_check_budget=0.0, executor_fixtures=False, executor_plans=None, executor_plan_budget=0.0,
                  lazy_test_budget=0.0, import_effects=None, downstream_import_budget=0.0, typeddict_state_check=False,
                  schedule_admission=False, exact_comparisons=False,
-                 fixture_entries=None, fixture_replay_budget=0.0):
+                 fixture_entries=None, fixture_replay_budget=0.0, parser_proxy_budget=0.0):
         self.tests, self.source = tests, source
+        self.parser_proxy_budget = parser_proxy_budget
         # Patches that change code or settings used while some module is being
         # imported can break collection of every test file importing it. A forked
         # import of the affected modules decides (CPU charged to this budget).
@@ -712,6 +713,8 @@ class Selector:
 
     def select(self, patch: str, trace=None) -> int:
         result = self._select_base(patch, trace)
+        if self.complete and self.parser_proxy_budget >= 1.5 and not self.conservative_python:
+            result = self.check_parser_proxy(patch, result)
         if result != self.all and self.import_effects is not None and self.complete and not self.conservative_python:
             try:
                 extra = self.downstream_imports(patch, result)
@@ -722,6 +725,41 @@ class Selector:
                 trace(extra, "downstream import failure", None, None)
             result |= extra
         return result
+
+    def check_parser_proxy(self, patch, mask):
+        from parser_proxy import ITEM, TEST_FILE, shortened_test
+
+        target = self.test_bits.get(ITEM, 0)
+        if not mask & target or target & (self.external | self.child_work):
+            return mask
+        from fixture_replay import changed_functions
+        from isolated_pytest import cpu_seconds, passed
+
+        start = cpu_seconds()
+        try:
+            changes = parse_patch(patch)
+            if len(changes) != 1 or not plain_text_change(patch):
+                return mask
+            change, = changes
+            name = change["old"]
+            entry = self.files.get(name)
+            if (name != change["new"] or not name.startswith("sqlglot/") or not name.endswith(".py")
+                    or name in REGISTRY_FILES or entry is None or target & entry["readers"]):
+                return mask
+            before = self.read_source(name)
+            after, _, _ = apply_change(before, change)
+            saving = schedule_saving(self.chosen(mask), target)
+            if saving < 5 or not changed_functions(change, before, after):
+                return mask
+            test_source = shortened_test(self.read_source(TEST_FILE))
+            wall = min(4.0, saving / 4, (self.parser_proxy_budget - (cpu_seconds() - start)) / 2)
+            if wall >= .75 and passed(self.source, name, after, ITEM, wall, test_source=test_source):
+                return mask & ~target
+            return mask
+        except (ValueError, OSError, SyntaxError, RecursionError):
+            return mask
+        finally:
+            self.parser_proxy_budget -= cpu_seconds() - start
 
     def downstream_imports(self, patch, selected):
         """Tests that fail before running because the patch breaks an import or a class setup they depend on."""
@@ -1239,6 +1277,7 @@ def parse_args(argv=None):
     parser.add_argument("--source", type=Path, default=Path("/opt/sqlglot"))
     parser.add_argument("--map", type=Path, default=Path("/app/dependencies.json.gz"))
     parser.add_argument("--probe-budget", type=float)
+    parser.add_argument("--parser-proxy-budget", type=float)
     parser.add_argument("--cost-aware-probes", action=argparse.BooleanOptionalAction, default=None,
                         help="Reserve probe budget for whole selections with sufficient schedule savings")
     python_mode = parser.add_mutually_exclusive_group()
@@ -1316,6 +1355,9 @@ def parse_args(argv=None):
     if args.fixture_replay_budget is None:
         args.fixture_replay_budget = float(config.get("fixture_replay_budget", 0.0))
     args.settings["fixture_replay_budget"] = float(args.fixture_replay_budget)
+    if args.parser_proxy_budget is None:
+        args.parser_proxy_budget = float(config.get("parser_proxy_budget", 0.0))
+    args.settings["parser_proxy_budget"] = args.parser_proxy_budget
     if args.cost_aware_probes:
         args.settings["probe_budget"] = {"seconds": args.probe_budget, "cost_aware": True}
     return args
@@ -1375,7 +1417,8 @@ def main():
                         exact_comparisons=settings["exact_comparisons"],
                         fixture_entries=load_fixture_entries(args.fixture_entries, args.source)
                         if settings["fixture_replay_budget"] > 0 else None,
-                        fixture_replay_budget=max(0.0, settings["fixture_replay_budget"]))
+                        fixture_replay_budget=max(0.0, settings["fixture_replay_budget"]),
+                        parser_proxy_budget=max(0.0, settings["parser_proxy_budget"]))
 
 
     schedules = {}

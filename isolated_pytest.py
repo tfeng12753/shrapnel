@@ -29,6 +29,10 @@ def stage(source, root, name, after, trees=None):
     else:
         for tree in trees:
             shutil.copytree(source / tree, root / tree, ignore=shutil.ignore_patterns(".pytest_cache"))
+    write_overlay(root, name, after)
+
+
+def write_overlay(root, name, after):
     target = root / name
     cache = target.parent / "__pycache__"
     if cache.is_dir():
@@ -40,7 +44,7 @@ def stage(source, root, name, after, trees=None):
     target.write_text(after, encoding="utf-8")
 
 
-def passed(source, name, after, item, wall_seconds):
+def passed(source, name, after, item, wall_seconds, *, test_source=None):
     deadline = time.monotonic() + wall_seconds
     trace = os.environ.get("SHRAPNEL_TRACE_PYTEST") == "1"
     def outcome(ok, reason):
@@ -60,6 +64,8 @@ def passed(source, name, after, item, wall_seconds):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder) / "source"
             stage(source, root, name, after)
+            if test_source is not None:
+                write_overlay(root, file, test_source)
             report = Path(folder) / "result.xml"
             env = dict(os.environ, PYTHONPATH=str(root), PYTHONDONTWRITEBYTECODE="1", SKIP_INTEGRATION="0",
                        PATH=str(Path(sys.executable).parent) + os.pathsep + os.defpath)

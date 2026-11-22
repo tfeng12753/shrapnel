@@ -25,6 +25,7 @@ BASE = {"conservative_python": False, "child_work": False, "relations": False,
         "downstream_import_budget": 6.0,
         "typeddict_state_check": False,
         "schedule_admission": False,
+        "parser_proxy_budget": 0.0,
         "exact_comparisons": False,
         "fixture_replay_budget": 0.0}
 VARIANTS = {
@@ -58,6 +59,7 @@ def selector_options(config):
             "--downstream-import-budget", repr(float(config["downstream_import_budget"])),
             "--typeddict-state-check" if config["typeddict_state_check"] else "--no-typeddict-state-check",
             "--schedule-admission" if config["schedule_admission"] else "--no-schedule-admission",
+            "--parser-proxy-budget", repr(float(config["parser_proxy_budget"])),
             "--exact-comparisons" if config["exact_comparisons"] else "--no-exact-comparisons",
             "--fixture-replay-budget", repr(float(config["fixture_replay_budget"]))]
 
