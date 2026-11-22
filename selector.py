@@ -17,6 +17,7 @@ from pathlib import Path
 
 REVISION = "eb11aec4be8cb2122afe713a4816662c3f0fb2fa"
 HUNK = re.compile(r"^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@")
+CLI_ENTRY_POINT = "sqlglot/__main__.py"
 
 # Executor receivers can be passed to helpers or stored on shared classes.
 # Treat these methods as potential dispatch even when the receiver's type is unknown.
@@ -522,8 +523,9 @@ class Selector:
                  setup_check_budget=0.0, executor_fixtures=False, executor_plans=None, executor_plan_budget=0.0,
                  lazy_test_budget=0.0, import_effects=None, downstream_import_budget=0.0, typeddict_state_check=False,
                  schedule_admission=False, exact_comparisons=False,
-                 fixture_entries=None, fixture_replay_budget=0.0):
+                 fixture_entries=None, fixture_replay_budget=0.0, cli_reachability=False):
         self.tests, self.source = tests, source
+        self.cli_reachability = cli_reachability
         # Patches that change code or settings used while some module is being
         # imported can break collection of every test file importing it. A forked
         # import of the affected modules decides (CPU charged to this budget).
@@ -803,6 +805,14 @@ class Selector:
                 old = self.read_source(name)
                 new, removed, inserted = apply_change(old, c)
                 entry = self.files.get(name)
+                if (self.cli_reachability and not self.conservative_python and len(changes) == 1
+                        and name == CLI_ENTRY_POINT and entry is not None and plain_text_change(patch)
+                        and not entry["executed"] and not any(entry["lines"].values())
+                        and not any(entry["anchors"].values())
+                        and not any(users for _, _, _, users in entry["regions"])):
+                    compile(new, name, "exec", dont_inherit=True)
+                    readers = entry["readers"] | self.external_for(name) | self.child_work
+                    return include(readers, "entry point readers and process users", name)
                 if name.endswith(".py"):
                     before, after = baseline_tree(old), ast.parse(new, type_comments=True)
                     # Compare every file: a harmless-looking comment may accompany a fixture edit.
@@ -1239,6 +1249,7 @@ def parse_args(argv=None):
     parser.add_argument("--source", type=Path, default=Path("/opt/sqlglot"))
     parser.add_argument("--map", type=Path, default=Path("/app/dependencies.json.gz"))
     parser.add_argument("--probe-budget", type=float)
+    parser.add_argument("--cli-reachability", action=argparse.BooleanOptionalAction, default=None)
     parser.add_argument("--cost-aware-probes", action=argparse.BooleanOptionalAction, default=None,
                         help="Reserve probe budget for whole selections with sufficient schedule savings")
     python_mode = parser.add_mutually_exclusive_group()
@@ -1316,6 +1327,8 @@ def parse_args(argv=None):
     if args.fixture_replay_budget is None:
         args.fixture_replay_budget = float(config.get("fixture_replay_budget", 0.0))
     args.settings["fixture_replay_budget"] = float(args.fixture_replay_budget)
+    args.settings["cli_reachability"] = (config.get("cli_reachability", False) is True
+                                         if args.cli_reachability is None else args.cli_reachability)
     if args.cost_aware_probes:
         args.settings["probe_budget"] = {"seconds": args.probe_budget, "cost_aware": True}
     return args
@@ -1375,7 +1388,8 @@ def main():
                         exact_comparisons=settings["exact_comparisons"],
                         fixture_entries=load_fixture_entries(args.fixture_entries, args.source)
                         if settings["fixture_replay_budget"] > 0 else None,
-                        fixture_replay_budget=max(0.0, settings["fixture_replay_budget"]))
+                        fixture_replay_budget=max(0.0, settings["fixture_replay_budget"]),
+                        cli_reachability=settings["cli_reachability"])
 
 
     schedules = {}
