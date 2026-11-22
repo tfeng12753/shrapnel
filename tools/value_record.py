@@ -19,8 +19,9 @@ holds:
 
 A site evaluated outside any test's call phase (imports, collection, class or
 module setup) is recorded as global, and is never used. Code run in child
-processes is not observed; those tests have coverage without observations and
-are kept by the selector.
+processes is not observed, so tests that start a process are recorded as
+external. A test that ran in this process without starting one and has no
+observation at a site never evaluated it.
 
 Runs on the unmodified pinned checkout only. No sample patch, answer or mutant
 is read.
@@ -72,6 +73,10 @@ class Recorder:
         self.sites = []          # [(file, "line:col", op)]
         self.data = []           # per site: {test index: [states set, pairs set or None, unknown bool]}
         self.global_sites = set()
+        # Tests that started a process (their work may run unobserved), and whether any
+        # process started outside a test's call phase (it may serve later tests).
+        self.external = set()
+        self.outside_spawn = False
         self.current = None
 
     def site(self, name, node):
@@ -163,11 +168,31 @@ class Recorder:
         ast.fix_missing_locations(tree)
         return tree
 
+    def spawned(self):
+        if self.current is None:
+            self.outside_spawn = True
+        else:
+            self.external.add(self.current)
+
     def install(self):
         builtins.__dict__.update(self.helpers())
+        recorder = self
+
+        def audit(event, args):
+            if event in ("os.fork", "os.forkpty", "os.posix_spawn", "os.exec", "os.system", "subprocess.Popen"):
+                recorder.spawned()
+
+        sys.addaudithook(audit)
+        import multiprocessing.process
+        start = multiprocessing.process.BaseProcess.start
+
+        def started(process):
+            recorder.spawned()
+            return start(process)
+
+        multiprocessing.process.BaseProcess.start = started
         library = str(self.source / "sqlglot") + os.sep
         original = importlib.machinery.SourceFileLoader.get_code
-        recorder = self
 
         def get_code(loader, fullname):
             filename = str(Path(loader.get_filename(fullname)).resolve())
@@ -258,6 +283,7 @@ def main():
     failed = sorted(numbers[n] for n in plugin.failed if n in numbers)
     data = {"version": VERSION, "tests": sorted(numbers, key=numbers.get), "exit": int(code), "seconds": elapsed,
             "failed": failed, "ran": sorted(numbers[n] for n in plugin.seen if n in numbers),
+            "external": sorted(recorder.external), "outside_spawn": recorder.outside_spawn,
             "global": sorted({f"{recorder.sites[i][0]}:{recorder.sites[i][1]}" for i in recorder.global_sites}),
             "files": sites}
     args.output.parent.mkdir(parents=True, exist_ok=True)

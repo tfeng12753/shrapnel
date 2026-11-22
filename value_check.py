@@ -10,8 +10,10 @@ An edit is eligible when it changes exactly one such comparison and nothing
 else: its operator (to another of the six) and/or a literal operand (to
 another built-in literal), with the other operand unchanged. A test may be
 dropped only if the record proves that every evaluation of the site in that
-test completed on built-in operands and gives the same outcome after the edit;
-`<` and `<=` differ only on equal operands, for example. Every other test that
+test completed on built-in operands and gives the same outcome after the edit
+(`<` and `<=` differ only on equal operands, for example), or that the test ran
+entirely in the recording process and never evaluated the comparison (the map's
+line coverage cannot tell evaluations from short-circuited lines). Every other test that
 the map shows executing the comparison, or that the record saw with another
 operand type, an exception, too many distinct values or outside a test's call
 phase, is kept. Catalog numbers follow the suite's collection order, so only
@@ -128,6 +130,9 @@ class Record:
         self.index_bits = index_bits
         self.failed = self.bits_of(data.get("failed", ()))
         self.ran = self.bits_of(data.get("ran", ()))
+        # Tests whose whole call phase ran observed in the recording process.
+        self.observed = 0 if data.get("outside_spawn", True) or "external" not in data else (
+            self.ran & ~self.bits_of(data["external"]) & ~self.failed)
         self.global_sites = set(data.get("global", ()))
 
     def bits_of(self, indices):
@@ -194,6 +199,8 @@ def evaluate(record, name, edit, touched):
                     changed |= bit
                     break
     safe = reached & evidenced & ~changed & ~unknown & record.ran
+    # Fully observed tests that never evaluated the comparison cannot reach the edit.
+    safe |= record.observed & ~reached
     unsafe = touched & ~safe
     if unsafe:
         safe &= (unsafe & -unsafe) - 1

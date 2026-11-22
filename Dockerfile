@@ -39,10 +39,14 @@ COPY generation_check.py fixture_replay.py native_probes.py /app/
 COPY tools/generation_record.py /app/tools/generation_record.py
 RUN if [ "$BUILD_MAP" = "1" ]; then python /app/tools/generation_record.py --source /opt/sqlglot --output /app/generation-record.json.gz \
       || rm -f /app/generation-record.json.gz; fi
+# Operands reaching value comparisons, per test (value_check.py; about 3 minutes).
+COPY tools/value_record.py /app/tools/value_record.py
+RUN if [ "$BUILD_MAP" = "1" ]; then python /app/tools/value_record.py --source /opt/sqlglot --output /app/value-record.json.gz \
+      > /dev/null || rm -f /app/value-record.json.gz; fi
 COPY tools/map_executor_plan.py tools/map_executor_screen.py tools/prepare_executor_plans.py /app/tools/
 ARG BUILD_EXECUTOR_PLANS=0
 RUN if [ "$BUILD_MAP" = "1" ] && [ "$BUILD_EXECUTOR_PLANS" = "1" ]; then python /app/tools/prepare_executor_plans.py; fi
-COPY selector.py native_probes.py import_effects.py fixture_replay.py generation_check.py fixture-entries.json.gz executor_fixtures.py executor_plans.py isolated_pytest.py selector-config.json /app/
+COPY selector.py native_probes.py import_effects.py fixture_replay.py generation_check.py value_check.py fixture-entries.json.gz executor_fixtures.py executor_plans.py isolated_pytest.py selector-config.json /app/
 COPY tools/timed_run.py /app/tools/timed_run.py
 ENV HOME=/tmp
 USER 65534:65534

@@ -55,9 +55,10 @@ class ComparisonEditTests(unittest.TestCase):
                     self.assertIsNone(result)
 
 
-def record(info, tests=4, failed=(), ran=None, global_sites=()):
+def record(info, tests=4, failed=(), ran=None, global_sites=(), external=None, outside_spawn=True):
     data = {"tests": [f"t{i}" for i in range(tests)], "failed": list(failed),
             "ran": list(range(tests)) if ran is None else ran, "global": list(global_sites),
+            "outside_spawn": outside_spawn, **({} if external is None else {"external": external}),
             "files": {"mod.py": {"2:7": info}}}
     return v.Record(data, {f"t{i}": 1 << i for i in range(tests)})
 
@@ -117,6 +118,19 @@ class EvaluateTests(unittest.TestCase):
     def test_operator_mismatch_has_no_evidence(self):
         info = {"op": "Gt", "reached": mask(0), "unknown": "0", "states": {}, "pairs": {}}
         self.assertIsNone(v.evaluate(record(info), "mod.py", ("2:7", "Lt", "LtE", None, None, None), 0b1))
+
+    def test_fully_observed_tests_without_evaluations_are_dropped(self):
+        info = {"op": "Lt", "reached": mask(0), "unknown": "0", "states": {"p:2": mask(0)}, "pairs": {}}
+        edit = ("2:7", "Lt", "LtE", None, None, None)
+        # Tests 1-3 cover the line; 3 started a process and 2 did not run in the recording.
+        rec = record(info, ran=[0, 1, 3], external=[3], outside_spawn=False)
+        self.assertEqual(v.evaluate(rec, "mod.py", edit, 0b1111), 0b1100)
+        # A process started outside any test's call phase may have served any test.
+        rec = record(info, ran=[0, 1, 3], external=[3], outside_spawn=True)
+        self.assertEqual(v.evaluate(rec, "mod.py", edit, 0b1111), 0b1110)
+        # A failed test is never evidence.
+        rec = record(info, ran=[0, 1, 3], external=[3], outside_spawn=False, failed=[1])
+        self.assertEqual(v.evaluate(rec, "mod.py", edit, 0b1111), 0b1110)
 
     def test_relation_outcomes(self):
         self.assertTrue(v.relation_outcome("p:1", "LtE"))
