@@ -427,6 +427,83 @@ def classify_python_edit(before, after):
     return changes if matches(before, after) else None
 
 
+def docstring_nodes(tree):
+    """The string constants that are module, class or function docstrings."""
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.Module, ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)) and node.body:
+            first = node.body[0]
+            if (isinstance(first, ast.Expr) and isinstance(first.value, ast.Constant)
+                    and isinstance(first.value.value, str)):
+                yield first.value
+
+
+def prose_only_docstring_edit(before, after):
+    """True if only docstring prose changed: no doctest example on either side, none emptied.
+
+    The pinned library reads a docstring only for its truth value (an empty
+    ``__doc__`` is replaced by ""), and the doctest runner only through ``>>>``
+    examples, so other docstring text has no effect on any test.
+    """
+    old, new = list(docstring_nodes(before)), list(docstring_nodes(after))
+    if len(old) != len(new):
+        return False
+    changed = [(a, b) for a, b in zip(old, new) if a.value != b.value]
+    if not changed or any(">>>" in a.value or ">>>" in b.value or not a.value.strip() or not b.value.strip()
+                          for a, b in changed):
+        return False
+    saved = [(n, n.value) for n in old + new]
+    for node, _ in saved:
+        node.value = ""
+    try:
+        return classify_python_edit(before, after) == []
+    finally:
+        for node, value in saved:
+            node.value = value
+
+
+def outer_lambdas(tree):
+    """Lambdas not inside a function or another lambda, in source order, with their parent node."""
+    found = []
+
+    def walk(node):
+        for child in ast.iter_child_nodes(node):
+            if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                continue
+            if isinstance(child, ast.Lambda):
+                found.append((child, node))
+                continue
+            walk(child)
+
+    walk(tree)
+    return found
+
+
+def lambda_body_edit(before, after):
+    """(first, last) old line of the one outer lambda whose body is the only difference, else None.
+
+    A lambda's body runs only when the lambda is called, so such an edit can only
+    affect the tests that called it. Arguments and defaults (evaluated when the
+    lambda is created) must be unchanged, and a lambda called where it is defined
+    is not eligible.
+    """
+    old, new = outer_lambdas(before), outer_lambdas(after)
+    if len(old) != len(new):
+        return None
+    differing = [i for i, ((a, _), (b, _)) in enumerate(zip(old, new)) if ast.dump(a.body) != ast.dump(b.body)]
+    if len(differing) != 1:
+        return None
+    (a, parent), (b, _) = old[differing[0]], new[differing[0]]
+    if ast.dump(a.args) != ast.dump(b.args) or (isinstance(parent, ast.Call) and parent.func is a):
+        return None
+    saved = a.body, b.body
+    a.body = b.body = ast.Constant(None)
+    try:
+        confined = ast.dump(before) == ast.dump(after)
+    finally:
+        a.body, b.body = saved
+    return (a.lineno, a.end_lineno) if confined else None
+
+
 def comparison_changes(old, new):
     """Return operator-only differences using baseline source positions."""
     return classify_python_edit(baseline_tree(old), ast.parse(new, type_comments=True)) or None
@@ -522,8 +599,15 @@ class Selector:
                  setup_check_budget=0.0, executor_fixtures=False, executor_plans=None, executor_plan_budget=0.0,
                  lazy_test_budget=0.0, import_effects=None, downstream_import_budget=0.0, typeddict_state_check=False,
                  schedule_admission=False, exact_comparisons=False,
-                 fixture_entries=None, fixture_replay_budget=0.0):
+                 fixture_entries=None, fixture_replay_budget=0.0, lambda_bodies=False,
+                 docstring_edits=False, entry_point_edits=False):
         self.tests, self.source = tests, source
+        # Edits confined to the body of a lambda defined outside any function select
+        # the tests that called it (raw executed lines from the map), not every
+        # reader of the value holding it. Needs the import-time index.
+        self.lambda_bodies = lambda_bodies
+        self.docstring_edits = docstring_edits
+        self.entry_point_edits = entry_point_edits
         # Patches that change code or settings used while some module is being
         # imported can break collection of every test file importing it. A forked
         # import of the affected modules decides (CPU charged to this budget).
@@ -635,6 +719,8 @@ class Selector:
                     "executed": decode(entry.get("executed", "0")),
                     "setup": setup,
                 }
+                if "lambda_lines" in entry:
+                    self.files[name]["lambda_lines"] = {int(k): decode(v) for k, v in entry["lambda_lines"].items()}
                 if self.relations and self.exact_comparisons and not conservative_python:
                     self.add_equality_evidence(self.files[name]["comparisons"], entry.get("equality", {}), decode)
             mapped_ids = set(data["tests"])
@@ -800,6 +886,15 @@ class Selector:
                 name = c["old"]
                 if name != c["new"]:
                     return include(self.all, "path changed", name)
+                if (self.entry_point_edits and name.count("/") == 1 and name.endswith("/__main__.py")
+                        and not name.startswith("tests/") and name not in self.files):
+                    # A top-level package's __main__.py runs only under `python -m`, and
+                    # no test ran it in-process on the pinned checkout: only tests that
+                    # start processes can reach it.
+                    # Base-text mismatches and syntax errors still select everything.
+                    ast.parse(apply_change(self.read_source(name), c)[0])
+                    result |= include(self.external, "entry point run by child processes", name)
+                    continue
                 old = self.read_source(name)
                 new, removed, inserted = apply_change(old, c)
                 entry = self.files.get(name)
@@ -807,6 +902,8 @@ class Selector:
                     before, after = baseline_tree(old), ast.parse(new, type_comments=True)
                     # Compare every file: a harmless-looking comment may accompany a fixture edit.
                     changes_at_sites = classify_python_edit(before, after)
+                    if changes_at_sites is None and self.docstring_edits and prose_only_docstring_edit(before, after):
+                        changes_at_sites = []
                     if changes_at_sites == []:
                         # Tests may inspect comments or exact source text.
                         if entry is None:
@@ -816,6 +913,12 @@ class Selector:
                     if self.conservative_python:
                         return include(self.all, "conservative executable Python selection", name)
                     result |= include(self.child_work, "potential untraced child work", name)
+                    called = self.lambda_callers(entry, name, before, after) if changes_at_sites is None else None
+                    if called is not None:
+                        result |= include(called, "lambda callers", name)
+                        result |= include(entry["readers"], "file reader", name)
+                        result |= include(self.external_for(name), "external dependency", name)
+                        continue
                     affected_comparisons = []
                     refined = None
                     if self.relations:
@@ -952,6 +1055,24 @@ class Selector:
         except (ValueError, SyntaxError, OSError, UnicodeError, RecursionError) as error:
             # Syntax/import-shape uncertainty can break every test's collection.
             return include(self.all, "analysis failed: " + type(error).__name__)
+
+    def lambda_callers(self, entry, name, before, after):
+        """Tests that called the one lambda whose body alone changed, or None to use the general rules."""
+        if not self.lambda_bodies or entry is None or self.import_effects is None or "lambda_lines" not in entry:
+            return None
+        span = lambda_body_edit(before, after)
+        if span is None:
+            return None
+        lines = range(span[0], span[1] + 1)
+        # A lambda called while a module imports or a class sets up affects
+        # values that tests read later without calling it.
+        if self.import_effects.runs_during_import(name, lines):
+            return None
+        mask = 0
+        for line in lines:
+            mask |= entry["lambda_lines"].get(line, 0)
+        # Never called on the pinned checkout: no evidence, keep the general rules.
+        return mask or None
 
     def check_executor_plan(self, mask, name, before, after, line):
         from executor_plans import ITEM, cpu_seconds, matched
@@ -1265,6 +1386,12 @@ def parse_args(argv=None):
                         help="Narrow value-operator swaps with exact comparison evidence from the map")
     parser.add_argument("--fixture-replay-budget", type=float)
     parser.add_argument("--fixture-entries", type=Path, default=Path("/app/fixture-entries.json.gz"))
+    parser.add_argument("--lambda-bodies", action=argparse.BooleanOptionalAction, default=None,
+                        help="Select only the callers of a lambda whose body alone changed")
+    parser.add_argument("--docstring-edits", action=argparse.BooleanOptionalAction, default=None,
+                        help="Treat docstring prose edits (no doctest examples) like comment edits")
+    parser.add_argument("--entry-point-edits", action=argparse.BooleanOptionalAction, default=None,
+                        help="Select only process-starting tests for an unmapped package __main__.py")
     parser.add_argument("--config", type=Path, default=Path(__file__).with_name("selector-config.json"))
     args = parser.parse_args(argv)
     try:
@@ -1316,6 +1443,15 @@ def parse_args(argv=None):
     if args.fixture_replay_budget is None:
         args.fixture_replay_budget = float(config.get("fixture_replay_budget", 0.0))
     args.settings["fixture_replay_budget"] = float(args.fixture_replay_budget)
+    if args.lambda_bodies is None:
+        args.lambda_bodies = config.get("lambda_bodies", False)
+    args.settings["lambda_bodies"] = bool(args.lambda_bodies)
+    if args.docstring_edits is None:
+        args.docstring_edits = config.get("docstring_edits", False)
+    args.settings["docstring_edits"] = bool(args.docstring_edits)
+    if args.entry_point_edits is None:
+        args.entry_point_edits = config.get("entry_point_edits", False)
+    args.settings["entry_point_edits"] = bool(args.entry_point_edits)
     if args.cost_aware_probes:
         args.settings["probe_budget"] = {"seconds": args.probe_budget, "cost_aware": True}
     return args
@@ -1375,7 +1511,9 @@ def main():
                         exact_comparisons=settings["exact_comparisons"],
                         fixture_entries=load_fixture_entries(args.fixture_entries, args.source)
                         if settings["fixture_replay_budget"] > 0 else None,
-                        fixture_replay_budget=max(0.0, settings["fixture_replay_budget"]))
+                        fixture_replay_budget=max(0.0, settings["fixture_replay_budget"]),
+                        lambda_bodies=settings["lambda_bodies"], docstring_edits=settings["docstring_edits"],
+                        entry_point_edits=settings["entry_point_edits"])
 
 
     schedules = {}

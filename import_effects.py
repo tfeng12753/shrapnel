@@ -106,6 +106,12 @@ class ImportEffects:
             class_id = test["id"].rsplit("::", 1)[0]
             self.class_masks[class_id] = self.class_masks.get(class_id, 0) | (1 << test["number"])
 
+    def runs_during_import(self, path, lines):
+        """True if any of these lines of ``path`` ran while some module was imported or a class set up."""
+        lines = set(lines)
+        return any(lines & owner_lines.get(path, set())
+                   for table in (self.import_time, self.class_setup) for owner_lines, _, _ in table.values())
+
     def owners(self, edits):
         """Modules whose import uses a changed line or a changed name."""
         return self._match(self.import_time, edits)
