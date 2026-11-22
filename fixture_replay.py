@@ -31,11 +31,14 @@ import time
 import types
 from pathlib import Path
 
-VERSION = 1
+VERSION = 2
+PASS_RATE = 0.5
+ADMISSION_MARGIN = 1.25
 # Global state compared after each entry: the pinned library and the shared test constants.
 STATE_PACKAGES = ("sqlglot",)
 STATE_MODULES = ("tests.helpers",)
-STATE_LIMIT = 400_000
+STATE_LIMIT = 2_000_000
+STATE_DEPTH = 4
 
 
 def load(path):
@@ -50,6 +53,15 @@ def load(path):
 
 def sha256_file(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def library_digest(source):
+    """Digest of every Python source file of the pinned library."""
+    digest = hashlib.sha256()
+    root = Path(source) / STATE_PACKAGES[0]
+    for path in sorted(root.rglob("*.py")):
+        digest.update(path.relative_to(source).as_posix().encode() + b"\0" + path.read_bytes() + b"\0")
+    return digest.hexdigest()
 
 
 # ---------------------------------------------------------------- child side
@@ -108,14 +120,57 @@ def _summary(value, depth, budget):
     attributes = getattr(value, "__dict__", None)
     if isinstance(attributes, dict):
         return f"{name}(" + _summary(attributes, depth - 1, budget) + ")"
+    slots = _slot_names(kind)
+    if slots:
+        # Slotted objects (the library's expression nodes) have no __dict__.
+        values = {slot: getattr(value, slot, "<unset>") for slot in slots}
+        return f"{name}(" + _summary(values, depth - 1, budget) + ")"
     return name
 
 
-def state_summary():
+# Back-references and memoized hashes: reading them would recurse or change on first use.
+SKIPPED_SLOTS = {"parent", "_hash", "__weakref__", "__dict__"}
+
+
+@functools.lru_cache(maxsize=None)
+def _slot_names(kind):
+    names = set()
+    for cls in kind.__mro__:
+        declared = cls.__dict__.get("__slots__", ())
+        names.update((declared,) if isinstance(declared, str) else declared)
+    return tuple(sorted(names - SKIPPED_SLOTS))
+
+
+def _connection_catalog(connection):
+    """Tables and views of an embedded database connection (test fixtures create them)."""
+    rows = connection.execute(
+        "SELECT table_catalog, table_schema, table_name, table_type FROM information_schema.tables ORDER BY ALL"
+    ).fetchall()
+    return repr(rows)
+
+
+def _class_state(cls, budget):
+    """Attributes a test class keeps across its tests: shallow values plus database catalogs."""
+    members = {}
+    for key, value in sorted(vars(cls).items()):
+        if key.startswith("__") and key.endswith("__"):
+            continue
+        if type(value).__name__ == "DuckDBPyConnection":
+            members[key] = _connection_catalog(value)
+        else:
+            members[key] = _summary(value, 1, budget)
+    return repr(members)
+
+
+def state_summary(classes=()):
     """{name: digest} of module and class state in the compared modules (None if too large)."""
     summary = {}
     budget = [STATE_LIMIT]
     try:
+        for cls in classes:
+            text = _class_state(cls, budget)
+            summary[f"class:{cls.__module__}.{cls.__qualname__}"] = hashlib.sha256(
+                text.encode("utf-8", "surrogatepass")).hexdigest()[:24]
         for module_name in sorted(sys.modules):
             if not (module_name in STATE_MODULES
                     or any(module_name == p or module_name.startswith(p + ".") for p in STATE_PACKAGES)):
@@ -130,12 +185,12 @@ def state_summary():
                 if isinstance(value, type) and value.__module__ == module_name:
                     members = {k: v for k, v in vars(value).items()
                                if not (k.startswith("__") and k.endswith("__"))}
-                    text = _summary(members, 3, budget)
+                    text = _summary(members, STATE_DEPTH, budget)
                 else:
-                    text = _summary(value, 3, budget)
+                    text = _summary(value, STATE_DEPTH, budget)
                 summary[f"{module_name}.{key}"] = hashlib.sha256(
                     text.encode("utf-8", "surrogatepass")).hexdigest()[:24]
-    except (OverflowError, RecursionError, RuntimeError, TypeError, ValueError):
+    except Exception:  # noqa: BLE001 - anything unreadable is unknown state
         return None
     return summary
 
@@ -150,9 +205,21 @@ def state_fingerprint(before, after):
 
 def entry_outcome(modules, classes, spec, test_id, entry):
     """[passed, state fingerprint] for one entry; run in a fresh fork of the prepared process."""
-    before = state_summary()
+    shared = sorted(classes.values(), key=lambda c: (c.__module__, c.__qualname__))
+    before = state_summary(shared)
     passed = run_entry(modules, classes, spec, test_id, entry)
-    return [passed, state_fingerprint(before, state_summary())]
+    return [passed, state_fingerprint(before, state_summary(shared))]
+
+
+def plain_sources(source):
+    """Refuse when a library module was not loaded from a .py file in the pinned checkout (no overlay)."""
+    for name, module in list(sys.modules.items()):
+        if any(name == p or name.startswith(p + ".") for p in STATE_PACKAGES):
+            location = getattr(module, "__file__", None)
+            if location is None and hasattr(module, "__path__"):
+                continue  # namespace package
+            if not location or not location.endswith(".py") or not Path(location).resolve().is_relative_to(source):
+                raise ImportError(f"{name} is not plain source in the pinned checkout")
 
 
 def preload(names):
@@ -338,6 +405,7 @@ def replay_child(source, overlays, specs, work, wall_seconds, preloaded=()):
     sys.addaudithook(reject_children)
     modules, classes = prepare(source, specs)
     preload(preloaded)
+    plain_sources(source)
 
     def allow():
         own_fork[0] = True
@@ -563,6 +631,15 @@ def _refine(selector, data, mask, name, change, old, new, budget, start):
     if not candidates:
         return mask, cpu_seconds() - start
     tests = data["tests"]
+    # Other selected tests run the patched code (or read the edited fixture) in the same
+    # process; one that runs earlier can leave state that unreplayed entries read.
+    numbers = {t["id"]: t["number"] for t in selector.tests}
+    candidate_bits = sum(selector.test_bits[t] for t in candidates)
+    others = [t["number"] for t in selector.chosen(mask & ~candidate_bits)]
+    first_other = min(others, default=None)
+    candidates = {t: e for t, e in candidates.items() if first_other is None or numbers[t] < first_other}
+    if not candidates:
+        return mask, cpu_seconds() - start
     chosen = selector.chosen(mask)
     drop_bits = sum(selector.test_bits[t] for t in candidates)
     saving = schedule_cost(chosen) - schedule_cost([t for t in chosen if not drop_bits & (1 << t["number"])])
@@ -570,8 +647,12 @@ def _refine(selector, data, mask, name, change, old, new, budget, start):
     expected = (data.get("import_cpu", 2.0) + sum(data.get("setup_cpu", {}).get("::".join(c), 2.0) for c in classes)
                 + sum(tests[t]["entry_cpu"][i] for t, entries in candidates.items() for i in entries)
                 + 0.02 * sum(map(len, candidates.values())))
-    # Rule: run only when the expected schedule saving exceeds the expected CPU.
-    if expected * 1.25 >= saving or expected > budget:
+    # Rule: run only when the expected schedule saving exceeds the expected CPU. Edits often
+    # break the entries they reach, so the saving is discounted by an assumed pass rate.
+    admitted = PASS_RATE * saving > ADMISSION_MARGIN * expected and expected <= budget
+    _trace(f"plan {name} candidates={ {t.split('::')[-1]: len(e) for t, e in candidates.items()} } "
+           f"saving={saving:.2f} expected={expected:.2f} admitted={admitted}")
+    if not admitted:
         return mask, cpu_seconds() - start
     pinned = selector.source.resolve()
     # Prepare every recorded class, as the recording did: class setup may change global state.
@@ -589,8 +670,16 @@ def _refine(selector, data, mask, name, change, old, new, budget, start):
         recorded = tests[test_id]["fingerprints"][entry]
         ok = passed is True and fingerprint is not None and fingerprint == recorded
         verified.setdefault(test_id, []).append((entry, ok))
+    dropped = []
     for test_id, entries in candidates.items():
         results = dict(verified.get(test_id, ()))
         if all(results.get(i) is True for i in entries):
             mask &= ~selector.test_bits[test_id]
+            dropped.append(test_id.split("::")[-1])
+    _trace(f"replay {name} dropped={dropped} cpu={cpu_seconds() - start:.2f}")
     return mask, cpu_seconds() - start
+
+
+def _trace(message):
+    if os.environ.get("SHRAPNEL_TRACE_REPLAY") == "1":
+        print("FIXTURE_REPLAY " + message, file=sys.stderr)

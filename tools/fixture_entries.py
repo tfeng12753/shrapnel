@@ -58,6 +58,11 @@ def covered_lines(data, source):
     return lines
 
 
+def clear_registry():
+    from sqlglot.dialects.dialect import Dialect
+    Dialect._classes.clear()
+
+
 def start_coverage(source):
     import coverage
     cov = coverage.Coverage(data_file=None, branch=False, config_file=False,
@@ -106,22 +111,39 @@ def main():
         rows = list(getattr(helpers, LOADER)(spec["fixture"].removeprefix("tests/fixtures/")))
         spec["entries"] = len(rows)
 
-    # Pass 1: modules any entry imports lazily. Recording and replay preload them
-    # after class setup, so state comparisons always cover the same module set.
-    lazy = set()
+    # Pass 1, before anything is preloaded: every entry traced cold, and again with the
+    # dialect registry cleared (tests that run earlier in the suite clear it). Lines an
+    # entry runs only on these paths are never verified by a warm replay, so they become
+    # base: edits there are refused. The same runs find the modules entries import lazily.
+    lazy, cold = set(), {}
     for test_id, spec in specs.items():
         for entry in range(spec["entries"]):
-            def discover(entry=entry, spec=spec, test_id=test_id):
-                known = set(sys.modules)
-                replay.run_entry(modules, classes, spec, test_id, entry)
-                return sorted(n for n in set(sys.modules) - known
-                              if n == "sqlglot" or n.startswith("sqlglot.") or n in replay.STATE_MODULES)
-            found = replay.run_isolated(discover, time.monotonic() + args.timeout)
-            if found is None:
-                sys.exit(f"entry {entry} of {test_id} failed during discovery")
-            lazy.update(found)
+            for cleared in (False, True):
+                def traced_cold(entry=entry, spec=spec, test_id=test_id, cleared=cleared):
+                    known = set(sys.modules)
+                    if cleared:
+                        clear_registry()
+                    cov = start_coverage(source)
+                    passed = replay.run_entry(modules, classes, spec, test_id, entry)
+                    cov.stop()
+                    imported = sorted(n for n in set(sys.modules) - known
+                                      if n == "sqlglot" or n.startswith("sqlglot.") or n in replay.STATE_MODULES)
+                    return [passed, imported, covered_lines(cov.get_data(), source)]
+                found = replay.run_isolated(traced_cold, time.monotonic() + args.timeout)
+                if found is None or found[0] is not True:
+                    sys.exit(f"entry {entry} of {test_id} failed on the cold path (cleared={cleared})")
+                lazy.update(found[1])
+                lines = cold.setdefault((test_id, entry), {})
+                for name, executed in found[2].items():
+                    lines.setdefault(name, set()).update(executed)
     preloaded = sorted(lazy)
+    # Preloading runs import-time code; it counts as base like every other import.
+    cov = start_coverage(source)
     replay.preload(preloaded)
+    cov.stop()
+    for name, lines in covered_lines(cov.get_data(), source).items():
+        global_base[name] = sorted(set(global_base.get(name, ())) | set(lines))
+    del cov
     print(f"preloaded {len(preloaded)} lazily imported modules", file=sys.stderr, flush=True)
 
     tests = {}
@@ -145,19 +167,19 @@ def main():
         entry_cpu, fingerprints, by_line = [], [], {}
         for entry in range(spec["entries"]):
             def plain(entry=entry):
-                before = replay.state_summary()
                 started = time.process_time()
-                passed = replay.run_entry(modules, classes, spec, test_id, entry)
+                passed, fingerprint = replay.entry_outcome(modules, classes, spec, test_id, entry)
                 cpu = time.process_time() - started
-                return [passed, cpu, replay.state_fingerprint(before, replay.state_summary())]
+                return [passed, cpu, fingerprint]
 
             def traced(entry=entry):
-                before = replay.state_summary()
+                shared = sorted(classes.values(), key=lambda c: (c.__module__, c.__qualname__))
+                before = replay.state_summary(shared)
                 cov = start_coverage(source)
                 passed = replay.run_entry(modules, classes, spec, test_id, entry)
                 cov.stop()
                 return [passed, covered_lines(cov.get_data(), source),
-                        replay.state_fingerprint(before, replay.state_summary())]
+                        replay.state_fingerprint(before, replay.state_summary(shared))]
 
             first, second = replay.run_isolated(plain, deadline()), replay.run_isolated(traced, deadline())
             if first is None or second is None or first[0] is not True or second[0] is not True:
@@ -168,6 +190,10 @@ def main():
             entry_cpu.append(round(first[1], 3))
             # A fingerprint that does not repeat can never verify a replay.
             fingerprints.append(first[2] if first[2] is not None and first[2] == second[2] else None)
+            for name, lines in cold[(test_id, entry)].items():
+                extra = lines - set(second[1].get(name, ()))
+                if extra:
+                    base.setdefault(name, set()).update(extra)
             for name, lines in second[1].items():
                 file_lines = by_line.setdefault(name, {})
                 for line in lines:
@@ -185,8 +211,9 @@ def main():
     data = {
         "version": replay.VERSION,
         "revision": REVISION,
-        "python": ".".join(map(str, sys.version_info[:3])),
+        "python": "%d.%d" % sys.version_info[:2],
         "files": {name: replay.sha256_file(source / name) for name in AUDITED},
+        "library": replay.library_digest(source),
         "import_cpu": round(import_cpu, 3),
         "preload": preloaded,
         "setup_cpu": {k: round(v, 3) for k, v in setup_cpu.items()},

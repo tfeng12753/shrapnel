@@ -1058,6 +1058,10 @@ def load_fixture_entries(path, source):
             return None
         if any(sha256_file(source / name) != digest for name, digest in data["files"].items()):
             return None
+        from fixture_replay import library_digest
+        # Recorded execution is only valid for the same interpreter and library sources.
+        if data.get("python") != "%d.%d" % sys.version_info[:2] or data.get("library") != library_digest(source):
+            return None
         return data
     except (OSError, ValueError, KeyError, TypeError, ImportError):
         return None

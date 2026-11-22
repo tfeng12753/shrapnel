@@ -168,11 +168,54 @@ class FingerprintTests(unittest.TestCase):
         self.assertEqual(fixture_replay.state_fingerprint(later, fixture_replay.state_summary()),
                          fixture_replay.state_fingerprint(start, start))
 
+    def test_slotted_objects_are_compared(self):
+        class Node:
+            __slots__ = ("args", "parent", "_hash")
+            def __init__(self, value):
+                self.args, self.parent, self._hash = {"this": value}, None, None
+        self.module.CONSTANT = Node(1)
+        start = fixture_replay.state_summary()
+        self.module.CONSTANT._hash = 123  # memoized hash: not state
+        self.module.CONSTANT.parent = Node(9)  # back-reference: not compared
+        self.assertEqual(fixture_replay.state_fingerprint(start, fixture_replay.state_summary()),
+                         fixture_replay.state_fingerprint(start, start))
+        self.module.CONSTANT.args["this"] = 2
+        self.assertNotEqual(fixture_replay.state_fingerprint(start, fixture_replay.state_summary()),
+                            fixture_replay.state_fingerprint(start, start))
+
+    def test_test_class_attributes_are_compared(self):
+        class Case:
+            cache = {}
+        start = fixture_replay.state_summary([Case])
+        Case.cache["sql"] = 1
+        self.assertNotEqual(fixture_replay.state_fingerprint(start, fixture_replay.state_summary([Case])),
+                            fixture_replay.state_fingerprint(start, start))
+
     def test_too_large_state_is_unknown(self):
         self.module.CACHE = {str(i): i for i in range(10)}
         with mock.patch.object(fixture_replay, "STATE_LIMIT", 5):
             self.assertIsNone(fixture_replay.state_summary())
         self.assertIsNone(fixture_replay.state_fingerprint(None, {}))
+
+
+class PlainSourceTests(unittest.TestCase):
+    def test_module_outside_the_checkout_refuses(self):
+        module = types.ModuleType("fakepkg.compiled")
+        module.__file__ = "/elsewhere/compiled.cpython-313-x86_64-linux-gnu.so"
+        with mock.patch.dict(sys.modules, {"fakepkg.compiled": module}), \
+                mock.patch.object(fixture_replay, "STATE_PACKAGES", ("fakepkg",)):
+            with self.assertRaises(ImportError):
+                fixture_replay.plain_sources(Path("/elsewhere"))
+
+    def test_library_digest_tracks_sources(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            (root / "fakepkg").mkdir()
+            (root / "fakepkg" / "a.py").write_text("x = 1\n")
+            with mock.patch.object(fixture_replay, "STATE_PACKAGES", ("fakepkg",)):
+                first = fixture_replay.library_digest(root)
+                (root / "fakepkg" / "a.py").write_text("x = 2\n")
+                self.assertNotEqual(first, fixture_replay.library_digest(root))
 
 
 class IsolationTests(unittest.TestCase):
@@ -272,6 +315,15 @@ class RefineTests(unittest.TestCase):
     def test_budget_limits_admission(self):
         mask, forked = self.refine([["t::A::heavy", 0, True, "f0"], ["t::A::heavy", 2, True, "f2"]], budget=.5)
         self.assertEqual(mask, 0b11)
+        forked.assert_not_called()
+
+    def test_earlier_selected_test_blocks_the_drop(self):
+        self.tests.insert(0, {"id": "t::A::early", "number": 2, "seconds": 0.1})
+        self.tests[1]["number"], self.tests[2]["number"] = 3, 1
+        self.selector = FakeSelector(self.tests)
+        with mock.patch("native_probes._forked") as forked:
+            mask, _ = fixture_replay.refine(self.selector, self.data, 0b1110, "sqlglot/x.py", {}, "", "", 8.0)
+        self.assertEqual(mask, 0b1110)
         forked.assert_not_called()
 
     def test_internal_errors_keep(self):
