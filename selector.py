@@ -1264,6 +1264,7 @@ def parse_args(argv=None):
     parser.add_argument("--exact-comparisons", action=argparse.BooleanOptionalAction, default=None,
                         help="Narrow value-operator swaps with exact comparison evidence from the map")
     parser.add_argument("--fixture-replay-budget", type=float)
+    parser.add_argument("--small-suite", action=argparse.BooleanOptionalAction, default=None)
     parser.add_argument("--fixture-entries", type=Path, default=Path("/app/fixture-entries.json.gz"))
     parser.add_argument("--config", type=Path, default=Path(__file__).with_name("selector-config.json"))
     args = parser.parse_args(argv)
@@ -1316,6 +1317,7 @@ def parse_args(argv=None):
     if args.fixture_replay_budget is None:
         args.fixture_replay_budget = float(config.get("fixture_replay_budget", 0.0))
     args.settings["fixture_replay_budget"] = float(args.fixture_replay_budget)
+    args.settings["small_suite"] = bool(config.get("small_suite", False) if args.small_suite is None else args.small_suite)
     if args.cost_aware_probes:
         args.settings["probe_budget"] = {"seconds": args.probe_budget, "cost_aware": True}
     return args
@@ -1383,6 +1385,9 @@ def main():
     for patch in sorted((args.data / "commits").glob("*.patch")):
         text = patch.read_text(encoding="utf-8")
         mask = selector.select(text)
+        if settings["small_suite"] and not settings["conservative_python"]:
+            from small_suite import refine
+            mask = refine(selector, text, mask)
         if selector.complete and remaining > 0:
             try:
                 mask, charged = selector.probe(text, mask, remaining, cost_aware=args.cost_aware_probes)

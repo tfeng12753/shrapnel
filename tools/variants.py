@@ -26,7 +26,7 @@ BASE = {"conservative_python": False, "child_work": False, "relations": False,
         "typeddict_state_check": False,
         "schedule_admission": False,
         "exact_comparisons": False,
-        "fixture_replay_budget": 0.0}
+        "fixture_replay_budget": 0.0, "small_suite": False}
 VARIANTS = {
     "conservative_python": {**BASE, "conservative_python": True, "import_check_budget": 0.0, "setup_check_budget": 0.0},
     "coverage": BASE,
@@ -59,6 +59,7 @@ def selector_options(config):
             "--typeddict-state-check" if config["typeddict_state_check"] else "--no-typeddict-state-check",
             "--schedule-admission" if config["schedule_admission"] else "--no-schedule-admission",
             "--exact-comparisons" if config["exact_comparisons"] else "--no-exact-comparisons",
+            "--small-suite" if config["small_suite"] else "--no-small-suite",
             "--fixture-replay-budget", repr(float(config["fixture_replay_budget"]))]
 
 
