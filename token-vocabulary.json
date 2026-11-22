@@ -1,0 +1,25 @@
+{
+  "format": 1,
+  "revision": "eb11aec4be8cb2122afe713a4816662c3f0fb2fa",
+  "fingerprint": "4d74ac9c10e0bbb0a5b924ac060402eeae733f26380093907f05360f841302ca",
+  "test": "tests/test_parser.py::TestParser::test_max_nodes",
+  "flag": "DPIPE_IS_STRING_CONCAT",
+  "required_token": "DPIPE",
+  "gate": {
+    "path": "sqlglot/parser.py",
+    "line": 6674,
+    "expression": "BoolOp(op=And(), values=[Attribute(value=Attribute(value=Name(id='self', ctx=Load()), attr='dialect', ctx=Load()), attr='DPIPE_IS_STRING_CONCAT', ctx=Load()), Call(func=Attribute(value=Name(id='self', ctx=Load()), attr='_match', ctx=Load()), args=[Attribute(value=Name(id='TokenType', ctx=Load()), attr='DPIPE', ctx=Load())])])"
+  },
+  "capture": "raw-and-current-v1",
+  "passed": true,
+  "advances": 2122044,
+  "tokens": [
+    "COMMA",
+    "EQ",
+    "FROM",
+    "NUMBER",
+    "SELECT",
+    "SENTINEL",
+    "VAR"
+  ]
+}

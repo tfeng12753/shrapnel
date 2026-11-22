@@ -522,8 +522,12 @@ class Selector:
                  setup_check_budget=0.0, executor_fixtures=False, executor_plans=None, executor_plan_budget=0.0,
                  lazy_test_budget=0.0, import_effects=None, downstream_import_budget=0.0, typeddict_state_check=False,
                  schedule_admission=False, exact_comparisons=False,
-                 fixture_entries=None, fixture_replay_budget=0.0):
+                 fixture_entries=None, fixture_replay_budget=0.0, token_vocabulary=False):
         self.tests, self.source = tests, source
+        self.token_evidence = None
+        if token_vocabulary:
+            from token_vocabulary import load_evidence
+            self.token_evidence = load_evidence(source, REVISION)
         # Patches that change code or settings used while some module is being
         # imported can break collection of every test file importing it. A forked
         # import of the affected modules decides (CPU charged to this budget).
@@ -712,6 +716,9 @@ class Selector:
 
     def select(self, patch: str, trace=None) -> int:
         result = self._select_base(patch, trace)
+        if self.token_evidence is not None:
+            from token_vocabulary import refine
+            result = refine(self, patch, result, parse_patch, apply_change)
         if result != self.all and self.import_effects is not None and self.complete and not self.conservative_python:
             try:
                 extra = self.downstream_imports(patch, result)
@@ -1239,6 +1246,7 @@ def parse_args(argv=None):
     parser.add_argument("--source", type=Path, default=Path("/opt/sqlglot"))
     parser.add_argument("--map", type=Path, default=Path("/app/dependencies.json.gz"))
     parser.add_argument("--probe-budget", type=float)
+    parser.add_argument("--token-vocabulary", action=argparse.BooleanOptionalAction, default=None)
     parser.add_argument("--cost-aware-probes", action=argparse.BooleanOptionalAction, default=None,
                         help="Reserve probe budget for whole selections with sufficient schedule savings")
     python_mode = parser.add_mutually_exclusive_group()
@@ -1316,6 +1324,8 @@ def parse_args(argv=None):
     if args.fixture_replay_budget is None:
         args.fixture_replay_budget = float(config.get("fixture_replay_budget", 0.0))
     args.settings["fixture_replay_budget"] = float(args.fixture_replay_budget)
+    args.settings["token_vocabulary"] = (config.get("token_vocabulary", False) is True
+                                         if args.token_vocabulary is None else args.token_vocabulary)
     if args.cost_aware_probes:
         args.settings["probe_budget"] = {"seconds": args.probe_budget, "cost_aware": True}
     return args
@@ -1375,7 +1385,8 @@ def main():
                         exact_comparisons=settings["exact_comparisons"],
                         fixture_entries=load_fixture_entries(args.fixture_entries, args.source)
                         if settings["fixture_replay_budget"] > 0 else None,
-                        fixture_replay_budget=max(0.0, settings["fixture_replay_budget"]))
+                        fixture_replay_budget=max(0.0, settings["fixture_replay_budget"]),
+                        token_vocabulary=settings["token_vocabulary"])
 
 
     schedules = {}
