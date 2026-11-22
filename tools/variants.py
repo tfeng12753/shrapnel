@@ -27,7 +27,8 @@ BASE = {"conservative_python": False, "child_work": False, "relations": False,
         "schedule_admission": False,
         "exact_comparisons": False,
         "fixture_replay_budget": 0.0,
-        "generation_check_budget": 0.0}
+        "generation_check_budget": 0.0,
+        "value_comparisons": False}
 VARIANTS = {
     "conservative_python": {**BASE, "conservative_python": True, "import_check_budget": 0.0, "setup_check_budget": 0.0},
     "coverage": BASE,
@@ -41,6 +42,9 @@ VARIANTS = {
     "relations_fixtures_lazy_and_generation_check": {**BASE, "relations": True, "executor_fixtures": True,
                                                      "lazy_test_budget": 3.0, "typeddict_state_check": True,
                                                      "generation_check_budget": 8.0},
+    "relations_fixtures_lazy_generation_and_values": {**BASE, "relations": True, "executor_fixtures": True,
+                                                      "lazy_test_budget": 3.0, "typeddict_state_check": True,
+                                                      "generation_check_budget": 8.0, "value_comparisons": True},
 }
 
 
@@ -64,7 +68,8 @@ def selector_options(config):
             "--schedule-admission" if config["schedule_admission"] else "--no-schedule-admission",
             "--exact-comparisons" if config["exact_comparisons"] else "--no-exact-comparisons",
             "--fixture-replay-budget", repr(float(config["fixture_replay_budget"])),
-            "--generation-check-budget", repr(float(config["generation_check_budget"]))]
+            "--generation-check-budget", repr(float(config["generation_check_budget"])),
+            "--value-comparisons" if config["value_comparisons"] else "--no-value-comparisons"]
 
 
 def run_container(image, data, options, tests, answers, *, trace_pytest=False):

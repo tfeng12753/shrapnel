@@ -523,8 +523,10 @@ class Selector:
                  lazy_test_budget=0.0, import_effects=None, downstream_import_budget=0.0, typeddict_state_check=False,
                  schedule_admission=False, exact_comparisons=False,
                  fixture_entries=None, fixture_replay_budget=0.0, generation_record=None,
-                 generation_check_budget=0.0):
+                 generation_check_budget=0.0, value_record=None):
         self.tests, self.source = tests, source
+        # Recorded comparison operands per test (value_check.py), read on first use.
+        self.value_record = value_record
         # Recorded executor code generation (generation_check.py): edits that can only
         # act through generator calls drop executor tests whose generated code is unchanged.
         self.generation_record = generation_record if generation_check_budget > 0 else None
@@ -835,6 +837,8 @@ class Selector:
                                     affected_comparisons.append((start, end))
                         if changes_at_sites and len(changes) == 1 and len(changes_at_sites) == 1:
                             refined = self.refine_comparisons(changes_at_sites, entry, contexts)
+                        if refined is None and self.value_record is not None and len(changes) == 1 and entry:
+                            refined = self.value_comparison(name, before, after, entry, contexts)
                     if refined is not None:
                         result |= include(refined, "comparison boundary or unknown", name)
                         result |= include(entry["readers"], "file reader", name)
@@ -1150,6 +1154,23 @@ class Selector:
             result |= unknown | (self.span_users(entry, start, end) & ~observed)
         return result
 
+    def value_comparison(self, name, before, after, entry, contexts):
+        """Tests to keep for an edit confined to one value comparison, from recorded operands."""
+        import value_check
+        if isinstance(self.value_record, Path):
+            data = value_check.load(self.value_record)
+            self.value_record = value_check.Record(data, self.test_bits) if data else False
+        if not self.value_record:
+            return None
+        try:
+            edit = value_check.comparison_edit(before, after)
+            if edit is None or edit[0] not in contexts or not contexts[edit[0]][2]:
+                return None
+            start, end, _ = contexts[edit[0]]
+            return value_check.evaluate(self.value_record, name, edit, self.span_users(entry, start, end))
+        except (ValueError, KeyError, TypeError, IndexError):
+            return None
+
     def exact_comparison(self, info, before, after, context, entry):
         """Tests to keep for a value-operator swap, or None without exact evidence.
 
@@ -1284,6 +1305,9 @@ def parse_args(argv=None):
     parser.add_argument("--fixture-entries", type=Path, default=Path("/app/fixture-entries.json.gz"))
     parser.add_argument("--generation-check-budget", type=float)
     parser.add_argument("--generation-record", type=Path, default=Path("/app/generation-record.json.gz"))
+    parser.add_argument("--value-comparisons", action=argparse.BooleanOptionalAction, default=None,
+                        help="Narrow single-comparison edits with the build-time operand record")
+    parser.add_argument("--value-record", type=Path, default=Path("/app/value-record.json.gz"))
     parser.add_argument("--config", type=Path, default=Path(__file__).with_name("selector-config.json"))
     args = parser.parse_args(argv)
     try:
@@ -1338,6 +1362,9 @@ def parse_args(argv=None):
     if args.generation_check_budget is None:
         args.generation_check_budget = float(config.get("generation_check_budget", 0.0))
     args.settings["generation_check_budget"] = float(args.generation_check_budget)
+    if args.value_comparisons is None:
+        args.value_comparisons = bool(config.get("value_comparisons", False))
+    args.settings["value_comparisons"] = bool(args.value_comparisons)
     if args.cost_aware_probes:
         args.settings["probe_budget"] = {"seconds": args.probe_budget, "cost_aware": True}
     return args
@@ -1399,7 +1426,8 @@ def main():
                         if settings["fixture_replay_budget"] > 0 else None,
                         fixture_replay_budget=max(0.0, settings["fixture_replay_budget"]),
                         generation_record=args.generation_record if settings["generation_check_budget"] > 0 else None,
-                        generation_check_budget=max(0.0, settings["generation_check_budget"]))
+                        generation_check_budget=max(0.0, settings["generation_check_budget"]),
+                        value_record=args.value_record if settings["value_comparisons"] else None)
 
 
     schedules = {}
