@@ -523,9 +523,10 @@ class Selector:
                  lazy_test_budget=0.0, import_effects=None, downstream_import_budget=0.0, typeddict_state_check=False,
                  schedule_admission=False, exact_comparisons=False,
                  fixture_entries=None, fixture_replay_budget=0.0, generation_record=None,
-                 generation_check_budget=0.0, value_record=None):
+                 generation_check_budget=0.0, value_record=None, fixture_query_replay=False):
         self.tests, self.source = tests, source
         # Recorded comparison operands per test (value_check.py), read on first use.
+        self.fixture_query_budget = 12.0 if fixture_query_replay else 0.0
         self.value_record = value_record
         # Recorded executor code generation (generation_check.py): edits that can only
         # act through generator calls drop executor tests whose generated code is unchanged.
@@ -876,7 +877,22 @@ class Selector:
                             pending.append(self.fixture_candidate(name, new, readers & setup[CLASS], setup[CLASS]))
                             readers &= ~setup[CLASS]
                         elif CLASS in setup:
-                            effect = fixture_effect(self.source, name, new)
+                            if self.fixture_query_budget >= 4:
+                                def query_check(source, item, expected, actual):
+                                    from fixture_query import passed
+                                    from isolated_pytest import cpu_seconds
+                                    target = self.test_bits.get(item, 0)
+                                    if schedule_saving(self.chosen(readers | result), target) <= 4:
+                                        return False
+                                    started = cpu_seconds()
+                                    try:
+                                        return passed(source, item, expected, actual)
+                                    finally:
+                                        self.fixture_query_budget -= cpu_seconds() - started
+
+                                effect = fixture_effect(self.source, name, new, query_check=query_check)
+                            else:
+                                effect = fixture_effect(self.source, name, new)
                             if effect is not None:
                                 # Both pinned setup paths only materialize this loader. A
                                 # successful parse proves setup for this class on this edit.
@@ -1305,6 +1321,7 @@ def parse_args(argv=None):
     parser.add_argument("--fixture-entries", type=Path, default=Path("/app/fixture-entries.json.gz"))
     parser.add_argument("--generation-check-budget", type=float)
     parser.add_argument("--generation-record", type=Path, default=Path("/app/generation-record.json.gz"))
+    parser.add_argument("--fixture-query-replay", action=argparse.BooleanOptionalAction, default=None)
     parser.add_argument("--value-comparisons", action=argparse.BooleanOptionalAction, default=None,
                         help="Narrow single-comparison edits with the build-time operand record")
     parser.add_argument("--value-record", type=Path, default=Path("/app/value-record.json.gz"))
@@ -1362,6 +1379,9 @@ def parse_args(argv=None):
     if args.generation_check_budget is None:
         args.generation_check_budget = float(config.get("generation_check_budget", 0.0))
     args.settings["generation_check_budget"] = float(args.generation_check_budget)
+    if args.fixture_query_replay is None:
+        args.fixture_query_replay = bool(config.get("fixture_query_replay", False))
+    args.settings["fixture_query_replay"] = args.fixture_query_replay
     if args.value_comparisons is None:
         args.value_comparisons = bool(config.get("value_comparisons", False))
     args.settings["value_comparisons"] = bool(args.value_comparisons)
@@ -1427,8 +1447,8 @@ def main():
                         fixture_replay_budget=max(0.0, settings["fixture_replay_budget"]),
                         generation_record=args.generation_record if settings["generation_check_budget"] > 0 else None,
                         generation_check_budget=max(0.0, settings["generation_check_budget"]),
-                        value_record=args.value_record if settings["value_comparisons"] else None)
-
+                        value_record=args.value_record if settings["value_comparisons"] else None,
+                        fixture_query_replay=settings["fixture_query_replay"])
 
     schedules = {}
     remaining = max(0.0, args.probe_budget)

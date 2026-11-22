@@ -33,7 +33,7 @@ def executor_inputs(rows):
     return [(tuple(meta.items()), sql) for meta, sql, expected in rows]
 
 
-def fixture_effect(source, name, patched_text):
+def fixture_effect(source, name, patched_text, *, query_check=None):
     """Return (executor item, unchanged inputs) only if the pinned setup's loader succeeds."""
     try:
         source = source.resolve()
@@ -54,6 +54,9 @@ def fixture_effect(source, name, patched_text):
             patched = Path(folder) / path.name
             patched.write_text(patched_text, encoding="utf-8")
             actual = executor_inputs(load(str(patched)))
-        return item, bool(expected) and expected == actual
+        identical = bool(expected) and expected == actual
+        if query_check and not identical:
+            identical = query_check(source, item, expected, actual)
+        return item, identical
     except (OSError, ValueError, KeyError, IndexError, TypeError, SyntaxError, RecursionError):
         return None

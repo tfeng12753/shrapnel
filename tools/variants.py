@@ -28,7 +28,7 @@ BASE = {"conservative_python": False, "child_work": False, "relations": False,
         "exact_comparisons": False,
         "fixture_replay_budget": 0.0,
         "generation_check_budget": 0.0,
-        "value_comparisons": False}
+        "fixture_query_replay": False, "value_comparisons": False}
 VARIANTS = {
     "conservative_python": {**BASE, "conservative_python": True, "import_check_budget": 0.0, "setup_check_budget": 0.0},
     "coverage": BASE,
@@ -69,6 +69,7 @@ def selector_options(config):
             "--exact-comparisons" if config["exact_comparisons"] else "--no-exact-comparisons",
             "--fixture-replay-budget", repr(float(config["fixture_replay_budget"])),
             "--generation-check-budget", repr(float(config["generation_check_budget"])),
+            "--fixture-query-replay" if config["fixture_query_replay"] else "--no-fixture-query-replay",
             "--value-comparisons" if config["value_comparisons"] else "--no-value-comparisons"]
 
 
