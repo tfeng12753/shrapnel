@@ -19,20 +19,28 @@ from pathlib import Path
 
 events = defaultdict(set)
 
+def note(key, state):
+    if state not in events[key]:
+        events[key].add(state)
+        folder = os.environ.get("LENGTH_AUDIT_WORKER_DIR")
+        if folder:
+            with (Path(folder) / str(os.getpid())).open("a") as out:
+                print(json.dumps([key, state]), file=out)
+
 def evaluate(gate, length):
     key = os.environ.get("PYTEST_CURRENT_TEST", "outside")
     if not gate:
-        events[key].add("short")
+        note(key, "short")
         return False
     try:
         size = length()
     except Exception:
-        events[key].add("unknown")
+        note(key, "unknown")
         raise
     if type(size) is not int or size < 0:
-        events[key].add("unknown")
+        note(key, "unknown")
     else:
-        events[key].add("zero" if size == 0 else "one" if size == 1 else "many")
+        note(key, "zero" if size == 0 else "one" if size == 1 else "many")
     return size == 1
 
 def pytest_sessionfinish(session, exitstatus):
@@ -86,9 +94,25 @@ def main(args):
         output = Path(tmp) / "events.json"
         env = dict(os.environ, PYTHONPATH=str(root), PYTEST_DISABLE_PLUGIN_AUTOLOAD="1",
                    LENGTH_AUDIT_OUTPUT=str(output))
-        subprocess.run([sys.executable, "-m", "pytest", "-q", "-p", observer.stem, *tests],
-                       cwd=root, env=env, check=True, stdout=sys.stderr)
+        cmd = [sys.executable, "-m", "pytest", "-q", "-p", observer.stem]
+        subprocess.run([*cmd, *tests], cwd=root, env=env, check=True, stdout=sys.stderr)
         events = json.loads(output.read_text())
+        isolated = {}
+        if args.resolve_workers:
+            for index, test in enumerate(tests):
+                key = test + " (call)"
+                if events.get(key):
+                    continue
+                folder = Path(tmp) / str(index)
+                folder.mkdir()
+                subprocess.run([*cmd, test], cwd=root, env=dict(env, LENGTH_AUDIT_WORKER_DIR=str(folder)),
+                               check=True, stdout=sys.stderr)
+                seen = set()
+                for path in folder.iterdir():
+                    for line in path.read_text().splitlines():
+                        phase, value = json.loads(line)
+                        seen.add(value if phase == key else "unknown")
+                isolated[test] = sorted(seen)
 
     groups = {"changed": [], "unchanged": [], "unattributed": []}
     prefix = []
@@ -104,7 +128,8 @@ def main(args):
         if not groups["changed"] and not groups["unattributed"]:
             prefix.append(test)
     print(json.dumps({"candidates": len(tests), "groups": groups, "before_first_uncertain": prefix,
-                      "outside_call": [k for k in events if not k.endswith(" (call)")]}, indent=2))
+                      "outside_call": [k for k in events if not k.endswith(" (call)")],
+                      "isolated_observations": isolated}, indent=2))
 
 
 if __name__ == "__main__":
@@ -114,4 +139,6 @@ if __name__ == "__main__":
     parser.add_argument("--line", type=int, required=True)
     parser.add_argument("--map", type=Path, required=True)
     parser.add_argument("--catalog", type=Path, required=True)
+    parser.add_argument("--resolve-workers", action="store_true",
+                        help="Rerun each unattributed item alone and collect its worker observations")
     main(parser.parse_args())

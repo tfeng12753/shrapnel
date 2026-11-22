@@ -35,12 +35,22 @@ class LongestTestChecks(TestCase):
                 self.assertLess(selector.longest_test_budget, 5)
 
     def test_disabled_and_mixed_edits_preserve_all_reasons(self):
-        second = diff("tests/fixtures/sample.sql", "SELECT 1\n", "SELECT 2\n")
-        with patch("isolated_pytest.passed") as verify:
+        fixture = "tests/fixtures/sample.sql"
+        path = self.root / fixture
+        path.parent.mkdir(parents=True)
+        path.write_text("SELECT 1\n")
+        mapping = json.loads(self.map.read_text())
+        mapping["files"][fixture] = {"readers": "1"}
+        self.map.write_text(json.dumps(mapping))
+        second = diff(fixture, "SELECT 1\n", "SELECT 2\n")
+        with patch("isolated_pytest.passed") as verify, patch("fixture_replay.refine") as replay:
             self.assertEqual(Selector(self.tests, self.root, self.map).select(self.patch), 3)
-            self.assertEqual(Selector(self.tests, self.root, self.map, longest_test_budget=10)
-                             .select(self.patch + second), 3)
+            selector = Selector(self.tests, self.root, self.map, longest_test_budget=10,
+                                fixture_entries={"tests": {}}, fixture_replay_budget=8)
+            for mixed in (self.patch + second, second + self.patch):
+                self.assertEqual(selector.select(mixed), 3)
             verify.assert_not_called()
+            replay.assert_not_called()
 
     def test_real_pytest_item_sees_patched_source_and_checks_the_whole_test(self):
         test_dir = self.root / "tests"
