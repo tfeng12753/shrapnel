@@ -467,10 +467,13 @@ def main(argv=None):
     parser.add_argument("--families", type=parse_families, default=list(OLD_FAMILIES),
                         help=f"comma-separated subset of {','.join(FAMILIES)} (default: the original four)")
     parser.add_argument("--match", help="regex: only targeted-family candidates whose file, detail or text match")
+    parser.add_argument("--files", help="regex: only library files whose path matches receive code and comment edits")
     args = parser.parse_args(argv)
     root = args.source.resolve()
     rng = random.Random(args.seed)
     files = sorted(p.relative_to(root).as_posix() for p in (root / "sqlglot").rglob("*.py") if p.stat().st_size)
+    if args.files:
+        files = [f for f in files if re.search(args.files, f)]
     fixtures = sorted(p.relative_to(root).as_posix() for p in (root / "tests/fixtures").rglob("*.sql") if p.stat().st_size)
     touched = sample_lines(args.sample)
     ctx = Context(root, files, touched)

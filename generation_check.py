@@ -182,8 +182,20 @@ def writes_shared_state(node):
     return False
 
 
-def compiled_keys(name, text):
+_COMPILED = {}
+
+
+def compiled_keys(name, text, digest=None):
     """{code key: count} for every code object compiled from a file, or None."""
+    if digest is not None and (name, digest) in _COMPILED:
+        return _COMPILED[(name, digest)]
+    counts = _compile_keys(name, text)
+    if digest is not None:
+        _COMPILED[(name, digest)] = counts
+    return counts
+
+
+def _compile_keys(name, text):
     try:
         pending = [compile(text, name, "exec", dont_inherit=True)]
     except (SyntaxError, ValueError, RecursionError):
@@ -197,10 +209,10 @@ def compiled_keys(name, text):
     return counts
 
 
-def eligible_keys(name, old, new):
+def eligible_keys(name, old, new, trees=None):
     """Code keys an edit is confined to, or None if it is not eligible."""
     try:
-        before, after = ast.parse(old), ast.parse(new)
+        before, after = trees or (ast.parse(old), ast.parse(new))
     except (SyntaxError, ValueError, RecursionError):
         return None
     owners = changed_owners(before, after)
@@ -230,39 +242,46 @@ def _audited_files_match(source, checkout):
     return True
 
 
-def plan(selector, data, mask, name, old, new):
+def selected_records(selector, data, mask, name):
+    """Recorded tests in the selection that do not read the edited file's source."""
+    entry = selector.files.get(name) or {}
+    unsafe = entry.get("readers", 0) | selector.external | selector.child_work
+    chosen = []
+    for test_id in data.get("tests", {}):
+        bit = selector.test_bits.get(test_id, 0)
+        if bit and mask & bit and not unsafe & bit:
+            chosen.append(test_id)
+    return chosen
+
+
+def plan(selector, data, mask, name, old, new, trees=None):
     """{test id: whether its generator calls must be replayed} for selected tests this edit
-    can only reach through generator calls; {} if nothing applies."""
+    can only reach through generator calls; {} if nothing applies. `trees` may supply the
+    parsed (old, new) modules."""
     if not (name.startswith("sqlglot/") and name.endswith(".py")):
         return {}
+    chosen = selected_records(selector, data, mask, name)
+    if not chosen:
+        return {}
     checkout = data.get("checkout", {})
-    if checkout.get(name) != hashlib.sha256(old.encode("utf-8")).hexdigest():
+    digest = hashlib.sha256(old.encode("utf-8")).hexdigest()
+    if checkout.get(name) != digest or not _audited_files_match(selector.source, checkout):
         return {}
-    if not _audited_files_match(selector.source, checkout):
-        return {}
-    keys = eligible_keys(name, old, new)
+    keys = eligible_keys(name, old, new, trees)
     if not keys:
         return {}
     # Every changed code object must exist exactly once on the pinned file (so its key
     # names it alone) and must never have run outside generator calls. Code that never
     # ran at all in the recorded tests cannot have affected them.
-    compiled = compiled_keys(name, old)
+    compiled = compiled_keys(name, old, digest)
     if compiled is None or any(compiled.get(key) != 1 for key in keys):
         return {}
     if keys & set(data.get("outside", ())):
         return {}
-    entry = selector.files.get(name) or {}
-    unsafe = entry.get("readers", 0) | selector.external | selector.child_work
-    candidates = {}
-    for test_id, record in data.get("tests", {}).items():
-        bit = selector.test_bits.get(test_id, 0)
-        if not bit or not mask & bit or unsafe & bit:
-            continue
-        # A test whose generator calls never ran changed code never ran it at all (the
-        # code ran nowhere else): it needs no replay. Otherwise every call is replayed,
-        # so the global-state change compares with the recorded baseline replay.
-        candidates[test_id] = bool(keys & set(record["keys"]))
-    return candidates
+    # A test whose generator calls never ran changed code never ran it at all (the code
+    # ran nowhere else): it needs no replay. Otherwise every call is replayed, so the
+    # global-state change compares with the recorded baseline replay.
+    return {test_id: bool(keys & data["tests"][test_id]["keys"]) for test_id in chosen}
 
 
 def expected_cpu(data, candidates):
@@ -274,18 +293,27 @@ def expected_cpu(data, candidates):
     return total
 
 
-def refine(selector, data, mask, name, change, old, new, budget, saving_of):
+def refine(selector, data, mask, name, change, old, new, budget, saving_of, trees=None):
     """Return (mask, charged CPU). saving_of(mask, drop bits) is the schedule saving of dropping
     those tests from that selection."""
     start = cpu_seconds()
     try:
-        return _refine(selector, data, mask, name, old, new, budget, saving_of, start)
+        return _refine(selector, data, mask, name, old, new, budget, saving_of, start, trees)
     except Exception:  # noqa: BLE001 - any doubt keeps the selection unchanged
         return mask, cpu_seconds() - start
 
 
-def _refine(selector, data, mask, name, old, new, budget, saving_of, start):
-    candidates = plan(selector, data, mask, name, old, new)
+# Below this possible schedule saving the static analysis itself is not worth its CPU.
+MIN_SAVING = 0.5
+
+
+def _refine(selector, data, mask, name, old, new, budget, saving_of, start, trees):
+    chosen = selected_records(selector, data, mask, name) if name.endswith(".py") else []
+    # Decide from the schedule first: dropping every recorded test together (they can mask
+    # each other's savings, or be masked by another long test) must be worth the analysis.
+    if not chosen or saving_of(mask, sum(selector.test_bits[t] for t in chosen)) < MIN_SAVING:
+        return mask, cpu_seconds() - start
+    candidates = plan(selector, data, mask, name, old, new, trees)
     for test_id in [t for t, replay in candidates.items() if not replay]:
         mask &= ~selector.test_bits[test_id]
         del candidates[test_id]
@@ -294,14 +322,16 @@ def _refine(selector, data, mask, name, old, new, budget, saving_of, start):
     drop = sum(selector.test_bits[t] for t in candidates)
     expected = expected_cpu(data, candidates)
     saving = saving_of(mask, drop)
-    # Run only when the schedule saving of the whole group pays for the expected CPU.
+    # Replay only when the schedule saving of the whole group pays for the expected CPU.
     if expected * 1.5 + .25 >= saving or expected > budget:
         return mask, cpu_seconds() - start
     cpu_limit = min(budget, 2 * expected + .5)
     wall = 3 * cpu_limit + 2
     from native_probes import _forked
     pinned = selector.source.resolve()
-    outcome, _ = _forked(lambda: _child(pinned, {name: new}, data, candidates), None, wall, cpu_limit)
+    keys = eligible_keys(name, old, new, trees) or set()
+    first = [i for i, key in enumerate(data["inside"]) if key in keys]
+    outcome, _ = _forked(lambda: _child(pinned, {name: new}, data, candidates, first), None, wall, cpu_limit)
     if not isinstance(outcome, dict):
         return mask, cpu_seconds() - start
     for test_id in candidates:
@@ -312,10 +342,10 @@ def _refine(selector, data, mask, name, old, new, budget, saving_of, start):
 
 # ---------------------------------------------------------------- child side
 
-def _child(source, overlays, data, candidates):
+def _child(source, overlays, data, candidates, first=()):
     results = {}
     for test_id in candidates:
-        matched, fingerprint, _ = replay_in_child(source, overlays, data, test_id, fork=True)
+        matched, fingerprint, _ = replay_in_child(source, overlays, data, test_id, fork=True, first=first)
         results[test_id] = bool(matched and fingerprint is not None
                                 and fingerprint == data["tests"][test_id].get("state"))
     return results
@@ -330,18 +360,19 @@ def equivalent(expected, actual):
         return False
 
 
-def replay_in_child(source, overlays, data, test_id, *, fork):
+def replay_in_child(source, overlays, data, test_id, *, fork, first=()):
     """(all calls equivalent, global-state change digest, CPU). With fork, each test replays in its
-    own forked grandchild so tests cannot see each other's state."""
+    own forked grandchild so tests cannot see each other's state. Calls that ran the code keys
+    indexed by `first` replay first, so a changed output fails fast; all calls always replay."""
     if fork:
         from fixture_replay import run_isolated
-        outcome = run_isolated(lambda: list(_replay(source, overlays, data, test_id)),
+        outcome = run_isolated(lambda: list(_replay(source, overlays, data, test_id, first)),
                                time.monotonic() + 600)
         return tuple(outcome) if isinstance(outcome, list) else (False, None, 0.0)
-    return _replay(source, overlays, data, test_id)
+    return _replay(source, overlays, data, test_id, first)
 
 
-def _replay(source, overlays, data, test_id):
+def _replay(source, overlays, data, test_id, first=()):
     if any(m == "sqlglot" or m.startswith("sqlglot.") for m in sys.modules):
         return False, None, 0.0  # Overlays apply only to modules imported after they are installed.
     started = time.process_time()
@@ -357,7 +388,9 @@ def _replay(source, overlays, data, test_id):
     before = state_summary()
     record = data["tests"][test_id]
     generator = Python().generator(identify=True, comments=False)
-    for text, expected, _ in record["calls"]:
+    first = set(first)
+    calls = sorted(record["calls"], key=lambda call: not first.intersection(call[2]))
+    for text, expected, used in calls:
         expression = serde.load(json.loads(text))
         try:
             actual = generator.generate(expression)
@@ -365,7 +398,8 @@ def _replay(source, overlays, data, test_id):
             return False, None, time.process_time() - started
         if not isinstance(actual, str) or not equivalent(expected, actual):
             return False, None, time.process_time() - started
-        # The executor reuses its expressions after generating code from them.
-        if json.dumps(serde.dump(expression), sort_keys=True) != text:
+        # The executor reuses its expressions after generating code from them. Calls that
+        # did not run changed code (or replays without `first`, at build time) cannot differ.
+        if (not first or first.intersection(used)) and json.dumps(serde.dump(expression), sort_keys=True) != text:
             return False, None, time.process_time() - started
     return True, state_fingerprint(before, state_summary()), time.process_time() - started

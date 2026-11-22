@@ -949,11 +949,16 @@ class Selector:
                 result = self.check_executor_plan(result, name, old, new, next(iter(removed)))
             if (self.generation_record and self.generation_check_budget >= .25 and result and len(changes) == 1
                     and not self.conservative_python and name.endswith(".py") and plain_text_change(patch)):
-                from generation_check import refine as refine_generation
-                result, cpu = refine_generation(
-                    self, self.generation_record, result, name, changes[0], old, new, self.generation_check_budget,
-                    lambda mask, drop: schedule_saving(self.chosen(mask), drop))
-                self.generation_check_budget -= cpu
+                from generation_check import load, refine as refine_generation
+                # The record is read on first use (a path), so patches it cannot apply to pay nothing.
+                if isinstance(self.generation_record, Path):
+                    self.generation_record = load(self.generation_record)
+                if self.generation_record:
+                    result, cpu = refine_generation(
+                        self, self.generation_record, result, name, changes[0], old, new,
+                        self.generation_check_budget, lambda mask, drop: schedule_saving(self.chosen(mask), drop),
+                        trees=(before, after))
+                    self.generation_check_budget -= cpu
             if (self.fixture_entries and self.fixture_replay_budget >= .5 and result and len(changes) == 1
                     and not self.conservative_python and plain_text_change(patch)):
                 from fixture_replay import refine
@@ -1364,15 +1369,6 @@ def load_fixture_entries(path, source):
         return None
 
 
-def load_generation_record(path):
-    """The build-time generation record (generation_check.py), or None when missing or invalid."""
-    try:
-        from generation_check import load
-        return load(path)
-    except (OSError, ValueError, ImportError):
-        return None
-
-
 def resolve_settings(argv=None):
     return parse_args(argv).settings
 
@@ -1402,8 +1398,7 @@ def main():
                         fixture_entries=load_fixture_entries(args.fixture_entries, args.source)
                         if settings["fixture_replay_budget"] > 0 else None,
                         fixture_replay_budget=max(0.0, settings["fixture_replay_budget"]),
-                        generation_record=load_generation_record(args.generation_record)
-                        if settings["generation_check_budget"] > 0 else None,
+                        generation_record=args.generation_record if settings["generation_check_budget"] > 0 else None,
                         generation_check_budget=max(0.0, settings["generation_check_budget"]))
 
 

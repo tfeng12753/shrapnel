@@ -40,7 +40,7 @@ VARIANTS = {
                                                    "lazy_test_budget": 3.0, "fixture_replay_budget": 8.0},
     "relations_fixtures_lazy_and_generation_check": {**BASE, "relations": True, "executor_fixtures": True,
                                                      "lazy_test_budget": 3.0, "typeddict_state_check": True,
-                                                     "generation_check_budget": 4.0},
+                                                     "generation_check_budget": 8.0},
 }
 
 
