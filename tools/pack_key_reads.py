@@ -27,6 +27,8 @@ def pack(source, control, first, second):
            or m["tests"] != names for m in maps):
         raise ValueError("incomplete map or mismatched checkout or test inventory")
     base, a, b = [m["files"] for m in maps]
+    retained = set(maps[1].get("retained_items", ())) | set(maps[2].get("retained_items", ()))
+    retained_mask = sum(1 << i for i, name in enumerate(names) if name in retained)
     files = {}
     for name in sorted(base.keys() & a.keys() & b.keys()):
         left, right = (f[name].get("dictionary_reads", {}) for f in (a, b))
@@ -52,6 +54,15 @@ def pack(source, control, first, second):
                     for value in seed[field].values():
                         seen |= int(value, 16)
                 rec["unobserved"] = union(rec["unobserved"], format(masks[0] & ~seen, "x"))
+            rec["unobserved"] = union(rec["unobserved"], format(masks[0] & retained_mask, "x"))
+            if retained_mask:
+                baseline_lines = base[name].get("lines", {})
+                baseline_anchors = base[name].get("anchors", {})
+                for number in range(rec["start"], rec["end"] + 1):
+                    line = str(number)
+                    observed = int(baseline_lines.get(line, baseline_anchors.get(line, "0")), 16) & retained_mask
+                    if observed:
+                        rec["lines"][line] = union(rec["lines"].get(line, "0"), format(observed, "x"))
             records[symbol] = rec
         if records:
             files[name] = {"sha256": hashlib.sha256((source / name).read_bytes()).hexdigest(), "records": records}
