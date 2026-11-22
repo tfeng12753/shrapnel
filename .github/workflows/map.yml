@@ -4,6 +4,17 @@ name: Rebuild the dependency map
 # builder change. Nothing here reads sample answers or mutant results.
 on:
   workflow_dispatch:
+  # Also on branch pushes that change a builder file, so a branch can get its map
+  # before the workflow exists on main.
+  push:
+    branches-ignore: [main]
+    paths:
+      - tools/build_map.py
+      - tools/instrument.py
+      - tools/setup_flow.py
+      - tools/fetch_source.py
+      - requirements.lock
+      - .github/workflows/map.yml
 permissions:
   contents: read
 jobs:
