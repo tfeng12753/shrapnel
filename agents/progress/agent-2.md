@@ -5,14 +5,21 @@
   Mirrored to `claude/bold-ritchie-0vfm3b`. Last pushed: see `git log -1`.
 - Done: Task 1 builder + `dict_keys.py` (flag off); Task 2 `equality` record;
   Task 3 experiment (miss confirmed) and builder fix (writer attribution).
-- Running/next: map build with the current builder
-  (`/opt/work/v2.json.gz`, log `/opt/work/v2.log`). Then:
-  1. run the selector on the controls with that map, with and without
-     `--dict-key-refinement`, and check against ground truth
-     (`/opt/work/controls/{commits,results}`; recreate from the Datasets list);
-  2. check `cold-name` is now fully selected;
-  3. export the map to `maps/` (Task 4) and rerun unit tests;
-  4. sample patches: misses, simulated seconds and CPU against `main`.
+- Running/next: final map builds under two hash seeds from commit a1dfd92
+  (`/opt/work/seed{0,1}.json.gz`, logs `/opt/work/seed{0,1}.log`). Then:
+  1. `python tools/map_merge_seeds.py /opt/work/seed0.json.gz /opt/work/seed1.json.gz --output /opt/work/merged.json.gz`;
+  2. controls: `python /opt/work/evalctl.py /opt/work/merged.json.gz [--dict-key-refinement]`
+     (script: runs the selector on `/opt/work/controls`, scores against ground truth);
+  3. sample: `selector.py --data sample --map /opt/work/merged.json.gz` then `score.py`;
+     compare with the committed map (130.723 simulated s in this sandbox);
+  4. if no regressions: `python tools/map_export_local.py /opt/work/merged.json.gz`,
+     unit tests, commit `maps/`.
+- Intermediate result (map v2 @ 8658f69, before the per-key writer fix):
+  controls with `--dict-key-refinement`: snow-* 274 -> 4 tests, bq-escape-*
+  223 -> 10, bq-safe-offset 10 -> 4 (both failures kept), cold-name 124
+  misses -> 0. But writer attribution was too broad (sample 130.7 -> 164.1 s)
+  and refinement fell on an `arg_types` edit read at class creation (fixed in
+  04c0473: per-key writers, `shared` fallback).
 - Sandbox setup (fresh session): `python3 -m venv /opt/venv && /opt/venv/bin/pip
   install -r requirements.lock coverage==7.10.7`; pinned checkout by
   `git clone --filter=blob:none` of the pinned repository, `git checkout
