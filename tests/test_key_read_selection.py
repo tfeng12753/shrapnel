@@ -8,9 +8,28 @@ from unittest import TestCase
 from dict_keys import catalog_digest
 from selector import REVISION, Selector
 from tools.mutants import diff
+from tools.pack_key_reads import pack
 
 
 class KeyReadSelectionTests(TestCase):
+    def test_packed_record_retains_users_unexplained_in_either_seed(self):
+        with TemporaryDirectory() as folder:
+            root = Path(folder)
+            name = "library.py"
+            (root / name).write_text('KEYS = {"a": 1, "b": 2}\n')
+            common = {"revision": REVISION, "version": 1, "complete": True, "tests": ["a", "b", "c"]}
+            sources = [root / (name + ".gz") for name in ("base", "first", "second")]
+            base = {"regions": [[1, 1, "value", "7"]]}
+            defaults = {"start": 1, "end": 1, "whole": "0", "unobserved": "0", "transferred": "0",
+                        "presence": {}, "lines": {}, "shared": []}
+            first = {"dictionary_reads": {"KEYS": {**defaults, "keys": {"a": "1", "b": "2"}}}}
+            second = {"dictionary_reads": {"KEYS": {**defaults, "keys": {"a": "1", "b": "4"}}}}
+            for path, entry in zip(sources, (base, first, second)):
+                path.write_bytes(gzip.compress(json.dumps({**common, "files": {name: entry}}).encode()))
+            record = pack(root, *sources)["files"][name]["records"]["KEYS"]
+            self.assertEqual(record["keys"], {"a": "1", "b": "6"})
+            self.assertEqual(record["unobserved"], "6")
+
     def test_real_selector_uses_only_matching_observations_and_keeps_other_reasons(self):
         with TemporaryDirectory() as folder:
             root = Path(folder)

@@ -819,6 +819,7 @@ class Selector:
         try:
             changes = parse_patch(patch)
             result = 0
+            static_refinements = (self.discarded_strings or self.key_reads) and plain_text_change(patch)
             # Narrowing probes deferred until every file of the patch is processed.
             pending = []
             for c in changes:
@@ -834,7 +835,8 @@ class Selector:
                     before, after = baseline_tree(old), ast.parse(new, type_comments=True)
                     # Compare every file: a harmless-looking comment may accompany a fixture edit.
                     changes_at_sites = classify_python_edit(before, after)
-                    if self.discarded_strings and changes_at_sites is None and not self.conservative_python:
+                    if (static_refinements and self.discarded_strings and changes_at_sites is None
+                            and not self.conservative_python):
                         from discarded_strings import literal_change
                         literal = literal_change(before, after, old, new, removed | inserted,
                                                  allow_relocation=self.location_readers is not None)
@@ -890,7 +892,7 @@ class Selector:
                         continue
                     if hazard:
                         return include(self.all, "import-time change", name)
-                    if len(changes) == 1 and entry is not None and name in self.key_reads:
+                    if static_refinements and len(changes) == 1 and entry is not None and name in self.key_reads:
                         from dict_keys import matched_readers
                         keyed = matched_readers(self.key_reads[name], self.decode_key_mask, before, after, old,
                                                 removed, inserted)

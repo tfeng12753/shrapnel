@@ -1,0 +1,7 @@
+# Static refinement measurements
+
+The control revision is `1ea65b5`. Patches and failure labels are used only by the host-side evaluator. Selector images receive the pinned checkout, baseline observations, patch directory and test catalog. Linux regression tests cover source readers, position readers, actual docstrings, assigned strings, mixed edits and missing or incompatible dictionary evidence.
+
+The discarded-string check requires a string expression immediately after a class assignment, unchanged surrounding text and matching compiled code. The separate relocation option compares the nested code objects after removing location tables and keeps source readers, position observers and external dependencies. A fresh inserted-line control retained 1,471 tests and saved 7.363 simulated seconds. The six fresh controls together saved 7.731 simulated seconds with no missed failures. The 30 sample patches and two disjoint 45-patch holdout batches kept their original schedule costs with both string options enabled.
+
+Full-item verification uses baseline measurements from the same isolated pytest entry point, including staging, setup and child processes. It admits an item only when both measured wall time and CPU fit the available allowance. The three measured item medians ranged from 3.223 to 39.797 wall seconds and from 3.159 to 39.998 CPU seconds. Verification remains off in the default configuration.
