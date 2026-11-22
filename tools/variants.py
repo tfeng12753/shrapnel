@@ -23,7 +23,9 @@ BASE = {"conservative_python": False, "child_work": False, "relations": False,
         "executor_fixtures": False, "executor_plan_budget": 0.0, "lazy_test_budget": 0.0,
         "probe_budget": 0.0, "import_check_budget": 6.0, "setup_check_budget": 8.0,
         "downstream_import_budget": 6.0,
-        "typeddict_state_check": False}
+        "typeddict_state_check": False,
+        "schedule_admission": False,
+        "exact_comparisons": False}
 VARIANTS = {
     "conservative_python": {**BASE, "conservative_python": True, "import_check_budget": 0.0, "setup_check_budget": 0.0},
     "coverage": BASE,
@@ -51,7 +53,9 @@ def selector_options(config):
             "--import-check-budget", repr(float(config["import_check_budget"])),
             "--setup-check-budget", repr(float(config["setup_check_budget"])),
             "--downstream-import-budget", repr(float(config["downstream_import_budget"])),
-            "--typeddict-state-check" if config["typeddict_state_check"] else "--no-typeddict-state-check"]
+            "--typeddict-state-check" if config["typeddict_state_check"] else "--no-typeddict-state-check",
+            "--schedule-admission" if config["schedule_admission"] else "--no-schedule-admission",
+            "--exact-comparisons" if config["exact_comparisons"] else "--no-exact-comparisons"]
 
 
 def run_container(image, data, options, tests, answers, *, trace_pytest=False):
@@ -150,7 +154,8 @@ def main():
     best = report["best_zero_miss_variant"]
     if best is not None:
         config = VARIANTS[best]
-        (ROOT / "selector-config.json").write_text(json.dumps(config, separators=(",", ":")) + "\n")
+        # One key per line, so each agent's settings stay on their own lines.
+        (ROOT / "selector-config.json").write_text(json.dumps(config, indent=2) + "\n")
         print("Wrote the measured configuration to selector-config.json:", config)
         if not args.no_validate:
             # The shipped default (no flags) must reproduce the measured selections.

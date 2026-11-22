@@ -149,6 +149,37 @@ def split(tests: list[dict]) -> list[list[int]]:
     return best
 
 
+def schedule_seconds(tests: list[dict]) -> float:
+    """Cost of the schedule split() chooses for these tests: slowest worker plus 2 s per worker."""
+    workers = split(tests)
+    durations = {t["number"]: round(t["seconds"] * 1000) for t in tests}
+    return (2000 * len(workers) + max((sum(durations[n] for n in w) for w in workers), default=0)) / 1000
+
+
+def schedule_saving(tests: list[dict], dropped: int) -> float:
+    """Seconds saved by dropping the tests whose bits are in `dropped` from a final selection."""
+    return schedule_seconds(tests) - schedule_seconds([t for t in tests if not dropped >> t["number"] & 1])
+
+
+# A probe must save at least 1.5 times its expected CPU plus half a second.
+ADMISSION_FACTOR, ADMISSION_MARGIN = 1.5, 0.5
+# Expected CPU per probe kind, measured on the pinned checkout without bytecode.
+# A run replaces these with its own measurements per probe key once it has any.
+# Plan replay is a screen plus two full captures (about 7.4 s each).
+PRIOR_CPU = {"setup": 2.0, "fixture": 0.05, "lazy": 1.45, "plan": 15.0}
+# The lazy-test check with bytecode compiled at image build (no recompilation).
+PRIOR_CPU_COMPILED = {"lazy": 0.9}
+
+
+def pays_for_itself(saving: float, cpu: float) -> bool:
+    return math.isfinite(saving) and math.isfinite(cpu) and saving >= ADMISSION_FACTOR * cpu + ADMISSION_MARGIN
+
+
+def break_even_cpu(saving: float) -> float:
+    """Largest CPU a probe with this saving may spend and still pay for itself."""
+    return (saving - ADMISSION_MARGIN) / ADMISSION_FACTOR
+
+
 def plain_text_change(patch):
     metadata = ("old mode ", "new mode ", "rename ", "copy ", "Binary files ", "GIT binary patch")
     return not any(line.startswith(metadata) for line in patch.splitlines())
@@ -349,6 +380,12 @@ def relation_outcome(state, op):
     return None
 
 
+# Value operators whose outcome on built-in int/str/None operands the map's
+# relation states determine. Identity depends on object caching, so a swap to
+# or from `is` never uses exact evidence.
+EXACT_OPERATORS = ("Eq", "NotEq", "Lt", "LtE", "Gt", "GtE")
+
+
 @lru_cache(maxsize=8)
 def baseline_tree(source):
     return ast.parse(source, type_comments=True)
@@ -478,8 +515,19 @@ class Selector:
     def __init__(self, tests: list[dict], source: Path, map_path: Path, *, conservative_python=False,
                  relations=None, child_work=False, import_closure=None, import_check_budget=0.0,
                  setup_check_budget=0.0, executor_fixtures=False, executor_plans=None, executor_plan_budget=0.0,
-                 lazy_test_budget=0.0, import_effects=None, downstream_import_budget=0.0, typeddict_state_check=False):
+                 lazy_test_budget=0.0, import_effects=None, downstream_import_budget=0.0, typeddict_state_check=False,
+                 schedule_admission=False, exact_comparisons=False):
         self.tests, self.source = tests, source
+        # Admit every narrowing probe only after a patch's selection is final,
+        # and only if dropping its tests saves enough schedule time for its CPU.
+        self.schedule_admission = schedule_admission
+        self.measured_cpu = {}
+        self.prior_cpu = dict(PRIOR_CPU)
+        if (source / "sqlglot" / "__pycache__" / f"__init__.{sys.implementation.cache_tag}.pyc").is_file():
+            self.prior_cpu.update(PRIOR_CPU_COMPILED)
+        # Narrow value comparisons only with map evidence that every evaluation
+        # completed on built-in int/str/None operands (see refine_comparisons).
+        self.exact_comparisons = exact_comparisons
         self.typeddict_state_check = typeddict_state_check
         self._typeddict_readers = None
         # Patches that change code or settings used while some module is being
@@ -567,7 +615,10 @@ class Selector:
                     "regions": [(a, b, kind, decode(v)) for a, b, kind, v in entry.get("regions", [])],
                     "anchors": {int(k): decode(v) for k, v in entry.get("anchors", {}).items()},
                     "comparisons": {site: {"op": info["op"], "unknown": decode(info["unknown"]),
-                        "states": {state: decode(v) for state, v in info["states"].items()}}
+                        "states": {state: decode(v) for state, v in info["states"].items()},
+                        "exact": {"complete": decode(info["exact"]["complete"]),
+                                  "states": {state: decode(v) for state, v in info["exact"]["states"].items()}}
+                                 if "exact" in info else None}
                         for site, info in comparison_sites.items()},
                     "readers": readers,
                     "executed": decode(entry.get("executed", "0")),
@@ -705,6 +756,8 @@ class Selector:
         try:
             changes = parse_patch(patch)
             result = 0
+            # Narrowing probes deferred until every file of the patch is processed.
+            pending = []
             for c in changes:
                 name = c["old"]
                 if name != c["new"]:
@@ -770,7 +823,12 @@ class Selector:
                             and name.startswith("tests/fixtures/") and name.endswith(".sql")
                             and plain_text_change(patch)):
                         from executor_fixtures import CLASS, fixture_effect
-                        if CLASS in setup:
+                        if CLASS in setup and self.schedule_admission:
+                            checked_class = CLASS
+                            # The class's tests stay until the deferred loader check runs.
+                            pending.append(self.fixture_candidate(name, new, readers & setup[CLASS], setup[CLASS]))
+                            readers &= ~setup[CLASS]
+                        elif CLASS in setup:
                             effect = fixture_effect(self.source, name, new)
                             if effect is not None:
                                 # Both pinned setup paths only materialize this loader. A
@@ -781,9 +839,13 @@ class Selector:
                                     readers &= ~self.test_bits.get(item, 0)
                     result |= include(readers, "file reader", name)
                     for class_id, members in sorted(setup.items()):
-                        if class_id != checked_class:
-                            result |= include(self.setup_fallback(class_id, members, entry["readers"], changes),
-                                              "class setup reader", name, class_id)
+                        if class_id == checked_class:
+                            continue
+                        if self.schedule_admission:
+                            pending.append(self.setup_candidate(class_id, members, entry["readers"], changes))
+                            continue
+                        result |= include(self.setup_fallback(class_id, members, entry["readers"], changes),
+                                          "class setup reader", name, class_id)
                     # Unknown readers are uncertainty, not proof of irrelevance.
                     if not entry["readers"] and not setup:
                         return include(self.all, "unknown file readers", name)
@@ -794,7 +856,10 @@ class Selector:
                 for start, end in affected_comparisons:
                     result |= include(self.span_users(entry, start, end), "comparison operand coverage", name,
                                       (start, end))
-                for start, end in sorted(set(short_circuit_edits(before, after, removed | inserted))):
+                # An operator-only edit (classify_python_edit returned a list) leaves
+                # every and/or expression's shape unchanged, so it has no such spans.
+                short_circuit = short_circuit_edits(before, after, removed | inserted) if changes_at_sites is None else ()
+                for start, end in sorted(set(short_circuit)):
                     result |= include(self.span_users(entry, start, end),
                                       "short-circuit evaluation change", name, (start, end))
                 for line in removed:
@@ -817,16 +882,21 @@ class Selector:
                         result |= include(mask, "definition dependency", name, (a, b))
                 if not removed and not inserted:
                     return include(self.all, "no changed positions", name)
+            if pending:
+                result = self.resolve(result, pending, include)
             if (self.lazy_test_budget >= 0.7 and result and result == self.closure_external
                     and result.bit_count() == 1 and len(changes) == 1 and not self.conservative_python
                     and name.startswith("sqlglot/") and name.endswith(".py") and plain_text_change(patch)):
                 from isolated_pytest import cpu_seconds, passed
                 item, = self.chosen(result)
+                if self.schedule_admission and not self.admit("lazy", "lazy", schedule_seconds([item])):
+                    return result
                 start = cpu_seconds()
                 # A single scheduled worker costs two seconds plus the test. Limit
                 # wall time per launch and charge actual CPU even when verification fails.
                 deadline = min(2 * self.lazy_test_budget, 2 + item["seconds"])
                 verified = passed(self.source, name, new, item["id"], deadline)
+                self.record("lazy", "lazy", cpu_seconds() - start)
                 self.lazy_test_budget -= cpu_seconds() - start
                 if verified:
                     return 0
@@ -854,11 +924,23 @@ class Selector:
 
             without = [t for t in chosen if t["id"] != ITEM]
             benefit = (schedule_cost(chosen) - schedule_cost(without)) / 1000
-            # The audit may spend at most half the benefit on an individual edit.
-            allowance = min(self.executor_plan_budget, benefit / 2) - (cpu_seconds() - start)
-            if allowance >= 1 and matched(self.source.resolve(), name, before, after, line,
-                                          self.executor_plans, allowance):
-                return mask & ~target
+            if self.schedule_admission:
+                if not self.admit("plan", "plan", benefit):
+                    return mask
+                # Never spend more than the CPU at which the replay still pays.
+                allowance = min(self.executor_plan_budget, break_even_cpu(benefit)) - (cpu_seconds() - start)
+            else:
+                # The audit may spend at most half the benefit on an individual edit.
+                allowance = min(self.executor_plan_budget, benefit / 2) - (cpu_seconds() - start)
+            if allowance >= 1:
+                replay = cpu_seconds()
+                ok = matched(self.source.resolve(), name, before, after, line, self.executor_plans, allowance)
+                if ok:
+                    # A rejected replay may have stopped at its allowance, which
+                    # understates the cost of a complete one: record only matches.
+                    self.record("plan", "plan", cpu_seconds() - replay)
+                if ok:
+                    return mask & ~target
             return mask
         finally:
             self.executor_plan_budget -= cpu_seconds() - start
@@ -868,12 +950,63 @@ class Selector:
             return self.external
         return self.external & ~self.closure_external
 
-    def setup_fallback(self, class_id, members, readers, changes):
+    def expected_cpu(self, kind, key):
+        measured = self.measured_cpu.get((kind, key)) or self.measured_cpu.get(kind)
+        return sum(measured) / len(measured) if measured else self.prior_cpu[kind]
+
+    def record(self, kind, key, cpu):
+        self.measured_cpu.setdefault((kind, key), []).append(cpu)
+        if key != kind:
+            self.measured_cpu.setdefault(kind, []).append(cpu)
+
+    def admit(self, kind, key, saving):
+        return pays_for_itself(saving, self.expected_cpu(kind, key))
+
+    def resolve(self, result, pending, include):
+        """Run deferred probes that pay for themselves against the patch's final selection.
+
+        Each candidate is (kind, key, keep, run): `keep` is kept unless run() is
+        admitted, and run() returns the subset of `keep` that must stay.
+        """
+        kept = result
+        for index, (kind, key, keep, run) in enumerate(pending):
+            rest = kept
+            for _, _, other, _ in pending[index + 1:]:
+                rest |= other
+            droppable = keep & ~rest
+            if droppable and self.admit(kind, key, schedule_saving(self.chosen(rest | keep), droppable)):
+                kept |= include(run() & keep, f"{kind} probe kept", None, key)
+            else:
+                kept |= include(keep, f"{kind} probe not admitted", None, key)
+        return kept
+
+    def setup_candidate(self, class_id, members, readers, changes):
+        def run():
+            return self.setup_fallback(class_id, members, readers, changes, admitted=True)
+        return "setup", class_id, members, run
+
+    def fixture_candidate(self, name, new, readers, members):
+        def run():
+            from executor_fixtures import fixture_effect
+            from isolated_pytest import cpu_seconds
+            start = cpu_seconds()
+            effect = fixture_effect(self.source, name, new)
+            self.record("fixture", "fixture", cpu_seconds() - start)
+            if effect is None:
+                # The pinned setup's loader did not succeed: keep the whole class.
+                return members
+            item, identical = effect
+            return readers & ~self.test_bits.get(item, 0) if identical else readers
+        return "fixture", "fixture", members, run
+
+    def setup_fallback(self, class_id, members, readers, changes, *, admitted=False):
         """Tests of a class to keep beyond attributed readers: none if its setUpClass verifiably succeeds."""
         dropped = members & ~readers
         if not dropped:
             return 0
-        if sum(t["seconds"] for t in self.chosen(dropped)) < 3.0 or self.setup_check_budget < 1.0:
+        if self.setup_check_budget < 1.0:
+            return members
+        if not admitted and sum(t["seconds"] for t in self.chosen(dropped)) < 3.0:
             return members
         module_path, class_name = class_id.split("::")[0], class_id.split("::")[-1]
         if not module_path.endswith(".py"):
@@ -886,6 +1019,7 @@ class Selector:
         from native_probes import verify_setup
         ok, cpu = verify_setup(self.source, overlays, module_path[:-3].replace("/", "."), class_name,
                                wall_seconds=12.0, cpu_seconds=min(6.0, self.setup_check_budget))
+        self.record("setup", class_id, cpu)
         self.setup_check_budget -= cpu
         return 0 if ok else members
 
@@ -940,7 +1074,11 @@ class Selector:
             # the map observer records anything. An apparently safe hit does
             # not rule out an earlier unrecorded failure in the same test.
             if self.strict_relations and before not in ("Is", "IsNot"):
-                return None
+                exact = self.exact_comparison(info, before, after, contexts[site], entry)
+                if exact is None:
+                    return None
+                result |= exact
+                continue
             observed = unknown = info["unknown"]
             for state, users in info["states"].items():
                 observed |= users
@@ -950,6 +1088,41 @@ class Selector:
             start, end, _ = contexts[site]
             result |= unknown | (self.span_users(entry, start, end) & ~observed)
         return result
+
+    def exact_comparison(self, info, before, after, context, entry):
+        """Tests to keep for a value-operator swap, or None without exact evidence.
+
+        A test may be dropped only if the map proves, for every evaluation of
+        the site by that test, that both operands completed, were built-in
+        int, str or None, the original operator completed, and the original
+        and replacement operators give the same outcome, and the test runs
+        before every test touching the site without that proof.
+        """
+        exact = info.get("exact")
+        if not self.exact_comparisons or exact is None:
+            return None
+        if before not in EXACT_OPERATORS or after not in EXACT_OPERATORS:
+            return None
+        start, end, _ = context
+        touched = self.span_users(entry, start, end) | info["unknown"] | exact["complete"]
+        for users in info["states"].values():
+            touched |= users
+        evidenced = changed = 0
+        for state, users in exact["states"].items():
+            touched |= users
+            evidenced |= users
+            a, b = relation_outcome(state, before), relation_outcome(state, after)
+            if a is None or b is None or a != b:
+                changed |= users
+        safe = exact["complete"] & evidenced & ~changed & ~info["unknown"]
+        unsafe = touched & ~safe
+        if unsafe:
+            # A test that does change (or is unproven) may leave different
+            # state behind for every test that runs after it in the same
+            # process. Catalog numbers follow the suite's collection order, so
+            # only safe tests that run before the first unsafe one are dropped.
+            safe &= (unsafe & -unsafe) - 1
+        return touched & ~safe
 
     def probe(self, patch, mask, budget, *, cost_aware=False):
         tests = self.chosen(mask)
@@ -973,13 +1146,17 @@ class Selector:
             # Only an all-pass batch saves a worker. Discount the upper
             # bound for each additional test and require a margin over CPU.
             expected_saving = saving * .8 ** len(tests)
-            if expected_saving <= 1.25 * expected_cpu:
+            if (not pays_for_itself(expected_saving, expected_cpu) if self.schedule_admission
+                    else expected_saving <= 1.25 * expected_cpu):
                 return mask, 0.0
             wall_seconds = 3 * cpu_seconds
         else:
             if any(t["seconds"] > .15 for t in tests) or sum(t["seconds"] for t in tests) > .8:
                 return mask, 0.0
             wall_seconds, cpu_seconds = min(1.5, budget + .1), min(1.0, budget)
+            # Even if every test passes, the drop must pay for the CPU limit.
+            if self.schedule_admission and not pays_for_itself(schedule_saving(tests, mask), cpu_seconds):
+                return mask, 0.0
         changes = parse_patch(patch)
         if any(not c["old"].endswith(".py") or c["old"].startswith("tests/") or c["old"] != c["new"] for c in changes):
             return mask, 0.0
@@ -1033,6 +1210,10 @@ def parse_args(argv=None):
     parser.add_argument("--import-time", type=Path, default=Path("/app/import-time.json"))
     parser.add_argument("--downstream-import-budget", type=float)
     parser.add_argument("--typeddict-state-check", action=argparse.BooleanOptionalAction, default=None)
+    parser.add_argument("--schedule-admission", action=argparse.BooleanOptionalAction, default=None,
+                        help="Admit narrowing probes only when their schedule saving pays for their CPU")
+    parser.add_argument("--exact-comparisons", action=argparse.BooleanOptionalAction, default=None,
+                        help="Narrow value-operator swaps with exact comparison evidence from the map")
     parser.add_argument("--config", type=Path, default=Path(__file__).with_name("selector-config.json"))
     args = parser.parse_args(argv)
     try:
@@ -1075,6 +1256,12 @@ def parse_args(argv=None):
                      "setup_check_budget": float(args.setup_check_budget),
                      "downstream_import_budget": float(args.downstream_import_budget),
                      "typeddict_state_check": bool(args.typeddict_state_check)}
+    if args.schedule_admission is None:
+        args.schedule_admission = config.get("schedule_admission", False)
+    if args.exact_comparisons is None:
+        args.exact_comparisons = config.get("exact_comparisons", False)
+    args.settings["schedule_admission"] = bool(args.schedule_admission)
+    args.settings["exact_comparisons"] = bool(args.exact_comparisons)
     if args.cost_aware_probes:
         args.settings["probe_budget"] = {"seconds": args.probe_budget, "cost_aware": True}
     return args
@@ -1115,7 +1302,10 @@ def main():
                         lazy_test_budget=max(0.0, settings["lazy_test_budget"]),
                         import_effects=load_import_effects(args.import_time, tests),
                         downstream_import_budget=max(0.0, settings["downstream_import_budget"]),
-                        typeddict_state_check=settings["typeddict_state_check"])
+                        typeddict_state_check=settings["typeddict_state_check"],
+                        schedule_admission=settings["schedule_admission"],
+                        exact_comparisons=settings["exact_comparisons"])
+
     schedules = {}
     remaining = max(0.0, args.probe_budget)
     for patch in sorted((args.data / "commits").glob("*.patch")):
