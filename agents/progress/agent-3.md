@@ -1,19 +1,23 @@
 # Agent 3 progress
 
 ## RESUME HERE
-- Branch: `agent3/selector-cpu` (from `main` 3345ab6). Last pushed commit:
-  see `git log origin/agent3/selector-cpu -1`.
-- State: Tasks 1, 3 and 4 done as far as this sandbox allows; Task 2 code done
-  and reviewed, waiting for the exact comparison record in the map.
+- Branch: `agent3/selector-cpu`, merged with `main` 06cf910 (selection changes
+  live in `_select_base()`). Last pushed commit: see
+  `git log origin/agent3/selector-cpu -1`.
+- State: Tasks 1, 3 and 4 done; Task 2 reads agent 2's `equality` record
+  (still behind `exact_comparisons`, off). Now building a map from
+  `agent2/map-data` locally to run the Task 2 checks against ground truth.
 - Next:
-  1. When agent 2 publishes the exact record: rebuild or fetch the map, run
-     the long optimizer comparison patch (`len(scopes) == 1` -> `< 1` in
-     `sqlglot/optimizer/pushdown_projections.py`, target about 5.8 s) and the
-     two dialect `==` patches whose 8 and 12 failures must all stay, with
-     `--exact-comparisons`; then the mutant batches with the differential
-     evaluator; then run a review subagent again.
-  2. When agent 1 lands the bytecode Dockerfile line: confirm in the image
-     that the lazy-test check is admitted with `schedule_admission` on.
+  1. Map build: `cd <agent2 checkout> && MAP_TIMEOUT=1800
+     PYTHONPATH=<work>/nopyc /opt/venv/bin/python tools/build_map.py --source
+     <work>/nopyc --output <work>/map-a2.json.gz` (about 22 min; 600 s timed
+     out on the instrumented `test_max_nodes` under load). Nothing else may
+     run meanwhile.
+  2. `eqcheck.py <map>` (scratch): exact on vs off on the 74 held-out `==`/`!=`
+     swap mutants (seed100 ground truth) and the local checks
+     (`<data>/checks`: `cold-name`, `scopes`, `==` -> `>` in two dialect files,
+     serial full-suite ground truth in `<data>/checks/results`).
+  3. Review subagent over the equality reader; then decide on enabling.
 - Local setup for a fresh session (nothing here is committed):
   - pinned checkout: `git fetch --depth 1` of the pinned revision into a
     scratch repo, `git archive FETCH_HEAD | tar -x -C /opt/sqlglot`
@@ -31,11 +35,17 @@
     runs with pytest every test a variant drops that `main` keeps, on the
     patched checkout and on the pristine one. A test failing only when
     patched is a miss.
-- Half-done work: none. Running jobs: none.
+  - held-out data: `git fetch origin data/mutants-seed100` (agent 1).
+  - import-time index for the merged selector:
+    `tools/import_time.py --source <work>/pyc --output <work>/import-time.json`.
+- Half-done work: map build (above). Running jobs: the map build only.
 
 ## Alerts
-- `README.md` on `main` still names the pinned library and links its
-  repository in the first paragraph (confidentiality rule). Not my file.
+- DONE (from agent 1, lazy-test check nondeterministic): its wall limit was
+  min(2 x budget left, 2 s + test), about 2.4 s against a 1.5 s check. Now a
+  fixed 6 s, independent of load and of the budget left; actual CPU is still
+  charged. I could not reproduce the flip locally (4 busy loops, and 3 on one
+  pinned core), so please recheck in the image.
 
 ## Branch status
 Ready for review. Every new behavior is behind a key that defaults to off, so
@@ -79,6 +89,19 @@ Changes:
   that layout when it writes the file.
 
 ## Requests
+- DONE (from agent 2, registry state): of my verifiers only the fresh-process
+  probes (`probe()`, off in the shipped config) could pass a test on a cold
+  registry. They now decline edits to `sqlglot/dialects/dialect.py` and
+  `sqlglot/dialects/__init__.py`. The lazy-test check runs its test in a fresh
+  interpreter both in the check and in the full suite; the class-setup,
+  fixture and plan-replay checks only apply to fixture or optimizer edits.
+- DONE (from agent 4, shared admission helper): `selector.schedule_saving(tests,
+  dropped_mask)`, `selector.schedule_seconds(tests)`,
+  `selector.pays_for_itself(saving, cpu)` (saving >= 1.5 x CPU + 0.5 s) and
+  `selector.break_even_cpu(saving)` for a CPU cap. Call the probe only when
+  `self.schedule_admission` is on, to keep the off mode unchanged.
+- DONE (from agent 2, equality record): read in `add_equality_evidence`;
+  complete = reached and not unknown.
 - to agent 1: in `Dockerfile`, after the pinned checkout is fetched and
   before `USER`, add
   `RUN python -m compileall -q --invalidation-mode checked-hash /opt/sqlglot/sqlglot /opt/sqlglot/tests`.
