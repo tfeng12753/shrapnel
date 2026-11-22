@@ -11,7 +11,8 @@ stated otherwise.
 | Targeted selection with the child-process guard (earlier map) | 470.062 | 0 |
 | Targeted selection with the inline-pool map | 166.316 | 0 |
 | + comparison relations | 118.443 | 0 |
-| + TPC executor fixture check and lazy-test check (current `main`) | 116.075 | 0 |
+| + TPC executor fixture check and lazy-test check | 116.075 | 0 |
+| + creation-hook attribution, lambda bodies, docstring prose, entry point | 115.843 | 0 |
 
 ## Map
 
@@ -34,6 +35,26 @@ tune/holdout split (tune on even ids, decide on odd ids).
 Rules: mutants and their results are evaluation data only. They never become
 selector input, and no rule may be keyed to specific patches, files or test
 outcomes.
+
+### Creation hooks, lambda bodies, docstrings and entry points
+
+Seed-100 held-out mutants (2,147 with usable ground truth), selector run
+locally on the pinned checkout with a map built by the same builder on the
+same machine, budgets as shipped. Per 30 includes 300 s per miss.
+
+| Split | Configuration | Misses | Simulated s | Per 30 |
+| --- | --- | ---: | ---: | ---: |
+| tune (even) | previous map and settings | 1 | 4459.5 | 132.82 |
+| tune (even) | new map | 0 | 4464.0 | 124.58 |
+| tune (even) | new map + `lambda_bodies`, `docstring_edits`, `entry_point_edits` | 0 | 4301.8 | 120.05 |
+| holdout (odd) | previous map and settings | 2 | 4368.9 | 139.06 |
+| holdout (odd) | new map | 0 | 4368.8 | 122.26 |
+| holdout (odd) | new map + `lambda_bodies`, `docstring_edits`, `entry_point_edits` | 0 | 4218.4 | 118.05 |
+
+The three previous misses all flipped an expression class's argument from
+optional to required; the derived required-argument set was read through an
+attribute the class got at creation, which the earlier map did not follow.
+Selector CPU on the 30 sample patches is unchanged (about 1.2 s locally).
 
 ## Known limits
 

@@ -31,6 +31,9 @@ class SourceModel:
         self.root = root
         self.symbols, self.imports, self.stars = {}, defaultdict(dict), defaultdict(list)
         self.modules, self.trees, self.class_fields = {}, {}, {}
+        # (module, class qualname) -> names a class-creation hook defined there reads
+        # from the new class, or None when the hook is too dynamic to tell.
+        self.creation_hooks = {}
         for folder in (root / "sqlglot", root / "tests"):
             for path in sorted(folder.rglob("*.py")):
                 name = path.relative_to(root).as_posix()
@@ -44,6 +47,8 @@ class SourceModel:
             if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
                 name = f"{scope}.{node.name}".strip(".")
                 kind = "class" if isinstance(node, ast.ClassDef) else "function"
+                if kind == "class":
+                    self.scan_creation_hooks(path, name, node)
                 start = min([node.lineno] + [d.lineno for d in node.decorator_list])
                 self.symbols[(path, name)] = {"start": start, "end": node.end_lineno, "node": node, "kind": kind}
                 if kind == "class":
@@ -78,6 +83,18 @@ class SourceModel:
                     self.scan(path, getattr(node, field, []), scope)
                 for handler in getattr(node, "handlers", []):
                     self.scan(path, handler.body, scope)
+
+    def scan_creation_hooks(self, path, qualname, node):
+        methods = {n.name: n for n in node.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))}
+        key = (module_name(path), qualname)
+        if "__init_subclass__" in methods:
+            self.creation_hooks[key] = creation_reads(methods["__init_subclass__"])
+        elif any(isinstance(b, ast.Name) and b.id == "type" for b in node.bases) and (
+                "__new__" in methods or "__init__" in methods):
+            # A metaclass: the new class is the result of type.__new__ (or the
+            # first parameter after the metaclass in __init__).
+            hooks = [creation_reads(methods[m], metaclass=True) for m in ("__new__", "__init__") if m in methods]
+            self.creation_hooks[key] = None if None in hooks else frozenset().union(*hooks)
 
     def resolve(self, path, name, seen=None):
         seen = set() if seen is None else seen
@@ -120,11 +137,74 @@ class SourceModel:
                         yield (target, n.lineno) if with_lines else target
 
 
+ALL_NAMES = "*"
+
+
+def creation_reads(function, metaclass=False):
+    """Attribute names a class-creation hook reads from the new class, or None if it may read others.
+
+    Every use of the class must be an attribute access, ``cls.__dict__.get("NAME", ...)``,
+    a getattr/hasattr/setattr with a literal name, a returned value or a value stored
+    into a container; passing the class anywhere else could read anything.
+    """
+    params = [a.arg for a in function.args.args]
+    if metaclass and function.name == "__new__":
+        # klass = super().__new__(...)
+        targets = [n.targets[0].id for n in ast.walk(function)
+                   if isinstance(n, ast.Assign) and len(n.targets) == 1 and isinstance(n.targets[0], ast.Name)
+                   and isinstance(n.value, ast.Call) and isinstance(n.value.func, ast.Attribute)
+                   and n.value.func.attr == "__new__"]
+        if len(targets) != 1:
+            return None
+        param = targets[0]
+    elif metaclass:
+        if len(params) < 2:
+            return None
+        param = params[1]
+    elif params:
+        param = params[0]
+    else:
+        return None
+    names, allowed = set(), set()
+    for node in ast.walk(function):
+        if (isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and node.func.attr == "get"
+                and isinstance(node.func.value, ast.Attribute) and node.func.value.attr == "__dict__"
+                and isinstance(node.func.value.value, ast.Name) and node.func.value.value.id == param
+                and node.args and isinstance(node.args[0], ast.Constant) and isinstance(node.args[0].value, str)):
+            names.add(node.args[0].value)
+        if isinstance(node, (ast.Return, ast.Assign)) and isinstance(node.value, ast.Name) and node.value.id == param:
+            if isinstance(node, ast.Return) or all(isinstance(t, ast.Subscript) for t in node.targets):
+                allowed.add(id(node.value))
+        if isinstance(node, ast.Assign) and any(isinstance(t, ast.Name) and t.id == param for t in node.targets):
+            for t in node.targets:
+                if isinstance(t, ast.Name) and t.id == param:
+                    allowed.add(id(t))
+        if isinstance(node, ast.Attribute) and isinstance(node.value, ast.Name) and node.value.id == param:
+            allowed.add(id(node.value))
+            if isinstance(node.ctx, ast.Load):
+                names.add(node.attr)
+        elif (isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+              and node.func.id in ("getattr", "hasattr", "setattr") and len(node.args) >= 2
+              and isinstance(node.args[0], ast.Name) and node.args[0].id == param):
+            if not (isinstance(node.args[1], ast.Constant) and isinstance(node.args[1].value, str)):
+                return None
+            allowed.add(id(node.args[0]))
+            if node.func.id != "setattr":
+                names.add(node.args[1].value)
+    for node in ast.walk(function):
+        if isinstance(node, ast.Name) and node.id == param and id(node) not in allowed:
+            return None
+    return frozenset(names)
+
+
 class Recorder:
     def __init__(self, root, model, coverage):
         self.root, self.model, self.coverage = root, model, coverage
         self.current, self.phase = None, "collection"
         self.attrs = defaultdict(set)
+        # (module, class qualname) -> tests that read an attribute the class got at
+        # creation time instead of from its body.
+        self.derived_reads = defaultdict(set)
         self.reads = defaultdict(set)
         self.cache = {}
         self.tests = []
@@ -167,16 +247,48 @@ class Recorder:
         key = (cls, name)
         if key not in self.cache:
             result = None
-            for base in type.__getattribute__(cls, "__mro__"):
+            mro = type.__getattribute__(cls, "__mro__")
+            for base in mro:
                 if name in type.__getattribute__(base, "__dict__"):
                     result = self.model.class_fields.get((
                         type.__getattribute__(base, "__module__"),
                         type.__getattribute__(base, "__qualname__"), name))
+                    if result is None:
+                        # Set at class creation (for example by __init_subclass__)
+                        # rather than written in the class body. The read counts for
+                        # the class-level assignments along the MRO that the creation
+                        # hooks read, or all of them when that is unknown (see write_map).
+                        result = ("derived", tuple(
+                            (type.__getattribute__(k, "__module__"), type.__getattribute__(k, "__qualname__"))
+                            for k in mro), self.creation_inputs(cls))
                     break
             self.cache[key] = result
         symbol = self.cache[key]
-        if symbol:
+        if symbol and symbol[0] == "derived":
+            # Only attributes a known creation hook sets are followed; other
+            # runtime-set attributes (caches, later assignments) are not.
+            if symbol[2] is not None:
+                for owner in symbol[1]:
+                    self.derived_reads[(*owner, symbol[2])].add(self.current)
+        elif symbol:
             self.attrs[symbol].add(self.current)
+
+    def creation_inputs(self, cls):
+        """Names the creation hooks of ``cls`` read from it, or None if unknown."""
+        hooks = getattr(self.model, "creation_hooks", {})
+        names, found = set(), False
+        mro = type.__getattribute__(cls, "__mro__")
+        metaclasses = [m for m in type.__getattribute__(type(cls), "__mro__") if m not in (type, object)]
+        for owner in [k for k in mro if "__init_subclass__" in type.__getattribute__(k, "__dict__")] + metaclasses:
+            key = (type.__getattribute__(owner, "__module__"), type.__getattribute__(owner, "__qualname__"))
+            if key not in hooks:
+                continue
+            found = True
+            if hooks[key] is None:
+                # Too dynamic to tell which names: every class-level assignment.
+                return ALL_NAMES
+            names |= hooks[key]
+        return frozenset(names) if found else None
 
     def record_comparison(self, path, site, op, state):
         entry = self.comparisons.setdefault((path, site), {"op": op, "states": defaultdict(set), "unknown": set(), "collection": False})
@@ -405,6 +517,23 @@ def build(root, destination):
     write_map(root, model, rec, cov.get_data(), destination)
 
 
+def lambda_spans(tree):
+    """(first, last) line of every lambda that is not inside a function or another lambda."""
+    spans = []
+
+    def walk(node):
+        for child in ast.iter_child_nodes(node):
+            if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                continue
+            if isinstance(child, ast.Lambda):
+                spans.append((child.lineno, child.end_lineno))
+                continue
+            walk(child)
+
+    walk(tree)
+    return spans
+
+
 def write_map(root, model, rec, data, destination):
     """Combine observations with source dependencies; independently testable."""
     bit = {name: 1 << i for i, name in enumerate(rec.tests)}
@@ -447,6 +576,18 @@ def write_map(root, model, rec, data, destination):
                     setup[value] = format(mask(t for t in rec.tests if t.startswith(value + "::")), "x")
                 else:
                     files[name]["readers"] |= mask(t for t in rec.tests if t.startswith(value + "::"))
+    # Raw executed lines inside lambdas that are not nested in a function, before
+    # class-level value spans are widened below. A lambda body runs only when the
+    # lambda is called, so these are the tests that called it.
+    for name, tree in model.trees.items():
+        lines = files[name]["lines"] if name in files else {}
+        raw = {}
+        for start, end in lambda_spans(tree):
+            for line in range(start, end + 1):
+                if lines.get(line):
+                    raw[line] = lines[line]
+        if raw:
+            files[name]["lambda_lines"] = {str(line): format(value, "x") for line, value in sorted(raw.items())}
     users = {}
     for key, symbol in model.symbols.items():
         entry = files[key[0]]
@@ -455,6 +596,18 @@ def write_map(root, model, rec, data, destination):
             if symbol["start"] <= line <= symbol["end"]:
                 value |= line_mask
         users[key] = value
+    # Attributes a class gets at creation are computed from its class-level
+    # assignments, so a test reading one depends on all of them.
+    class_values = defaultdict(list)
+    for key, symbol in model.symbols.items():
+        if symbol["kind"] == "value" and "." in key[1]:
+            class_values[(key[0], key[1].rpartition(".")[0])].append(key)
+    for (module, qualname, names), tests in getattr(rec, "derived_reads", {}).items():
+        path = model.modules.get(module)
+        value = mask(tests)
+        for key in class_values.get((path, qualname), ()):
+            if names == ALL_NAMES or key[1].rpartition(".")[2] in names:
+                users[key] |= value
     # Runtime references use the exact executed line. Only initializer copies
     # and class inheritance need transitive source-symbol propagation.
     edges = []

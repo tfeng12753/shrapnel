@@ -1,0 +1,35 @@
+name: Rebuild the dependency map
+# Regenerates maps/dependencies.json.gz and its metadata from the unchanged pinned
+# checkout inside the selector image (linux/amd64), for committing after a
+# builder change. Nothing here reads sample answers or mutant results.
+on:
+  workflow_dispatch:
+  # Also on branch pushes that change a builder file, so a branch can get its map
+  # before the workflow exists on main.
+  push:
+    branches-ignore: [main]
+    paths:
+      - tools/build_map.py
+      - tools/instrument.py
+      - tools/setup_flow.py
+      - tools/fetch_source.py
+      - requirements.lock
+      - .github/workflows/map.yml
+permissions:
+  contents: read
+jobs:
+  map:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the image with a fresh map
+        run: docker build --platform linux/amd64 --build-arg FORCE_MAP=1 --build-arg MAP_TIMEOUT=3600 -t shrapnel .
+      - name: Export the map
+        run: python3 tools/export_map.py --image shrapnel
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dependency-map
+          path: |
+            maps/dependencies.json.gz
+            maps/dependencies.meta.json

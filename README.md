@@ -42,6 +42,13 @@ A dependency map is built from the unchanged pinned checkout and cached in
    (`tools/setup_flow.py`); anything that can't be followed stays class-wide.
 4. Process-pool work runs inline during map building, with pickle round-trips,
    so worker-process code is attributed to the calling test.
+5. Attributes a class gets when it is created (set by an `__init_subclass__`
+   hook or a metaclass, not written in the class body) are traced back to the
+   class-level assignments that hook reads, found by reading the hook's source.
+   For example, a test that reads an expression class's derived required-argument
+   set depends on that class's argument table.
+6. Executed lines inside lambdas defined outside functions are also kept
+   unwidened (`lambda_lines`), so the map knows which tests called each lambda.
 
 At selection time the selector applies each patch to the pinned files in
 memory, checks the base text, and unions the tests depending on the changed
@@ -58,6 +65,13 @@ lines, regions, constants and fixtures. Refinements:
   (`setup_check_budget`).
 - TPC fixture edits that leave executor inputs unchanged can drop the executor
   test (`executor_fixtures`).
+- An edit confined to the body of such a lambda selects the tests that called
+  it, unless the lambda runs while a module imports or a class sets up
+  (`lambda_bodies`).
+- Docstring prose edits (no `>>>` example on either side, no docstring emptied)
+  are treated like comment edits (`docstring_edits`).
+- Edits to the package's unmapped `__main__.py` select only the tests that start
+  child processes (`entry_point_edits`).
 - Unknown files, malformed patches, syntax errors, unsupported import-time
   changes and incomplete maps select the entire suite.
 
