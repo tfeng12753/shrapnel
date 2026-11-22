@@ -57,7 +57,8 @@ def pack(source, control, first, second):
             files[name] = {"sha256": hashlib.sha256((source / name).read_bytes()).hexdigest(), "records": records}
     if not files:
         raise ValueError("no common dictionary observations")
-    return {"version": 1, "revision": REVISION, "catalog": catalog_digest(names), "files": files}
+    return {"version": 1, "revision": REVISION, "catalog": catalog_digest(names), "files": files,
+            "map_sha256": hashlib.sha256(control.read_bytes()).hexdigest()}
 
 
 if __name__ == "__main__":

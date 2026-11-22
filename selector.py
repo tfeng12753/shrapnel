@@ -594,7 +594,7 @@ class Selector:
             if dict_key_refinement and not conservative_python:
                 from dict_keys import load
                 self.key_reads = load(key_reads_path or Path(__file__).with_name("key-reads.json.gz"),
-                                      data["tests"], REVISION)
+                                      data["tests"], REVISION, map_path)
             translated = [self.test_bits.get(t, 0) for t in data["tests"]]
             # Translate contiguous catalog runs at once; skips may change indices.
             runs = []
@@ -1021,14 +1021,16 @@ class Selector:
             bit = 1 << item["number"]
             benefit = schedule_saving(chosen, bit)
             allowance = min(self.longest_test_budget, break_even_cpu(benefit))
-            # The selector image has two CPUs shared by pytest and its children.
-            if allowance < 1 or not changed_functions(change, before, after):
-                return mask
-            wall = (allowance - (cpu_seconds() - start)) / 2
             cost = self.full_item_costs.get(item["id"])
-            if (cost and cost["wall"] <= wall and cost["cpu"] <= allowance
-                    and wall >= .5 and passed(self.source, change["old"], after, item["id"], wall)):
-                return mask & ~bit
+            # The selector image has two CPUs shared by pytest and its children.
+            if (not cost or allowance < max(1, cost["cpu"], 2 * cost["wall"])
+                    or not changed_functions(change, before, after)):
+                return mask
+            remaining = allowance - (cpu_seconds() - start)
+            wall = remaining / 2
+            if remaining >= cost["cpu"] and wall >= max(.5, cost["wall"]):
+                if passed(self.source, change["old"], after, item["id"], wall):
+                    return mask & ~bit
             return mask
         finally:
             self.longest_test_budget -= cpu_seconds() - start

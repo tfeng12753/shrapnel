@@ -17,12 +17,14 @@ def catalog_digest(names):
     return hashlib.sha256(json.dumps(names, separators=(",", ":")).encode()).hexdigest()
 
 
-def load(path, tests, revision):
+def load(path, tests, revision, map_path):
     try:
         with gzip.open(path, "rt") as stream:
             data = json.load(stream)
         if (data["version"] == 1 and data["revision"] == revision
-                and data["catalog"] == catalog_digest(tests) and isinstance(data["files"], dict)):
+                and data["catalog"] == catalog_digest(tests)
+                and data["map_sha256"] == hashlib.sha256(map_path.read_bytes()).hexdigest()
+                and isinstance(data["files"], dict)):
             return data["files"]
     except (OSError, EOFError, ValueError, TypeError, KeyError):
         pass
