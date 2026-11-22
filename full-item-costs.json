@@ -1,0 +1,17 @@
+{
+  "revision": "eb11aec4be8cb2122afe713a4816662c3f0fb2fa",
+  "items": {
+    "tests/test_executor.py::TestExecutor::test_execute_tpcds": {
+      "wall": 39.797,
+      "cpu": 39.998
+    },
+    "tests/test_generator.py::TestGenerator::test_generator_memory": {
+      "wall": 3.223,
+      "cpu": 3.159
+    },
+    "tests/test_parser.py::TestParser::test_max_nodes": {
+      "wall": 35.233,
+      "cpu": 34.74
+    }
+  }
+}

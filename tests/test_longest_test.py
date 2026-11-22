@@ -21,18 +21,27 @@ class LongestTestChecks(TestCase):
         self.patch = diff(self.name, self.before, self.before.replace("<", "<="))
         self.tests = [{"number": i, "seconds": seconds, "id": f"tests/test_a.py::A::test_{i}"}
                       for i, seconds in enumerate([12, .1])]
+        self.costs = {self.tests[0]["id"]: {"cpu": .2, "wall": .3}}
         self.map = self.root / "map.json"
         self.map.write_text(json.dumps({"version": 1, "revision": REVISION, "complete": True,
             "tests": [t["id"] for t in self.tests], "files": {self.name: {"lines": {"2": "3"}}}}))
 
     def test_full_pass_drops_only_one_item_and_every_attempt_costs_cpu(self):
         for passed, expected in ((True, 2), (False, 3)):
-            selector = Selector(self.tests, self.root, self.map, longest_test_budget=5)
+            selector = Selector(self.tests, self.root, self.map, longest_test_budget=5, full_item_costs=self.costs)
             with patch("isolated_pytest.passed", return_value=passed) as verify:
                 self.assertEqual(selector.select(self.patch), expected)
                 self.assertEqual(verify.call_args.args[3], self.tests[0]["id"])
                 self.assertLessEqual(verify.call_args.args[-1], 2.5)
                 self.assertLess(selector.longest_test_budget, 5)
+
+    def test_unknown_or_unaffordable_full_item_skips_pytest(self):
+        for costs in ({}, {self.tests[0]["id"]: {"cpu": 12, "wall": .1}},
+                      {self.tests[0]["id"]: {"cpu": .1, "wall": 12}}):
+            selector = Selector(self.tests, self.root, self.map, longest_test_budget=5, full_item_costs=costs)
+            with patch("isolated_pytest.passed") as verify:
+                self.assertEqual(selector.select(self.patch), 3)
+                verify.assert_not_called()
 
     def test_disabled_and_mixed_edits_preserve_all_reasons(self):
         fixture = "tests/fixtures/sample.sql"
@@ -62,5 +71,5 @@ class LongestTestChecks(TestCase):
                     "        self.assertTrue(check(0))\n        self.assertEqual(check(2), VALUE)\n")
         for expected_value, expected_mask in (("True", 2), ("False", 3)):
             (test_dir / "test_a.py").write_text(contents.replace("VALUE", expected_value))
-            selector = Selector(self.tests, self.root, self.map, longest_test_budget=18)
+            selector = Selector(self.tests, self.root, self.map, longest_test_budget=18, full_item_costs=self.costs)
             self.assertEqual(selector.select(self.patch), expected_mask)

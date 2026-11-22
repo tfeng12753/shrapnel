@@ -5,6 +5,7 @@ import argparse
 import ast
 import copy
 import gzip
+import hashlib
 import json
 import math
 import re
@@ -523,8 +524,13 @@ class Selector:
                  lazy_test_budget=0.0, import_effects=None, downstream_import_budget=0.0, typeddict_state_check=False,
                  schedule_admission=False, exact_comparisons=False,
                  fixture_entries=None, fixture_replay_budget=0.0, longest_test_budget=0.0, rule_screen=False,
-                 inherited_typeddict=False):
+                 inherited_typeddict=False, discarded_strings=False, dict_key_refinement=False,
+                 key_reads_path=None, full_item_costs=None, relocated_strings=False):
         self.tests, self.source = tests, source
+        self.discarded_strings = discarded_strings
+        self.key_reads = {}
+        self.location_readers = None
+        self.full_item_costs = full_item_costs or {}
         self.longest_test_budget = longest_test_budget
         self.rule_screen = rule_screen
         # Patches that change code or settings used while some module is being
@@ -585,6 +591,10 @@ class Selector:
                 data = json.load(f)
             if data["revision"] != REVISION or data.get("version") != 1:
                 raise ValueError("map revision or format mismatch")
+            if dict_key_refinement and not conservative_python:
+                from dict_keys import load
+                self.key_reads = load(key_reads_path or Path(__file__).with_name("key-reads.json.gz"),
+                                      data["tests"], REVISION)
             translated = [self.test_bits.get(t, 0) for t in data["tests"]]
             # Translate contiguous catalog runs at once; skips may change indices.
             runs = []
@@ -608,6 +618,17 @@ class Selector:
                     cache[value] = result
                 return cache[value]
             self.external = decode(data.get("external", "0"))
+            if relocated_strings and discarded_strings and not conservative_python:
+                try:
+                    from dict_keys import catalog_digest
+                    location = json.loads(Path(__file__).with_name("location-readers.json").read_text())
+                    if (location["revision"] == REVISION and location["catalog"] == catalog_digest(data["tests"])
+                            and location["map_sha256"] == hashlib.sha256(map_path.read_bytes()).hexdigest()):
+                        self.location_readers = decode(location["mask"])
+                except (OSError, ValueError, KeyError, TypeError):
+                    pass
+            if self.key_reads:
+                self.decode_key_mask = decode
             if import_closure is not None:
                 # External tests whose child process only runs `import sqlglot` can
                 # only be affected by files that import executes or reads.
@@ -802,6 +823,8 @@ class Selector:
             pending = []
             for c in changes:
                 name = c["old"]
+                prior_result = result
+                location_filter = None
                 if name != c["new"]:
                     return include(self.all, "path changed", name)
                 old = self.read_source(name)
@@ -811,6 +834,14 @@ class Selector:
                     before, after = baseline_tree(old), ast.parse(new, type_comments=True)
                     # Compare every file: a harmless-looking comment may accompany a fixture edit.
                     changes_at_sites = classify_python_edit(before, after)
+                    if self.discarded_strings and changes_at_sites is None and not self.conservative_python:
+                        from discarded_strings import literal_change
+                        literal = literal_change(before, after, old, new, removed | inserted,
+                                                 allow_relocation=self.location_readers is not None)
+                        if literal == "exact":
+                            changes_at_sites = []
+                        elif literal == "relocated" and self.location_readers is not None and entry is not None:
+                            location_filter = self.location_readers | entry["readers"] | self.external_for(name)
                     if changes_at_sites == []:
                         # Tests may inspect comments or exact source text.
                         if entry is None:
@@ -859,6 +890,15 @@ class Selector:
                         continue
                     if hazard:
                         return include(self.all, "import-time change", name)
+                    if len(changes) == 1 and entry is not None and name in self.key_reads:
+                        from dict_keys import matched_readers
+                        keyed = matched_readers(self.key_reads[name], self.decode_key_mask, before, after, old,
+                                                removed, inserted)
+                        if keyed is not None:
+                            result |= include(keyed, "dictionary key reader", name)
+                            result |= include(entry["readers"], "file reader", name)
+                            result |= include(self.external_for(name), "external dependency", name)
+                            continue
                 result |= include(self.external_for(name), "external dependency", name)
                 if entry is None:
                     return include(self.all, "unmapped file", name)
@@ -929,6 +969,8 @@ class Selector:
                         result |= include(mask, "definition dependency", name, (a, b))
                 if not removed and not inserted:
                     return include(self.all, "no changed positions", name)
+                if location_filter is not None:
+                    result = prior_result | location_filter | self.child_work
             if pending:
                 result = self.resolve(result, pending, include)
             if (self.lazy_test_budget >= 0.7 and result and result == self.closure_external
@@ -983,7 +1025,9 @@ class Selector:
             if allowance < 1 or not changed_functions(change, before, after):
                 return mask
             wall = (allowance - (cpu_seconds() - start)) / 2
-            if wall >= .5 and passed(self.source, change["old"], after, item["id"], wall):
+            cost = self.full_item_costs.get(item["id"])
+            if (cost and cost["wall"] <= wall and cost["cpu"] <= allowance
+                    and wall >= .5 and passed(self.source, change["old"], after, item["id"], wall)):
                 return mask & ~bit
             return mask
         finally:
@@ -1303,6 +1347,9 @@ def parse_args(argv=None):
                         help="Narrow value-operator swaps with exact comparison evidence from the map")
     parser.add_argument("--fixture-replay-budget", type=float)
     parser.add_argument("--longest-test-budget", type=float)
+    parser.add_argument("--discarded-strings", action=argparse.BooleanOptionalAction, default=None)
+    parser.add_argument("--relocated-strings", action=argparse.BooleanOptionalAction, default=None)
+    parser.add_argument("--dict-key-refinement", action=argparse.BooleanOptionalAction, default=None)
     parser.add_argument("--rule-screen", action=argparse.BooleanOptionalAction, default=None)
     parser.add_argument("--fixture-entries", type=Path, default=Path("/app/fixture-entries.json.gz"))
     parser.add_argument("--config", type=Path, default=Path(__file__).with_name("selector-config.json"))
@@ -1362,6 +1409,14 @@ def parse_args(argv=None):
     if args.longest_test_budget is None:
         args.longest_test_budget = config.get("longest_test_budget", 0.0)
     args.settings["longest_test_budget"] = float(args.longest_test_budget)
+    if args.discarded_strings is None:
+        args.discarded_strings = config.get("discarded_strings", False)
+    if args.relocated_strings is None:
+        args.relocated_strings = config.get("relocated_strings", False)
+    if args.dict_key_refinement is None:
+        args.dict_key_refinement = config.get("dict_key_refinement", False)
+    args.settings.update(discarded_strings=bool(args.discarded_strings), relocated_strings=bool(args.relocated_strings),
+                         dict_key_refinement=bool(args.dict_key_refinement))
     if args.rule_screen is None:
         args.rule_screen = config.get("rule_screen", False)
     args.settings["rule_screen"] = bool(args.rule_screen)
@@ -1404,6 +1459,15 @@ def main():
     args = parse_args()
     settings = args.settings
     tests = json.loads((args.data / "tests.json").read_text())["tests"]
+    costs = {}
+    if settings["longest_test_budget"] > 0:
+        try:
+            timings = json.loads(Path(__file__).with_name("full-item-costs.json").read_text())
+            if timings["revision"] == REVISION:
+                costs = {key: value for key, value in timings["items"].items()
+                         if all(type(value[k]) in (float, int) and 0 < value[k] < math.inf for k in ("cpu", "wall"))}
+        except (OSError, ValueError, KeyError, TypeError, AttributeError):
+            pass
     try:
         closure = json.loads(args.import_closure.read_text())
         if closure.get("revision") != REVISION:
@@ -1421,6 +1485,8 @@ def main():
                         downstream_import_budget=max(0.0, settings["downstream_import_budget"]),
                         typeddict_state_check=settings["typeddict_state_check"],
                         inherited_typeddict=settings["inherited_typeddict"],
+                        discarded_strings=settings["discarded_strings"], dict_key_refinement=settings["dict_key_refinement"],
+                        full_item_costs=costs, relocated_strings=settings["relocated_strings"],
                         schedule_admission=settings["schedule_admission"],
                         exact_comparisons=settings["exact_comparisons"],
                         fixture_entries=load_fixture_entries(args.fixture_entries, args.source)

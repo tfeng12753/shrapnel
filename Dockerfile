@@ -43,6 +43,7 @@ RUN if [ "$BUILD_MAP" = "1" ] && [ "$BUILD_EXECUTOR_PLANS" = "1" ]; then \
 COPY selector.py native_probes.py import_effects.py fixture_replay.py fixture-entries.json.gz executor_fixtures.py executor_plans.py isolated_pytest.py selector-config.json /app/
 COPY tools/timed_run.py /app/tools/timed_run.py
 COPY typeddict_selection.py /app/
+COPY dict_keys.py discarded_strings.py full-item-costs.json location-readers.json /app/
 ENV HOME=/tmp
 USER 65534:65534
 CMD ["python", "/app/selector.py"]
