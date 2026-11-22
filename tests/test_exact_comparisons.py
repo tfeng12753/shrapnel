@@ -1,6 +1,9 @@
-"""Value-operator narrowing from exact comparison evidence (synthetic maps).
+"""Value-operator narrowing from the map's equality record (synthetic maps).
 
 Bits: each test is one bit. The site is the comparison on line 2 of m.py.
+Tests describe evidence as {"complete": tests whose every evaluation completed
+on exact operands, "states": relation -> tests}; select() writes it in the
+map's `equality` format.
 """
 import json
 from pathlib import Path
@@ -24,20 +27,27 @@ class ExactComparisonTests(unittest.TestCase):
     def select(self, new, *, exact, states=None, unknown="0", lines=None, op="Eq", old=OLD, enabled=True,
                relations=True, site=SITE):
         (self.root / "m.py").write_text(old)
-        info = {"op": op, "states": states or {}, "unknown": unknown}
+        entry = {"lines": lines or {"2": "ff"}}
+        if states:
+            entry["comparisons"] = {site: {"op": op, "states": states, "unknown": unknown}}
         if exact is not None:
-            info["exact"] = exact
+            complete = int(exact["complete"], 16)
+            users = 0
+            for mask in exact["states"].values():
+                users |= int(mask, 16)
+            entry["equality"] = {site: {"op": op, "reached": f"{complete | users:x}", "states": exact["states"],
+                                        "unknown": f"{int(unknown, 16) | (users & ~complete):x}"}}
         mapping = self.root / "map.json"
         mapping.write_text(json.dumps({
             "version": 1, "revision": REVISION, "complete": True, "tests": [t["id"] for t in self.tests],
-            "files": {"m.py": {"lines": lines or {"2": "ff"}, "comparisons": {site: info}}},
+            "files": {"m.py": entry},
         }))
         selector = Selector(self.tests, self.root, mapping, relations=relations, exact_comparisons=enabled)
         return selector.select(diff("m.py", old, new))
 
     # Tests 0-3 completed every evaluation with int operands:
-    #   0: len 2 (gt), 1: len 1 (eq, small-int identity), 2: len 0 (lt), 3: len 2 and len 1.
-    EXACT = {"complete": "f", "states": {"p:4": "9", "p:9": "a", "p:2": "4"}}
+    #   0: len 2 (gt), 1: len 1 (eq), 2: len 0 (lt), 3: len 2 and len 1.
+    EXACT = {"complete": "f", "states": {"p:4": "9", "p:1": "a", "p:2": "4"}}
 
     def test_eq_to_lt_drops_only_tests_with_the_same_outcome_everywhere(self):
         # 0 stays False under both operators; 3 saw an equal pair once.
@@ -48,22 +58,22 @@ class ExactComparisonTests(unittest.TestCase):
         self.assertEqual(self.select(OLD.replace("==", "!="), exact=self.EXACT), 0xff)
         # Under >=, 1 >= 1 and 0 >= 1 keep their outcomes; 2 >= 1 flips. With the
         # flipping test running last, the two safe tests before it are dropped.
-        first = {"complete": "7", "states": {"p:9": "1", "p:2": "2", "p:4": "4"}}
+        first = {"complete": "7", "states": {"p:1": "1", "p:2": "2", "p:4": "4"}}
         self.assertEqual(self.select(OLD.replace("==", ">="), exact=first), 0xfc)
         # Under >, test 0 (1 > 1) flips first, so nothing after it is dropped.
         self.assertEqual(self.select(OLD.replace("==", ">"), exact=first), 0xff)
 
     def test_safe_tests_after_a_changing_test_are_kept(self):
-        # A counter guarded by the comparison: test 0 changes its outcome and
-        # leaves a different count for test 1, whose own evaluation is safe.
-        old = "count = 0\ndef bump(limit):\n    if count < limit:\n        return 1\n"
-        exact = {"complete": "3", "states": {"p:9": "1", "p:2": "2"}}
-        self.assertEqual(self.select(old.replace("<", "<="), exact=exact, old=old, op="Lt", site="3:7",
-                                     lines={"3": "3"}), 3)
+        # A counter guarded by the comparison: test 0 (bump(5): 0 == 5 -> 0 <= 5)
+        # changes its outcome and leaves a different count for test 1
+        # (bump(-1): 0 == -1 and 0 <= -1 are both False), whose own evaluation is safe.
+        old = "count = 0\ndef bump(limit):\n    if count == limit:\n        return 1\n"
+        new = old.replace("==", "<=")
+        exact = {"complete": "3", "states": {"p:2": "1", "p:4": "2"}}
+        self.assertEqual(self.select(new, exact=exact, old=old, site="3:7", lines={"3": "3"}), 3)
         # The same safe test running first may be dropped.
-        exact = {"complete": "3", "states": {"p:2": "1", "p:9": "2"}}
-        self.assertEqual(self.select(old.replace("<", "<="), exact=exact, old=old, op="Lt", site="3:7",
-                                     lines={"3": "3"}), 2)
+        exact = {"complete": "3", "states": {"p:4": "1", "p:2": "2"}}
+        self.assertEqual(self.select(new, exact=exact, old=old, site="3:7", lines={"3": "3"}), 2)
 
     def test_disabled_missing_or_non_strict_evidence_does_not_narrow(self):
         new = OLD.replace("==", "<")
@@ -74,20 +84,25 @@ class ExactComparisonTests(unittest.TestCase):
     def test_incomplete_evaluations_keep_the_test(self):
         # Test 0 reached the site but some evaluation raised, or an operand was
         # a user-defined object or a bool: it is not in "complete".
-        exact = {"complete": "e", "states": {"p:4": "9", "p:9": "a", "p:2": "4"}}
+        exact = {"complete": "e", "states": {"p:4": "9", "p:1": "a", "p:2": "4"}}
         self.assertEqual(self.select(OLD.replace("==", "<"), exact=exact), 0xff)
+
+    def test_record_for_another_operator_or_site_is_ignored(self):
+        new = OLD.replace("==", "<")
+        self.assertEqual(self.select(new, exact=self.EXACT, op="NotEq"), 0xff)
+        self.assertEqual(self.select(new, exact=self.EXACT, site="2:4"), 0xff)
 
     def test_unknown_observations_keep_the_test(self):
         self.assertEqual(self.select(OLD.replace("==", "<"), exact=self.EXACT, unknown="1"), 0xff)
 
     def test_complete_test_without_any_exact_state_is_kept(self):
-        exact = {"complete": "f", "states": {"p:9": "a", "p:2": "4"}}
+        exact = {"complete": "f", "states": {"p:1": "a", "p:2": "4"}}
         self.assertEqual(self.select(OLD.replace("==", "<"), exact=exact), 0xff)
 
     def test_state_outside_the_format_keeps_its_tests(self):
         for state in ("p:6", "p:3", "x:4", "p:"):
             with self.subTest(state=state):
-                exact = {"complete": "f", "states": {"p:4": "9", state: "1", "p:9": "2", "p:2": "4"}}
+                exact = {"complete": "f", "states": {"p:4": "9", state: "1", "p:1": "2", "p:2": "4"}}
                 # Test 0 also has a valid unchanged state but must be kept, and
                 # test 3, safe on its own, runs after it.
                 self.assertEqual(self.select(OLD.replace("==", "<"), exact=exact), 0xff)

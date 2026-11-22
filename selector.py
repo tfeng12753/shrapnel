@@ -590,15 +590,14 @@ class Selector:
                     "regions": [(a, b, kind, decode(v)) for a, b, kind, v in entry.get("regions", [])],
                     "anchors": {int(k): decode(v) for k, v in entry.get("anchors", {}).items()},
                     "comparisons": {site: {"op": info["op"], "unknown": decode(info["unknown"]),
-                        "states": {state: decode(v) for state, v in info["states"].items()},
-                        "exact": {"complete": decode(info["exact"]["complete"]),
-                                  "states": {state: decode(v) for state, v in info["exact"]["states"].items()}}
-                                 if "exact" in info else None}
+                        "states": {state: decode(v) for state, v in info["states"].items()}}
                         for site, info in comparison_sites.items()},
                     "readers": readers,
                     "executed": decode(entry.get("executed", "0")),
                     "setup": setup,
                 }
+                if self.relations and self.exact_comparisons and not conservative_python:
+                    self.add_equality_evidence(self.files[name]["comparisons"], entry.get("equality", {}), decode)
             mapped_ids = set(data["tests"])
             missing = [t["id"] for t in tests if t["id"] not in mapped_ids]
             self.complete = bool(data.get("complete")) and not missing
@@ -608,6 +607,31 @@ class Selector:
                 self.child_work = self.child_work_mask()
         except (OSError, ValueError, KeyError, IndexError, TypeError) as e:
             print(f"dependency map unavailable ({type(e).__name__}); using full-suite fallback", file=sys.stderr)
+
+    @staticmethod
+    def add_equality_evidence(comparisons, equality, decode):
+        """Attach the map's per-site equality record as exact evidence.
+
+        The record covers `==`/`!=` sites in ordinary function bodies. `reached`
+        holds tests whose evaluation reached the site, `states` the relations of
+        completed comparisons on exact int/str/bool/None operands, and `unknown`
+        every test with another operand type, an operand that raised, or line
+        coverage without an observation. A site evaluated outside a test's call
+        phase has no record, so it is never narrowed.
+        """
+        for site, record in equality.items():
+            op = record["op"]
+            if op not in ("Eq", "NotEq"):
+                continue
+            unknown = decode(record["unknown"])
+            exact = {"complete": decode(record["reached"]) & ~unknown,
+                     "states": {state: decode(v) for state, v in record["states"].items()}}
+            info = comparisons.get(site)
+            if info is None:
+                comparisons[site] = {"op": op, "unknown": unknown, "states": {}, "exact": exact}
+            elif info["op"] == op:
+                info["unknown"] |= unknown
+                info["exact"] = exact
 
     def read_source(self, name):
         if name not in self.sources:
