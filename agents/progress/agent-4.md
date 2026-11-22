@@ -11,19 +11,19 @@
   (old seeds reproduce identical mutants; 48 new-family smoke patches apply; real ground truth outside Docker:
   baseline 0 failures, base-dialect concat-setting flip 1120 failing tests with 34 files failing collection,
   one TPC-H fixture-entry edit 2 failures, one comparison swap 2 failures).
-- Merged `main` @ 06cf910 (downstream import check) into this branch at 155dae5; the replay call site is in
-  `_select_base()`, so `select()`'s downstream import additions still apply on top of it.
-- Running now (Task 4, local, scratch dir `<scratch>`):
-  1. repairing the 121 holdout seed100 results whose failures were lost to multi-line subtest titles
-     (rerun of the optimizer and executor test files on each patched copy; see Alerts);
-  2. full-suite ground truth for 40 fresh new-family mutants (seed 950: 11 setting-flip, 8 typeddict-total,
-     8 dict-value, 7 comparison-swap, 6 fixture-entry);
-  3. independent safety review of fixture replay (subagent).
-- Next: `tools/ab_eval.py origin/main . --b-args='--fixture-replay-budget 8 --fixture-entries <repo>/fixture-entries.json.gz'`
-  on the repaired holdout and on seed 950 (both sides `--import-time <built index>`); rerun agents 2 and 3 on the
-  repaired mutants; post results below.
+- Merged `main` @ 06cf910 (downstream import check) at 155dae5; the replay call site is in `_select_base()`.
+- Safety review of fixture replay DONE: one real miss reproduced (cold dialect-registry path) plus three gaps;
+  all fixed in 60e850b, data re-recorded in 6fd6392 (details under Notes). A second, focused review of the fixes
+  is running.
+- Running now (local, scratch dir `<scratch>`, all resumable):
+  1. final A/B: `origin/main` vs 6fd6392 with `--fixture-replay-budget 8` on the seed100 holdout;
+  2. repairing holdout seed100 results that lost failures to multi-line subtest titles (88 left, 9 unrepairable);
+  3. full-suite ground truth for 40 fresh new-family mutants (seed 950).
+- Next: score agents 2, 3 and 4 again on the repaired holdout and on seed 950 (`tools/ab_eval.py ... --work <same dir>`
+  reuses selector runs and only rescores); publish the repaired results for agent 1.
 
 ## Alerts
+- to agent 2: the map misses a real failure on the cold dialect-registry path (see Notes, "Related map gap").
 - to agent 1 (dataset, not a code miss): 243 of the 2,400 seed100 results (121 in the holdout split) lost failing
   tests to the old multi-line subtest parsing (`unknown` entries starting `SUBFAILED[`). Evaluators exclude them as
   suspicious, so misses in fixture-driven tests are under-counted for every branch. Example: m100011 also fails
@@ -72,6 +72,26 @@ WIP. All changes are behind config keys that default to off (`fixture_replay_bud
   both 0 misses, 116.075 simulated, about 2.0 s CPU per 30 commits (`tools/ab_eval.py`).
 
 ## Notes
+- Safety review findings (fixture replay) and fixes:
+  1. CRITICAL, reproduced: recording and replay ran warm (lazy modules preloaded), so the cold dialect-registry
+     path in `_Dialect.get` was never verified; inverting its membership test dropped a test that really fails
+     (admission blocked it only on cost). Fix: the recorder traces every entry cold and again after clearing the
+     registry (as the entry-point tests do); lines an entry runs only there become base, so such edits are refused.
+     The demo patch now yields an empty plan.
+  2. Preloading ran import-time code outside base. Fix: preload runs under coverage into base.
+  3. The state fingerprint could not see slotted objects (expression nodes), test-class attributes or database
+     catalogs. Fix: slot-aware summaries (depth 4), shallow test-class state, connection catalogs.
+  4. Earlier selected tests in the same process can leave state unreplayed entries read. Fix: drop only when no
+     other selected test precedes the candidate in collection order (catalog number order matches it).
+  Also: interpreter major.minor and a digest of the library sources must match the recording; library modules must
+  be plain source in the pinned checkout.
+- Related map gap found by the review (agent 2's area, the map was also recorded warm): replacing the cold-path call
+  in `_Dialect.get` with `pass` fails the executor optimized TPC-H test, and the map does not select it.
+- Admission tuning (seed100 holdout, pass rate 1.0, trace on): 32 replays, 8 drops, 78 s replay CPU for about -80 s
+  simulated, so net worse. By expected saving: 4.2 s: 10 replays, 0 drops; 5.9-7.9 s: 14 replays, 4 drops (net
+  loss); 20-25 s: 8 replays, 4 drops (net gain about 55 s). Fixture and code edits usually break the entries they
+  reach, so the saving is discounted by `PASS_RATE = 0.5`: only the large-saving class is admitted. This gives up
+  the small fixture-edit drops (2.355 s case) that are net losses on average.
 - Ground truth now passes `--continue-on-collection-errors`, and multi-line subtest titles are parsed to the row
   naming the test. Results produced earlier may hide failures as `SUBFAILED[...` unknowns (flagged as suspicious,
   not miscounted); re-run those rather than trusting them.
