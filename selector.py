@@ -522,8 +522,9 @@ class Selector:
                  setup_check_budget=0.0, executor_fixtures=False, executor_plans=None, executor_plan_budget=0.0,
                  lazy_test_budget=0.0, import_effects=None, downstream_import_budget=0.0, typeddict_state_check=False,
                  schedule_admission=False, exact_comparisons=False,
-                 fixture_entries=None, fixture_replay_budget=0.0):
+                 fixture_entries=None, fixture_replay_budget=0.0, structural_refinement=False):
         self.tests, self.source = tests, source
+        self.structural_refinement = structural_refinement
         # Patches that change code or settings used while some module is being
         # imported can break collection of every test file importing it. A forked
         # import of the affected modules decides (CPU charged to this budget).
@@ -849,6 +850,15 @@ class Selector:
                         result |= include(self.external_for(name), "external dependency", name)
                         continue
                     if hazard:
+                        if (hazard == "structural" and self.structural_refinement and len(changes) == 1
+                                and name.startswith("sqlglot/") and not name.endswith("/__main__.py")
+                                and name not in REGISTRY_FILES and entry is not None and plain_text_change(patch)):
+                            users = self.structural_users(before, after, entry)
+                            if users:
+                                compile(new, name, "exec", dont_inherit=True)
+                                if self.import_succeeds(name, changes):
+                                    return include(result | users | entry["readers"] | self.external_for(name),
+                                                   "mapped definition users after import check", name)
                         return include(self.all, "import-time change", name)
                 result |= include(self.external_for(name), "external dependency", name)
                 if entry is None:
@@ -1100,6 +1110,26 @@ class Selector:
         return ok
 
     @staticmethod
+    def structural_users(before, after, entry):
+        if len(before.body) != len(after.body):
+            return 0
+        changed = [(a, b) for a, b in zip(before.body, after.body) if ast.dump(a) != ast.dump(b)]
+        if len(changed) != 1:
+            return 0
+        (old, new), = changed
+        if (not isinstance(old, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef))
+                or type(old) is not type(new) or old.name != new.name):
+            return 0
+        kind = "class" if isinstance(old, ast.ClassDef) else "function"
+        users = 0
+        for start, end, category, mask in entry["regions"]:
+            if (start, end, category) == (old.lineno, old.end_lineno, kind):
+                users |= mask
+        if not users:
+            return 0
+        return users | Selector.span_users(entry, old.lineno, old.end_lineno)
+
+    @staticmethod
     def span_users(entry, start, end):
         users = 0
         for line in range(start, end + 1):
@@ -1239,6 +1269,7 @@ def parse_args(argv=None):
     parser.add_argument("--source", type=Path, default=Path("/opt/sqlglot"))
     parser.add_argument("--map", type=Path, default=Path("/app/dependencies.json.gz"))
     parser.add_argument("--probe-budget", type=float)
+    parser.add_argument("--structural-refinement", action=argparse.BooleanOptionalAction, default=None)
     parser.add_argument("--cost-aware-probes", action=argparse.BooleanOptionalAction, default=None,
                         help="Reserve probe budget for whole selections with sufficient schedule savings")
     python_mode = parser.add_mutually_exclusive_group()
@@ -1316,6 +1347,8 @@ def parse_args(argv=None):
     if args.fixture_replay_budget is None:
         args.fixture_replay_budget = float(config.get("fixture_replay_budget", 0.0))
     args.settings["fixture_replay_budget"] = float(args.fixture_replay_budget)
+    args.settings["structural_refinement"] = (config.get("structural_refinement", False) is True
+                                              if args.structural_refinement is None else args.structural_refinement)
     if args.cost_aware_probes:
         args.settings["probe_budget"] = {"seconds": args.probe_budget, "cost_aware": True}
     return args
@@ -1375,7 +1408,8 @@ def main():
                         exact_comparisons=settings["exact_comparisons"],
                         fixture_entries=load_fixture_entries(args.fixture_entries, args.source)
                         if settings["fixture_replay_budget"] > 0 else None,
-                        fixture_replay_budget=max(0.0, settings["fixture_replay_budget"]))
+                        fixture_replay_budget=max(0.0, settings["fixture_replay_budget"]),
+                        structural_refinement=settings["structural_refinement"])
 
 
     schedules = {}
