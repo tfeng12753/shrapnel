@@ -22,6 +22,8 @@ from tools.profile_schedule import schedule_profile
 BASE = {"conservative_python": False, "child_work": False, "relations": False,
         "executor_fixtures": False, "executor_plan_budget": 0.0, "lazy_test_budget": 0.0,
         "probe_budget": 0.0, "import_check_budget": 6.0, "setup_check_budget": 8.0,
+        "downstream_import_budget": 6.0,
+        "typeddict_state_check": False,
         "dict_key_refinement": False}
 VARIANTS = {
     "conservative_python": {**BASE, "conservative_python": True, "import_check_budget": 0.0, "setup_check_budget": 0.0},
@@ -49,6 +51,8 @@ def selector_options(config):
             "--probe-budget", repr(float(config["probe_budget"])),
             "--import-check-budget", repr(float(config["import_check_budget"])),
             "--setup-check-budget", repr(float(config["setup_check_budget"])),
+            "--downstream-import-budget", repr(float(config["downstream_import_budget"])),
+            "--typeddict-state-check" if config["typeddict_state_check"] else "--no-typeddict-state-check",
             "--dict-key-refinement" if config["dict_key_refinement"] else "--no-dict-key-refinement"]
 
 
