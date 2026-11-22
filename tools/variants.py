@@ -25,7 +25,7 @@ BASE = {"conservative_python": False, "child_work": False, "relations": False,
         "downstream_import_budget": 6.0,
         "typeddict_state_check": False,
         "inherited_typeddict": False, "discarded_strings": False, "relocated_strings": False,
-        "dict_key_refinement": False,
+        "dict_key_refinement": False, "expression_schema_coverage": False,
         "schedule_admission": False,
         "exact_comparisons": False,
         "fixture_replay_budget": 0.0, "longest_test_budget": 0.0, "rule_screen": False}
@@ -63,6 +63,8 @@ def selector_options(config):
             "--discarded-strings" if config["discarded_strings"] else "--no-discarded-strings",
             "--relocated-strings" if config["relocated_strings"] else "--no-relocated-strings",
             "--dict-key-refinement" if config["dict_key_refinement"] else "--no-dict-key-refinement",
+            "--expression-schema-coverage" if config["expression_schema_coverage"]
+            else "--no-expression-schema-coverage",
             "--schedule-admission" if config["schedule_admission"] else "--no-schedule-admission",
             "--exact-comparisons" if config["exact_comparisons"] else "--no-exact-comparisons",
             "--fixture-replay-budget", repr(float(config["fixture_replay_budget"])),

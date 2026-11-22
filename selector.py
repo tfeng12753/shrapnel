@@ -525,9 +525,12 @@ class Selector:
                  schedule_admission=False, exact_comparisons=False,
                  fixture_entries=None, fixture_replay_budget=0.0, longest_test_budget=0.0, rule_screen=False,
                  inherited_typeddict=False, discarded_strings=False, dict_key_refinement=False,
-                 key_reads_path=None, full_item_costs=None, relocated_strings=False):
+                 key_reads_path=None, full_item_costs=None, relocated_strings=False,
+                 expression_schema_coverage=False):
         self.tests, self.source = tests, source
         self.discarded_strings = discarded_strings
+        self.dict_key_refinement = dict_key_refinement
+        self.expression_schema_coverage = expression_schema_coverage
         self.key_reads = {}
         self.location_readers = None
         self.full_item_costs = full_item_costs or {}
@@ -852,6 +855,20 @@ class Selector:
                         continue
                     if self.conservative_python:
                         return include(self.all, "conservative executable Python selection", name)
+                    schema_spans = ()
+                    if ((self.dict_key_refinement or self.expression_schema_coverage)
+                            and name.startswith("sqlglot/expressions/")):
+                        from dict_keys import argument_schema_spans
+                        schema_spans = argument_schema_spans(before, after)
+                        if self.expression_schema_coverage:
+                            if schema_spans is None:
+                                return include(self.all, "expression argument schema could not be matched", name)
+                            if schema_spans:
+                                class_users = {(a, b): mask for a, b, kind, mask in (entry or {}).get("regions", ())
+                                               if kind == "class"}
+                                for span in schema_spans:
+                                    result |= include(class_users.get(span) or self.all,
+                                                      "expression argument schema users", name, span)
                     result |= include(self.child_work, "potential untraced child work", name)
                     affected_comparisons = []
                     refined = None
@@ -892,7 +909,8 @@ class Selector:
                         continue
                     if hazard:
                         return include(self.all, "import-time change", name)
-                    if static_refinements and len(changes) == 1 and entry is not None and name in self.key_reads:
+                    if (static_refinements and len(changes) == 1 and schema_spans is not None and not schema_spans
+                            and entry is not None and name in self.key_reads):
                         from dict_keys import matched_readers
                         keyed = matched_readers(self.key_reads[name], self.decode_key_mask, before, after, old,
                                                 removed, inserted)
@@ -1354,6 +1372,7 @@ def parse_args(argv=None):
     parser.add_argument("--discarded-strings", action=argparse.BooleanOptionalAction, default=None)
     parser.add_argument("--relocated-strings", action=argparse.BooleanOptionalAction, default=None)
     parser.add_argument("--dict-key-refinement", action=argparse.BooleanOptionalAction, default=None)
+    parser.add_argument("--expression-schema-coverage", action=argparse.BooleanOptionalAction, default=None)
     parser.add_argument("--rule-screen", action=argparse.BooleanOptionalAction, default=None)
     parser.add_argument("--fixture-entries", type=Path, default=Path("/app/fixture-entries.json.gz"))
     parser.add_argument("--config", type=Path, default=Path(__file__).with_name("selector-config.json"))
@@ -1419,8 +1438,11 @@ def parse_args(argv=None):
         args.relocated_strings = config.get("relocated_strings", False)
     if args.dict_key_refinement is None:
         args.dict_key_refinement = config.get("dict_key_refinement", False)
+    if args.expression_schema_coverage is None:
+        args.expression_schema_coverage = config.get("expression_schema_coverage", False)
     args.settings.update(discarded_strings=bool(args.discarded_strings), relocated_strings=bool(args.relocated_strings),
-                         dict_key_refinement=bool(args.dict_key_refinement))
+                         dict_key_refinement=bool(args.dict_key_refinement),
+                         expression_schema_coverage=bool(args.expression_schema_coverage))
     if args.rule_screen is None:
         args.rule_screen = config.get("rule_screen", False)
     args.settings["rule_screen"] = bool(args.rule_screen)
@@ -1491,6 +1513,7 @@ def main():
                         inherited_typeddict=settings["inherited_typeddict"],
                         discarded_strings=settings["discarded_strings"], dict_key_refinement=settings["dict_key_refinement"],
                         full_item_costs=costs, relocated_strings=settings["relocated_strings"],
+                        expression_schema_coverage=settings["expression_schema_coverage"],
                         schedule_admission=settings["schedule_admission"],
                         exact_comparisons=settings["exact_comparisons"],
                         fixture_entries=load_fixture_entries(args.fixture_entries, args.source)

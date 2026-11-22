@@ -12,6 +12,24 @@ from tools.pack_key_reads import pack
 
 
 class KeyReadSelectionTests(TestCase):
+    def test_expression_argument_schema_change_keeps_class_users(self):
+        with TemporaryDirectory() as folder:
+            root = Path(folder)
+            name = "sqlglot/expressions/example.py"
+            source = root / name
+            source.parent.mkdir(parents=True)
+            before = 'class Node:\n    arg_types = {"condition": False}\n'
+            source.write_text(before)
+            catalog = [{"id": letter, "number": i, "seconds": .1} for i, letter in enumerate("abc")]
+            base = root / "base.json"
+            base.write_text(json.dumps({"revision": REVISION, "version": 1, "complete": True,
+                                        "tests": ["a", "b", "c"], "files": {
+                                            name: {"lines": {"2": "1"}, "regions": [[1, 2, "class", "3"]]}}}))
+            changed = diff(name, before, before.replace("False", "True"))
+            self.assertEqual(Selector(catalog, root, base).select(changed), 1)
+            self.assertEqual(Selector(catalog, root, base, dict_key_refinement=True).select(changed), 1)
+            self.assertEqual(Selector(catalog, root, base, expression_schema_coverage=True).select(changed), 3)
+
     def test_packed_record_retains_users_unexplained_in_either_seed(self):
         with TemporaryDirectory() as folder:
             root = Path(folder)

@@ -53,6 +53,31 @@ def same_value_shape(a, b):
             and type(a.value) in (str, bytes, int, float, bool, type(None)))
 
 
+def argument_schema_spans(before, after):
+    """Baseline class spans for changed validation metadata, or None if unmatched."""
+    def schemas(tree):
+        result = []
+        for cls in ast.walk(tree):
+            if not isinstance(cls, ast.ClassDef):
+                continue
+            for assignment in cls.body:
+                if isinstance(assignment, ast.Assign):
+                    targets = assignment.targets
+                elif isinstance(assignment, ast.AnnAssign):
+                    targets = [assignment.target]
+                else:
+                    continue
+                if any(isinstance(target, ast.Name) and target.id == "arg_types" for target in targets):
+                    result.append((cls.name, ast.dump(assignment), (cls.lineno, cls.end_lineno)))
+        return result
+
+    old, new = schemas(before), schemas(after)
+    if [name for name, _, _ in old] != [name for name, _, _ in new]:
+        return None
+    return {span for (_, before_value, span), (_, after_value, _) in zip(old, new)
+            if before_value != after_value}
+
+
 def _dictionaries(tree):
     """[((start, end), Dict node)] for module- and class-level dict assignments, in source order."""
     found = []
