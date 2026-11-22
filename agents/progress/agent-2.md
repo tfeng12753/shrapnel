@@ -104,29 +104,33 @@ other change in the file), select `keys[k]` for each changed key, plus
 `whole`, `unobserved` and `lines` of the edited lines. `presence` is ignored
 because the key set is unchanged.
 
-### Map format: `equality` (per file, per site, for agent 3)
-Every single-line `==`/`!=` with one comparator in an ordinary function body
-(not decorated, not a dunder method) is observed. Site key is
-`"<line>:<col>"` of the comparison node.
+### Map format: `exact_comparisons` (reply to agent 3's proposal)
+Agreed with agent 3's rules, with one change: the record is a separate
+per-file key, not `comparisons[site]["exact"]`. Adding new sites inside
+`comparisons` would change what the current selector does for them; a
+separate key changes nothing until agent 3 reads it.
 
-    "equality": {"1216:11": {
-        "op": "Eq",                       # original operator, Eq or NotEq
-        "reached": "<mask>",              # tests whose evaluation reached the site (marked before operands)
-        "states": {"p:1": "<mask>", ...}, # completed comparisons by relation
-        "unknown": "<mask>"}}             # see below
+    "exact_comparisons": {"<line>:<col>": {
+        "op": "Eq",                      # Eq, NotEq, Lt, LtE, Gt or GtE (original operator)
+        "complete": "<mask>",            # every attempt completed with exact int/str/None operands
+        "states": {"p:1": "<mask>", ...},# existing relation encoding (bits 1 eq, 2 lt, 4 gt, 8 identical)
+        "unknown": "<mask>"}}            # attempted or covering the line, but not complete
 
-- States: `p:1` equal, `p:2` left < right, `p:4` left > right (exact
-  int/str/bool operands, ordering defined); `e:9` both None; `e:0` unequal
-  with no ordering (None against int/str/bool, or str against int/bool).
-- `unknown` = operands of any other type (recorded before the operator runs,
-  so a raising custom `__eq__` is still unknown), plus reached-but-not-completed
-  (an operand raised), plus tests covering the line with no observation.
-- A test can appear in several states (several evaluations); keep it if any
-  of its states changes outcome under the new operator, or if it is unknown.
-- A site evaluated outside a test's call phase (import, setup, threads) has
-  no record at all: treat a missing site as fully unknown (use line coverage).
-- The established `comparisons` record is unchanged (same sites, same
-  semantics), so current selector behaviour does not change with this map.
+Builder rules (`tools/instrument.py`, `Recorder.record_reach/record_exact`):
+- Sites: every single-comparator `==`, `!=`, `<`, `<=`, `>`, `>=` in an
+  ordinary function body (not decorated, not a dunder method), any line span.
+- An attempt is counted when evaluation reaches the site, before either
+  operand runs; it completes when the observer runs, before the original
+  operator. Complete = attempts == completions, all with operand types exactly
+  `int`, `str` or `NoneType` (no subclasses, no `bool`).
+- Attempts in setup or teardown phases, or inside the inline process pool,
+  remove that test from `complete`. Any attempt outside a test (import time,
+  other threads) drops the whole site.
+- `states` holds only complete-type attempts; a test can be in several.
+- Hash seeds: `tools/map_merge_seeds.py` merges builds made with different
+  `PYTHONHASHSEED`: `complete` is the intersection, a test whose state set
+  differs between seeds is removed, everything else is the union.
+- The committed map will be the merge of seeds 0 and 1 (see Task 4 status).
 
 ### Registry writers (Task 3 fix)
 A test that stores into a tracked mapping (`d[k] = v`, `del d[k]`,
