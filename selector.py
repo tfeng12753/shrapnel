@@ -161,6 +161,11 @@ def schedule_saving(tests: list[dict], dropped: int) -> float:
     return schedule_seconds(tests) - schedule_seconds([t for t in tests if not dropped >> t["number"] & 1])
 
 
+# Files that load the dialect registry. Test order changes their state, which a
+# verifier running tests in a fresh process cannot reproduce.
+REGISTRY_FILES = frozenset({"sqlglot/dialects/dialect.py", "sqlglot/dialects/__init__.py"})
+# Wall-clock limit of one lazy-test check; see Selector._select_base.
+LAZY_CHECK_WALL_SECONDS = 6.0
 # A probe must save at least 1.5 times its expected CPU plus half a second.
 ADMISSION_FACTOR, ADMISSION_MARGIN = 1.5, 0.5
 # Expected CPU per probe kind, measured on the pinned checkout without bytecode.
@@ -518,6 +523,11 @@ class Selector:
                  lazy_test_budget=0.0, import_effects=None, downstream_import_budget=0.0, typeddict_state_check=False,
                  schedule_admission=False, exact_comparisons=False):
         self.tests, self.source = tests, source
+        # Patches that change code or settings used while some module is being
+        # imported can break collection of every test file importing it. A forked
+        # import of the affected modules decides (CPU charged to this budget).
+        self.import_effects = import_effects
+        self.downstream_import_budget = downstream_import_budget
         # Admit every narrowing probe only after a patch's selection is final,
         # and only if dropping its tests saves enough schedule time for its CPU.
         self.schedule_admission = schedule_admission
@@ -615,15 +625,14 @@ class Selector:
                     "regions": [(a, b, kind, decode(v)) for a, b, kind, v in entry.get("regions", [])],
                     "anchors": {int(k): decode(v) for k, v in entry.get("anchors", {}).items()},
                     "comparisons": {site: {"op": info["op"], "unknown": decode(info["unknown"]),
-                        "states": {state: decode(v) for state, v in info["states"].items()},
-                        "exact": {"complete": decode(info["exact"]["complete"]),
-                                  "states": {state: decode(v) for state, v in info["exact"]["states"].items()}}
-                                 if "exact" in info else None}
+                        "states": {state: decode(v) for state, v in info["states"].items()}}
                         for site, info in comparison_sites.items()},
                     "readers": readers,
                     "executed": decode(entry.get("executed", "0")),
                     "setup": setup,
                 }
+                if self.relations and self.exact_comparisons and not conservative_python:
+                    self.add_equality_evidence(self.files[name]["comparisons"], entry.get("equality", {}), decode)
             mapped_ids = set(data["tests"])
             missing = [t["id"] for t in tests if t["id"] not in mapped_ids]
             self.complete = bool(data.get("complete")) and not missing
@@ -633,6 +642,31 @@ class Selector:
                 self.child_work = self.child_work_mask()
         except (OSError, ValueError, KeyError, IndexError, TypeError) as e:
             print(f"dependency map unavailable ({type(e).__name__}); using full-suite fallback", file=sys.stderr)
+
+    @staticmethod
+    def add_equality_evidence(comparisons, equality, decode):
+        """Attach the map's per-site equality record as exact evidence.
+
+        The record covers `==`/`!=` sites in ordinary function bodies. `reached`
+        holds tests whose evaluation reached the site, `states` the relations of
+        completed comparisons on exact int/str/bool/None operands, and `unknown`
+        every test with another operand type, an operand that raised, or line
+        coverage without an observation. A site evaluated outside a test's call
+        phase has no record, so it is never narrowed.
+        """
+        for site, record in equality.items():
+            op = record["op"]
+            if op not in ("Eq", "NotEq"):
+                continue
+            unknown = decode(record["unknown"])
+            exact = {"complete": decode(record["reached"]) & ~unknown,
+                     "states": {state: decode(v) for state, v in record["states"].items()}}
+            info = comparisons.get(site)
+            if info is None:
+                comparisons[site] = {"op": op, "unknown": unknown, "states": {}, "exact": exact}
+            elif info["op"] == op:
+                info["unknown"] |= unknown
+                info["exact"] = exact
 
     def read_source(self, name):
         if name not in self.sources:
@@ -892,10 +926,10 @@ class Selector:
                 if self.schedule_admission and not self.admit("lazy", "lazy", schedule_seconds([item])):
                     return result
                 start = cpu_seconds()
-                # A single scheduled worker costs two seconds plus the test. Limit
-                # wall time per launch and charge actual CPU even when verification fails.
-                deadline = min(2 * self.lazy_test_budget, 2 + item["seconds"])
-                verified = passed(self.source, name, new, item["id"], deadline)
+                # The wall limit only stops a hung check. It is fixed and generous
+                # (a passing check takes about 1.5 s) so the outcome does not depend
+                # on machine load or on the budget left; actual CPU is charged.
+                verified = passed(self.source, name, new, item["id"], LAZY_CHECK_WALL_SECONDS)
                 self.record("lazy", "lazy", cpu_seconds() - start)
                 self.lazy_test_budget -= cpu_seconds() - start
                 if verified:
@@ -1159,6 +1193,11 @@ class Selector:
                 return mask, 0.0
         changes = parse_patch(patch)
         if any(not c["old"].endswith(".py") or c["old"].startswith("tests/") or c["old"] != c["new"] for c in changes):
+            return mask, 0.0
+        if any(c["old"] in REGISTRY_FILES for c in changes):
+            # A forked child imports the registry fresh. In the full suite, tests
+            # that clear it change which loading path later tests take, so a
+            # pass here does not show a pass there.
             return mask, 0.0
         if cost_aware and (any(module_for(c["old"]) is None for c in changes)
                            or len({c["old"] for c in changes}) != len(changes)):

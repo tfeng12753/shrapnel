@@ -267,3 +267,19 @@ class ShortCircuitSkipTests(TestCase):
         before, after = ast.parse(old), ast.parse(old.replace(" or ", " and "))
         self.assertIsNone(S.classify_python_edit(before, after))
         self.assertTrue(list(S.short_circuit_edits(before, after, {2})))
+
+
+class RegistryProbeTests(TestCase):
+    def test_probes_decline_registry_loading_edits(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            name = "sqlglot/dialects/dialect.py"
+            (root / name).parent.mkdir(parents=True)
+            (root / name).write_text("VALUE = 1\n")
+            tests = [{"id": "a", "number": 0, "seconds": .01}]
+            selector = Selector(tests, root, root / "missing.json")
+            selector.native = {"a"}
+            with patch("native_probes.verify", side_effect=AssertionError("probe ran")):
+                for cost_aware in (False, True):
+                    self.assertEqual(selector.probe(diff(name, "VALUE = 1\n", "VALUE = 2\n"), 1, 2,
+                                                    cost_aware=cost_aware), (1, 0.0))
