@@ -1,0 +1,256 @@
+{
+  "control_fingerprint": "e9c42f4e34413da923923cfd3bd60f757e7c93b80f82142889b125475da32605",
+  "candidate_fingerprint": "0babb362750d8b37ac1fed604ba7fe8fb9f336ac6f3005ef788b9e9f3823c74e",
+  "image": "3ca2548ab48b",
+  "miss_penalty_seconds": 300,
+  "skipped": {
+    "missing": [
+      "m01001",
+      "m01005",
+      "m01007",
+      "m01009",
+      "m01011",
+      "m01013",
+      "m01015",
+      "m01017",
+      "m01019",
+      "m01021",
+      "m01023",
+      "m01025",
+      "m01027",
+      "m01029",
+      "m01031",
+      "m01033",
+      "m01035",
+      "m01037",
+      "m01039"
+    ],
+    "errored": [],
+    "suspicious": {},
+    "out_of_split": 20
+  },
+  "datasets": {
+    "sample": {
+      "main": {
+        "patches": 30,
+        "runs": [
+          {
+            "cpu_seconds": 4.042359,
+            "simulated_seconds": 116.075,
+            "total_seconds": 120.11735900000001,
+            "missed_tests": {}
+          },
+          {
+            "cpu_seconds": 4.362454,
+            "simulated_seconds": 116.075,
+            "total_seconds": 120.437454,
+            "missed_tests": {}
+          },
+          {
+            "cpu_seconds": 2.985194,
+            "simulated_seconds": 116.075,
+            "total_seconds": 119.060194,
+            "missed_tests": {}
+          }
+        ],
+        "median_total_seconds": 120.11735900000001,
+        "median_cpu_seconds": 4.042359
+      },
+      "off": {
+        "patches": 30,
+        "runs": [
+          {
+            "cpu_seconds": 2.763146,
+            "simulated_seconds": 116.075,
+            "total_seconds": 118.83814600000001,
+            "missed_tests": {}
+          },
+          {
+            "cpu_seconds": 3.5774090000000003,
+            "simulated_seconds": 116.075,
+            "total_seconds": 119.652409,
+            "missed_tests": {}
+          },
+          {
+            "cpu_seconds": 3.077235,
+            "simulated_seconds": 116.075,
+            "total_seconds": 119.152235,
+            "missed_tests": {}
+          }
+        ],
+        "median_total_seconds": 119.152235,
+        "median_cpu_seconds": 3.077235
+      },
+      "on": {
+        "patches": 30,
+        "runs": [
+          {
+            "cpu_seconds": 2.793814,
+            "simulated_seconds": 116.075,
+            "total_seconds": 118.868814,
+            "missed_tests": {}
+          },
+          {
+            "cpu_seconds": 2.945994,
+            "simulated_seconds": 116.075,
+            "total_seconds": 119.020994,
+            "missed_tests": {}
+          },
+          {
+            "cpu_seconds": 2.908108,
+            "simulated_seconds": 116.075,
+            "total_seconds": 118.983108,
+            "missed_tests": {}
+          }
+        ],
+        "median_total_seconds": 118.983108,
+        "median_cpu_seconds": 2.908108
+      }
+    },
+    "heldout": {
+      "main": {
+        "patches": 1,
+        "runs": [
+          {
+            "cpu_seconds": 0.665378,
+            "simulated_seconds": 4.988,
+            "total_seconds": 5.653378,
+            "missed_tests": {}
+          },
+          {
+            "cpu_seconds": 0.733532,
+            "simulated_seconds": 4.988,
+            "total_seconds": 5.721532000000001,
+            "missed_tests": {}
+          },
+          {
+            "cpu_seconds": 0.6729160000000001,
+            "simulated_seconds": 4.988,
+            "total_seconds": 5.660916,
+            "missed_tests": {}
+          }
+        ],
+        "median_total_seconds": 5.660916,
+        "median_cpu_seconds": 0.6729160000000001
+      },
+      "off": {
+        "patches": 1,
+        "runs": [
+          {
+            "cpu_seconds": 0.6432359999999999,
+            "simulated_seconds": 4.988,
+            "total_seconds": 5.631236,
+            "missed_tests": {}
+          },
+          {
+            "cpu_seconds": 0.6044289999999999,
+            "simulated_seconds": 4.988,
+            "total_seconds": 5.592429,
+            "missed_tests": {}
+          },
+          {
+            "cpu_seconds": 0.589044,
+            "simulated_seconds": 4.988,
+            "total_seconds": 5.577044000000001,
+            "missed_tests": {}
+          }
+        ],
+        "median_total_seconds": 5.592429,
+        "median_cpu_seconds": 0.6044289999999999
+      },
+      "on": {
+        "patches": 1,
+        "runs": [
+          {
+            "cpu_seconds": 0.650098,
+            "simulated_seconds": 4.988,
+            "total_seconds": 5.638098,
+            "missed_tests": {}
+          },
+          {
+            "cpu_seconds": 0.6410419999999999,
+            "simulated_seconds": 4.988,
+            "total_seconds": 5.629042,
+            "missed_tests": {}
+          },
+          {
+            "cpu_seconds": 0.676568,
+            "simulated_seconds": 4.988,
+            "total_seconds": 5.664568,
+            "missed_tests": {}
+          }
+        ],
+        "median_total_seconds": 5.638098,
+        "median_cpu_seconds": 0.650098
+      }
+    }
+  },
+  "control_revision": "1ea65b5a2b4d7b9a787107752a75966c33fd84af",
+  "candidate_revision": "bdf2927",
+  "configurations": {
+    "main": {
+      "conservative_python": false,
+      "child_work": false,
+      "relations": true,
+      "probe_budget": 0.0,
+      "import_check_budget": 6.0,
+      "setup_check_budget": 8.0,
+      "executor_fixtures": true,
+      "executor_plan_budget": 0.0,
+      "lazy_test_budget": 3.0,
+      "downstream_import_budget": 6.0,
+      "typeddict_state_check": true,
+      "schedule_admission": false,
+      "exact_comparisons": false,
+      "fixture_replay_budget": 0.0
+    },
+    "off": {
+      "conservative_python": false,
+      "child_work": false,
+      "relations": true,
+      "probe_budget": 0.0,
+      "import_check_budget": 6.0,
+      "setup_check_budget": 8.0,
+      "executor_fixtures": true,
+      "executor_plan_budget": 0.0,
+      "lazy_test_budget": 3.0,
+      "downstream_import_budget": 6.0,
+      "typeddict_state_check": true,
+      "inherited_typeddict": false,
+      "schedule_admission": false,
+      "exact_comparisons": false,
+      "fixture_replay_budget": 0.0
+    },
+    "on": {
+      "conservative_python": false,
+      "child_work": false,
+      "relations": true,
+      "probe_budget": 0.0,
+      "import_check_budget": 6.0,
+      "setup_check_budget": 8.0,
+      "executor_fixtures": true,
+      "executor_plan_budget": 0.0,
+      "lazy_test_budget": 3.0,
+      "downstream_import_budget": 6.0,
+      "typeddict_state_check": true,
+      "inherited_typeddict": true,
+      "schedule_admission": false,
+      "exact_comparisons": false,
+      "fixture_replay_budget": 0.0
+    }
+  },
+  "attempt_accounting": {
+    "final_selector_cpu_seconds": 35.331956,
+    "preliminary_selector_cpu_seconds": 28.952430999999997,
+    "failed_input_permissions_selector_cpu_seconds": 0.308154,
+    "all_selector_cpu_seconds": 64.592541,
+    "preliminary_exclusion_reason": "Guard and configuration formatting changed during the preliminary run."
+  },
+  "limitations": [
+    "Only one held-out mutant has usable ground truth; nineteen are missing.",
+    "Repeated timings do not add independent correctness cases.",
+    "No roughly 45-patch fresh batches were measured.",
+    "Five fresh synthetic failure-bearing metadata controls are covered by unit tests.",
+    "All three pinned inherited declarations encounter the reflection guard."
+  ]
+}

@@ -44,12 +44,40 @@ narrowing gain in the pinned checkout; keep the toggle disabled.
   It compares a supplied control checkout with this branch's toggle off and
   on, using identical sample patches and held-out mutants, three repetitions,
   the existing worker packer and the 300-second per-missed-patch penalty.
-  Final measurements are in progress at this checkpoint.
+  Results for implementation revision `bdf2927` are recorded in
+  [agent-6-measurements.json](agent-6-measurements.json), including exact
+  configurations and code fingerprints.
+
+## Container smoke measurements
+
+Each row is three repetitions of the same batch under two CPUs, 4096 MiB,
+256 processes, no network and a read-only container. Correctness counts each
+distinct patch once. The sample batch contains 30 patches. Only one held-out
+mutant has usable ground truth; nineteen held-out results are missing.
+
+| Batch | Configuration | Missed patches | Simulated seconds | Median CPU seconds | Median total seconds | Worst total seconds |
+| --- | --- | ---: | ---: | ---: | ---: | ---: |
+| Sample | `main` | 0 | 116.075 | 4.042 | 120.117 | 120.437 |
+| Sample | `bdf2927`, toggle off | 0 | 116.075 | 3.077 | 119.152 | 119.652 |
+| Sample | `bdf2927`, toggle on | 0 | 116.075 | 2.908 | 118.983 | 119.021 |
+| Held-out | `main` | 0 | 4.988 | 0.673 | 5.661 | 5.722 |
+| Held-out | `bdf2927`, toggle off | 0 | 4.988 | 0.604 | 5.592 | 5.631 |
+| Held-out | `bdf2927`, toggle on | 0 | 4.988 | 0.650 | 5.638 | 5.665 |
+
+There are no missed failing test IDs; the fraction of these two batches with
+a miss is zero for every configuration. The 300-second per-missed-patch
+penalty is included and contributes zero. These small, sequentially timed
+batches do not establish a CPU improvement. No schedule improvement was
+observed, and no fresh batches of roughly 45 patches were measured.
+
+Final selector CPU across all repetitions was 35.332 seconds. Preliminary
+runs consumed 28.952 seconds and were discarded because the guard changed
+during measurement. One failed input-permission attempt consumed 0.308
+seconds. Total selector CPU including those attempts was 64.593 seconds.
 
 ## Resume
 
-Record the final container measurements before proceeding. The next useful
-step is to establish which reflection consumers can reach these declarations,
+The next useful step is to establish which reflection consumers can reach these declarations,
 with complete evidence for aliases and descendants. Do not weaken the guard
 based on sample or mutant outcomes. Larger fresh batches and full-suite
 failure-bearing controls remain prerequisites for promotion. Subsequent
