@@ -161,6 +161,8 @@ def schedule_saving(tests: list[dict], dropped: int) -> float:
     return schedule_seconds(tests) - schedule_seconds([t for t in tests if not dropped >> t["number"] & 1])
 
 
+# Wall-clock limit of one lazy-test check; see Selector._select_base.
+LAZY_CHECK_WALL_SECONDS = 6.0
 # A probe must save at least 1.5 times its expected CPU plus half a second.
 ADMISSION_FACTOR, ADMISSION_MARGIN = 1.5, 0.5
 # Expected CPU per probe kind, measured on the pinned checkout without bytecode.
@@ -855,10 +857,10 @@ class Selector:
                 if self.schedule_admission and not self.admit("lazy", "lazy", schedule_seconds([item])):
                     return result
                 start = cpu_seconds()
-                # A single scheduled worker costs two seconds plus the test. Limit
-                # wall time per launch and charge actual CPU even when verification fails.
-                deadline = min(2 * self.lazy_test_budget, 2 + item["seconds"])
-                verified = passed(self.source, name, new, item["id"], deadline)
+                # The wall limit only stops a hung check. It is fixed and generous
+                # (a passing check takes about 1.5 s) so the outcome does not depend
+                # on machine load or on the budget left; actual CPU is charged.
+                verified = passed(self.source, name, new, item["id"], LAZY_CHECK_WALL_SECONDS)
                 self.record("lazy", "lazy", cpu_seconds() - start)
                 self.lazy_test_budget -= cpu_seconds() - start
                 if verified:
