@@ -11,18 +11,25 @@
   (old seeds reproduce identical mutants; 48 new-family smoke patches apply; real ground truth outside Docker:
   baseline 0 failures, base-dialect concat-setting flip 1120 failing tests with 34 files failing collection,
   one TPC-H fixture-entry edit 2 failures, one comparison swap 2 failures).
-- Session stopped early: usage limit. Half-done: an independent safety review of fixture replay
-  ("can it drop a failing test?") did not complete; rerun it before enabling `fixture_replay_budget`.
-- Next steps, in order:
-  1. Safety review of `fixture_replay.py` (cases listed under Notes).
-  2. Source-edit acceptance: an edit to the body of `_like` in `sqlglot/executor/env.py` (only TPC-DS entry 90
-     executes it) should drop `test_execute_tpcds` when neutral and keep it when it breaks entry 90.
-  3. More fresh fixture-entry mutants (one checked so far, see Evaluations): `venv/bin/python tools/mutants.py --source <pinned> --sample sample --out <dir>
-     --families fixture-entry --count 20 --seed 900`, ground truth, then
-     `python3 tools/ab_eval.py main . --mutants <dir> --b-args='--fixture-replay-budget 8 --fixture-entries fixture-entries.json.gz' ...`.
-  4. Task 4 reports once other agents' branches have code commits (only agent 1 had a progress-file commit).
+- Merged `main` @ 06cf910 (downstream import check) into this branch at 155dae5; the replay call site is in
+  `_select_base()`, so `select()`'s downstream import additions still apply on top of it.
+- Running now (Task 4, local, scratch dir `<scratch>`):
+  1. repairing the 121 holdout seed100 results whose failures were lost to multi-line subtest titles
+     (rerun of the optimizer and executor test files on each patched copy; see Alerts);
+  2. full-suite ground truth for 40 fresh new-family mutants (seed 950: 11 setting-flip, 8 typeddict-total,
+     8 dict-value, 7 comparison-swap, 6 fixture-entry);
+  3. independent safety review of fixture replay (subagent).
+- Next: `tools/ab_eval.py origin/main . --b-args='--fixture-replay-budget 8 --fixture-entries <repo>/fixture-entries.json.gz'`
+  on the repaired holdout and on seed 950 (both sides `--import-time <built index>`); rerun agents 2 and 3 on the
+  repaired mutants; post results below.
 
 ## Alerts
+- to agent 1 (dataset, not a code miss): 243 of the 2,400 seed100 results (121 in the holdout split) lost failing
+  tests to the old multi-line subtest parsing (`unknown` entries starting `SUBFAILED[`). Evaluators exclude them as
+  suspicious, so misses in fixture-driven tests are under-counted for every branch. Example: m100011 also fails
+  catalog 1123 and 1441, which the stored result omits. I am repairing the holdout ones locally (rerun of
+  `tests/test_optimizer.py` and `tests/test_executor.py` with the fixed parser) and will publish them; a full rerun
+  with the current `tools/ground_truth.py` is the clean fix.
 
 ## Branch status
 WIP. All changes are behind config keys that default to off (`fixture_replay_budget: 0.0`).
@@ -40,6 +47,19 @@ WIP. All changes are behind config keys that default to off (`fixture_replay_bud
 ## Datasets
 
 ## Evaluations
+- Task 4, seed100 holdout (1,077 usable, 121 excluded as suspicious), batches of 30, local (4 cores, no container
+  limits), each branch vs its merge base `0871e19` with its new behavior switched on:
+  | B | A misses | B misses | new misses | simulated B-A | CPU B-A |
+  | --- | ---: | ---: | ---: | ---: | ---: |
+  | `agent3/selector-cpu` @ 1bceb00 `--schedule-admission` | 8 | 8 | 0 | -2.368 | -10.4 s |
+  | `agent2/map-data` @ 4788d00 `--dict-key-refinement` | 8 | 8 | 0 | +4.736 | +3.3 s |
+  - agent 3: cheaper on m100029, worse on none. agent 2: two commits select one more test (m100019, m119049).
+  - The 8 shared misses predate the downstream import check on `main` (m100091, m103013, m104049, m104111, m109103,
+    m114069, m118031, m119049).
+- Fixture replay, source edits in function bodies (TPC-DS executor test, one entry each; ground truth by running the
+  test on the patched copy): neutral reorder, LIKE `%` to `.+`, inverted LIKE result, inverted ORDER BY key. Replay
+  drops the TPC-DS executor test in all four and it really passes in all four (that test only checks entries marked
+  `execute`). No miss; 2.4-2.7 s replay CPU for a 21.45 s test.
 - Fixture replay acceptance (local, budget 8, working tree vs `main` @ 0871e19), two hand-made TPC-H fixture
   patches with full ground truth for the selected tests:
   - expected-half formatting edit (one real failure, the optimizer TPC-H test): `main` selects 2 tests
