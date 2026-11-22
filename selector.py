@@ -523,9 +523,10 @@ class Selector:
                  lazy_test_budget=0.0, import_effects=None, downstream_import_budget=0.0, typeddict_state_check=False,
                  schedule_admission=False, exact_comparisons=False,
                  fixture_entries=None, fixture_replay_budget=0.0, generation_record=None,
-                 generation_check_budget=0.0, value_record=None, fixture_query_replay=False):
+                 generation_check_budget=0.0, value_record=None, fixture_query_replay=False, tokenizer_key_reads=False):
         self.tests, self.source = tests, source
         # Recorded comparison operands per test (value_check.py), read on first use.
+        self.tokenizer_key_reads = tokenizer_key_reads
         self.fixture_query_budget = 12.0 if fixture_query_replay else 0.0
         self.value_record = value_record
         # Recorded executor code generation (generation_check.py): edits that can only
@@ -945,6 +946,12 @@ class Selector:
                         result |= include(mask, "definition dependency", name, (a, b))
                 if not removed and not inserted:
                     return include(self.all, "no changed positions", name)
+            if (self.tokenizer_key_reads and self.complete and not self.conservative_python
+                    and len(changes) == 1 and name.startswith("sqlglot/dialects/")
+                    and name.endswith(".py") and plain_text_change(patch)
+                    and "NUMERIC_ESCAPES" in old):
+                from key_evidence import refine
+                result = refine(self, result, name, before, after)
             if pending:
                 result = self.resolve(result, pending, include)
             if (self.lazy_test_budget >= 0.7 and result and result == self.closure_external
@@ -1321,6 +1328,7 @@ def parse_args(argv=None):
     parser.add_argument("--fixture-entries", type=Path, default=Path("/app/fixture-entries.json.gz"))
     parser.add_argument("--generation-check-budget", type=float)
     parser.add_argument("--generation-record", type=Path, default=Path("/app/generation-record.json.gz"))
+    parser.add_argument("--tokenizer-key-reads", action=argparse.BooleanOptionalAction, default=None)
     parser.add_argument("--fixture-query-replay", action=argparse.BooleanOptionalAction, default=None)
     parser.add_argument("--value-comparisons", action=argparse.BooleanOptionalAction, default=None,
                         help="Narrow single-comparison edits with the build-time operand record")
@@ -1379,6 +1387,9 @@ def parse_args(argv=None):
     if args.generation_check_budget is None:
         args.generation_check_budget = float(config.get("generation_check_budget", 0.0))
     args.settings["generation_check_budget"] = float(args.generation_check_budget)
+    if args.tokenizer_key_reads is None:
+        args.tokenizer_key_reads = bool(config.get("tokenizer_key_reads", False))
+    args.settings["tokenizer_key_reads"] = args.tokenizer_key_reads
     if args.fixture_query_replay is None:
         args.fixture_query_replay = bool(config.get("fixture_query_replay", False))
     args.settings["fixture_query_replay"] = args.fixture_query_replay
@@ -1448,7 +1459,8 @@ def main():
                         generation_record=args.generation_record if settings["generation_check_budget"] > 0 else None,
                         generation_check_budget=max(0.0, settings["generation_check_budget"]),
                         value_record=args.value_record if settings["value_comparisons"] else None,
-                        fixture_query_replay=settings["fixture_query_replay"])
+                        fixture_query_replay=settings["fixture_query_replay"],
+                        tokenizer_key_reads=settings["tokenizer_key_reads"])
 
     schedules = {}
     remaining = max(0.0, args.probe_budget)
