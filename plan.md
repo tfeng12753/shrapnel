@@ -9,6 +9,12 @@ Control revision: `1ea65b5`. Both branches start with the same planning commit. 
 
 Read the corresponding kickoff under `agents/`. Agent 5 owns runtime probes and their options. Agent 6 owns static classifiers and their options. In shared files, touch only the option or call site for your feature. Keep replay capture and new tests in owner-specific modules. Preserve independent reasons a test was selected on mixed patches.
 
+## Revised priorities
+
+Agent 6 can finish the inherited-declaration experiment already in progress. Keep shipped direct-declaration and overload decisions as regression controls. The next static checkpoints are discarded class-attribute strings, then value-only dictionary edits. Use both harmless and failure-bearing dictionary edits. The existing `agent2/map-data` branch contains key-read instrumentation and tests worth evaluating before building another recorder. Its builder changes require a matching regenerated map.
+
+Agent 5 owns the independent comparison evidence audit. Measure line coverage, short-circuited evaluations, exact operand outcomes, observations outside the test call phase and the effect of the suite-order guard. Keep the comparison flag off pending complete evidence. Agent 6 can continue its static work without waiting for the audit. The audit and runtime experiments can be merged independently of a map rebuild.
+
 ## Measurement and integration
 
 1. Run the control and each toggle separately on identical sample patches and held-out mutants. Generate fresh failure-bearing controls for each proposed exclusion. Record missed patches and failing test IDs, simulated seconds, and selector CPU including unsuccessful attempts.
