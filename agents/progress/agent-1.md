@@ -2,7 +2,7 @@
 
 ## RESUME HERE
 - `main` is `ac1b6b3`: agent 1's tasks 1 and 2 plus agent 3's branch (merged, its new keys off).
-- Running: `schedule_admission` off vs on (sample plus 300 mutants in batches of 30). Turn it on in `selector-config.json` if it saves time with 0 new misses.
+- `schedule_admission` measured: no effect in the container (see Evaluations), so it stays off.
 - Next: merge agents 2 and 4 when they mark their branches ready (add `dict_keys.py` / `fixture_replay.py fixture-entries.json.gz` to the `Dockerfile` `COPY` line); rebuild the map after agent 2.
 - Scratch scripts are local. Mutant data is on branch `data/mutants-seed100`.
 
@@ -32,6 +32,8 @@ Evidence:
 - seed100-full: branch `data/mutants-seed100` (2,400 mutants, subtest-aware ground truth).
 
 ## Evaluations
+- `main` @ `ac1b6b3`, `schedule_admission` off vs on. Sample, 3 runs each: 116.075 / 116.075 simulated, 0 misses, CPU 2.19-2.37 s both. 300 held-out mutants (seed 100) in 10 batches of 30: simulated 1114.812 vs 1114.812, misses 0 vs 0, CPU 23.34 vs 23.54 s. Not enabled.
+- Same 300 mutants, `main` before agent 1's merges (`ef4c76d` code) vs `ac1b6b3`: simulated 1156.4 to 1114.8, misses 0 to 0.
 
 ## Notes
 - Import-time owners: library or test modules whose own import runs library functions. A patch triggers the check when a changed line ran during that import, or when a changed setting or class attribute is referenced by code the import ran and that code can reach it (the file's code ran, or the edited class was used). On the sample, no patch triggers it.
