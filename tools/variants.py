@@ -24,6 +24,7 @@ BASE = {"conservative_python": False, "child_work": False, "relations": False,
         "probe_budget": 0.0, "import_check_budget": 6.0, "setup_check_budget": 8.0,
         "downstream_import_budget": 6.0,
         "typeddict_state_check": False,
+        "inherited_typeddict": False,
         "schedule_admission": False,
         "exact_comparisons": False,
         "fixture_replay_budget": 0.0}
@@ -57,6 +58,7 @@ def selector_options(config):
             "--setup-check-budget", repr(float(config["setup_check_budget"])),
             "--downstream-import-budget", repr(float(config["downstream_import_budget"])),
             "--typeddict-state-check" if config["typeddict_state_check"] else "--no-typeddict-state-check",
+            "--inherited-typeddict" if config["inherited_typeddict"] else "--no-inherited-typeddict",
             "--schedule-admission" if config["schedule_admission"] else "--no-schedule-admission",
             "--exact-comparisons" if config["exact_comparisons"] else "--no-exact-comparisons",
             "--fixture-replay-budget", repr(float(config["fixture_replay_budget"]))]

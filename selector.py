@@ -522,7 +522,7 @@ class Selector:
                  setup_check_budget=0.0, executor_fixtures=False, executor_plans=None, executor_plan_budget=0.0,
                  lazy_test_budget=0.0, import_effects=None, downstream_import_budget=0.0, typeddict_state_check=False,
                  schedule_admission=False, exact_comparisons=False,
-                 fixture_entries=None, fixture_replay_budget=0.0):
+                 fixture_entries=None, fixture_replay_budget=0.0, inherited_typeddict=False):
         self.tests, self.source = tests, source
         # Patches that change code or settings used while some module is being
         # imported can break collection of every test file importing it. A forked
@@ -540,6 +540,7 @@ class Selector:
         # completed on built-in int/str/None operands (see refine_comparisons).
         self.exact_comparisons = exact_comparisons
         self.typeddict_state_check = typeddict_state_check
+        self.inherited_typeddict = inherited_typeddict
         self._typeddict_readers = None
         # Patches that change code or settings used while some module is being
         # imported can break collection of every test file importing it. A forked
@@ -836,6 +837,11 @@ class Selector:
                         result |= include(self.external_for(name), "external dependency", name)
                         continue
                     hazard = import_hazard_kind(old, new, before, after)
+                    if hazard == "structural" and self.inherited_typeddict:
+                        from typeddict_selection import inherited_total_only, dynamic_metadata_readers
+                        if (inherited_total_only(before, after)
+                                and not dynamic_metadata_readers(self.source, (name.split('/')[0], "tests"))):
+                            hazard = "typeddict_total"
                     if hazard == "initializer" and self.import_succeeds(name, changes):
                         hazard = None
                     elif (hazard == "typeddict_total" and self.typeddict_state_check and entry is not None
@@ -1259,6 +1265,7 @@ def parse_args(argv=None):
     parser.add_argument("--import-time", type=Path, default=Path("/app/import-time.json"))
     parser.add_argument("--downstream-import-budget", type=float)
     parser.add_argument("--typeddict-state-check", action=argparse.BooleanOptionalAction, default=None)
+    parser.add_argument("--inherited-typeddict", action=argparse.BooleanOptionalAction, default=None)
     parser.add_argument("--schedule-admission", action=argparse.BooleanOptionalAction, default=None,
                         help="Admit narrowing probes only when their schedule saving pays for their CPU")
     parser.add_argument("--exact-comparisons", action=argparse.BooleanOptionalAction, default=None,
@@ -1301,6 +1308,8 @@ def parse_args(argv=None):
         args.downstream_import_budget = float(config.get("downstream_import_budget", 0.0))
     if args.typeddict_state_check is None:
         args.typeddict_state_check = bool(config.get("typeddict_state_check", False))
+    if args.inherited_typeddict is None:
+        args.inherited_typeddict = bool(config.get("inherited_typeddict", False))
     args.settings = {"lazy_test_budget": args.lazy_test_budget, "executor_fixtures": bool(args.executor_fixtures), "executor_plan_budget": args.executor_plan_budget,"conservative_python": bool(conservative), "child_work": bool(child_work),
                      "relations": bool(args.relations), "probe_budget": float(args.probe_budget),
                      "import_check_budget": float(args.import_check_budget),
@@ -1312,6 +1321,7 @@ def parse_args(argv=None):
     if args.exact_comparisons is None:
         args.exact_comparisons = config.get("exact_comparisons", False)
     args.settings["schedule_admission"] = bool(args.schedule_admission)
+    args.settings["inherited_typeddict"] = bool(args.inherited_typeddict)
     args.settings["exact_comparisons"] = bool(args.exact_comparisons)
     if args.fixture_replay_budget is None:
         args.fixture_replay_budget = float(config.get("fixture_replay_budget", 0.0))
@@ -1371,6 +1381,7 @@ def main():
                         import_effects=load_import_effects(args.import_time, tests),
                         downstream_import_budget=max(0.0, settings["downstream_import_budget"]),
                         typeddict_state_check=settings["typeddict_state_check"],
+                        inherited_typeddict=settings["inherited_typeddict"],
                         schedule_admission=settings["schedule_admission"],
                         exact_comparisons=settings["exact_comparisons"],
                         fixture_entries=load_fixture_entries(args.fixture_entries, args.source)
