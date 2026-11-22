@@ -25,7 +25,7 @@ BASE = {"conservative_python": False, "child_work": False, "relations": False,
         "downstream_import_budget": 6.0,
         "typeddict_state_check": False,
         "schedule_admission": False,
-        "structural_refinement": False,
+        "consumer_coverage": False, "structural_refinement": False,
         "exact_comparisons": False,
         "fixture_replay_budget": 0.0}
 VARIANTS = {
@@ -61,6 +61,7 @@ def selector_options(config):
             "--schedule-admission" if config["schedule_admission"] else "--no-schedule-admission",
             "--structural-refinement" if config["structural_refinement"] else "--no-structural-refinement",
             "--exact-comparisons" if config["exact_comparisons"] else "--no-exact-comparisons",
+            "--consumer-coverage" if config["consumer_coverage"] else "--no-consumer-coverage",
             "--fixture-replay-budget", repr(float(config["fixture_replay_budget"]))]
 
 

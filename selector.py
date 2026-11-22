@@ -522,8 +522,9 @@ class Selector:
                  setup_check_budget=0.0, executor_fixtures=False, executor_plans=None, executor_plan_budget=0.0,
                  lazy_test_budget=0.0, import_effects=None, downstream_import_budget=0.0, typeddict_state_check=False,
                  schedule_admission=False, exact_comparisons=False,
-                 fixture_entries=None, fixture_replay_budget=0.0, structural_refinement=False):
+                 fixture_entries=None, fixture_replay_budget=0.0, structural_refinement=False, consumer_coverage=False):
         self.tests, self.source = tests, source
+        self.consumer_coverage = consumer_coverage
         self.structural_refinement = structural_refinement
         # Patches that change code or settings used while some module is being
         # imported can break collection of every test file importing it. A forked
@@ -808,6 +809,13 @@ class Selector:
                     before, after = baseline_tree(old), ast.parse(new, type_comments=True)
                     # Compare every file: a harmless-looking comment may accompany a fixture edit.
                     changes_at_sites = classify_python_edit(before, after)
+                    if self.consumer_coverage and changes_at_sites is None and not self.conservative_python and any(
+                        row[1:].strip().startswith(("#", '"""', "'''")) for h in c["hunks"]
+                        for row in h["rows"] if row.startswith(("+","-"))
+                    ):
+                        from attribute_docs import matches
+                        if matches(before, after, classify_python_edit):
+                            changes_at_sites = []
                     if changes_at_sites == []:
                         # Tests may inspect comments or exact source text.
                         if entry is None:
@@ -930,6 +938,13 @@ class Selector:
                         result |= include(mask, "definition dependency", name, (a, b))
                 if not removed and not inserted:
                     return include(self.all, "no changed positions", name)
+            if (self.consumer_coverage and result and self.complete and not self.conservative_python
+                    and len(changes) == 1 and name.endswith(".py") and plain_text_change(patch)):
+                from config_flow import narrow
+                result = narrow(self, result, name, old, new, removed)
+                if name.startswith("sqlglot/dialects/") and "NUMERIC_ESCAPES" in old:
+                    from key_evidence import refine as refine_values
+                    result = refine_values(self, result, name, before, after)
             if pending:
                 result = self.resolve(result, pending, include)
             if (self.lazy_test_budget >= 0.7 and result and result == self.closure_external
@@ -1295,6 +1310,7 @@ def parse_args(argv=None):
     parser.add_argument("--exact-comparisons", action=argparse.BooleanOptionalAction, default=None,
                         help="Narrow value-operator swaps with exact comparison evidence from the map")
     parser.add_argument("--fixture-replay-budget", type=float)
+    parser.add_argument("--consumer-coverage", action=argparse.BooleanOptionalAction, default=None)
     parser.add_argument("--fixture-entries", type=Path, default=Path("/app/fixture-entries.json.gz"))
     parser.add_argument("--config", type=Path, default=Path(__file__).with_name("selector-config.json"))
     args = parser.parse_args(argv)
@@ -1349,6 +1365,8 @@ def parse_args(argv=None):
     args.settings["fixture_replay_budget"] = float(args.fixture_replay_budget)
     args.settings["structural_refinement"] = (config.get("structural_refinement", False) is True
                                               if args.structural_refinement is None else args.structural_refinement)
+    args.settings["consumer_coverage"] = (config.get("consumer_coverage", False) is True
+                                         if args.consumer_coverage is None else args.consumer_coverage)
     if args.cost_aware_probes:
         args.settings["probe_budget"] = {"seconds": args.probe_budget, "cost_aware": True}
     return args
@@ -1409,7 +1427,8 @@ def main():
                         fixture_entries=load_fixture_entries(args.fixture_entries, args.source)
                         if settings["fixture_replay_budget"] > 0 else None,
                         fixture_replay_budget=max(0.0, settings["fixture_replay_budget"]),
-                        structural_refinement=settings["structural_refinement"])
+                        structural_refinement=settings["structural_refinement"],
+                        consumer_coverage=settings["consumer_coverage"])
 
 
     schedules = {}
@@ -1417,6 +1436,9 @@ def main():
     for patch in sorted((args.data / "commits").glob("*.patch")):
         text = patch.read_text(encoding="utf-8")
         mask = selector.select(text)
+        if selector.consumer_coverage and selector.complete and not selector.conservative_python:
+            from small_suite import refine
+            mask = refine(selector, text, mask)
         if selector.complete and remaining > 0:
             try:
                 mask, charged = selector.probe(text, mask, remaining, cost_aware=args.cost_aware_probes)
