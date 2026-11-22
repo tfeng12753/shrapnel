@@ -1239,6 +1239,7 @@ def parse_args(argv=None):
     parser.add_argument("--source", type=Path, default=Path("/opt/sqlglot"))
     parser.add_argument("--map", type=Path, default=Path("/app/dependencies.json.gz"))
     parser.add_argument("--probe-budget", type=float)
+    parser.add_argument("--exact-call-replay", action=argparse.BooleanOptionalAction, default=None)
     parser.add_argument("--cost-aware-probes", action=argparse.BooleanOptionalAction, default=None,
                         help="Reserve probe budget for whole selections with sufficient schedule savings")
     python_mode = parser.add_mutually_exclusive_group()
@@ -1316,6 +1317,8 @@ def parse_args(argv=None):
     if args.fixture_replay_budget is None:
         args.fixture_replay_budget = float(config.get("fixture_replay_budget", 0.0))
     args.settings["fixture_replay_budget"] = float(args.fixture_replay_budget)
+    args.settings["exact_call_replay"] = (config.get("exact_call_replay", False) is True
+                                  if args.exact_call_replay is None else args.exact_call_replay)
     if args.cost_aware_probes:
         args.settings["probe_budget"] = {"seconds": args.probe_budget, "cost_aware": True}
     return args
@@ -1378,11 +1381,15 @@ def main():
                         fixture_replay_budget=max(0.0, settings["fixture_replay_budget"]))
 
 
+    from exact_calls import refine as refine_exact_calls
+
     schedules = {}
     remaining = max(0.0, args.probe_budget)
     for patch in sorted((args.data / "commits").glob("*.patch")):
         text = patch.read_text(encoding="utf-8")
         mask = selector.select(text)
+        if settings["exact_call_replay"] and not settings["conservative_python"]:
+            mask = refine_exact_calls(selector, text, mask, parse_patch, apply_change)
         if selector.complete and remaining > 0:
             try:
                 mask, charged = selector.probe(text, mask, remaining, cost_aware=args.cost_aware_probes)
