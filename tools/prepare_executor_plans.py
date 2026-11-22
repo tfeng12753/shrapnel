@@ -7,7 +7,7 @@ import sys
 import tempfile
 
 
-def prepare(source, output):
+def prepare(source, output, rule_screen=False):
     scripts = Path(__file__).resolve().parent
     output.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(dir=output.parent) as directory:
@@ -20,6 +20,12 @@ def prepare(source, output):
                             str(prepared / f"plan-deps-{seed}.json")], check=True,
                            env=dict(os.environ, PYTHONHASHSEED=str(seed), SKIP_INTEGRATION="0",
                                     OPENBLAS_NUM_THREADS="1", MKL_NUM_THREADS="1", OMP_NUM_THREADS="1"))
+            if rule_screen:
+                subprocess.run([sys.executable, "-B", str(scripts / "map_rule_replay.py"),
+                                "--source", str(source), "--schema", "TPCDS_SCHEMA",
+                                "--snapshot", str(prepared / f"plan-base-{seed}.json"),
+                                "--folder", str(prepared / f"rules-{seed}")], check=True,
+                               env=dict(os.environ, PYTHONHASHSEED=str(seed)))
         subprocess.run([sys.executable, "-B", str(scripts / "map_executor_screen.py"), "--source", str(source),
                         "--schema", "TPCDS_SCHEMA", "--snapshot", str(prepared / "plan-base-1.json"),
                         "--output", str(prepared / "plan-screen.json")], check=True,
@@ -31,7 +37,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--source", type=Path, default=Path("/opt/sqlglot"))
     parser.add_argument("--output", type=Path, default=Path("/app/executor-plans"))
+    parser.add_argument("--rule-screen", action="store_true")
     args = parser.parse_args()
     if args.output.exists() or args.output.resolve().is_relative_to(args.source.resolve()):
         parser.error("choose a new output directory outside the source checkout")
-    prepare(args.source.resolve(), args.output.resolve())
+    prepare(args.source.resolve(), args.output.resolve(), args.rule_screen)

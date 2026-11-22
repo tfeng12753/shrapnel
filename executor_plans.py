@@ -50,7 +50,7 @@ def operator_edit(before, after, line):
     return change and in_body(before) and in_body(after)
 
 
-def matched(source, name, before, after, line, prepared, budget):
+def matched(source, name, before, after, line, prepared, budget, *, rule_screen=False):
     """Return False on any incomplete comparison. Budget covers parent and children."""
     start = cpu_seconds()
     wall_deadline = time.monotonic() + 2 * budget + 1
@@ -101,6 +101,13 @@ def matched(source, name, before, after, line, prepared, budget):
                     ["--reference", str(screen), "--module", name, "--line", str(line)], 1, root):
                 return False
             for seed in (1, 2):
+                rules = prepared / f"rules-{seed}"
+                if rule_screen:
+                    manifest = json.loads((rules / "manifest.json").read_text())
+                    if name in manifest["rules"] and not run("map_rule_replay.py",
+                            ["--snapshot", str(prepared / f"plan-base-{seed}.json"), "--folder",
+                             str(rules), "--module", name], seed, root):
+                        return False
                 output = Path(directory) / f"result-{seed}.json"
                 if not run("map_executor_plan.py", ["--fixture", "tpcds", "--reference",
                            str(prepared / f"plan-base-{seed}.json"), "--output", str(output)], seed, root):

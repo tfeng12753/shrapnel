@@ -522,8 +522,10 @@ class Selector:
                  setup_check_budget=0.0, executor_fixtures=False, executor_plans=None, executor_plan_budget=0.0,
                  lazy_test_budget=0.0, import_effects=None, downstream_import_budget=0.0, typeddict_state_check=False,
                  schedule_admission=False, exact_comparisons=False,
-                 fixture_entries=None, fixture_replay_budget=0.0):
+                 fixture_entries=None, fixture_replay_budget=0.0, longest_test_budget=0.0, rule_screen=False):
         self.tests, self.source = tests, source
+        self.longest_test_budget = longest_test_budget
+        self.rule_screen = rule_screen
         # Patches that change code or settings used while some module is being
         # imported can break collection of every test file importing it. A forked
         # import of the affected modules decides (CPU charged to this budget).
@@ -948,10 +950,37 @@ class Selector:
                 result, cpu = refine(self, self.fixture_entries, result, name, changes[0], old, new,
                                      self.fixture_replay_budget)
                 self.fixture_replay_budget -= cpu
+            if (self.longest_test_budget >= 1 and result and len(changes) == 1
+                    and not self.conservative_python and name.startswith("sqlglot/")
+                    and name.endswith(".py") and name not in REGISTRY_FILES
+                    and plain_text_change(patch) and self.complete):
+                result = self.check_longest(result, changes[0], old, new)
             return result
         except (ValueError, SyntaxError, OSError, UnicodeError, RecursionError) as error:
             # Syntax/import-shape uncertainty can break every test's collection.
             return include(self.all, "analysis failed: " + type(error).__name__)
+
+    def check_longest(self, mask, change, before, after):
+        from fixture_replay import changed_functions
+        from isolated_pytest import cpu_seconds, passed
+        start = cpu_seconds()
+        try:
+            chosen = self.chosen(mask)
+            item = max(chosen, key=lambda t: (t["seconds"], -t["number"]))
+            if item["seconds"] < 5:
+                return mask
+            bit = 1 << item["number"]
+            benefit = schedule_saving(chosen, bit)
+            allowance = min(self.longest_test_budget, break_even_cpu(benefit))
+            # The selector image has two CPUs shared by pytest and its children.
+            if allowance < 1 or not changed_functions(change, before, after):
+                return mask
+            wall = (allowance - (cpu_seconds() - start)) / 2
+            if wall >= .5 and passed(self.source, change["old"], after, item["id"], wall):
+                return mask & ~bit
+            return mask
+        finally:
+            self.longest_test_budget -= cpu_seconds() - start
 
     def check_executor_plan(self, mask, name, before, after, line):
         from executor_plans import ITEM, cpu_seconds, matched
@@ -978,7 +1007,8 @@ class Selector:
                 allowance = min(self.executor_plan_budget, benefit / 2) - (cpu_seconds() - start)
             if allowance >= 1:
                 replay = cpu_seconds()
-                ok = matched(self.source.resolve(), name, before, after, line, self.executor_plans, allowance)
+                ok = matched(self.source.resolve(), name, before, after, line, self.executor_plans, allowance,
+                             rule_screen=self.rule_screen)
                 if ok:
                     # A rejected replay may have stopped at its allowance, which
                     # understates the cost of a complete one: record only matches.
@@ -1264,6 +1294,8 @@ def parse_args(argv=None):
     parser.add_argument("--exact-comparisons", action=argparse.BooleanOptionalAction, default=None,
                         help="Narrow value-operator swaps with exact comparison evidence from the map")
     parser.add_argument("--fixture-replay-budget", type=float)
+    parser.add_argument("--longest-test-budget", type=float)
+    parser.add_argument("--rule-screen", action=argparse.BooleanOptionalAction, default=None)
     parser.add_argument("--fixture-entries", type=Path, default=Path("/app/fixture-entries.json.gz"))
     parser.add_argument("--config", type=Path, default=Path(__file__).with_name("selector-config.json"))
     args = parser.parse_args(argv)
@@ -1316,6 +1348,12 @@ def parse_args(argv=None):
     if args.fixture_replay_budget is None:
         args.fixture_replay_budget = float(config.get("fixture_replay_budget", 0.0))
     args.settings["fixture_replay_budget"] = float(args.fixture_replay_budget)
+    if args.longest_test_budget is None:
+        args.longest_test_budget = config.get("longest_test_budget", 0.0)
+    args.settings["longest_test_budget"] = float(args.longest_test_budget)
+    if args.rule_screen is None:
+        args.rule_screen = config.get("rule_screen", False)
+    args.settings["rule_screen"] = bool(args.rule_screen)
     if args.cost_aware_probes:
         args.settings["probe_budget"] = {"seconds": args.probe_budget, "cost_aware": True}
     return args
@@ -1375,7 +1413,8 @@ def main():
                         exact_comparisons=settings["exact_comparisons"],
                         fixture_entries=load_fixture_entries(args.fixture_entries, args.source)
                         if settings["fixture_replay_budget"] > 0 else None,
-                        fixture_replay_budget=max(0.0, settings["fixture_replay_budget"]))
+                        fixture_replay_budget=max(0.0, settings["fixture_replay_budget"]),
+                        longest_test_budget=max(0.0, settings["longest_test_budget"]), rule_screen=settings["rule_screen"])
 
 
     schedules = {}
