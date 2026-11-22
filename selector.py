@@ -161,6 +161,9 @@ def schedule_saving(tests: list[dict], dropped: int) -> float:
     return schedule_seconds(tests) - schedule_seconds([t for t in tests if not dropped >> t["number"] & 1])
 
 
+# Files that load the dialect registry. Test order changes their state, which a
+# verifier running tests in a fresh process cannot reproduce.
+REGISTRY_FILES = frozenset({"sqlglot/dialects/dialect.py", "sqlglot/dialects/__init__.py"})
 # Wall-clock limit of one lazy-test check; see Selector._select_base.
 LAZY_CHECK_WALL_SECONDS = 6.0
 # A probe must save at least 1.5 times its expected CPU plus half a second.
@@ -1131,6 +1134,11 @@ class Selector:
                 return mask, 0.0
         changes = parse_patch(patch)
         if any(not c["old"].endswith(".py") or c["old"].startswith("tests/") or c["old"] != c["new"] for c in changes):
+            return mask, 0.0
+        if any(c["old"] in REGISTRY_FILES for c in changes):
+            # A forked child imports the registry fresh. In the full suite, tests
+            # that clear it change which loading path later tests take, so a
+            # pass here does not show a pass there.
             return mask, 0.0
         if cost_aware and (any(module_for(c["old"]) is None for c in changes)
                            or len({c["old"] for c in changes}) != len(changes)):
